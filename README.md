@@ -23,3 +23,15 @@ make
 make android-arm & make android-arm64 & make android-x86
 @PAUSE
 ```
+* 3, run build_android.bat. 
+* ps: you may meet error like.
+```
+......
+==== Building example-common (debug) ====
+vertexfilter.cpp
+../../../3rdparty/meshoptimizer/src/vertexfilter.cpp:171:9: error: use of
+      undeclared identifier '__builtin_rotateleft64'
+        return __builtin_rotateleft64(v, x);
+......
+``` 
+modify vertexfilter.cpp. just 'return (v << (x & 63)) | (v >> ((64 - x) & 63));' directly.
