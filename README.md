@@ -1,6 +1,6 @@
 # bgfx-android
 
-# Build bgfx-android on Windows
+### Build bgfx-android on Windows
 * 1, clone libs:
 ```
 git clone git://github.com/bkaradzic/bx.git
@@ -38,3 +38,6 @@ How to resolve ?
 modify vertexfilter.cpp. just 'return (v << (x & 63)) | (v >> ((64 - x) & 63));' directly.
 ``` 
 
+### run example
+* 1, copy libs from 'bgfx\.build\android-arm64\bin' to 'bgfx-android-activity\app\src\main\jniLibs\arm64-v8a'
+* 2, then run app 
