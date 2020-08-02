@@ -12,7 +12,7 @@
 int m_width;
 int m_height;
 
-JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initializeSurface, jobject surface){
+extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initializeSurface, jobject surface){
     // surface 来自于上层
     ANativeWindow *mWindow  = ANativeWindow_fromSurface(env, surface);
 
@@ -51,11 +51,11 @@ JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initializeSurface, jobject surface
     );
     draw();
 }
-JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject surface){
+extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject surface){
     bgfx::shutdown();
 }
 
-void draw(){
+extern "C" void draw(){
     // Set view 0 default viewport.
     bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height) );
 

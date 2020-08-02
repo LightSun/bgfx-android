@@ -18,9 +18,9 @@
 #define SURFACE_VIEW_JAVA_API1(function, p1)            CONCAT_SURFACE(SURFACE_VIEW_JAVA_PREFIX, function)(JNIEnv* env, jobject jobj, p1)
 #define SURFACE_VIEW_JAVA_API2(function, p1, p2)        CONCAT_SURFACE(SURFACE_VIEW_JAVA_PREFIX, function)(JNIEnv* env, jobject jobj, p1, p2)
 
-JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initializeSurface, jobject surface);
-JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject surface);
-void draw();
+extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initializeSurface, jobject surface);
+extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject surface);
+extern "C" void draw();
 
 // 封装顶点对象
 struct PosColorVertex {
