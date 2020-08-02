@@ -3,27 +3,10 @@
 //
 #include "bgfx_view.h"
 
-#include "jni.h"
-
 #ifdef ANDROID
 #include <android/native_window_jni.h>
 #include <android/native_window.h>
 #endif
-
-#include <bx/bx.h>
-#include "logo.h"
-
-#define SURFACE_VIEW_JAVA_PREFIX                        com_heaven7_android_bgfx_study_demo
-#define CONCAT(prefix, class, func)                     Java_ ## prefix ## _ ## class ## _ ## func
-#define CONCAT_SURFACE(prefix, func)                    CONCAT(prefix, BgfxSurfaceView,func)
-
-#define SURFACE_VIEW_JAVA_API(function)                 CONCAT_SURFACE(SURFACE_VIEW_JAVA_PREFIX, function)(JNIEnv* env, jobject jobj)
-#define SURFACE_VIEW_JAVA_API1(function, p1)            CONCAT_SURFACE(SURFACE_VIEW_JAVA_PREFIX, function)(JNIEnv* env, jobject jobj, p1)
-#define SURFACE_VIEW_JAVA_API2(function, p1, p2)        CONCAT_SURFACE(SURFACE_VIEW_JAVA_PREFIX, function)(JNIEnv* env, jobject jobj, p1, p2)
-
-JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initializeSurface, jobject);
-JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject);
-JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API(onDrawFrame);
 
 //========================== impl ============================
 int m_width;
@@ -66,12 +49,13 @@ JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initializeSurface, jobject surface
             , 1.0f
             , 0
     );
+    draw();
 }
 JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject surface){
     bgfx::shutdown();
 }
 
-JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API(onDrawFrame){
+void draw(){
     // Set view 0 default viewport.
     bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height) );
 

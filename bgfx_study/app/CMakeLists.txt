@@ -54,11 +54,11 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries(
         bgfx_study
-        bx
-        bimg
-        bimg_decode
         bgfx
-
+        bimg_decode
+        bimg
+        bx
+        ${OPENGL_LIB}
         android
         EGL
         ${log-lib}

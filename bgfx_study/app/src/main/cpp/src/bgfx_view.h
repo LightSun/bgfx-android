@@ -6,6 +6,21 @@
 #define BGFX_STUDY_BGFX_VIEW_H
 
 #include "bgfx/bgfx.h"
+#include <bx/bx.h>
+#include "logo.h"
+#include "jni.h"
+
+#define SURFACE_VIEW_JAVA_PREFIX                        com_heaven7_android_bgfx_study_demo
+#define CONCAT(prefix, class, func)                     Java_ ## prefix ## _ ## class ## _ ## func
+#define CONCAT_SURFACE(prefix, func)                    CONCAT(prefix, BgfxSurfaceView,func)
+
+#define SURFACE_VIEW_JAVA_API(function)                 CONCAT_SURFACE(SURFACE_VIEW_JAVA_PREFIX, function)(JNIEnv* env, jobject jobj)
+#define SURFACE_VIEW_JAVA_API1(function, p1)            CONCAT_SURFACE(SURFACE_VIEW_JAVA_PREFIX, function)(JNIEnv* env, jobject jobj, p1)
+#define SURFACE_VIEW_JAVA_API2(function, p1, p2)        CONCAT_SURFACE(SURFACE_VIEW_JAVA_PREFIX, function)(JNIEnv* env, jobject jobj, p1, p2)
+
+JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initializeSurface, jobject surface);
+JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject surface);
+void draw();
 
 // 封装顶点对象
 struct PosColorVertex {

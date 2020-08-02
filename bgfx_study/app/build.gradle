@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.heaven7.android.bgfx.study.demo"
-        minSdkVersion 21
+        minSdkVersion 24 //for bgfx compiled on 24
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -16,11 +16,11 @@ android {
         externalNativeBuild {
             //-DSK_API
             cmake {
-                cppFlags "-std=c++17 -fexceptions -O0"
+                cppFlags "-std=c++14 -fexceptions -O0"
             }
         }
         ndk {
-            stl "gnustl_shared"
+           // stl "gnustl_shared"
             abiFilters "arm64-v8a"
         }
     }
