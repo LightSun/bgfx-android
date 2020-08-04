@@ -13,7 +13,7 @@ else ()
 endif (${ANDROID_PLATFORM_LEVEL} LESS 11)
 
 include_directories(src/main/cpp/include)
-#include_directories(src/main/cpp/thirds)
+include_directories(src/main/cpp/thirds)
 #include_directories(src/main/cpp/src)
 
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI})
@@ -30,19 +30,21 @@ add_library(bx STATIC IMPORTED)
 set_target_properties(bx PROPERTIES IMPORTED_LOCATION ${LIB_DIR}/libbxDebug.a)
 
 aux_source_directory(src/main/cpp/src SRC_study)
+aux_source_directory(src/main/cpp/src/samples SRC_samples)
 #aux_source_directory(src/main/cpp/src/common SRC_common)
 #aux_source_directory(src/main/cpp/src/common/entry SRC_entry)
 #aux_source_directory(src/main/cpp/src/common/imgui SRC_imgui)
 
 #aux_source_directory(src/main/cpp/src/thirds/dear-imgui SRC_dear_imgui)
-#aux_source_directory(src/main/cpp/src/thirds/meshoptimizer SRC_meshoptimizer)
+aux_source_directory(src/main/cpp/thirds/meshoptimizer/src SRC_meshoptimizer)
 #aux_source_directory(src/main/cpp/src/thirds/iconfontheaders SRC_iconfontheaders)
-
 
 add_library(
         bgfx_study
         SHARED
         ${SRC_study}
+        ${SRC_samples}
+        ${SRC_meshoptimizer}
 )
 
 find_library( # Sets the name of the path variable.

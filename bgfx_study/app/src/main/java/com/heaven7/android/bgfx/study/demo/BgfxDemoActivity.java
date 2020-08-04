@@ -16,6 +16,7 @@ public class BgfxDemoActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        NativeApi.initAssets(getApplicationContext(), getAssets());
         setContentView(R.layout.ac_bgfx_demo);
     }
 
