@@ -13,7 +13,7 @@ namespace heaven7_Bgfx_demo {
         BaseDemo::init(config);
     }
 
-    void HelloWorldDemo::draw() {
+    int HelloWorldDemo::draw() {
         // Set view 0 default viewport.
         bgfx::setViewRect(0, 0, 0, uint16_t(config.win_width), uint16_t(config.win_height) );
 
@@ -47,5 +47,6 @@ namespace heaven7_Bgfx_demo {
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.
         bgfx::frame();
+        return 0;
     }
 }

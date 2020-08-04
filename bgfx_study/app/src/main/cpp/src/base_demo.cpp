@@ -3,6 +3,7 @@
 //
 
 #include "base_demo.h"
+#include "log.h"
 
 namespace heaven7_Bgfx_demo{
     BaseDemo::BaseDemo() {
@@ -52,11 +53,33 @@ namespace heaven7_Bgfx_demo{
     void BaseDemo::destroy() {
         if(!destroyed){
             destroyed = true;
+            m_thread.shutdown();
             releaseWindow(config.window);
             bgfx::shutdown();
         }
     }
     bool BaseDemo::isDestroyed() {
         return destroyed;
+    }
+    void BaseDemo::startLoop() {
+        if (!m_thread.isRunning() )
+        {
+            m_thread.init(BaseDemo::threadFunc, this);
+        }
+    }
+    int32_t BaseDemo::threadFunc(bx::Thread* _thread, void* _userData)
+    {
+        BX_UNUSED(_thread);
+
+        BaseDemo* demo = static_cast<BaseDemo *>(_userData);
+        //int32_t result = chdir("/sdcard/bgfx/examples/runtime");
+        // BX_ASSERT(0 == result, "Failed to chdir to dir. android.permission.WRITE_EXTERNAL_STORAGE?", errno);
+        DBG("loop draw >>> start");
+        while(demo->draw() == 0){
+
+        }
+        DBG("loop draw >>> end");
+//		PostMessage(s_ctx.m_hwnd, WM_QUIT, 0, 0);
+        return 0;
     }
 }

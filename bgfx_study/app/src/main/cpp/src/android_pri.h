@@ -8,6 +8,8 @@
 #ifdef ANDROID
 #include "android/asset_manager_jni.h"
 #include "android/asset_manager.h"
+#include <android/native_window_jni.h>
+#include <android/native_window.h>
 #endif
 
 extern "C"{

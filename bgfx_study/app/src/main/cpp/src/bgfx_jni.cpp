@@ -15,6 +15,7 @@ using namespace heaven7_Bgfx_demo;
 #include "android/asset_manager.h"
 #endif
 
+bx::Thread m_thread;
 
 //========================== impl ============================
 BaseDemo* demo;
@@ -33,7 +34,7 @@ extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobj
 
    // demo = createDemo<HelloWorldDemo>(&config);
     demo = createDemo<CurbesDemo>(&config);
-    demo->draw();
+    demo->startLoop();
 }
 extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src,jobject surface){
     if(demo){
@@ -42,9 +43,12 @@ extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject
         demo = NULL ;
     }
 }
-
-extern "C" void draw(){
+extern "C" JNIEXPORT jboolean JNICALL SURFACE_VIEW_JAVA_API(update){
+    return draw() == 0;
+}
+extern "C" int draw(){
     if(demo){
-        demo->draw();
+        return demo->draw();
     }
+    return -1;
 }

@@ -161,7 +161,7 @@ namespace heaven7_Bgfx_demo{
 
         m_timeOffset = bx::getHPCounter();
     }
-    void CurbesDemo::draw() {
+    int CurbesDemo::draw() {
         int m_width = config.win_width;
         int m_height = config.win_height;
         float time = (float)( (bx::getHPCounter()-m_timeOffset)/double(bx::getHPFrequency() ) );
@@ -228,6 +228,7 @@ namespace heaven7_Bgfx_demo{
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.
         bgfx::frame();
+        return 0;
     }
     void CurbesDemo::destroy() {
 // Cleanup.

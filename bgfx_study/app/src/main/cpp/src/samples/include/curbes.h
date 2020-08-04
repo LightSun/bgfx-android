@@ -17,7 +17,7 @@ namespace heaven7_Bgfx_demo{
    class CurbesDemo : public BaseDemo{
    public:
        void init(InitConfig *config);
-       void draw();
+       int draw();
        void destroy();
 
    private:

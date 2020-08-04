@@ -20,6 +20,7 @@
 extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobject assetM);
 extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobject src,jobject surface);
 extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src,jobject surface);
-extern "C" void draw();
+extern "C" JNIEXPORT jboolean JNICALL SURFACE_VIEW_JAVA_API(update);
+extern "C" int draw();
 
 #endif //BGFX_STUDY_BGFX_JNI_H

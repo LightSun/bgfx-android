@@ -7,6 +7,7 @@
 
 #include "bgfx/bgfx.h"
 #include <bx/bx.h>
+#include <bx/thread.h>
 #include "android_pri.h"
 //extern "C" {
 
@@ -23,17 +24,23 @@ namespace heaven7_Bgfx_demo {
         BaseDemo();
         virtual void init(InitConfig* config);
 
-        virtual void draw() = 0;
+        virtual int draw() = 0;
 
         virtual void destroy();
 
         bool isDestroyed();
+
+        void startLoop();
+
+    private:
+        static int32_t threadFunc(bx::Thread* _thread, void* _userData);
 
     protected:
         bool destroyed;
         InitConfig config;
         int m_debug;
         int m_reset;
+        bx::Thread m_thread;
     };
 }
 //}
