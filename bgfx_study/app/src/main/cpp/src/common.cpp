@@ -3,6 +3,8 @@
 //
 #include "common.h"
 
+#ifndef USE_NATIVE_ACTIVITY
+//back up old
 namespace entry{
 
     static bx::FileReaderI* s_fileReader = NULL;
@@ -68,6 +70,18 @@ namespace entry{
         setCurrentDir("");
     }
 
+    void* TinyStlAllocator::static_allocate(size_t _bytes)
+    {
+        return BX_ALLOC(getAllocator(), _bytes);
+    }
+
+    void TinyStlAllocator::static_deallocate(void* _ptr, size_t /*_bytes*/)
+    {
+        if (NULL != _ptr)
+        {
+            BX_FREE(getAllocator(), _ptr);
+        }
+    }
 }
 namespace bx{
     FileReaderImpl::~FileReaderImpl() {
@@ -87,4 +101,4 @@ namespace bx{
         return super::open(filePath.getPtr(), _err);
     }
 }
-
+#endif

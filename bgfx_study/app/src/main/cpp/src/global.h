@@ -30,4 +30,14 @@
     p = nullptr; \
 }
 
+//SIMPLE_DEMO only used simple
+#ifdef ANDROID
+    #ifdef SIMPLE_DEMO
+#else
+        #ifndef USE_NATIVE_ACTIVITY
+        #define USE_NATIVE_ACTIVITY 1
+        #endif
+    #endif
+#endif
+
 #endif //FFMPEGOPENGLDEMO_VIDEOCONFIG_H

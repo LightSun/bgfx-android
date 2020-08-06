@@ -72,11 +72,13 @@ namespace heaven7_Bgfx_demo{
         BX_UNUSED(_thread);
 
         BaseDemo* demo = static_cast<BaseDemo *>(_userData);
+        //bgfx::frame();
         //int32_t result = chdir("/sdcard/bgfx/examples/runtime");
         // BX_ASSERT(0 == result, "Failed to chdir to dir. android.permission.WRITE_EXTERNAL_STORAGE?", errno);
         DBG("loop draw >>> start");
+        int i = 0;
         while(demo->draw() == 0){
-
+            DBG("loop draw >>> %d", ++i);
         }
         DBG("loop draw >>> end");
 //		PostMessage(s_ctx.m_hwnd, WM_QUIT, 0, 0);

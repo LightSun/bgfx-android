@@ -22,7 +22,9 @@ BaseDemo* demo;
 
 extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobject assetM){
    auto asm1 = AAssetManager_fromJava(env, assetM);
+#ifndef USE_NATIVE_ACTIVITY
    entry::init(asm1);
+#endif
 }
 
 extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobject src,jobject surface){

@@ -20,6 +20,9 @@
 extern "C" {
 #endif
 
+#ifndef USE_NATIVE_ACTIVITY
+#define TINYSTL_ALLOCATOR entry::TinyStlAllocator
+
 namespace bx{
     class FileWriterImpl : public bx::FileWriter
     {
@@ -131,7 +134,13 @@ namespace bx{
 
 namespace entry {
 
-    typedef bx::FileWriter super;
+    struct TinyStlAllocator
+    {
+        static void* static_allocate(size_t _bytes);
+        static void static_deallocate(void* _ptr, size_t /*_bytes*/);
+    };
+
+    //typedef bx::FileWriter super;
 
     void setCurrentDir(const char *_dir);
 
@@ -148,6 +157,8 @@ namespace entry {
     void init(void *assetManager);
 
 }
+#endif
+
 #ifdef __cplusplus
 }
 #endif

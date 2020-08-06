@@ -54,12 +54,18 @@ find_library( # Sets the name of the path variable.
         # you want CMake to locate.
         log)
 
+add_library(native_app_glue STATIC
+        ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+target_include_directories(bgfx_study PRIVATE
+        ${ANDROID_NDK}/sources/android/native_app_glue)
+
 target_link_libraries(
         bgfx_study
         bgfx
         bimg_decode
         bimg
         bx
+        native_app_glue
         ${OPENGL_LIB}
         android
         EGL
