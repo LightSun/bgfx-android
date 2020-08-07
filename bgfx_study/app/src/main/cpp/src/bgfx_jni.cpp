@@ -20,14 +20,14 @@ bx::Thread m_thread;
 //========================== impl ============================
 BaseDemo* demo;
 
-extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobject assetM){
+EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobject assetM){
    auto asm1 = AAssetManager_fromJava(env, assetM);
 #ifndef USE_NATIVE_ACTIVITY
    entry::init(asm1);
 #endif
 }
 
-extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobject src,jobject surface){
+EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobject src,jobject surface){
     ANativeWindow *mWindow  = ANativeWindow_fromSurface(env, surface);
     InitConfig config;
     config.window = mWindow;
@@ -38,14 +38,14 @@ extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobj
     demo = createDemo<CurbesDemo>(&config);
     demo->startLoop();
 }
-extern "C" JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src,jobject surface){
+EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src,jobject surface){
     if(demo){
         demo->destroy();
         delete demo;
         demo = NULL ;
     }
 }
-extern "C" JNIEXPORT jboolean JNICALL SURFACE_VIEW_JAVA_API(update){
+EC_JNIEXPORT jboolean JNICALL SURFACE_VIEW_JAVA_API(update){
     return draw() == 0;
 }
 extern "C" int draw(){
