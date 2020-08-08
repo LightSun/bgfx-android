@@ -7,10 +7,10 @@
 
 namespace heaven7_Bgfx_demo {
 
-    void HelloWorldDemo::init(heaven7_Bgfx_demo::InitConfig *config) {
+    void HelloWorldDemo::init() {
         m_reset = BGFX_RESET_VSYNC;
         m_debug = BGFX_DEBUG_TEXT;
-        BaseDemo::init(config);
+        BaseDemo::init();
     }
 
     int HelloWorldDemo::draw() {

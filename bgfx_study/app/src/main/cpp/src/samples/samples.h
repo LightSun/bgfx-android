@@ -21,7 +21,7 @@ namespace heaven7_Bgfx_demo{
 
     template <typename T> BaseDemo* createDemo(InitConfig* config){
         BaseDemo* demo = create0<T>();
-        demo->init(config);
+        demo->setInitConfig(config);
         return demo;
     }
 }

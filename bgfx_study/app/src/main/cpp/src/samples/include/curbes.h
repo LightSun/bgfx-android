@@ -16,7 +16,7 @@ static const uint64_t s_ptState[]
 namespace heaven7_Bgfx_demo{
    class CurbesDemo : public BaseDemo{
    public:
-       void init(InitConfig *config);
+       void init() override ;
        int draw();
        void destroy();
 

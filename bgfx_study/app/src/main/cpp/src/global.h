@@ -33,7 +33,7 @@
 //SIMPLE_DEMO only used simple
 #ifdef ANDROID
     #ifdef SIMPLE_DEMO
-#else
+    #else
         #ifndef USE_NATIVE_ACTIVITY
         #define USE_NATIVE_ACTIVITY 1
         #endif

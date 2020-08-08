@@ -9,8 +9,10 @@ namespace heaven7_Bgfx_demo{
     BaseDemo::BaseDemo() {
 
     }
-    void BaseDemo::init(InitConfig* c) {
+    void BaseDemo::setInitConfig(InitConfig *c){
         this->config = *c;
+    }
+    void BaseDemo::init() {
         destroyed = false;
       /*  m_reset = BGFX_RESET_VSYNC;
         m_debug = BGFX_DEBUG_TEXT;*/
@@ -70,9 +72,10 @@ namespace heaven7_Bgfx_demo{
     int32_t BaseDemo::threadFunc(bx::Thread* _thread, void* _userData)
     {
         BX_UNUSED(_thread);
-
+        //bgfx init and draw must in one thread.
         BaseDemo* demo = static_cast<BaseDemo *>(_userData);
-        //bgfx::frame();
+        demo->init();
+        bgfx::frame();
         //int32_t result = chdir("/sdcard/bgfx/examples/runtime");
         // BX_ASSERT(0 == result, "Failed to chdir to dir. android.permission.WRITE_EXTERNAL_STORAGE?", errno);
         DBG("loop draw >>> start");

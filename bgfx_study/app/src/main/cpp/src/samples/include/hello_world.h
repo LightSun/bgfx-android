@@ -11,7 +11,7 @@ namespace heaven7_Bgfx_demo {
 
     class HelloWorldDemo : public BaseDemo {
     public:
-        void init(InitConfig *config) override;
+        void init() override;
         int draw() override;
     };
 

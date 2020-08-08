@@ -22,7 +22,8 @@ namespace heaven7_Bgfx_demo {
     class BaseDemo {
     public:
         BaseDemo();
-        virtual void init(InitConfig* config);
+        void setInitConfig(InitConfig* config);
+        virtual void init();
 
         virtual int draw() = 0;
 

@@ -111,10 +111,15 @@ BX_STATIC_ASSERT(BX_COUNTOF(s_ptState) == BX_COUNTOF(s_ptNames) );
 
 namespace heaven7_Bgfx_demo{
 
-    void CurbesDemo::init(InitConfig *config) {
+    void CurbesDemo::init() {
+        m_r = true;
+        m_g = true;
+        m_r = true;
+        m_r = true;
+        m_pt = 0;
         m_debug  = BGFX_DEBUG_NONE;
         m_reset  = BGFX_RESET_VSYNC;
-        BaseDemo::init(config);
+        BaseDemo::init();
 
         // Create vertex stream declaration.
         PosColorVertex::init();
