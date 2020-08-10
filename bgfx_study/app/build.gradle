@@ -20,7 +20,7 @@ android {
                 //copy from bgfx
                 cppFlags "-std=c++14 -fno-exceptions -O0 -Wall -Wextra -ffast-math -fomit-frame-pointer -g -fno-rtti -fPIC -no-canonical-prefixes" +
                         " -Wa,--noexecstack -fstack-protector-strong -ffunction-sections -Wunused-value -Wundef -Wl,-z,relro -Wl,-z,now"+
-                        " -DSIMPLE_DEMO"
+                        " -DSIMPLE_DEMO -DSTB_TRUETYPE_IMPLEMENTATION"
             }
         }
         ndk {

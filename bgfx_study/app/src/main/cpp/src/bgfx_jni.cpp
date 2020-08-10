@@ -34,8 +34,8 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobject src,
     config.win_width =  ANativeWindow_getWidth(mWindow);
     config.win_height =  ANativeWindow_getHeight(mWindow);
 
-   // demo = createDemo<HelloWorldDemo>(&config);
-    demo = createDemo<CurbesDemo>(&config);
+    //HelloWorldDemo, CurbesDemo
+    demo = createDemo<FontDemo>(&config);
     demo->startLoop();
 }
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src,jobject surface){

@@ -37,6 +37,8 @@ aux_source_directory(src/main/cpp/src/samples SRC_samples)
 
 #aux_source_directory(src/main/cpp/src/thirds/dear-imgui SRC_dear_imgui)
 aux_source_directory(src/main/cpp/thirds/meshoptimizer/src SRC_meshoptimizer)
+aux_source_directory(src/main/cpp/thirds/font SRC_font)
+aux_source_directory(src/main/cpp/thirds SRC_thirds)
 #aux_source_directory(src/main/cpp/src/thirds/iconfontheaders SRC_iconfontheaders)
 
 add_library(
@@ -45,6 +47,8 @@ add_library(
         ${SRC_study}
         ${SRC_samples}
         ${SRC_meshoptimizer}
+        ${SRC_font}
+        ${SRC_thirds}
 )
 
 find_library( # Sets the name of the path variable.

@@ -116,7 +116,7 @@ namespace heaven7_Bgfx_demo{
         m_g = true;
         m_r = true;
         m_r = true;
-        m_pt = 0;
+        m_pt = 1;
         m_debug  = BGFX_DEBUG_NONE;
         m_reset  = BGFX_RESET_VSYNC;
         BaseDemo::init();

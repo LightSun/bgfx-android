@@ -82,6 +82,11 @@ namespace entry{
             BX_FREE(getAllocator(), _ptr);
         }
     }
+    const char* concatStr(const char* ch1, const char* ch2){
+        entry::String filePath(ch1);
+        filePath.append(ch2);
+        return filePath.getPtr();
+    }
 }
 namespace bx{
     FileReaderImpl::~FileReaderImpl() {

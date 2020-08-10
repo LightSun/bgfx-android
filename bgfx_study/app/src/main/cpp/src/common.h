@@ -156,6 +156,7 @@ namespace entry {
 
     void init(void *assetManager);
 
+    const char* concatStr(const char* ch1, const char* ch2);
 }
 #endif
 
