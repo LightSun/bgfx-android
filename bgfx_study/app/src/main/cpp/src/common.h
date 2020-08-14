@@ -155,6 +155,7 @@ namespace entry {
     void static_deallocate(void *_ptr, size_t /*_bytes*/);
 
     void init(void *assetManager);
+    void destroy();
 
     const char* concatStr(const char* ch1, const char* ch2);
 }

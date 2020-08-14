@@ -15,8 +15,6 @@ using namespace heaven7_Bgfx_demo;
 #include "android/asset_manager.h"
 #endif
 
-bx::Thread m_thread;
-
 //========================== impl ============================
 BaseDemo* demo;
 
@@ -43,6 +41,7 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src,job
         demo->destroy();
         delete demo;
         demo = NULL ;
+        entry::destroy();
     }
 }
 EC_JNIEXPORT jboolean JNICALL SURFACE_VIEW_JAVA_API(update){

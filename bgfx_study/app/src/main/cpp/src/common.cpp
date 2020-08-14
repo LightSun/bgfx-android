@@ -64,10 +64,19 @@ namespace entry{
     }
 
     void init(void* assetManager){
-        AAssetManager* asm1 = static_cast<AAssetManager *>(assetManager);
-        s_fileReader = new bx::FileReaderAndroid(asm1);
-        s_fileWriter = BX_NEW(g_allocator, bx::FileWriterImpl);
-        setCurrentDir("");
+        if(s_fileReader == nullptr){
+            AAssetManager* asm1 = static_cast<AAssetManager *>(assetManager);
+            s_fileReader = new bx::FileReaderAndroid(asm1);
+            s_fileWriter = BX_NEW(g_allocator, bx::FileWriterImpl);
+            setCurrentDir("");
+        }
+    }
+    void destroy(){
+        if(s_fileWriter){
+            BX_DELETE(g_allocator, s_fileWriter);
+            s_fileWriter = nullptr;
+        }
+        DESTROY_POINTER(s_fileReader);
     }
 
     void* TinyStlAllocator::static_allocate(size_t _bytes)
