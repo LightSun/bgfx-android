@@ -5,14 +5,11 @@
 #ifndef FFMPEGOPENGLDEMO_VIDEOCONFIG_H
 #define FFMPEGOPENGLDEMO_VIDEOCONFIG_H
 
-#define VC_API
+#include "bx/debug.h"
 
-//do nothing current
-#define ASSERT(cond) static_cast<void>(0)
-#define DEBUGCODE(cond) static_cast<void>(0)
+#define SkASSERT(cond) static_cast<void>(0)
+#define SkDebugf(fmt, ...)  bx::debugPrintf(fmt, __VA_ARGS__)
 
-#define CMD_QUIT  1
-#define CMD_PAUSE 2
 
 #define DESTROY_POINTER(q) if(q){ \
     delete q;  \
@@ -39,5 +36,14 @@
         #endif
     #endif
 #endif
+/**
+ * @param str the full string
+ * @param s the delimiter
+ * @return the suffix string
+ */
+const char* getSuffixStr(const char* str, const char* s);
+
+#define getEnumName(x) getSuffixStr(#x, ":")
+
 
 #endif //FFMPEGOPENGLDEMO_VIDEOCONFIG_H
