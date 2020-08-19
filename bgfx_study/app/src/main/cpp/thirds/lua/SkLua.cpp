@@ -422,9 +422,15 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 static bgfx::Init bgfx__init;
-static int bgfx_init(lua_State* L){
+static int bgfx_getInit(lua_State* L){
     push_obj<Init>(L, bgfx__init);
     return 1;
+}
+
+//need PlatformData
+static int bgfx_init(lua_State* L){
+    bgfx::init(bgfx__init);
+    return 0;
 }
 
 static void register_bgfx(lua_State* L) {
@@ -433,7 +439,8 @@ static void register_bgfx(lua_State* L) {
     lua_setglobal(L, "bgfx");
     // the Sk table is still on top
 
-    setfield_function(L, "getInit", bgfx_init);
+    setfield_function(L, "getInit", bgfx_getInit);
+    setfield_function(L, "init", bgfx_init);
     lua_pop(L, 1);  // pop off the Sk table
 }
 

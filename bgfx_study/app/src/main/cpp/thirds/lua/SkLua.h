@@ -15,8 +15,6 @@
 
 struct lua_State;
 
-class Bgfx;
-
 typedef float SkScalar;
 
 #define SkScalarToLua(x)    SkScalarToDouble(x)
