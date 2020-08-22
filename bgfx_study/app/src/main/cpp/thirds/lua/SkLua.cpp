@@ -10,7 +10,7 @@
 #include "SkLua.h"
 #include "SkRefCnt.h"
 #include "lua.hpp"
-#include "bgfx_wrapper.h"
+#include "bgfx_wrapper.hpp"
 extern "C"{
 #include <cstring>
 }
@@ -445,52 +445,17 @@ static void register_bgfx(lua_State* L) {
 }
 
 //======= init =============
-static int init_rendererType(lua_State* L){
+static int init_rendererType(lua_State* L) {
     auto pInit = get_obj<Init>(L, 1);
 
-    const char* type = lua_tostring(L, -1);
-    if(type == NULL){
-        //get  //TODO opt init_rendererType
-        lua_pushstring(L, getEnumName(pInit->type));
+    const char *type = lua_tostring(L, -1);
+    if (type == NULL) {
+        //get
+        lua_pushstring(L, bgfx_render_name(L, pInit->type));
         return 1;
     }
     //set
-    bgfx::RendererType::Enum id;
-/*#define RENDERER_TYPE_ID(x) else if (strcmp(type, getEnumName(x)) == 0) id = x
-    if(0);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::Count);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::Noop);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::Count);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::Direct3D9);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::Direct3D11);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::Direct3D12);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::Gnm);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::Metal);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::Nvn);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::OpenGLES);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::OpenGL);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::Vulkan);
-    RENDERER_TYPE_ID(bgfx::RendererType::Enum::WebGPU);
-    else
-        return luaL_error(L, "Invalid renderer type %s", type);
-    pInit->type = id;
-    return 0;*/
-#define RENDERER_TYPE_ID2(x)  \
-if (strcmp(x, "Count") == 0) id = bgfx::RendererType::Enum::Count; \
-else if (strcmp(x, "Noop") == 0) id = bgfx::RendererType::Enum::Noop; \
-else if (strcmp(x, "Direct3D9") == 0) id = bgfx::RendererType::Enum::Direct3D9; \
-else if (strcmp(x, "Direct3D11") == 0) id = bgfx::RendererType::Enum::Direct3D11; \
-else if (strcmp(x, "Direct3D12") == 0) id = bgfx::RendererType::Enum::Direct3D12; \
-else if (strcmp(x, "Gnm") == 0) id = bgfx::RendererType::Enum::Gnm; \
-else if (strcmp(x, "Metal") == 0) id = bgfx::RendererType::Enum::Metal; \
-else if (strcmp(x, "Nvn") == 0) id = bgfx::RendererType::Enum::Nvn; \
-else if (strcmp(x, "OpenGLES") == 0) id = bgfx::RendererType::Enum::OpenGLES; \
-else if (strcmp(x, "OpenGL") == 0) id = bgfx::RendererType::Enum::OpenGL; \
-else if (strcmp(x, "Vulkan") == 0) id = bgfx::RendererType::Enum::Vulkan; \
-else if (strcmp(x, "WebGPU") == 0) id = bgfx::RendererType::Enum::WebGPU; \
-else return luaL_error(L, "Invalid renderer type %s", type);
-    RENDERER_TYPE_ID2(type);
-    pInit->type = id;
+    pInit->type = bgfx_render_enum(L, type);
     return 0;
 }
 
@@ -504,7 +469,7 @@ static int init_vendorId(lua_State* L){
         return 1;
     }
     //set
-    pInit->vendorId = lua_tointeger(L, -1);
+    pInit->vendorId = TO_NUMBER_16(L, -1);
     return 0;
 }
 static int init_deviceId(lua_State* L){
@@ -515,7 +480,7 @@ static int init_deviceId(lua_State* L){
         lua_pushnumber(L, pInit->deviceId);
         return 1;
     }
-    pInit->deviceId = lua_tointeger(L, -1);
+    pInit->deviceId = TO_NUMBER_16(L, -1);
     return 0;
 }
 static int init_debug(lua_State* L){
@@ -601,88 +566,16 @@ const struct luaL_Reg gPlatformData_Methods[] = {
 
 //----------------------- resolution ------------------
 
-static const char* resolution_format_str(TextureFormat::Enum en){
-    switch (en){
-        case TextureFormat::Enum::BC1:
-            return "BC1";
-        case TextureFormat::Enum::BC2:
-            return "BC2";
-        case TextureFormat::Enum::BC3:
-            return "BC3";
-        case TextureFormat::Enum::BC4:
-            return "BC4";
-        case TextureFormat::Enum::BC5:
-            return "BC5";
-        case TextureFormat::Enum::BC6H:
-            return "BC6H";
-        case TextureFormat::Enum::BC7:
-            return "BC7";
-        case TextureFormat::Enum::ETC1:
-            return "ETC1";
-        case TextureFormat::Enum::ETC2:
-            return "ETC2";
-        case TextureFormat::Enum::ETC2A:
-            return "ETC2A";
-        case TextureFormat::Enum::ETC2A1:
-            return "ETC2A1";
-        case TextureFormat::Enum::PTC12:
-            return "PTC12";
-        case TextureFormat::Enum::PTC14:
-            return "PTC14";
-        case TextureFormat::Enum::PTC12A:
-            return "PTC12A";
-        case TextureFormat::Enum::PTC14A:
-            return "PTC14A";
-        case TextureFormat::Enum::PTC22:
-            return "PTC22";
-        case TextureFormat::Enum::PTC24:
-            return "PTC24";
-        case TextureFormat::Enum::ATC:
-            return "ATC";
-        case TextureFormat::Enum::ATCE:
-            return "ATCE";
-        case TextureFormat::Enum::ATCI:
-            return "ATCI";
-        case TextureFormat::Enum::ASTC4x4:
-            return "ASTC4x4";
-        case TextureFormat::Enum::ASTC5x5:
-            return "ASTC5x5";
-        case TextureFormat::Enum::ASTC6x6:
-            return "ASTC6x6";
-        case TextureFormat::Enum::ASTC8x5:
-            return "ASTC8x5";
-        case TextureFormat::Enum::ASTC8x6:
-            return "ASTC8x6";
-        case TextureFormat::Enum::ASTC10x5:
-            return "ASTC10x5";
-        case TextureFormat::Enum::Unknown:
-            return "Unknown";
-        case TextureFormat::Enum::R1:
-            return "R1";
-        case TextureFormat::Enum::A8:
-            return "A8";
-         //TODO etc...
-        default:
-            return "unknown_TextureFormat";
-    }
-}
-
 static int resolution_format(lua_State* L){
     auto reso = get_obj<Resolution>(L, 1);
 
     const char* type = lua_tostring(L, -1);
     if(type == NULL){
         //get
-        lua_pushstring(L, resolution_format_str(reso->format));
+        lua_pushstring(L, bgfx_textureFormat_name(L, reso->format));
         return 1;
     }
-    TextureFormat::Enum id; //TODO etc.
-#define TYPE_ID(x) \
-if (strcmp(x, "Count") == 0) id = TextureFormat::Enum::Count; \
-else if (strcmp(x, "BC1") == 0) id = TextureFormat::Enum::BC1; \
-else  \
-    return luaL_error(L, "known texture format");
-    reso->format = id;
+    reso->format = bgfx_textureFormat_enum(L, type);
     return 0;
 }
 

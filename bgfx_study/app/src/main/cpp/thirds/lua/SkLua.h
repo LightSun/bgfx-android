@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include "bx/string.h"
 #include "SkScalar.h"
-#include "bgfx_wrapper.h"
+#include "bgfx_wrapper.hpp"
 
 struct lua_State;
 
