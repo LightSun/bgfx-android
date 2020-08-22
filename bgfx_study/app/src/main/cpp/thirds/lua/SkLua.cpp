@@ -10,7 +10,7 @@
 #include "SkLua.h"
 #include "SkRefCnt.h"
 #include "lua.hpp"
-#include "bgfx_wrapper.hpp"
+#include "bgfx_wrapper.h"
 #include "bgfx_lua_app.h"
 
 extern "C"{
@@ -31,6 +31,7 @@ DEF_MTNAME(Init)
 DEF_MTNAME(PlatformData)
 DEF_MTNAME(Resolution)
 DEF_MTNAME(Init::Limits)
+DEF_MTNAME(Stats)
 
 template <typename T, typename... Args> T* push_new(lua_State* L, Args&&... args) {
     T* addr = (T*)lua_newuserdata(L, sizeof(T));
@@ -433,7 +434,17 @@ static int bgfx_setDebug(lua_State* L){
     bgfx::setDebug(TO_NUMBER_32(L, -1));
     return 0;
 }
-static int setViewClear(lua_State* L){
+//new app. this should only be called only once.
+static int bgfx_newApp(lua_State* L){
+    const char* fn_pre_init = luaL_checkstring(L, -4);
+    const char* fn_init = luaL_checkstring(L, -3);
+    const char* fn_draw =luaL_checkstring(L, -2);
+    const char* fn_destroy =luaL_checkstring(L, -1);
+    LuaApp *pApp = Bgfx_lua_app::newLuaApp(L, fn_pre_init,  fn_init, fn_draw, fn_destroy);
+    push_ptr(L, pApp);
+    return 1;
+}
+static int bgfx_setViewClear(lua_State* L){
     uint8_t  _stencil = TO_NUMBER_8(L, -1);
     SkScalar  _depth = lua2scalar(L, -2);
     uint32_t  _rgba = TO_NUMBER_32(L, -3);
@@ -442,13 +453,57 @@ static int setViewClear(lua_State* L){
     bgfx::setViewClear(_id, _flags, _rgba, _depth, _stencil);
     return 0;
 }
-//new app. this should only be called only once.
-static int bgfx_newApp(lua_State* L){
-    const char* fn_init = luaL_checkstring(L, -1);
-    const char* fn_draw =luaL_checkstring(L, -2);
-    const char* fn_destroy =luaL_checkstring(L, -3);
-    LuaApp *pApp = Bgfx_lua_app::newLuaApp(L, fn_init, fn_draw, fn_destroy);
-    push_ptr(L, pApp);
+
+static int bgfx_setViewRect(lua_State* L){
+    auto  h = TO_NUMBER_16(L, -1);
+    auto  w = TO_NUMBER_16(L, -2);
+    auto  y = TO_NUMBER_16(L, -3);
+    auto  x = TO_NUMBER_16(L, -4);
+    auto  _id = TO_NUMBER_16(L, -5);
+    bgfx::setViewRect(_id, x, y, w, h);
+    return 0;
+}
+static int bgfx_touch(lua_State* L){
+    uint16_t  _id = TO_NUMBER_16(L, -1);
+    bgfx::touch(_id);
+    return 0;
+}
+
+static int bgfx_dbgTextClear(lua_State* L){
+    bgfx::dbgTextClear();
+    return 0;
+}
+static int bgfx_dbgTextImage(lua_State* L){
+    int x = luaL_checkinteger(L, -6);
+    int y = luaL_checkinteger(L, -5);
+    int w = luaL_checkinteger(L, -4);
+    int h = luaL_checkinteger(L, -3);
+    const char * image = luaL_checkstring(L, -2);
+    int pitch = luaL_optinteger(L, -1, 2 * w);
+    bgfx::dbgTextImage(x, y, w, h,image, pitch);
+    return 0;
+}
+
+static int bgfx_dbgTextPrintf(lua_State *L) {
+    int x = luaL_checkinteger(L, -4);
+    int y = luaL_checkinteger(L, -3);
+    int attrib = luaL_checkinteger(L, -2);
+    const char * text = luaL_checkstring(L, -1);
+    bgfx::dbgTextPrintf(x,y, attrib,"%s",text);
+    return 0;
+}
+static int bgfx_frame(lua_State *L) {
+    if(lua_type(L, -1) == LUA_TBOOLEAN){
+        bgfx::frame(lua_toboolean(L, -1) == 1);
+    } else{
+        bgfx::frame();
+    }
+    return 0;
+}
+
+static int bgfx_getStats(lua_State *L) {
+    Stats* pStats = const_cast<Stats *>(bgfx::getStats());
+    push_ptr(L, pStats);
     return 1;
 }
 
@@ -462,7 +517,14 @@ static void register_bgfx(lua_State* L) {
     //setfield_function(L, "init", bgfx_init);
     setfield_function(L, "newApp", bgfx_newApp);
     setfield_function(L, "setDebug", bgfx_setDebug);
-    setfield_function(L, "setViewClear", setViewClear);
+    setfield_function(L, "setViewClear", bgfx_setViewClear);
+    setfield_function(L, "setViewRect", bgfx_setViewRect);
+    setfield_function(L, "touch", bgfx_touch);
+    setfield_function(L, "dbgTextClear", bgfx_dbgTextClear);
+    setfield_function(L, "dbgTextImage", bgfx_dbgTextImage);
+    setfield_function(L, "dbgTextPrintf", bgfx_dbgTextPrintf);
+    setfield_function(L, "frame", bgfx_frame);
+    setfield_function(L, "getStats", bgfx_getStats);
     lua_pop(L, 1);  // pop off the Sk table
 }
 
@@ -674,6 +736,99 @@ const struct luaL_Reg gLuaApp_Methods[] = {
         {"__gc", gc_luaApp},
         {NULL, NULL},
 };
+
+//======================= Stats ========================
+
+#define STATS_NUMBER(x) \
+static int stats_##x(lua_State * L){ \
+    auto pStats = bgfx::getStats(); \
+    lua_pushnumber(L, pStats->x);\
+    return 1; \
+}
+STATS_NUMBER(cpuTimeFrame);
+STATS_NUMBER(cpuTimeBegin);
+STATS_NUMBER(cpuTimeEnd);
+STATS_NUMBER(cpuTimerFreq);
+
+STATS_NUMBER(gpuTimeBegin);
+STATS_NUMBER(gpuTimeEnd);
+STATS_NUMBER(gpuTimerFreq);
+
+STATS_NUMBER(waitRender);
+STATS_NUMBER(waitSubmit);
+
+STATS_NUMBER(numDraw);
+STATS_NUMBER(numCompute);
+STATS_NUMBER(numBlit);
+STATS_NUMBER(maxGpuLatency);
+
+STATS_NUMBER(numDynamicIndexBuffers);
+STATS_NUMBER(numDynamicVertexBuffers);
+STATS_NUMBER(numFrameBuffers);
+STATS_NUMBER(numIndexBuffers);
+STATS_NUMBER(numOcclusionQueries);
+STATS_NUMBER(numPrograms);
+STATS_NUMBER(numShaders);
+STATS_NUMBER(numTextures);
+STATS_NUMBER(numUniforms);
+STATS_NUMBER(numVertexBuffers);
+STATS_NUMBER(numVertexLayouts);
+
+STATS_NUMBER(textureMemoryUsed);
+STATS_NUMBER(rtMemoryUsed);
+STATS_NUMBER(transientVbUsed);
+STATS_NUMBER(transientIbUsed);
+
+STATS_NUMBER(gpuMemoryMax);
+STATS_NUMBER(gpuMemoryUsed);
+STATS_NUMBER(width);
+STATS_NUMBER(height);
+STATS_NUMBER(textWidth);
+STATS_NUMBER(textHeight);
+
+STATS_NUMBER(numViews);
+STATS_NUMBER(numEncoders);
+//TODO ViewStats, EncoderStats
+
+const struct luaL_Reg gStats_Methods[] = {
+        {"cpuTimeFrame", stats_cpuTimeFrame},
+        {"cpuTimeBegin", stats_cpuTimeBegin},
+        {"cpuTimeEnd", stats_cpuTimeEnd},
+        {"cpuTimerFreq", stats_cpuTimerFreq},
+        {"gpuTimeBegin", stats_gpuTimeBegin},
+        {"gpuTimeEnd", stats_gpuTimeEnd},
+        {"gpuTimerFreq", stats_gpuTimerFreq},
+        {"waitRender", stats_waitRender},
+        {"waitSubmit", stats_waitSubmit},
+
+        {"numDraw", stats_numDraw},
+        {"numCompute", stats_numCompute},
+        {"numBlit", stats_numBlit},
+        {"maxGpuLatency", stats_maxGpuLatency},
+
+        {"numDynamicIndexBuffers", stats_numDynamicIndexBuffers},
+        {"numDynamicVertexBuffers", stats_numDynamicVertexBuffers},
+        {"numFrameBuffers", stats_numFrameBuffers},
+        {"numIndexBuffers", stats_numIndexBuffers},
+        {"numOcclusionQueries", stats_numOcclusionQueries},
+        {"numPrograms", stats_numPrograms},
+        {"numShaders", stats_numShaders},
+        {"numTextures", stats_numTextures},
+        {"numUniforms", stats_numUniforms},
+        {"numVertexBuffers", stats_numVertexBuffers},
+        {"numVertexLayouts", stats_numVertexLayouts},
+
+        {"textureMemoryUsed", stats_textureMemoryUsed},
+        {"rtMemoryUsed", stats_rtMemoryUsed},
+        {"width", stats_width},
+        {"height", stats_height},
+        {"textWidth", stats_textWidth},
+        {"textHeight", stats_textHeight},
+        {"numViews", stats_numViews},
+        {"numEncoders", stats_numEncoders},
+        {NULL, NULL},
+};
+
 ///////////////////////////////////////////////////////////////////////
 
 #define REG_CLASS(L, C)                             \
@@ -692,6 +847,7 @@ void SkLua::Load(lua_State* L) {
     REG_CLASS(L, PlatformData);
     REG_CLASS(L, Resolution);
     REG_CLASS(L, Init::Limits);
+    REG_CLASS(L, Stats);
     //TODO CallbackI*, bx::AllocatorI*
 }
 
@@ -702,4 +858,4 @@ bgfx::Init& getBgfxInit(){
 extern "C" int luaopen_bgfx(lua_State* L);
 extern "C" int luaopen_bgfx(lua_State* L) {
     SkLua::Load(L);
-    
+}

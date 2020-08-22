@@ -10,18 +10,17 @@
 namespace Bgfx_lua_app {
     LuaApp *_app = NULL;
 
-    void initPlatformData(const bgfx::PlatformData &_data) {
-        getBgfxInit().platformData = _data;
-    }
-
-    void initPlatformData(void *nwh) {
-        getBgfxInit().platformData.nwh = nwh;
+    void initPlatformData(void *nwh, int width, int height) {
+        auto bgfxInit = getBgfxInit();
+        bgfxInit.platformData.nwh = nwh;
+        bgfxInit.resolution.width = width;
+        bgfxInit.resolution.height = height;
     }
 
     LuaApp *
-    newLuaApp(lua_State *L, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy) {
+    newLuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy) {
         if (!_app) {
-            _app = new LuaApp(L, func_init, func_draw, func_destroy);
+            _app = new LuaApp(L, preInit, func_init, func_draw, func_destroy);
         }
         return _app;
     }
@@ -35,8 +34,8 @@ namespace Bgfx_lua_app {
     }
 }
 
-LuaApp::LuaApp(lua_State *L, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy)
-        : L(L), func_init(func_init), func_draw(func_draw), func_destroy(func_destroy) {
+LuaApp::LuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy)
+        : L(L), func_preInit(preInit), func_init(func_init), func_draw(func_draw), func_destroy(func_destroy) {
 }
 
 void LuaApp::init() {
@@ -67,10 +66,20 @@ int LuaApp::draw() {
     return -1;
 }
 
+void LuaApp::doPreInit() {
+    if (func_preInit) {
+        lua_getglobal(L, func_preInit);
+        if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+            luaL_error(L, "call LuaApp pre-init failed. func = %s", func_preInit);
+        }
+    }
+}
+
 int32_t LuaApp::threadFunc(bx::Thread *_thread, void *_userData) {
     BX_UNUSED(_thread);
     //bgfx init and draw must in one thread.
     LuaApp *demo = static_cast<LuaApp *>(_userData);
+    demo->doPreInit();
     demo->init();
     bgfx::frame();
     //int32_t result = chdir("/sdcard/bgfx/examples/runtime");

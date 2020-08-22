@@ -30,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                startActivity(new Intent(MainActivity.this, BgfxDemoActivity.class));
+                //startActivity(new Intent(MainActivity.this, BgfxDemoActivity.class));
+                startActivity(new Intent(MainActivity.this, BgfxLuaActivity.class));
             }
         });
     }

@@ -5,7 +5,7 @@
 #include "base_demo.h"
 #include "samples/samples.h"
 #include "common.h"
-#include "bgfx_lua_app.h"
+#include "lua/bgfx_lua_app.h"
 
 using namespace heaven7_Bgfx_demo;
 
@@ -40,7 +40,7 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobjec
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobject src,jobject surface){
     ANativeWindow *mWindow = ANativeWindow_fromSurface(env, surface);
     if(_useLua){
-        Bgfx_lua_app::initPlatformData(mWindow);
+        Bgfx_lua_app::initPlatformData(mWindow, ANativeWindow_getWidth(mWindow), ANativeWindow_getHeight(mWindow));
     } else{
         InitConfig config;
         config.window = mWindow;
