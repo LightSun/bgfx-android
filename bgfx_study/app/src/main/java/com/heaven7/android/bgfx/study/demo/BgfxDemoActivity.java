@@ -17,7 +17,16 @@ public class BgfxDemoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         NativeApi.initAssets(getApplicationContext(), getAssets());
-        setContentView(R.layout.ac_bgfx_demo);
+        setContentView(getLayoutId());
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        NativeApi.destroyAll();
+    }
+
+    protected int getLayoutId(){
+        return R.layout.ac_bgfx_demo;
+    }
 }

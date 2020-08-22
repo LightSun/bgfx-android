@@ -6,18 +6,27 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class BgfxSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
+import com.heaven7.android.bgfx.study.demo.lua.Luaer;
 
-    private static final String TAG = "BgfxSurfaceView";
+public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
 
-    public BgfxSurfaceView(Context context) {
+    private static final String TAG = "BgfxLuaView";
+
+    public BgfxLuaView(Context context) {
         this(context, null);
     }
 
-    public BgfxSurfaceView(Context context, AttributeSet attrs) {
+    public BgfxLuaView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        NativeApi.setUseLua(true);
         getHolder().addCallback(this);
+    }
+
+    public void setScriptFile(Luaer mLuaer, String assetPath) {
+        Log.d(TAG, "setScriptFile: path = " + assetPath);
+        NativeApi.destroySurface(this);
+        mLuaer.loadLuaAssets(assetPath);
     }
     @Override
     protected void onDetachedFromWindow() {
@@ -31,7 +40,7 @@ public class BgfxSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     }
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-       //TODO later use
+        //TODO later use
     }
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {

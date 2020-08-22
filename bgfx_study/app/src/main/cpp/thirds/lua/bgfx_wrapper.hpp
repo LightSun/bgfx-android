@@ -15,7 +15,9 @@
     bx::debugPrintf("Invalid bgfx %s type %s", #type, #x); \
     luaL_error(L, "Invalid bgfx %s type %s", #type, #x);
 
+#define TO_NUMBER_8(L, idx) static_cast<uint8_t>(lua_tonumber(L, idx))
 #define TO_NUMBER_16(L, idx) static_cast<uint16_t>(lua_tonumber(L, idx))
+#define TO_NUMBER_32(L, idx) static_cast<uint32_t>(lua_tonumber(L, idx))
 #define BGFX_FUNC_INT(type) int bgfx_ ##type(lua_State* L,const char* name){
 #define BGFX_FUNC_NAME(type, ENUM_T) const char* bgfx_ ##type ##_name(lua_State* L,ENUM_T en){
 #define BGFX_FUNC_ENUM(type, ENUM_T) ENUM_T bgfx_ ##type ##_enum(lua_State* L,const char* name){
@@ -101,6 +103,48 @@ BGFX_FUNC_INT(clear)
     return id;
 }
 
+BGFX_FUNC_INT(debug)
+    int id = BGFX_DEBUG_NONE;
+#define DEBUG_ID(x) else if (strcmp(name, #x) == 0) id = x
+    if(0);
+    DEBUG_ID(BGFX_DEBUG_NONE);
+    DEBUG_ID(BGFX_DEBUG_WIREFRAME);
+    DEBUG_ID(BGFX_DEBUG_IFH);
+    DEBUG_ID(BGFX_DEBUG_STATS);
+    DEBUG_ID(BGFX_DEBUG_TEXT);
+    DEBUG_ID(BGFX_DEBUG_PROFILER);
+    else
+        LUA_REPORT_ERROR(L, "debug", name);
+    return id;
+}
+
+BGFX_FUNC_INT(reset)
+    int id = BGFX_RESET_VSYNC;
+#define RESET_ID(x) else if (strcmp(name, #x) == 0) id = x
+    if(0);
+    RESET_ID(BGFX_RESET_NONE);
+    RESET_ID(BGFX_RESET_VSYNC);
+    RESET_ID(BGFX_RESET_FULLSCREEN);
+    RESET_ID(BGFX_RESET_MAXANISOTROPY);
+    RESET_ID(BGFX_RESET_CAPTURE);
+    RESET_ID(BGFX_RESET_FLUSH_AFTER_RENDER);
+
+    RESET_ID(BGFX_RESET_FLIP_AFTER_RENDER);
+    RESET_ID(BGFX_RESET_SRGB_BACKBUFFER);
+    RESET_ID(BGFX_RESET_HDR10);
+    RESET_ID(BGFX_RESET_HIDPI);
+    RESET_ID(BGFX_RESET_DEPTH_CLAMP);
+    RESET_ID(BGFX_RESET_SUSPEND);
+
+    RESET_ID(BGFX_RESET_MSAA_X2);
+    RESET_ID(BGFX_RESET_MSAA_X4);
+    RESET_ID(BGFX_RESET_MSAA_X8);
+    RESET_ID(BGFX_RESET_MSAA_X16);
+    else
+        LUA_REPORT_ERROR(L, "reset", name);
+    return id;
+}
+
 BGFX_FUNC_ENUM(textureFormat, bgfx::TextureFormat::Enum)
 //TODo more enum
     bgfx::TextureFormat::Enum id;
@@ -115,6 +159,7 @@ else if (strcmp(x, "BC6H") == 0) id = bgfx::TextureFormat::Enum::BC6H; \
 else if (strcmp(x, "BC7") == 0) id = bgfx::TextureFormat::Enum::BC7; \
 else if (strcmp(x, "ETC1") == 0) id = bgfx::TextureFormat::Enum::ETC1; \
 else LUA_REPORT_ERROR(L, "textureFormat", name);
+    TEXTURE_FORMAT_ID(name);
     return id;
 }
 BGFX_FUNC_NAME(textureFormat, bgfx::TextureFormat::Enum)
@@ -182,6 +227,8 @@ BGFX_FUNC_NAME(textureFormat, bgfx::TextureFormat::Enum)
             return "unknown_TextureFormat";
     }
 }
+
+extern bgfx::Init& getBgfxInit();
 
 
 #endif //BGFX_STUDY_BGFX_WRAPPER_HPP

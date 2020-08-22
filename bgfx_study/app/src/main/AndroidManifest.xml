@@ -24,9 +24,17 @@
         <activity android:name=".BgfxDemoActivity"
             android:label="BgfxDemoActivity"
             android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".BgfxNativeActivity"
+            android:label="BgfxNativeActivity"
+            android:screenOrientation="portrait">
             <!-- Tell NativeActivity the name of our .so (strip 'lib' and '.so') -->
             <meta-data android:name="android.app.lib_name"
                 android:value="bgfx_study" />
+        </activity>
+
+        <activity android:name=".BgfxLuaActivity"
+            android:label="BgfxNativeActivity">
         </activity>
     </application>
 

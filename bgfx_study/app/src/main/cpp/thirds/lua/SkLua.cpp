@@ -11,6 +11,8 @@
 #include "SkRefCnt.h"
 #include "lua.hpp"
 #include "bgfx_wrapper.hpp"
+#include "bgfx_lua_app.h"
+
 extern "C"{
 #include <cstring>
 }
@@ -24,6 +26,7 @@ template <typename T> const char* get_mtname();
         return #T "_LuaMetaTableName";          \
     }
 
+DEF_MTNAME(LuaApp)
 DEF_MTNAME(Init)
 DEF_MTNAME(PlatformData)
 DEF_MTNAME(Resolution)
@@ -426,21 +429,40 @@ static int bgfx_getInit(lua_State* L){
     push_obj<Init>(L, bgfx__init);
     return 1;
 }
-
-//need PlatformData
-static int bgfx_init(lua_State* L){
-    bgfx::init(bgfx__init);
+static int bgfx_setDebug(lua_State* L){
+    bgfx::setDebug(TO_NUMBER_32(L, -1));
     return 0;
+}
+static int setViewClear(lua_State* L){
+    uint8_t  _stencil = TO_NUMBER_8(L, -1);
+    SkScalar  _depth = lua2scalar(L, -2);
+    uint32_t  _rgba = TO_NUMBER_32(L, -3);
+    uint16_t  _flags = TO_NUMBER_16(L, -4);
+    uint16_t  _id = TO_NUMBER_16(L, -5);
+    bgfx::setViewClear(_id, _flags, _rgba, _depth, _stencil);
+    return 0;
+}
+//new app. this should only be called only once.
+static int bgfx_newApp(lua_State* L){
+    const char* fn_init = luaL_checkstring(L, -1);
+    const char* fn_draw =luaL_checkstring(L, -2);
+    const char* fn_destroy =luaL_checkstring(L, -3);
+    LuaApp *pApp = Bgfx_lua_app::newLuaApp(L, fn_init, fn_draw, fn_destroy);
+    push_ptr(L, pApp);
+    return 1;
 }
 
 static void register_bgfx(lua_State* L) {
     lua_newtable(L);
     lua_pushvalue(L, -1);
     lua_setglobal(L, "bgfx");
-    // the Sk table is still on top
+    // the bgfx table is still on top
 
     setfield_function(L, "getInit", bgfx_getInit);
-    setfield_function(L, "init", bgfx_init);
+    //setfield_function(L, "init", bgfx_init);
+    setfield_function(L, "newApp", bgfx_newApp);
+    setfield_function(L, "setDebug", bgfx_setDebug);
+    setfield_function(L, "setViewClear", setViewClear);
     lua_pop(L, 1);  // pop off the Sk table
 }
 
@@ -631,6 +653,27 @@ const struct luaL_Reg Limits_Methods[] = {
         {NULL, NULL},
 };
 }
+// =============================== LuaApp =================
+static int gc_luaApp(lua_State * L){
+    Bgfx_lua_app::destroyLuaApp();
+    return 0;
+}
+static int destroy_luaApp(lua_State * L){
+    LuaApp *pApp = get_obj<LuaApp>(L, 1);
+    pApp->destroy();
+    return 0;
+}
+static int start_luaApp(lua_State * L){
+    LuaApp *pApp = get_obj<LuaApp>(L, 1);
+    pApp->startLoop();
+    return 0;
+}
+const struct luaL_Reg gLuaApp_Methods[] = {
+        {"startLoop", start_luaApp},
+        {"destroy", destroy_luaApp},
+        {"__gc", gc_luaApp},
+        {NULL, NULL},
+};
 ///////////////////////////////////////////////////////////////////////
 
 #define REG_CLASS(L, C)                             \
@@ -644,6 +687,7 @@ const struct luaL_Reg Limits_Methods[] = {
 
 void SkLua::Load(lua_State* L) {
     register_bgfx(L);
+    REG_CLASS(L, LuaApp);
     REG_CLASS(L, Init);
     REG_CLASS(L, PlatformData);
     REG_CLASS(L, Resolution);
@@ -651,8 +695,11 @@ void SkLua::Load(lua_State* L) {
     //TODO CallbackI*, bx::AllocatorI*
 }
 
+bgfx::Init& getBgfxInit(){
+    return bgfx__init;
+}
+
 extern "C" int luaopen_bgfx(lua_State* L);
 extern "C" int luaopen_bgfx(lua_State* L) {
     SkLua::Load(L);
-    return 0;
-}
+    

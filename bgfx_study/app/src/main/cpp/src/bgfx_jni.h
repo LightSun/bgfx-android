@@ -20,8 +20,8 @@
 
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobject assetM);
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobject src,jobject surface);
-EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src,jobject surface);
-EC_JNIEXPORT jboolean JNICALL SURFACE_VIEW_JAVA_API(update);
-extern "C" int draw();
+EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject src);
+EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(setUseLua, jboolean useLua);
+EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API(destroyAll);
 
 #endif //BGFX_STUDY_BGFX_JNI_H
