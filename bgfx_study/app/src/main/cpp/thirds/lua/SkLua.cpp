@@ -855,7 +855,8 @@ bgfx::Init& getBgfxInit(){
     return bgfx__init;
 }
 
-extern "C" int luaopen_bgfx(lua_State* L);
-extern "C" int luaopen_bgfx(lua_State* L) {
+extern "C" int luaopen_bgfx_lua(lua_State* L);
+extern "C" int luaopen_bgfx_lua(lua_State* L) {
     SkLua::Load(L);
+    return 1;
 }

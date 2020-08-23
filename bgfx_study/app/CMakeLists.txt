@@ -51,6 +51,11 @@ add_library(
         ${SRC_meshoptimizer}
         ${SRC_font}
         ${SRC_thirds}
+)
+
+add_library(
+        bgfx_lua
+        SHARED
         ${SRC_lua}
 )
 
@@ -68,7 +73,6 @@ target_include_directories(bgfx_study PRIVATE
 
 target_link_libraries(
         bgfx_study
-        lua
         bgfx
         bimg_decode
         bimg
@@ -78,4 +82,10 @@ target_link_libraries(
         android
         EGL
         ${log-lib}
+)
+
+target_link_libraries(
+        bgfx_lua
+        lua
+        bgfx_study
 )
