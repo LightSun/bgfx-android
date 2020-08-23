@@ -2,6 +2,7 @@ package com.heaven7.android.bgfx.study.demo.lua;
 
 import android.content.Context;
 
+import com.heaven7.core.util.Logger;
 import com.heaven7.java.base.util.IOUtils;
 import com.heaven7.java.base.util.Predicates;
 import com.heaven7.java.base.util.ResourceLoader;
@@ -22,8 +23,9 @@ import java.util.List;
  * the file manager of assets
  * Created by heaven7 on 2018/10/27 0027.
  */
-public class AssetsFileCopyUtils {
+public final class AssetsUtils {
 
+    private static final String TAG = "AssetsFileCopyUtils";
     /**
      *  copy the all files from asset dir
      * @param context the context
@@ -46,12 +48,13 @@ public class AssetsFileCopyUtils {
        }).fire(new MapFireVisitor<String, String>() {
            @Override
            public Boolean visit(KeyValuePair<String, String> pair, Object param) {
-               copy(context, pair.getKey(), pair.getValue(), false);
+               copy(context, pair.getKey(), pair.getValue(), true);
                return null;
            }
        }).mapValue().getAsList();
     }
     public static void copy(Context context, String assetPath, String dstFile, boolean force){
+        Logger.d(TAG, "start copy", String.format("from %s to %s", assetPath, dstFile));
         File outFile = new File(dstFile);
         if(outFile.exists()){
             if(!force && outFile.isFile()){
@@ -71,12 +74,14 @@ public class AssetsFileCopyUtils {
             in = ResourceLoader.getDefault().loadFileAsStream(context, assetPath);
             out = new FileOutputStream(outFile);
             IOUtils.copyLarge(in, out);
+            out.flush();
         }catch (IOException e){
             throw new RuntimeException(e);
         }finally {
             IOUtils.closeQuietly(in);
             IOUtils.closeQuietly(out);
         }
+        Logger.d(TAG, "end copy", String.format("from %s to %s", assetPath, dstFile));
     }
     public static void copy(Context context, AssetItem item, boolean force){
         copy(context, item.getAssetPath(), item.getDstFile(), force);

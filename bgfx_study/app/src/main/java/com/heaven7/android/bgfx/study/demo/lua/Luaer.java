@@ -21,8 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by heaven7 on 2019/8/13.
@@ -36,16 +36,29 @@ public final class Luaer {
     private final Context context;
     private LuaState mLuaState;
 
-    public Luaer(Context context) {
+    private static Luaer sInstance;
+
+    private Luaer(Context context) {
         this.context = context;
     }
 
+    public static void init(Context context){
+        sInstance = new Luaer(context);
+        sInstance.initLuaState();
+        sInstance.initEnv();
+    }
+
+    public static Luaer get(){
+        return sInstance;
+    }
+
     public void initLuaState(){
-        if(mLuaState != null) throw new IllegalStateException();
-        mLuaState = new LuaState();
-        //init LuaWrapper
-        LuaWrapper.getDefault();
-       // AndroidEnv.initialize(context, this);
+        if(mLuaState == null){
+            mLuaState = new LuaState();
+            //init LuaWrapper
+            LuaWrapper.getDefault();
+            // AndroidEnv.initialize(context, this);
+        }
     }
     public void destroyLuaState(){
         if(mLuaState != null){
@@ -98,12 +111,11 @@ public final class Luaer {
     public void initEnv(){
         FileUtils.deleteDir(new File(LUA_DIR));
 
-        final Map<String, Boolean> mCMap = new HashMap<>();
-        mCMap.put("cjson", true);
+        final List<String> clibs = Arrays.asList(/*"cjson",*/ "bgfx_lua");
         LuaWrapper.getDefault().registerLuaSearcher(new LuaSearcher() {
             @Override
             public String getLuaFilepath(String module) {
-                if(mCMap.containsKey(module)){
+                if(clibs.contains(module)){
                     return null;
                 }
                 Logger.d(TAG, "getLuaFilepath", "module = " + module);
@@ -113,29 +125,32 @@ public final class Luaer {
             public String getClibFilepath(String module) {
                 Logger.d(TAG, "getClibFilepath", "module = " + module);
                 //return LUA_DIR + "/lib" + module + ".so";
-                return new File(getFilesDir(), "libcjson.so").getPath();
+                return new File(getFilesDir(), "lib"+ module + ".so").getPath();
             }
         });
         Schedulers.io().newWorker().schedule(new Runnable() {
             @Override
             public void run() {
-                AssetsFileCopyUtils.copyAll(getApplicationContext(), "lua", LUA_PARENT_DIR);
-                File dst = new File(getFilesDir(), "libcjson.so");
-                System.out.println("libcjson: path is " + dst.getPath());
-                if(dst.exists()){
-                    System.out.println("libcjson load ok(already copied).");
-                    return;
-                }
-                //lua load libcjson .the c json can't be load on sdcard.
-                try {
-                    InputStream in = getAssets().open("clua/libcjson.so");
-                    OutputStream out = new FileOutputStream(dst);
-                    IOUtils.copyLarge(in, out);
-                    IOUtils.closeQuietly(in);
-                    IOUtils.closeQuietly(out);
-                    System.out.println("libcjson load ok.");
-                } catch (IOException e) {
-                    e.printStackTrace();
+                AssetsUtils.copyAll(getApplicationContext(), "lua", LUA_PARENT_DIR);
+                for (String clib : clibs){
+                    String libname = "lib" + clib + ".so";
+                    File dst = new File(getFilesDir(), libname);
+                    System.out.println( libname + ": path is " + dst.getPath());
+                    if(dst.exists()){
+                        System.out.println(libname + ": already copied.");
+                        return;
+                    }
+                    //lua load libcjson .the c json can't be load on sdcard for high-version android
+                    try {
+                        InputStream in = getAssets().open("clua/" + libname);
+                        OutputStream out = new FileOutputStream(dst);
+                        IOUtils.copyLarge(in, out);
+                        IOUtils.closeQuietly(in);
+                        IOUtils.closeQuietly(out);
+                        System.out.println(libname + " copy ok.");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 Logger.d(TAG, "run", "lua script copy done");
@@ -157,7 +172,9 @@ public final class Luaer {
         InputStreamReader in = null;
         try {
             in = new InputStreamReader(getAssets().open(file));
-            int state = mLuaState.doString(Luaer.readStringWithLine(in));
+            String str = Luaer.readStringWithLine(in);
+            System.out.println("loadLuaAssets: \n" + str);
+            int state = mLuaState.doString(str);
             Logger.i(TAG, "loadLua", "state = " + state + ", " + mLuaState.toString(-1));
         } catch (IOException e) {
             e.printStackTrace();

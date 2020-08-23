@@ -14,6 +14,7 @@ endif (${ANDROID_PLATFORM_LEVEL} LESS 11)
 
 include_directories(src/main/cpp/include)
 include_directories(src/main/cpp/thirds)
+include_directories(src/main/cpp/android)
 
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI})
 add_library(bgfx STATIC IMPORTED)
@@ -42,7 +43,13 @@ aux_source_directory(src/main/cpp/thirds/meshoptimizer/src SRC_meshoptimizer)
 aux_source_directory(src/main/cpp/thirds/font SRC_font)
 aux_source_directory(src/main/cpp/thirds SRC_thirds)
 aux_source_directory(src/main/cpp/thirds/lua SRC_lua)
+aux_source_directory(src/main/cpp/android SRC_android)
 
+add_library(
+        bgfx_core
+        SHARED
+        ${SRC_android}
+)
 add_library(
         bgfx_study
         SHARED
@@ -72,20 +79,26 @@ target_include_directories(bgfx_study PRIVATE
         ${ANDROID_NDK}/sources/android/native_app_glue)
 
 target_link_libraries(
-        bgfx_study
+        bgfx_core
         bgfx
         bimg_decode
         bimg
         bx
-        native_app_glue
         ${OPENGL_LIB}
         android
         EGL
         ${log-lib}
 )
+target_link_libraries(
+        bgfx_study
+        bgfx_core
+        bgfx_lua
+        native_app_glue
+        ${log-lib}
+)
 
 target_link_libraries(
         bgfx_lua
+        bgfx_core
         lua
-        bgfx_study
 )

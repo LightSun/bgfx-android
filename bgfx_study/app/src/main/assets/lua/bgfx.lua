@@ -1,6 +1,3 @@
 local m = {}
-
-function m.getInit()
-end
-
+local bgfx = require('bgfx_lua');
 return m;

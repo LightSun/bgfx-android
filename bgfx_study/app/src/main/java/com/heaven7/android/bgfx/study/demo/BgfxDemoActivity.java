@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity;
 public class BgfxDemoActivity extends AppCompatActivity {
 
     static {
-        System.loadLibrary("c++_shared");
         System.loadLibrary("bgfx_study");
     }
 

@@ -4,8 +4,7 @@
 
 #include "bgfx_lua_app.h"
 #include "bx/debug.h"
-//#include "android_pri.h"
-#include "../../src/android_pri.h"
+#include "android_pri.h"
 
 namespace Bgfx_lua_app {
     LuaApp *_app = NULL;

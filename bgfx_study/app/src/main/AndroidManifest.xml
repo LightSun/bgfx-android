@@ -13,6 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:requestLegacyExternalStorage="true"
+        android:name=".App"
         >
         <activity android:name=".MainActivity">
             <intent-filter>

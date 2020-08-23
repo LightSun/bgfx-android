@@ -20,7 +20,7 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
     BgfxLuaView mBgfxLuaView;
     RecyclerView mRv;
 
-    private Luaer mLuaer;
+    private Luaer mLuaer = Luaer.get();
     private List<Item> mItems;
 
     @Override
@@ -31,8 +31,6 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mLuaer = new Luaer(this);
-        mLuaer.initLuaState();
 
         mRv = findViewById(R.id.rv);
         mBgfxLuaView = findViewById(R.id.bgfx_lua_view);
@@ -53,6 +51,10 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                /*String str = mLuaer.getLuaState().doStringM("local m = {};\n" +
+                        "local bgfx = require('bgfx_lua');\n" +
+                        "return m;");
+                System.err.println(str);*/
                 mBgfxLuaView.setScriptFile(mLuaer, mItems.get(0).path);
             }
         });
