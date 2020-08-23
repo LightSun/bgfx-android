@@ -491,7 +491,7 @@ static int bgfx_dbgTextPrintf(lua_State *L) {
     int y = luaL_checkinteger(L, -3);
     int attrib = luaL_checkinteger(L, -2);
     const char * text = luaL_checkstring(L, -1);
-    bgfx::dbgTextPrintf(x,y, attrib,"%s",text);
+    bgfx::dbgTextPrintf(x, y, attrib,"%s",text);
     return 0;
 }
 static int bgfx_frame(lua_State *L) {
@@ -505,14 +505,14 @@ static int bgfx_frame(lua_State *L) {
 
 static int bgfx_getStats(lua_State *L) {
     Stats* pStats = const_cast<Stats *>(bgfx::getStats());
-    push_ptr(L, pStats);
+    push_obj(L, *pStats);
     return 1;
 }
 
 static void register_bgfx(lua_State* L) {
     lua_newtable(L);
     lua_pushvalue(L, -1);
-    lua_setglobal(L, "bgfx");
+    lua_setglobal(L, "bgfx_lua");
     // the bgfx table is still on top
 
     setfield_function(L, "getInit", bgfx_getInit);
@@ -531,8 +531,8 @@ static void register_bgfx(lua_State* L) {
 }
 
 //======= init =============
-static int init_rendererType(lua_State* L) {
-    auto pInit = get_obj<Init>(L, 1);
+static int init_type(lua_State* L) {
+    auto pInit = get_obj<Init>(L, -2);
 
     const char *type = lua_tostring(L, -1);
     if (type == NULL) {
@@ -547,7 +547,7 @@ static int init_rendererType(lua_State* L) {
 
 //see 'BGFX_PCI_ID_NONE' and etc
 static int init_vendorId(lua_State* L){
-    auto pInit = get_obj<Init>(L, 1);
+    auto pInit = get_obj<Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -559,7 +559,7 @@ static int init_vendorId(lua_State* L){
     return 0;
 }
 static int init_deviceId(lua_State* L){
-    auto pInit = get_obj<Init>(L, 1);
+    auto pInit = get_obj<Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -570,7 +570,7 @@ static int init_deviceId(lua_State* L){
     return 0;
 }
 static int init_debug(lua_State* L){
-    auto pInit = get_obj<Init>(L, 1);
+    auto pInit = get_obj<Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -581,7 +581,7 @@ static int init_debug(lua_State* L){
     return 0;
 }
 static int init_profile(lua_State* L){
-    auto pInit = get_obj<Init>(L, 1);
+    auto pInit = get_obj<Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -594,27 +594,27 @@ static int init_profile(lua_State* L){
 
 //only get
 static int init_platformData(lua_State* L){
-    auto pInit = get_obj<Init>(L, 1);
+    auto pInit = get_obj<Init>(L, -2);
     push_obj(L, pInit->platformData);
     return 1;
 }
 
 //only get
 static int init_resolution(lua_State* L){
-    auto pInit = get_obj<Init>(L, 1);
+    auto pInit = get_obj<Init>(L, -2);
     push_obj(L, pInit->resolution);
     return 1;
 }
 //only get
 static int init_limits(lua_State* L){
-    auto pInit = get_obj<Init>(L, 1);
+    auto pInit = get_obj<Init>(L, -2);
     push_obj(L, pInit->limits);
     return 1;
 }
 
 const struct luaL_Reg gInit_Methods[] = {
         //TODO
-        { "renderType", init_rendererType},
+        { "type", init_type},
         { "vendorId", init_vendorId},
         { "deviceId", init_deviceId},
         { "debug", init_debug},
@@ -846,7 +846,7 @@ const struct luaL_Reg gStats_Methods[] = {
     } while (0)
 
 void SkLua::Load(lua_State* L) {
-    ext_println("SkLua::Load");
+    //ext_println("SkLua::Load");
     register_bgfx(L);
     REG_CLASS(L, LuaApp);
     REG_CLASS(L, Init);

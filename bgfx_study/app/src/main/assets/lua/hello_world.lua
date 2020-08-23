@@ -1,5 +1,4 @@
-require("bgfx_lua");
-local func_wrap = require("func_wrap");
+local bgfx = require("bgfx");
 
 local s_logo = "\z
 	\xdc\x03\xdc\x03\xdc\x03\xdc\x03\x20\x0f\x20\x0f\x20\x0f\x20\x0f\z
@@ -255,12 +254,12 @@ local s_logo = "\z
 ";
 
 local initializer = bgfx.getInit();
-local reso = initializer.resolution;
-
+local reso = initializer.resolution();
+--todo 尚未调整完毕 see bgfx.lua
 local app_pre_init = function()
    print("app_pre_init");
-   initializer.type = "Count";
-   initializer.vendorId = 0;
+   initializer.type("Count");
+   initializer.vendorId(0);
    reso.reset = 0x00000080; --vsync
 end
 local app_init = function ()
@@ -292,10 +291,6 @@ end
 local app_destroy = function ()
    print("app_destroy");
 end
-local pre_init = func_wrap.wrapEasy(app_pre_init, 'app_pre_init');
-local init = func_wrap.wrapEasy(app_init, "app_init");
-local draw = func_wrap.wrapEasy(app_draw, 'app_draw');
-local destroy = func_wrap.wrapEasy(app_destroy, 'app_destroy');
 
-local app = bgfx.newApp(pre_init, init, draw, destroy);
+local app = bgfx.newApp(app_pre_init, app_init, app_draw, app_destroy);
 app.startLoop(app);
