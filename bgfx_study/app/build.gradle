@@ -20,7 +20,7 @@ android {
                 //copy from bgfx
                 cppFlags "-std=c++14 -fno-exceptions -O0 -Wall -Wextra -ffast-math -fomit-frame-pointer -g -fno-rtti -fPIC -no-canonical-prefixes" +
                         " -Wa,--noexecstack -fstack-protector-strong -ffunction-sections -Wunused-value -Wundef -Wl,-z,relro -Wl,-z,now"+
-                        " -DSIMPLE_DEMO -DSTB_TRUETYPE_IMPLEMENTATION"
+                        " -DSIMPLE_DEMO -DSTB_TRUETYPE_IMPLEMENTATION -D__USE_PTHREAD"
             }
         }
         ndk {
@@ -48,6 +48,9 @@ android {
         cmake {
             path "CMakeLists.txt"
         }
+    }
+    aaptOptions {
+        noCompress "lua"
     }
 }
 //adb logcat | ndk-stack -sym arm64-v8a >1.txt

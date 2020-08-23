@@ -101,4 +101,8 @@ target_link_libraries(
         bgfx_lua
         bgfx_core
         lua
+        ${OPENGL_LIB}
+        android
+        EGL
+        ${log-lib}
 )

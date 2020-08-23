@@ -7,7 +7,7 @@
 #include "android_pri.h"
 
 namespace Bgfx_lua_app {
-    LuaApp *_app = NULL;
+    static LuaApp *_app = NULL;
 
     void initPlatformData(void *nwh, int width, int height) {
         auto bgfxInit = getBgfxInit();
@@ -31,10 +31,16 @@ namespace Bgfx_lua_app {
            _app = NULL;
         }
     }
+    void setLuaApp(LuaApp* app){
+        if (!_app) {
+            _app = app;
+        }
+    }
 }
 
 LuaApp::LuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy)
         : L(L), func_preInit(preInit), func_init(func_init), func_draw(func_draw), func_destroy(func_destroy) {
+    destroyed = false;
 }
 
 void LuaApp::init() {
@@ -78,22 +84,25 @@ int32_t LuaApp::threadFunc(bx::Thread *_thread, void *_userData) {
     BX_UNUSED(_thread);
     //bgfx init and draw must in one thread.
     LuaApp *demo = static_cast<LuaApp *>(_userData);
+    ext_println("---- loop start ------");
     demo->doPreInit();
     demo->init();
     bgfx::frame();
     //int32_t result = chdir("/sdcard/bgfx/examples/runtime");
     // BX_ASSERT(0 == result, "Failed to chdir to dir. android.permission.WRITE_EXTERNAL_STORAGE?", errno);
-    bx::debugOutput("loop draw >>> start");
+    ext_println("loop draw >>> start");
     int i = 0;
     while (demo->draw() == 0) {
+        //bx::debugPrintf
         bx::debugPrintf("loop draw >>> %d", ++i);
     }
-    bx::debugOutput("loop draw >>> end");
+    ext_println("loop draw >>> end");
     return 0;
 }
 
 void LuaApp::destroy() {
     if (!destroyed) {
+        ext_println("destroy");
         destroyed = true;
         //destroy lua func
         if (func_destroy) {
@@ -102,6 +111,18 @@ void LuaApp::destroy() {
                 luaL_error(L, "call LuaApp destroy failed. func = %s", func_destroy);
             }
         }
+        lua_pushnil(L);
+        lua_setglobal(L, func_preInit);
+
+        lua_pushnil(L);
+        lua_setglobal(L, func_init);
+
+        lua_pushnil(L);
+        lua_setglobal(L, func_draw);
+
+        lua_pushnil(L);
+        lua_setglobal(L, func_destroy);
+
         //destroy thread. window , and bgfx
         m_thread.shutdown();
         releaseWindow(getBgfxInit().platformData.nwh);

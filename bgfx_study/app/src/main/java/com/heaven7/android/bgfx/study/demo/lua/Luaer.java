@@ -45,7 +45,7 @@ public final class Luaer {
     public static void init(Context context){
         sInstance = new Luaer(context);
         sInstance.initLuaState();
-        sInstance.initEnv();
+        sInstance.initEnv(true);
     }
 
     public static Luaer get(){
@@ -108,7 +108,7 @@ public final class Luaer {
         return null;
     }
 
-    public void initEnv(){
+    public void initEnv(final boolean force){
         FileUtils.deleteDir(new File(LUA_DIR));
 
         final List<String> clibs = Arrays.asList(/*"cjson",*/ "bgfx_lua");
@@ -137,8 +137,12 @@ public final class Luaer {
                     File dst = new File(getFilesDir(), libname);
                     System.out.println( libname + ": path is " + dst.getPath());
                     if(dst.exists()){
-                        System.out.println(libname + ": already copied.");
-                        return;
+                        if(!force){
+                            System.out.println(libname + ": already copied.");
+                            return;
+                        }else {
+                            dst.delete();
+                        }
                     }
                     //lua load libcjson .the c json can't be load on sdcard for high-version android
                     try {
@@ -173,7 +177,7 @@ public final class Luaer {
         try {
             in = new InputStreamReader(getAssets().open(file));
             String str = Luaer.readStringWithLine(in);
-            System.out.println("loadLuaAssets: \n" + str);
+           // System.out.println("loadLuaAssets: \n" + str);
             int state = mLuaState.doString(str);
             Logger.i(TAG, "loadLua", "state = " + state + ", " + mLuaState.toString(-1));
         } catch (IOException e) {

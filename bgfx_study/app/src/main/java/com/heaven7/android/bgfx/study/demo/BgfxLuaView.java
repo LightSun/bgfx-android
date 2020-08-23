@@ -23,10 +23,15 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
         getHolder().addCallback(this);
     }
 
-    public void setScriptFile(Luaer mLuaer, String assetPath) {
+    public void setScriptFile(final Luaer mLuaer, final String assetPath) {
         Log.d(TAG, "setScriptFile: path = " + assetPath);
         NativeApi.destroySurface(this);
-        mLuaer.loadLuaAssets(assetPath);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                mLuaer.loadLuaAssets(assetPath);
+            }
+        });
     }
     @Override
     protected void onDetachedFromWindow() {

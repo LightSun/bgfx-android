@@ -17,6 +17,7 @@ namespace Bgfx_lua_app{
     void initPlatformData(void * nwh, int width, int height);
     LuaApp* newLuaApp(lua_State* L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy);
     void destroyLuaApp();
+    void setLuaApp(LuaApp*);
 }
 
 class LuaApp{
