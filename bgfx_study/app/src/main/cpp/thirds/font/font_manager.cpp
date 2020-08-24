@@ -7,8 +7,6 @@
 #include <bx/math.h>
 #include <stb/stb_truetype.h>
 
-//#include "../common.h"
-
 #include <bgfx/bgfx.h>
 
 #define SDF_IMPLEMENTATION

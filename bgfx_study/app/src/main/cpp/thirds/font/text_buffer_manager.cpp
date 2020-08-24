@@ -3,8 +3,6 @@
  * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
  */
 
-//#include "../common.h"
-
 #include <bgfx/bgfx.h>
 #include <bgfx/embedded_shader.h>
 

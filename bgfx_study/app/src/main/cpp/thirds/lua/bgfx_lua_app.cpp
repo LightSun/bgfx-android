@@ -5,19 +5,21 @@
 #include "bgfx_lua_app.h"
 #include "bx/debug.h"
 #include "android_pri.h"
+//#include <atomic>
 
 namespace Bgfx_lua_app {
     static LuaApp *_app = NULL;
+    static entry::InitConfig* _InitConfig = NULL;
 
-    void initPlatformData(void *nwh, int width, int height) {
-        auto bgfxInit = getBgfxInit();
-        bgfxInit.platformData.nwh = nwh;
-        bgfxInit.resolution.width = width;
-        bgfxInit.resolution.height = height;
+    void setInitConfig(entry::InitConfig* config) {
+        ext_println("setInitConfig");
+        if(_InitConfig != nullptr){
+            delete _InitConfig;
+        }
+        _InitConfig = config;
     }
 
-    LuaApp *
-    newLuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy) {
+    LuaApp *newLuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy) {
         if (!_app) {
             _app = new LuaApp(L, preInit, func_init, func_draw, func_destroy);
         }
@@ -41,10 +43,15 @@ namespace Bgfx_lua_app {
 LuaApp::LuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy)
         : L(L), func_preInit(preInit), func_init(func_init), func_draw(func_draw), func_destroy(func_destroy) {
     destroyed = false;
+    bgfx_Init = getBgfxInit();
+    initConfig = Bgfx_lua_app::_InitConfig;
 }
 
 void LuaApp::init() {
-    bgfx::init(getBgfxInit());
+    bgfx_Init.platformData.nwh = initConfig->window;
+    bgfx_Init.resolution.width = initConfig->win_width;
+    bgfx_Init.resolution.height = initConfig->win_height;
+    bgfx::init(bgfx_Init);
     if (func_init) {
         lua_getglobal(L, func_init);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
@@ -55,7 +62,7 @@ void LuaApp::init() {
 
 void LuaApp::startLoop() {
     if (!m_thread.isRunning()) {
-        m_thread.init(LuaApp::threadFunc, this);
+        m_thread.init(LuaApp::threadFunc, this, 0, "bgfx_lua");
     }
 }
 

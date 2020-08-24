@@ -254,13 +254,16 @@ local s_logo = "\z
 ";
 
 local initializer = bgfx.getInit();
-local reso = initializer.resolution();
+local reso = initializer.resolution;
+print(reso);
 --todo 尚未调整完毕 see bgfx.lua
 local app_pre_init = function()
    print("app_pre_init");
-   initializer.type("Count");
-   initializer.vendorId(0);
+   initializer.type = "Count";
+   initializer.vendorId = 0;
+   print('start reset ----- ')
    reso.reset = 0x00000080; --vsync
+   print('end reset ----- ')
 end
 local app_init = function ()
    print("app_init");

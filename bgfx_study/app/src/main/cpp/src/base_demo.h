@@ -9,15 +9,11 @@
 #include <bx/bx.h>
 #include <bx/thread.h>
 #include "android_pri.h"
+#include "../core/common.h"
 //extern "C" {
+using namespace entry;
 
 namespace heaven7_Bgfx_demo {
-
-    typedef struct InitConfig {
-        void *window;
-        int win_width;
-        int win_height;
-    } InitConfig;
 
     class BaseDemo {
     public:

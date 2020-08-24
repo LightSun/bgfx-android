@@ -6,6 +6,7 @@
 local m = {};
 require("bgfx_lua");
 local func_wrap = require("func_wrap");
+local func_gs = require("func_to_getset");
 
 local function dumpInit(init_wrapper, out)
     out.type = init_wrapper.type();
@@ -20,41 +21,8 @@ local function dumpInit(init_wrapper, out)
 end
 
 function m.getInit()
-    local self = {};
     local init = bgfx_lua.getInit();
-
-    function self.type(val)
-        return init.type(init, val);
-    end
-    function self.vendorId(val)
-        return init.vendorId(init, val);
-    end
-    function self.deviceId(val)
-        return init.deviceId(init, val);
-    end
-    function self.debug(val)
-        return init.debug(init, val);
-    end
-    function self.profile(val)
-        return init.profile(init, val);
-    end
-    function self.platformData()
-        return init.platformData(init);
-    end
-    function self.resolution()
-        return init.resolution(init);
-    end
-    function self.limits()
-        return init.limits(init);
-    end
-
-    function self.dump(out)
-        if(not out) then
-            out = {};
-        end
-        return dumpInit(self, out);
-    end
-    return self;
+    return func_gs.wrapUserdata(init);
 end
 
 function m.newApp(func_pre_init, func_init, func_draw, func_destroy)

@@ -7,13 +7,13 @@
 
 #include "bgfx/bgfx.h"
 #include "bx/debug.h"
-#include "../../src/global.h"
+#include "../../core/global.h"
 #include "lua.hpp"
 
 //log and report
 #define LUA_REPORT_ERROR(L, type, x) \
-    bx::debugPrintf("Invalid bgfx %s type %s", #type, #x); \
-    luaL_error(L, "Invalid bgfx %s type %s", #type, #x);
+    bx::debugPrintf("Invalid bgfx %s type %s", #type, x); \
+    luaL_error(L, "Invalid bgfx %s type %s", #type, x);
 
 #define TO_NUMBER_8(L, idx) static_cast<uint8_t>(lua_tonumber(L, idx))
 #define TO_NUMBER_16(L, idx) static_cast<uint16_t>(lua_tonumber(L, idx))
@@ -34,7 +34,7 @@ BGFX_FUNC_INT(reset);
 BGFX_FUNC_ENUM(textureFormat, bgfx::TextureFormat::Enum);
 BGFX_FUNC_NAME(textureFormat, bgfx::TextureFormat::Enum);
 
-extern bgfx::Init& getBgfxInit();
+extern const bgfx::Init& getBgfxInit();
 
 
 #endif //BGFX_STUDY_BGFX_WRAPPER_H

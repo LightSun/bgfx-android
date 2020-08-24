@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "../../src/global.h"
+#include "../../core/global.h"
 
 //SK_DEBUG
 /** \class SkRefCntBase

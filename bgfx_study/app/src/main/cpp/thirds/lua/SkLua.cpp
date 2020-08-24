@@ -46,7 +46,7 @@ template <typename T> void push_obj(lua_State* L, const T& obj) {
     luaL_getmetatable(L, get_mtname<T>());
     lua_setmetatable(L, -2);
 }
-
+//慎用： 可能造成 lua和 c层用的不是同一个对象
 template <typename T> T* push_ptr(lua_State* L, T* ptr) {
     *(T**)lua_newuserdata(L, sizeof(T*)) = ptr;
     luaL_getmetatable(L, get_mtname<T>());
@@ -425,7 +425,7 @@ private:
 #define AUTO_LUA(verb)  AutoCallLua acl(fL, fFunc.c_str(), verb)
 
 ///////////////////////////////////////////////////////////////////////////////
-static bgfx::Init bgfx__init;
+const static bgfx::Init bgfx__init;
 static int bgfx_getInit(lua_State* L){
     push_obj<Init>(L, bgfx__init);
     return 1;
@@ -594,26 +594,49 @@ static int init_profile(lua_State* L){
 
 //only get
 static int init_platformData(lua_State* L){
-    auto pInit = get_obj<Init>(L, -2);
+    auto pInit = get_obj<Init>(L, 1);
     push_obj(L, pInit->platformData);
     return 1;
 }
 
 //only get
 static int init_resolution(lua_State* L){
-    auto pInit = get_obj<Init>(L, -2);
+    auto pInit = get_obj<Init>(L, 1);
     push_obj(L, pInit->resolution);
     return 1;
 }
 //only get
 static int init_limits(lua_State* L){
-    auto pInit = get_obj<Init>(L, -2);
+    auto pInit = get_obj<Init>(L, 1);
     push_obj(L, pInit->limits);
     return 1;
+}
+//wrap method for lua get and set. see 'func_to_getset.lua'
+static int forward_call(lua_State* L){ //a.call(a, k, v)
+    const char *key = lua_tostring(L, -2);
+    // before is {a, k, v};
+    lua_pushvalue(L, 2); //{a, k, v, k}
+    lua_gettable(L, 1); // {a, k, v, method}
+    lua_pushvalue(L, 1); // {a, k, v, method, a}
+    lua_pushvalue(L, 3); // {a, k, v, method, a, v}
+    ext_println("---------  ---------");
+    ext_prints("before call...");
+    ext_println(key);
+    luaB_dumpStack(L);
+    int result = lua_pcall(L, 2, 1, 0); //two arguments, 1 result,
+    ext_println("after call...");
+    luaB_dumpStack(L);
+    ext_println("---------  ---------");
+    if(result == LUA_OK){
+        lua_pushvalue(L, -1);
+        return 1;
+    }
+    return 0;
 }
 
 const struct luaL_Reg gInit_Methods[] = {
         //TODO
+        { "call", forward_call},
         { "type", init_type},
         { "vendorId", init_vendorId},
         { "deviceId", init_deviceId},
@@ -627,7 +650,7 @@ const struct luaL_Reg gInit_Methods[] = {
 //------------ platform-data -----------------------------
 #define INIT_PLATFORM_DATA(x) \
 static int platformData_##x(lua_State* L){ \
-    auto pd = get_obj<PlatformData>(L, 1); \
+    auto pd = get_obj<PlatformData>(L, -2); \
     auto ud = lua_touserdata(L, -1); \
     if(ud == nullptr){ \
         return luaL_error(L, "Invalid platformData.%s", #x); \
@@ -642,6 +665,7 @@ INIT_PLATFORM_DATA(backBuffer)
 INIT_PLATFORM_DATA(backBufferDS)
 
 const struct luaL_Reg gPlatformData_Methods[] = {
+        { "call", forward_call},
         { "nwh", platformData_nwh},
         { "ndt", platformData_ndt},
         { "context", platformData_context},
@@ -653,7 +677,7 @@ const struct luaL_Reg gPlatformData_Methods[] = {
 //----------------------- resolution ------------------
 
 static int resolution_format(lua_State* L){
-    auto reso = get_obj<Resolution>(L, 1);
+    auto reso = get_obj<Resolution>(L, -2);
 
     const char* type = lua_tostring(L, -1);
     if(type == NULL){
@@ -667,7 +691,7 @@ static int resolution_format(lua_State* L){
 
 #define INIT_RESOLUTION(x) \
 static int resolution_##x(lua_State* L){ \
-    auto pd = get_obj<Resolution>(L, 1); \
+    auto pd = get_obj<Resolution>(L, -2); \
     int type = lua_type(L, -1); \
     if(type == LUA_TNIL){ \
         lua_pushnumber(L, pd->x); \
@@ -683,6 +707,7 @@ INIT_RESOLUTION(numBackBuffers)
 INIT_RESOLUTION(maxFrameLatency)
 
 const struct luaL_Reg gResolution_Methods[] = {
+        {"call", forward_call},
         {"format", resolution_format},
         {"width", resolution_width},
         {"height", resolution_height},
@@ -694,7 +719,7 @@ const struct luaL_Reg gResolution_Methods[] = {
 //----------------- Limits -----------------
 #define INIT_LIMITS(x) \
 static int limits_##x(lua_State* L){ \
-    auto pd = get_obj<Init::Limits>(L, 1); \
+    auto pd = get_obj<Init::Limits>(L, -2); \
     int type = lua_type(L, -1); \
     if(type == LUA_TNIL){ \
         lua_pushnumber(L, pd->x); \
@@ -710,6 +735,7 @@ INIT_LIMITS(transientIbSize)
 
 namespace gInit{
 const struct luaL_Reg Limits_Methods[] = {
+        {"call", forward_call},
         {"maxEncoders", limits_maxEncoders},
         {"minResourceCbSize", limits_minResourceCbSize},
         {"transientVbSize", limits_transientVbSize},
@@ -730,7 +756,6 @@ static int destroy_luaApp(lua_State * L){
     return 0;
 }
 static int start_luaApp(lua_State * L){
-    luaB_dumpStack(L);
     LuaApp *pApp = get_obj<LuaApp>(L, 1);
     pApp->startLoop();
     return 0;
@@ -796,6 +821,7 @@ STATS_NUMBER(numEncoders);
 //TODO ViewStats, EncoderStats
 
 const struct luaL_Reg gStats_Methods[] = {
+        {"call", forward_call},
         {"cpuTimeFrame", stats_cpuTimeFrame},
         {"cpuTimeBegin", stats_cpuTimeBegin},
         {"cpuTimeEnd", stats_cpuTimeEnd},
@@ -857,7 +883,7 @@ void SkLua::Load(lua_State* L) {
     //TODO CallbackI*, bx::AllocatorI*
 }
 
-bgfx::Init& getBgfxInit(){
+const bgfx::Init& getBgfxInit(){
     return bgfx__init;
 }
 

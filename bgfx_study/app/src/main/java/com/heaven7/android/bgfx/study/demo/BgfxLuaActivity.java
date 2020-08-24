@@ -30,6 +30,7 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        NativeApi.setUseLua(true);
         super.onCreate(savedInstanceState);
 
         mRv = findViewById(R.id.rv);
@@ -58,6 +59,12 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
                 mBgfxLuaView.setScriptFile(mLuaer, mItems.get(0).path);
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        NativeApi.setUseLua(false);
+        super.onDestroy();
     }
 
     private List<Item> createItems() {

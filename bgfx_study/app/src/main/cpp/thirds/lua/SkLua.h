@@ -9,6 +9,8 @@
 #define SkLua_DEFINED
 
 #include <stdint.h>
+//#include <atomic>
+
 #include "bx/string.h"
 #include "SkScalar.h"
 #include "bgfx_wrapper.h"

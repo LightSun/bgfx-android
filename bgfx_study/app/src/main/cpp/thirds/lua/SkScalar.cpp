@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "../../src/global.h"
+#include "../../core/global.h"
 #include "SkScalar.h"
 
 SkScalar SkScalarInterpFunc(SkScalar searchKey, const SkScalar keys[],

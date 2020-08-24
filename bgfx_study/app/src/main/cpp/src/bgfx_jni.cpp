@@ -28,6 +28,7 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API(destroyAll){
 #ifndef USE_NATIVE_ACTIVITY
     entry::destroy();
 #endif
+    Bgfx_lua_app::setInitConfig(nullptr);
 }
 
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobject assetM){
@@ -39,16 +40,15 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobjec
 
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobject src,jobject surface){
     ANativeWindow *mWindow = ANativeWindow_fromSurface(env, surface);
+    InitConfig* config = new InitConfig();
+    config->window = mWindow;
+    config->win_width = ANativeWindow_getWidth(mWindow);
+    config->win_height = ANativeWindow_getHeight(mWindow);
     if(_useLua){
-        Bgfx_lua_app::initPlatformData(mWindow, ANativeWindow_getWidth(mWindow), ANativeWindow_getHeight(mWindow));
+        Bgfx_lua_app::setInitConfig(config);
     } else{
-        InitConfig config;
-        config.window = mWindow;
-        config.win_width =  ANativeWindow_getWidth(mWindow);
-        config.win_height =  ANativeWindow_getHeight(mWindow);
-
         //HelloWorldDemo, CurbesDemo
-        demo = createDemo<FontDemo>(&config);
+        demo = createDemo<FontDemo>(config);
         demo->startLoop();
     }
 }

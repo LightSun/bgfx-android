@@ -10,7 +10,7 @@
 
 //#include "include/core/SkTypes.h"
 //#include "include/private/SkSafe_math.h"
-#include "../../src/global.h"
+#include "../../core/global.h"
 
 #include <float.h>
 #include <stdint.h>

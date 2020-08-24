@@ -2,9 +2,6 @@
 // Created by Administrator on 2020/8/17 0017.
 //
 
-#ifndef BGFX_STUDY_BGFX_WRAPPER_H
-#define BGFX_STUDY_BGFX_WRAPPER_HPP
-
 #include "bgfx_wrapper.h"
 
 using namespace bgfx;
@@ -212,8 +209,3 @@ BGFX_FUNC_NAME(textureFormat, bgfx::TextureFormat::Enum){
             return "unknown_TextureFormat";
     }
 }
-
-extern bgfx::Init& getBgfxInit();
-
-
-#endif //BGFX_STUDY_BGFX_WRAPPER_H

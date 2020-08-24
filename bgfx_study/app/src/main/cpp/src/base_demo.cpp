@@ -3,7 +3,6 @@
 //
 
 #include "base_demo.h"
-#include "log.h"
 
 namespace heaven7_Bgfx_demo{
     BaseDemo::BaseDemo() {

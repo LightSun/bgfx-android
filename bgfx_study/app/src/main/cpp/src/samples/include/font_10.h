@@ -5,7 +5,7 @@
 #ifndef BGFX_STUDY_FONT_10_H
 #define BGFX_STUDY_FONT_10_H
 
-#include "../../common.h"
+#include "../../../core/common.h"
 #include "../../base_demo.h"
 #include "../bgfx_utils.h"
 

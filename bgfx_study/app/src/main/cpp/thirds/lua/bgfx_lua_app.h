@@ -9,12 +9,14 @@
 #include "bgfx/bgfx.h"
 #include <bx/bx.h>
 #include <bx/thread.h>
+#include "../core/common.h"
 
 typedef const char* FUNC_NAME;
 class LuaApp;
 
 namespace Bgfx_lua_app{
-    void initPlatformData(void * nwh, int width, int height);
+
+    void setInitConfig(entry::InitConfig* config);
     LuaApp* newLuaApp(lua_State* L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy);
     void destroyLuaApp();
     void setLuaApp(LuaApp*);
@@ -55,6 +57,9 @@ private:
     FUNC_NAME func_init;
     FUNC_NAME func_draw;
     FUNC_NAME func_destroy;
+
+    Init bgfx_Init;
+    entry::InitConfig* initConfig;
 };
 
 

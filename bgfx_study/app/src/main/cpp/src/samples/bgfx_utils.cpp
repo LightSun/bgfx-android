@@ -3,7 +3,7 @@
  * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
  */
 
-#include "../log.h"
+#include "../core/log.h"
 
 #include <tinystl/allocator.h>
 #include <tinystl/vector.h>
@@ -20,7 +20,7 @@ namespace stl = tinystl;
 #ifdef USE_NATIVE_ACTIVITY
 #include "../entry.h"
 #else
-#include "../common.h"
+#include "../core/common.h"
 #endif
 
 #include <meshoptimizer/src/meshoptimizer.h>
