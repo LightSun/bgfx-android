@@ -48,7 +48,8 @@ template <typename T> void push_obj(lua_State* L, const T& obj) {
 }
 //慎用： 可能造成 lua和 c层用的不是同一个对象
 template <typename T> T* push_ptr(lua_State* L, T* ptr) {
-    *(T**)lua_newuserdata(L, sizeof(T*)) = ptr;
+    T** ls = (T**)lua_newuserdata(L, sizeof(T*));
+    *ls = ptr;
     luaL_getmetatable(L, get_mtname<T>());
     lua_setmetatable(L, -2);
     return ptr;
@@ -425,9 +426,9 @@ private:
 #define AUTO_LUA(verb)  AutoCallLua acl(fL, fFunc.c_str(), verb)
 
 ///////////////////////////////////////////////////////////////////////////////
-const static bgfx::Init bgfx__init;
+//static bgfx::Init bgfx__init;
 static int bgfx_getInit(lua_State* L){
-    push_obj<Init>(L, bgfx__init);
+    push_ptr<Init>(L, Bgfx_lua_app::getInit());
     return 1;
 }
 static int bgfx_setDebug(lua_State* L){
@@ -505,7 +506,7 @@ static int bgfx_frame(lua_State *L) {
 
 static int bgfx_getStats(lua_State *L) {
     Stats* pStats = const_cast<Stats *>(bgfx::getStats());
-    push_obj(L, *pStats);
+    push_ptr(L, pStats);
     return 1;
 }
 
@@ -595,20 +596,20 @@ static int init_profile(lua_State* L){
 //only get
 static int init_platformData(lua_State* L){
     auto pInit = get_obj<Init>(L, 1);
-    push_obj(L, pInit->platformData);
+    push_ptr(L, &pInit->platformData);
     return 1;
 }
 
 //only get
 static int init_resolution(lua_State* L){
     auto pInit = get_obj<Init>(L, 1);
-    push_obj(L, pInit->resolution);
+    push_ptr(L, &pInit->resolution);
     return 1;
 }
 //only get
 static int init_limits(lua_State* L){
     auto pInit = get_obj<Init>(L, 1);
-    push_obj(L, pInit->limits);
+    push_ptr(L, &pInit->limits);
     return 1;
 }
 //wrap method for lua get and set. see 'func_to_getset.lua'
@@ -883,8 +884,8 @@ void SkLua::Load(lua_State* L) {
     //TODO CallbackI*, bx::AllocatorI*
 }
 
-const bgfx::Init& getBgfxInit(){
-    return bgfx__init;
+bgfx::Init* getBgfxInit(){
+    return Bgfx_lua_app::getInit();
 }
 
 extern "C" int luaopen_bgfx_lua(lua_State* L);

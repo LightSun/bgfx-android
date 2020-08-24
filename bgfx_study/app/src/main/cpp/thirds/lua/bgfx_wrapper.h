@@ -34,7 +34,7 @@ BGFX_FUNC_INT(reset);
 BGFX_FUNC_ENUM(textureFormat, bgfx::TextureFormat::Enum);
 BGFX_FUNC_NAME(textureFormat, bgfx::TextureFormat::Enum);
 
-extern const bgfx::Init& getBgfxInit();
+extern bgfx::Init* getBgfxInit();
 
 
 #endif //BGFX_STUDY_BGFX_WRAPPER_H

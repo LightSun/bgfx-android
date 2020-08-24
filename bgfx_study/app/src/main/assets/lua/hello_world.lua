@@ -259,7 +259,7 @@ print(reso);
 --todo 尚未调整完毕 see bgfx.lua
 local app_pre_init = function()
    print("app_pre_init");
-   initializer.type = "Count";
+   initializer.type = "OpenGLES";
    initializer.vendorId = 0;
    print('start reset ----- ')
    reso.reset = 0x00000080; --vsync

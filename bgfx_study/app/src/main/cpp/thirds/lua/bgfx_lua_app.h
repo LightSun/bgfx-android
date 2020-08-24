@@ -13,14 +13,31 @@
 
 typedef const char* FUNC_NAME;
 class LuaApp;
+class LuaAppHolder;
 
 namespace Bgfx_lua_app{
 
-    void setInitConfig(entry::InitConfig* config);
-    LuaApp* newLuaApp(lua_State* L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy);
+    entry::InitConfig* getInitConfig();
+    bgfx::Init* getInit();
     void destroyLuaApp();
     void setLuaApp(LuaApp*);
+
+    LuaAppHolder& getAppHolder();
 }
+
+class LuaAppHolder{
+
+public:
+    LuaApp* app;
+    entry::InitConfig* config;
+    bgfx::Init* bgfx_init;
+
+    ~LuaAppHolder();
+    LuaAppHolder();
+
+    void destroyApp();
+    void setApp(LuaApp* app);
+};
 
 class LuaApp{
 
@@ -57,9 +74,6 @@ private:
     FUNC_NAME func_init;
     FUNC_NAME func_draw;
     FUNC_NAME func_destroy;
-
-    Init bgfx_Init;
-    entry::InitConfig* initConfig;
 };
 
 
