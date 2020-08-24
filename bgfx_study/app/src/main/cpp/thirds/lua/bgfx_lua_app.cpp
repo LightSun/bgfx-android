@@ -5,66 +5,65 @@
 #include "bgfx_lua_app.h"
 #include "bx/debug.h"
 #include "android_pri.h"
-//#include <atomic>
+#include <atomic>
 
-#include <memory>
+//#include <memory>
 
-static LuaAppHolder _appHolder;
+static LuaAppHolder _appHolder;//TODO can't use in multi-thread.
 namespace Bgfx_lua_app {
 
-    static LuaApp *_app = NULL;
-
-    entry::InitConfig* getInitConfig(){
-        return _appHolder.config;
+    void setInitConfig(entry::InitConfig *config) {
+        _appHolder.config = config;
+        ext_println("setInitConfig");
     }
 
     void destroyLuaApp() {
         _appHolder.destroyApp();
     }
-    void setLuaApp(LuaApp* app){
-        _appHolder.setApp(app);
-    }
-    LuaAppHolder& getAppHolder(){
+
+    LuaAppHolder &getAppHolder() {
         return _appHolder;
     }
-    bgfx::Init* getInit(){
+
+    bgfx::Init *requireInit() {
+        if (!_appHolder.bgfx_init) {
+            _appHolder.bgfx_init = new bgfx::Init();
+            LOGD("requireInit >>> bgfx_init: addr = %p", _appHolder.bgfx_init);
+        }
         return _appHolder.bgfx_init;
     }
 }
 
 void LuaAppHolder::destroyApp() {
     if (app) {
-        app->destroy();
-        delete app;
-        app = NULL;
-    }
-}
-void LuaAppHolder::setApp(LuaApp *_app) {
-    destroyApp();
-    if (!app) {
-        app = _app;
+        app->quit();
     }
 }
 
 LuaAppHolder::LuaAppHolder() {
-    config = new entry::InitConfig();
     bgfx_init = new bgfx::Init();
+    config = nullptr;
     app = nullptr;
 }
+
 LuaAppHolder::~LuaAppHolder() {
-    delete config;
-    delete bgfx_init;
+    DESTROY_POINTER(config);
+    DESTROY_POINTER(bgfx_init);
     destroyApp();
 }
-LuaApp::LuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy)
-        : L(L), func_preInit(preInit), func_init(func_init), func_draw(func_draw), func_destroy(func_destroy) {
-    destroyed = false;
+
+LuaApp::LuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw,
+               FUNC_NAME func_destroy) {
+    this->L = L;
+    this->func_preInit = preInit;
+    this->func_init = func_init;
+    this->func_draw = func_draw;
+    this->func_destroy = func_destroy;
 }
 
-void LuaApp::init() {
-    LuaAppHolder &holder = Bgfx_lua_app::getAppHolder();
-    entry::InitConfig *pConfig = holder.config;
-    Init *pInit = holder.bgfx_init;
+void LuaApp::init(LuaAppHolder *holder) {
+    auto pConfig = holder->config;
+    Init *pInit = holder->bgfx_init;
     pInit->platformData.nwh = pConfig->window;
     pInit->resolution.width = pConfig->win_width;
     pInit->resolution.height = pConfig->win_height;
@@ -77,9 +76,11 @@ void LuaApp::init() {
     }
 }
 
-void LuaApp::startLoop() {
+void LuaAppHolder::startLoop(entry::InitConfig *pConfig) {
+    LOGD("startLoop: %p", pConfig);
+    config = pConfig;
     if (!m_thread.isRunning()) {
-        m_thread.init(LuaApp::threadFunc, &_appHolder, 0, "bgfx_lua");
+        m_thread.init(LuaAppHolder::threadFunc, this, 0, "bgfx_lua");
     }
 }
 
@@ -104,25 +105,8 @@ void LuaApp::doPreInit() {
     }
 }
 
-int32_t LuaApp::threadFunc(bx::Thread *_thread, void *_userData) {
-    BX_UNUSED(_thread);
-    LuaAppHolder* holder = static_cast<LuaAppHolder *>(_userData);
-    //bgfx init and draw must in one thread.
-   // LuaApp *demo = static_cast<LuaApp *>(_userData);
-    ext_println("---- loop start ------");
-    holder->app->doPreInit();
-    holder->app->init();
-    bgfx::frame();
-    //int32_t result = chdir("/sdcard/bgfx/examples/runtime");
-    // BX_ASSERT(0 == result, "Failed to chdir to dir. android.permission.WRITE_EXTERNAL_STORAGE?", errno);
-    ext_println("loop draw >>> start");
-    int i = 0;
-    while (holder->app->draw() == 0) {
-        //bx::debugPrintf
-        bx::debugPrintf("loop draw >>> %d", ++i);
-    }
-    ext_println("loop draw >>> end");
-    return 0;
+void LuaApp::start() {
+    Bgfx_lua_app::getAppHolder().start(this);
 }
 
 void LuaApp::destroy() {
@@ -149,12 +133,97 @@ void LuaApp::destroy() {
         lua_setglobal(L, func_destroy);
 
         //destroy thread. window , and bgfx
-        m_thread.shutdown();
-        releaseWindow(getBgfxInit()->platformData.nwh);
-        bgfx::shutdown();
+        //m_thread.shutdown();
+        // releaseWindow(getBgfxInit()->platformData.nwh);
+        // bgfx::shutdown();
     }
 }
 
 bool LuaApp::isDestroyed() {
     return destroyed;
+}
+
+void LuaApp::quit() {
+    shouldQuit.store(true, std::memory_order_release);//对读线程可见
+}
+
+bool LuaApp::isQuit() {
+    return shouldQuit.load(std::memory_order_relaxed);
+}
+
+//---------------------------------------------------------------------
+int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
+    //BX_UNUSED(_thread);
+    LOGD("threadFunc: start.");
+    LuaAppHolder *holder = static_cast<LuaAppHolder *>(_userData);
+    CmdData *data = nullptr;
+    LuaApp *demo = nullptr;
+
+    while (true) {
+        auto pVoid = _thread->pop();
+        if (pVoid != nullptr) {
+            data = static_cast<CmdData *>(pVoid);
+            switch (data->type) {
+                case TYPE_BGFX_INIT:
+                    holder->bgfx_init = static_cast<Init *>(data->data);
+                    LOGD("set BgfxInit: %p", data->data);
+                    break;
+
+                case TYPE_LUA_APP_START:
+                    demo = holder->app = static_cast<LuaApp *>(data->data);
+                    LOGD("start LuaApp : %p", demo);
+                    if (!demo->isQuit()) {
+                        LOGD("---- loop start ------");
+                        demo->doPreInit();
+                        demo->init(holder);
+                        bgfx::frame();
+                        LOGD("loop draw >>> start");
+                        int i = 0;
+                        while (!demo->isQuit() && demo->draw() == 0) {
+                            //bx::debugPrintf
+                            bx::debugPrintf("loop draw >>> %d", ++i);
+                        }
+                        LOGD("loop draw >>> end");
+                    }
+                    holder->app = nullptr;
+                    delete demo;
+                    break;
+
+                case TYPE_QUIT_ALL:
+                    LOGD("quit all.");
+                    if (data->task) {
+                        data->task();
+                    }
+                    break;
+            }
+            //quit all
+            if (data->type == TYPE_QUIT_ALL) {
+                delete data;
+                break;
+            } else {
+                delete data;
+            }
+        }
+    }
+    //m_thread.shutdown();
+    releaseWindow(getBgfxInit()->platformData.nwh);
+    bgfx::shutdown();
+    LOGD("threadFunc: exit.");
+    return 0;
+}
+
+void LuaAppHolder::quitAll(EndTask task) {
+    m_thread.push(new CmdData(TYPE_QUIT_ALL, task));
+}
+
+void LuaAppHolder::start(LuaApp *app) {
+    m_thread.push(new CmdData(TYPE_LUA_APP_START, app));
+}
+
+CmdData::CmdData(uint8_t type, void *data) : type(type), data(data) {
+
+}
+
+CmdData::CmdData(uint8_t type, EndTask task) : type(type), task(task) {
+
 }

@@ -428,7 +428,7 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 //static bgfx::Init bgfx__init;
 static int bgfx_getInit(lua_State* L){
-    push_ptr<Init>(L, Bgfx_lua_app::getInit());
+    push_ptr<Init>(L, getBgfxInit());
     return 1;
 }
 static int bgfx_setDebug(lua_State* L){
@@ -442,9 +442,6 @@ static int bgfx_newApp(lua_State* L){
     const char* fn_draw =luaL_checkstring(L, -2);
     const char* fn_destroy =luaL_checkstring(L, -1);
     LuaApp *pApp = push_new<LuaApp>(L, L, fn_pre_init,  fn_init, fn_draw, fn_destroy);
-    Bgfx_lua_app::setLuaApp(pApp);
-   // LuaApp *pApp = Bgfx_lua_app::newLuaApp(L, fn_pre_init,  fn_init, fn_draw, fn_destroy);
-   // push_ptr(L, pApp);
     return 1;
 }
 static int bgfx_setViewClear(lua_State* L){
@@ -746,23 +743,24 @@ const struct luaL_Reg Limits_Methods[] = {
 }
 // =============================== LuaApp =================
 static int gc_luaApp(lua_State * L){
-    ext_println("gc_luaApp");
-    Bgfx_lua_app::destroyLuaApp();
+    LOGD("gc_luaApp");
+    LuaApp *pApp = get_obj<LuaApp>(L, 1);
+    pApp->quit();
     return 0;
 }
 static int destroy_luaApp(lua_State * L){
-    ext_println("destroy_luaApp");
+    LOGD("destroy_luaApp");
     LuaApp *pApp = get_obj<LuaApp>(L, 1);
-    pApp->destroy();
+    pApp->quit();
     return 0;
 }
 static int start_luaApp(lua_State * L){
     LuaApp *pApp = get_obj<LuaApp>(L, 1);
-    pApp->startLoop();
+    pApp->start();
     return 0;
 }
 const struct luaL_Reg gLuaApp_Methods[] = {
-        {"startLoop", start_luaApp},
+        {"start", start_luaApp},
         {"destroy", destroy_luaApp},
         {"__gc", gc_luaApp},
         {NULL, NULL},
@@ -885,7 +883,7 @@ void SkLua::Load(lua_State* L) {
 }
 
 bgfx::Init* getBgfxInit(){
-    return Bgfx_lua_app::getInit();
+    return Bgfx_lua_app::requireInit();
 }
 
 extern "C" int luaopen_bgfx_lua(lua_State* L);

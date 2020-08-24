@@ -296,4 +296,4 @@ local app_destroy = function ()
 end
 
 local app = bgfx.newApp(app_pre_init, app_init, app_draw, app_destroy);
-app.startLoop(app);
+app.start(app);
