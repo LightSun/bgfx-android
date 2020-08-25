@@ -428,7 +428,7 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 //static bgfx::Init bgfx__init;
 static int bgfx_getInit(lua_State* L){
-    push_ptr<Init>(L, getBgfxInit());
+    push_ptr<Init>(L, getBgfxInit(L));
     return 1;
 }
 static int bgfx_setDebug(lua_State* L){
@@ -882,8 +882,8 @@ void SkLua::Load(lua_State* L) {
     //TODO CallbackI*, bx::AllocatorI*
 }
 
-bgfx::Init* getBgfxInit(){
-    return Bgfx_lua_app::requireInit();
+inline Init *getBgfxInit(lua_State *L) {
+    return Bgfx_lua_app::requireInit(L);
 }
 
 extern "C" int luaopen_bgfx_lua(lua_State* L);

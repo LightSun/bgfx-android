@@ -37,14 +37,14 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobjec
 #endif
 }
 
-EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobject src,jobject surface){
+EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,jobject surface, jlong ptr){
     ANativeWindow *mWindow = ANativeWindow_fromSurface(env, surface);
     if(_useLua){
         InitConfig* config = new InitConfig();
         config->window = mWindow;
         config->win_width = ANativeWindow_getWidth(mWindow);
         config->win_height = ANativeWindow_getHeight(mWindow);
-        Bgfx_lua_app::getAppHolder().startLoop(config);
+        Bgfx_lua_app::startApp(ptr, config);
     } else{
         //HelloWorldDemo, CurbesDemo
         InitConfig config;
@@ -57,7 +57,7 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initializeSurface, jobject src,
 }
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject src){
     if(_useLua){
-        Bgfx_lua_app::destroyLuaApp();
+        //TODO
     } else{
         if(demo){
             demo->destroy();

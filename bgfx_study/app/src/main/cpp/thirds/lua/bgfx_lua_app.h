@@ -18,14 +18,15 @@ typedef const char* FUNC_NAME;
 typedef void (*EndTask)();
 class LuaApp;
 class LuaAppHolder;
+//防止指令重排. linux 内核可用 cpu_relax函数（效果相同）
+#define barrier() __asm__ __volatile__("": : :"memory")
 
 namespace Bgfx_lua_app{
 
-    void setInitConfig(entry::InitConfig* config);
-    bgfx::Init* requireInit();
-    void destroyLuaApp();
+    void startApp(long ptr, entry::InitConfig *pConfig);
+    bgfx::Init* requireInit(lua_State* L);
 
-    LuaAppHolder& getAppHolder();
+    LuaAppHolder* getAppHolder();
 }
 
 class LuaAppHolder{
@@ -38,13 +39,6 @@ public:
     LuaAppHolder();
 
     void destroyApp();
-
-   /* LuaAppHolder& operator= (LuaAppHolder const& o) noexcept {
-        app = o.app;
-        config = o.config;
-        bgfx_init = o.bgfx_init;
-        return *this;
-    }*/
 
     void startLoop(entry::InitConfig *pConfig);
     void quitAll(EndTask task);

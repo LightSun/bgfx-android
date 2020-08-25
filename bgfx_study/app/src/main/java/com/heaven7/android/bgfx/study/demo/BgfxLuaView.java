@@ -31,6 +31,7 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
             post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "loadLuaAssets >>> threadId = " + Thread.currentThread().getId());
                     mLuaer.loadLuaAssets(assetPath);
                 }
             });
@@ -38,6 +39,7 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
             mPendingTask = new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "loadLuaAssets >>> threadId = " + Thread.currentThread().getId());
                     mLuaer.loadLuaAssets(assetPath);
                 }
             };
@@ -51,12 +53,12 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(TAG, "surfaceCreated");
-        NativeApi.initializeSurface(this, holder.getSurface());
+        Log.d(TAG, "surfaceCreated >>> threadId = " + Thread.currentThread().getId());
+        NativeApi.initializeSurface(this, holder.getSurface(), Luaer.get().getLuaState().getNativePointer());
         mInited = true;
         if(mPendingTask != null){
-            Runnable task = mPendingTask;
+            mPendingTask.run();
             mPendingTask = null;
-            post(task);
         }
     }
     @Override

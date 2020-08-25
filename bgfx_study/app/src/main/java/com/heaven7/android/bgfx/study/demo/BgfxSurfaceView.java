@@ -27,7 +27,7 @@ public class BgfxSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(TAG, "surfaceCreated");
-        NativeApi.initializeSurface(this, holder.getSurface());
+        NativeApi.initializeSurface(this, holder.getSurface(), 0);
     }
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
