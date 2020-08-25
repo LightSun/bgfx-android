@@ -3,8 +3,17 @@
 //
 
 #include "bgfx_wrapper.h"
+#include "string.h"
+
+#include <syscall.h>
+#include <unistd.h>
 
 using namespace bgfx;
+
+long getThreadID() {
+// __NR_gettid: 系统调用号码宏定义，查看系统文件/usr/include/asm/unistd_64.h文件可知其为186，即下面的代码等价于：syscall(186)
+    return syscall(__NR_gettid);
+}
 
 BGFX_FUNC_ENUM(render, bgfx::RendererType::Enum){
 //bgfx::RendererType::Enum bgfx_render_enum(lua_State* L,const char* name){

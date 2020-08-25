@@ -432,6 +432,7 @@ static int bgfx_getInit(lua_State* L){
     return 1;
 }
 static int bgfx_setDebug(lua_State* L){
+   // LOGD(" thread id = %ld", getThreadID());
     bgfx::setDebug(TO_NUMBER_32(L, -1));
     return 0;
 }
@@ -441,7 +442,7 @@ static int bgfx_newApp(lua_State* L){
     const char* fn_init = luaL_checkstring(L, -3);
     const char* fn_draw =luaL_checkstring(L, -2);
     const char* fn_destroy =luaL_checkstring(L, -1);
-    LuaApp *pApp = push_new<LuaApp>(L, L, fn_pre_init,  fn_init, fn_draw, fn_destroy);
+    push_new<LuaApp>(L, L, fn_pre_init,  fn_init, fn_draw, fn_destroy);
     return 1;
 }
 static int bgfx_setViewClear(lua_State* L){

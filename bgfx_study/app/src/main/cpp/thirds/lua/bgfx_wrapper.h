@@ -36,5 +36,6 @@ BGFX_FUNC_NAME(textureFormat, bgfx::TextureFormat::Enum);
 
 extern Init *getBgfxInit(lua_State *pState);
 
+long getThreadID();
 
 #endif //BGFX_STUDY_BGFX_WRAPPER_H

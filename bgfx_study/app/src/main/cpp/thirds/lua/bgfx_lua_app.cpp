@@ -81,6 +81,7 @@ void LuaApp::init(LuaAppHolder *holder) {
     bgfx::init(*pInit);
     if (func_init) {
         lua_getglobal(L, func_init);
+        LOGD(TAG, "start call init");
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             luaL_error(L, "call LuaApp init failed. func = %s", func_init);
         }

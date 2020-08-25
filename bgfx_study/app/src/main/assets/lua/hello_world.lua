@@ -264,10 +264,12 @@ local app_pre_init = function()
    print('start reset ----- ')
    reso.reset = 0x00000080; --vsync
    print('end reset ----- ')
+  -- bgfx.setDebug(0x00000008); -- BGFX_DEBUG_TEXT
 end
 local app_init = function ()
    print("app_init");
    bgfx.setDebug(0x00000008); -- BGFX_DEBUG_TEXT
+   print("app_init done");
 end
 local app_draw = function ()
    print("app_draw");
