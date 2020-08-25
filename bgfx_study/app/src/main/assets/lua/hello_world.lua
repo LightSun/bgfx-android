@@ -268,6 +268,7 @@ local app_pre_init = function()
 end
 local app_init = function ()
    print("app_init");
+   --todo crash here by non-same thread (Bgfx check thread) ??
    bgfx.setDebug(0x00000008); -- BGFX_DEBUG_TEXT
    print("app_init done");
 end

@@ -12,8 +12,8 @@
 
 //log and report
 #define LUA_REPORT_ERROR(L, type, x) \
-    bx::debugPrintf("Invalid bgfx %s type %s", #type, x); \
-    luaL_error(L, "Invalid bgfx %s type %s", #type, x);
+    {bx::debugPrintf("Invalid bgfx %s type %s", #type, x); \
+    luaL_error(L, "Invalid bgfx %s type %s", #type, x);}
 
 #define TO_NUMBER_8(L, idx) static_cast<uint8_t>(lua_tonumber(L, idx))
 #define TO_NUMBER_16(L, idx) static_cast<uint16_t>(lua_tonumber(L, idx))
