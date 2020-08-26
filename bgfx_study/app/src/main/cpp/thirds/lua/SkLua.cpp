@@ -507,6 +507,10 @@ static int bgfx_getStats(lua_State *L) {
     push_ptr(L, pStats);
     return 1;
 }
+static int bgfx_runMain(lua_State *L){
+    lua_runMain(L);
+    return 0;
+}
 
 static void register_bgfx(lua_State* L) {
     lua_newtable(L);
@@ -517,7 +521,10 @@ static void register_bgfx(lua_State* L) {
     setfield_function(L, "getInit", bgfx_getInit);
     //setfield_function(L, "init", bgfx_init);
     setfield_function(L, "newApp", bgfx_newApp);
-    setfield_function(L, "setDebug", bgfx_setDebug);
+    setfield_function(L, "runMain", bgfx_runMain);
+
+    setfield_function(L, "setDebug", bgfx_setDebug);// must called in main thread.
+
     setfield_function(L, "setViewClear", bgfx_setViewClear);
     setfield_function(L, "setViewRect", bgfx_setViewRect);
     setfield_function(L, "touch", bgfx_touch);

@@ -17,9 +17,33 @@ using namespace heaven7_Bgfx_demo;
 #include "android/asset_manager.h"
 #endif
 
+#include "luaext_java/java_env.h"
+
 //========================== impl ============================
+#define MAIN_RUNNER    "com/heaven7/android/bgfx/study/demo/NativeApi"
+jclass _ApiClass = nullptr;
+
 BaseDemo* demo;
 bool _useLua = false;
+
+//func, resultCb, ..., pCount
+void java_runMain(long ptr){
+    JNIEnv *pEnv = getJNIEnv();
+    if(pEnv == nullptr){
+        pEnv = attachJNIEnv();
+    }
+    jmethodID mid = pEnv->GetStaticMethodID(_ApiClass, "postMain", "(J)V");
+    pEnv->CallStaticVoidMethod(_ApiClass, mid, (jlong)ptr);
+}
+
+void java_onExitRenderThread(){
+    JNIEnv *pEnv = getJNIEnv();
+    if(pEnv != nullptr){
+        pEnv->DeleteGlobalRef(_ApiClass);
+        _ApiClass = nullptr;
+    }
+    detachJNIEnv();
+}
 
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(setUseLua, jboolean useLua){
     _useLua = useLua;
@@ -37,13 +61,20 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobjec
 #endif
 }
 
-EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,jobject surface, jlong ptr){
+EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src, jobject surface, jlong ptr){
     ANativeWindow *mWindow = ANativeWindow_fromSurface(env, surface);
     if(_useLua){
+        //find class can only used in main thread
+        jclass aClass = env->FindClass(MAIN_RUNNER);
+        _ApiClass = static_cast<jclass>(env->NewGlobalRef(aClass));
+        env->DeleteLocalRef(aClass);
+
         InitConfig* config = new InitConfig();
         config->window = mWindow;
         config->win_width = ANativeWindow_getWidth(mWindow);
         config->win_height = ANativeWindow_getHeight(mWindow);
+        config->RunMain = java_runMain;
+        config->OnExitRenderThread = java_onExitRenderThread;
         Bgfx_lua_app::startApp(ptr, config);
     } else{
         //HelloWorldDemo, CurbesDemo

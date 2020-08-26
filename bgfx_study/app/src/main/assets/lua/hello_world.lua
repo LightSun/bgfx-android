@@ -256,20 +256,24 @@ local s_logo = "\z
 local initializer = bgfx.getInit();
 local reso = initializer.resolution;
 print(reso);
---todo 尚未调整完毕 see bgfx.lua
 local app_pre_init = function()
    print("app_pre_init");
    initializer.type = "OpenGLES";
    initializer.vendorId = 0;
-   print('start reset ----- ')
    reso.reset = 0x00000080; --vsync
-   print('end reset ----- ')
-  -- bgfx.setDebug(0x00000008); -- BGFX_DEBUG_TEXT
+   print('end app_pre_init ----- ')
 end
+-- init run on main for bgfx require
 local app_init = function ()
    print("app_init");
-   --todo crash here by non-same thread (Bgfx check thread) ??
+   --bgfx api must called from main thread. and must called after init
    bgfx.setDebug(0x00000008); -- BGFX_DEBUG_TEXT
+   bgfx.setViewClear(0
+   , 3          -- BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH
+   , 0x303030ff
+   , 1.0
+   , 0
+   );
    print("app_init done");
 end
 local app_draw = function ()

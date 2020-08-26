@@ -38,6 +38,9 @@ function m.setDebug(debugFlags)
     return bgfx_lua.setDebug(debugFlags);
 end
 
+function m.runMan(func, resultCb, ...)
+    --todo bgfx.runMan(func, resultCb); //func, resultCb, ..., pCount
+end
 ---
 --- setViewClear
 ---  _id: the view id

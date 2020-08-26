@@ -138,6 +138,11 @@ namespace entry {
         void *window;
         int win_width;
         int win_height;
+
+        //run lua function in main thread
+        void (*RunMain)(long luaPtr);
+        //called on exit render thread
+        void (*OnExitRenderThread)();
     } InitConfig;
 
     struct TinyStlAllocator

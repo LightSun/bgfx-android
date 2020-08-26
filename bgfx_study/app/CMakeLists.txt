@@ -33,6 +33,9 @@ set_target_properties(bx PROPERTIES IMPORTED_LOCATION ${LIB_DIR}/libbxDebug.a)
 add_library(lua SHARED IMPORTED)
 set_target_properties(lua PROPERTIES IMPORTED_LOCATION ${LIB_DIR}/liblua.so)
 
+add_library(luajava SHARED IMPORTED)
+set_target_properties(luajava PROPERTIES IMPORTED_LOCATION ${LIB_DIR}/libluajava.so)
+
 aux_source_directory(src/main/cpp/src SRC_study)
 aux_source_directory(src/main/cpp/src/samples SRC_samples)
 #aux_source_directory(src/main/cpp/src/common SRC_common)
@@ -97,6 +100,7 @@ target_link_libraries(
         bgfx_study
         bgfx_core
         bgfx_lua
+        luajava
         native_app_glue
         ${log-lib}
 )
