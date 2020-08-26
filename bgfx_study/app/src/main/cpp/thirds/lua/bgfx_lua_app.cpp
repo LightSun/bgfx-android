@@ -10,7 +10,6 @@
 #include "pthread.h"
 
 //#include <memory>
-//这里不能用静态变量或者动态变量存储 AppHolder. 不然lua里面过来时无法看到修改后的对象.
 namespace Bgfx_lua_app {
 #define KEY_APP_HOLDER "$_LuaAppHolder_"
 

@@ -268,6 +268,7 @@ local app_init = function ()
    print("app_init");
    --bgfx api must called from main thread. and must called after init
    bgfx.setDebug(0x00000008); -- BGFX_DEBUG_TEXT
+   print("bgfx setDebug ok ");
    bgfx.setViewClear(0
    , 3          -- BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH
    , 0x303030ff

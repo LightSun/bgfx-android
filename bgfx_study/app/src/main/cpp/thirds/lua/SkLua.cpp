@@ -426,13 +426,12 @@ private:
 #define AUTO_LUA(verb)  AutoCallLua acl(fL, fFunc.c_str(), verb)
 
 ///////////////////////////////////////////////////////////////////////////////
-//static bgfx::Init bgfx__init;
 static int bgfx_getInit(lua_State* L){
     push_ptr<Init>(L, getBgfxInit(L));
     return 1;
 }
 static int bgfx_setDebug(lua_State* L){
-   // LOGD(" thread id = %ld", getThreadID());
+    //luaB_dumpStack(L);
     bgfx::setDebug(TO_NUMBER_32(L, -1));
     return 0;
 }
