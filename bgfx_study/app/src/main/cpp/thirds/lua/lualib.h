@@ -10,6 +10,7 @@
 
 #include "lua.h"
 #include "../luaextra/lua_internal.h"
+#include "lauxlib.h"
 
 
 //============ end self =======
@@ -49,7 +50,9 @@ LUAMOD_API int (luaopen_package) (lua_State *L);
 /* open all previous libraries */
 LUALIB_API void (luaL_openlibs) (lua_State *L);
 
-
+//=============== HEAVEN7 start =================
+LUALIB_API void luaL_openlibs2(lua_State *L, const luaL_Reg libs[]);
+//=============== HEAVEN7 end =================
 
 #if !defined(lua_assert)
 #define lua_assert(x)	((void)0)

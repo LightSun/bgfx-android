@@ -4,7 +4,7 @@
 --- DateTime: 2020/8/23 0023 下午 9:34
 ---
 local m = {};
-require("bgfx_lua");
+--require("bgfx_lua");
 local func_wrap = require("func_wrap");
 local func_gs = require("func_to_getset");
 

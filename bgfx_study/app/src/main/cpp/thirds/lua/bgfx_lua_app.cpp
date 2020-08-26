@@ -149,6 +149,8 @@ int LuaApp::draw() {
 void LuaApp::doPreInit() {
     if (func_preInit) {
         lua_getglobal(L, func_preInit);
+        LOGD("doPreInit");
+        luaB_dumpStack(L);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             luaL_error(L, "call LuaApp pre-init failed. func = %s", func_preInit);
         }

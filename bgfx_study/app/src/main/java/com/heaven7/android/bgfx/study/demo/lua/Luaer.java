@@ -5,6 +5,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Environment;
 
+import com.heaven7.android.bgfx.study.demo.NativeApi;
 import com.heaven7.core.util.Logger;
 import com.heaven7.java.base.util.FileUtils;
 import com.heaven7.java.base.util.IOUtils;
@@ -42,10 +43,14 @@ public final class Luaer {
         this.context = context;
     }
 
-    public static void init(Context context){
-        sInstance = new Luaer(context);
-        sInstance.initLuaState();
-        sInstance.initEnv(true);
+    public static synchronized void init(Context context){
+        if(sInstance == null){
+            sInstance = new Luaer(context);
+            sInstance.initLuaState();
+            sInstance.initEnv(true);
+
+            NativeApi.initLuaBgfx(sInstance.mLuaState.getNativePointer());
+        }
     }
 
     public static Luaer get(){

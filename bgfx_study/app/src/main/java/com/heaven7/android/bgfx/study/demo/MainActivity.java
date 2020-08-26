@@ -15,10 +15,10 @@ import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
 
-    static {
+   /* static {
         System.loadLibrary("c++_shared");
         System.loadLibrary("bgfx_core");
-    }
+    }*/
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

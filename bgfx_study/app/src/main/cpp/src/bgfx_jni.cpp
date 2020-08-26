@@ -6,6 +6,8 @@
 #include "samples/samples.h"
 #include "common.h"
 #include "lua/bgfx_lua_app.h"
+#include "lua/lualib.h"
+#include "lua/SkLua.h"
 
 using namespace heaven7_Bgfx_demo;
 
@@ -96,4 +98,16 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject src){
             demo = NULL ;
         }
     }
+}
+
+static const luaL_Reg bgfx_libs[] = {
+        {"bgfx_lua", luaopen_bgfx_lua},
+        {nullptr, nullptr}
+};
+extern "C" JNIEXPORT void JNICALL Java_com_heaven7_android_bgfx_study_demo_NativeApi_initLuaBgfx(
+        JNIEnv* env, jclass clazz, jlong luaPtr){
+//EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initLuaBgfx, jlong luaPtr){
+    LOGD("_initLuaBgfx");
+    lua_State *L = reinterpret_cast<lua_State *>(luaPtr);
+    luaL_openlibs2(L, bgfx_libs);
 }

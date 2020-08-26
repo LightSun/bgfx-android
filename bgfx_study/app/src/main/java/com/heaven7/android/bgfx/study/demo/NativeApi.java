@@ -7,15 +7,23 @@ import com.heaven7.java.lua.LuaState;
 
 public final class NativeApi {
 
+    static {
+        System.loadLibrary("c++_shared");
+        System.loadLibrary("bgfx_core");
+        System.loadLibrary("bgfx_lua");
+        System.loadLibrary("bgfx_study");
+    }
+
     //set use lua or not.
-    static native void setUseLua(boolean useLua);
-    static native void destroyAll();
+    public static native void setUseLua(boolean useLua);
+    public static native void destroyAll();
 
-    static native void initAssets(Object ctx, Object assetM);
-    static native void initializeSurface(Object src, Object surface, long luaPtr);
+    public static native void initAssets(Object ctx, Object assetM);
+    public static native void initializeSurface(Object src, Object surface, long luaPtr);
 
-    static native void destroySurface(Object src);
+    public static native void destroySurface(Object src);
 
+    public native static void initLuaBgfx(long luaPtr);
     //1: func_error(string)
     //2: func_result(...)
     //3: func() -> ...
@@ -33,7 +41,7 @@ public final class NativeApi {
                 state.pop(2);
                 System.out.println("---------- postMain -------");
                 state.dumpLuaStack();
-                String error = state.pcallM(nArg, nResult, 0);
+                String error = state.pcallM(nArg, nResult, 0);//TODO crashed .why ???
                 state.dumpLuaStack();
                 System.out.println("---------- postMain -------");
                 if(error != null){
@@ -55,4 +63,5 @@ public final class NativeApi {
             }
         });
     }
+
 }

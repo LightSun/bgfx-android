@@ -880,7 +880,7 @@ const struct luaL_Reg gStats_Methods[] = {
 
 void SkLua::Load(lua_State* L) {
     //ext_println("SkLua::Load");
-    register_bgfx(L);
+    //register_bgfx(L);
     REG_CLASS(L, LuaApp);
     REG_CLASS(L, Init);
     REG_CLASS(L, PlatformData);
@@ -893,9 +893,24 @@ void SkLua::Load(lua_State* L) {
 inline Init *getBgfxInit(lua_State *L) {
     return Bgfx_lua_app::requireInit(L);
 }
-
-extern "C" int luaopen_bgfx_lua(lua_State* L);
+// here we direct load bgfx_lua.
+static const luaL_Reg testRegs[] = {
+        {"getInit", bgfx_getInit},
+        {"newApp", bgfx_newApp},
+        {"runMain", bgfx_runMain},
+        {"setDebug", bgfx_setDebug},
+        {"setViewClear", bgfx_setViewClear},
+        {"setViewRect", bgfx_setViewRect},
+        {"touch", bgfx_touch},
+        {"dbgTextClear", bgfx_dbgTextClear},
+        {"dbgTextImage", bgfx_dbgTextImage},
+        {"dbgTextPrintf", bgfx_dbgTextPrintf},
+        {"frame", bgfx_frame},
+        {"getStats", bgfx_getStats},
+        {nullptr, nullptr}
+    };
 extern "C" int luaopen_bgfx_lua(lua_State* L) {
     SkLua::Load(L);
+    luaL_newlib(L, testRegs);
     return 1;
 }
