@@ -205,20 +205,18 @@ typedef unsigned long Instruction;
 #define LUA_MINBUFFER	32
 #endif
 
-
+//============= HEAVEN7 start =============
 /*
 ** macros that are executed whenever program enters the Lua core
 ** ('lua_lock') and leaves the core ('lua_unlock')
 */
 // let you self-define lua_lock and lua_unlock
-#if !defined(lua_lock)
-//#define lua_lock(L)	((void) 0)
-//#define lua_unlock(L)	((void) 0)
-#include "pthread.h"
-#define lua_lock(L) pthread_mutex_lock(&(G(L)->lock));
-#define lua_unlock(L) pthread_mutex_unlock(&(G(L)->lock));
+/*#if !defined(lua_lock)
+#define lua_lock(L)	((void) 0)
+#define lua_unlock(L)	((void) 0)
 
-#endif
+#endif*/
+//============= HEAVEN7 end =============
 
 /*
 ** macro executed during Lua functions at points where the

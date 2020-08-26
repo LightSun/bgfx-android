@@ -150,7 +150,10 @@ typedef struct global_State {
   struct Table *mt[LUA_NUMTAGS];  /* metatables for basic types */
   TString *strcache[STRCACHE_N][STRCACHE_M];  /* cache for strings in API */
 
+#ifdef __USE_PTHREAD
   pthread_mutex_t lock;
+#endif
+
 } global_State;
 
 

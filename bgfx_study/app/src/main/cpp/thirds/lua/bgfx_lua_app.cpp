@@ -109,7 +109,7 @@ bool LuaApp::init(LuaAppHolder *holder) {
     pInit->resolution.width = pConfig->win_width;
     pInit->resolution.height = pConfig->win_height;
     bgfx::init(*pInit);
-    LOGD("bgfx init is called. func_init= %s ", func_init);
+    LOGD("bgfx init is called. holder = %p,func_init= %s ", holder, func_init);
 
     //1: func_error(string)
     //2: func_result(...)
@@ -206,7 +206,7 @@ bool LuaApp::isQuit() {
 static inline void performApp(LuaAppHolder *holder){
     LuaApp *demo = holder->app;
     bgfx::frame();
-    LOGD("loop draw >>> start");
+    LOGD("loop draw >>> start. app = %p", demo);
     int i = 0;
     while (!demo->isQuit() && demo->draw() == 0) {
         //bx::debugPrintf
@@ -234,7 +234,6 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
                     demo = holder->app = static_cast<LuaApp *>(data->data);
                     LOGD("start LuaApp : %p", demo);
                     if (!demo->isQuit()) {
-                        LOGD("---- loop start ------");
                         demo->doPreInit();
                         if(demo->init(holder)){
                             performApp(holder);

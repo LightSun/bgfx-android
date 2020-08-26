@@ -14,7 +14,9 @@
 
 
 #include "luaconf.h"
-//#include "pthread.h"
+//============== HEAVEN7 start ==========
+#include "config.h"
+//============== HEAVEN7 END =============
 
 #define LUA_VERSION_MAJOR	"5"
 #define LUA_VERSION_MINOR	"3"

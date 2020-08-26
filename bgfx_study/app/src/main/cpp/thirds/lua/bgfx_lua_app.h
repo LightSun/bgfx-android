@@ -28,7 +28,7 @@ class LuaApp;
 class LuaAppHolder;
 class CmdData;
 //防止指令重排. linux 内核可用 cpu_relax函数（效果相同）
-#define barrier() __asm__ __volatile__("": : :"memory")
+//#define barrier() __asm__ __volatile__("": : :"memory")
 
 
 #define lua_runMain(L) \
