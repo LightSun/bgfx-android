@@ -16,13 +16,10 @@
 
 #define TYPE_NONE 0;
 #define TYPE_LUA_APP_INIT    1
-//now we can draw.
-#define TYPE_BGFX_INIT_DONE    3
-#define TYPE_QUIT_ALL         10
+#define TYPE_QUIT_ALL        10
 
 typedef const char* FUNC_NAME;
 typedef void (*EndTask)();
-typedef void (*LuaCallback)();
 
 class LuaApp;
 class LuaAppHolder;
@@ -30,10 +27,10 @@ class CmdData;
 //防止指令重排. linux 内核可用 cpu_relax函数（效果相同）
 //#define barrier() __asm__ __volatile__("": : :"memory")
 
-
 #define lua_runMain(L) \
     LuaAppHolder *pHolder = Bgfx_lua_app::getAppHolder(L); \
     pHolder->config->RunMain(reinterpret_cast<long>(L));
+
 
 namespace Bgfx_lua_app{
 

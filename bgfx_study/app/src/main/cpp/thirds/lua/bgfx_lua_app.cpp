@@ -88,26 +88,12 @@ LuaApp::LuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME f
     this->func_draw = func_draw;
     this->func_destroy = func_destroy;
 }
-static int initAfterCallback(lua_State* L){
-    LOGD("lua bgfx_init success >>> initAfterCallback");
-    LuaAppHolder *pHolder = Bgfx_lua_app::getAppHolder(L);
-    if(!pHolder->app->isQuit()){
-        pHolder->sendCmd(new CmdData(TYPE_BGFX_INIT_DONE, (void *)nullptr));
-    }
-    return 0;
-}
-
-static int init_error(lua_State* L){
-    const char *msg = lua_tostring(L, -1);
-    LOGE("lua init_error: %s", msg);
-    return 0;
-}
 
 bool LuaApp::init(LuaAppHolder *holder) {
     auto pConfig = holder->config;
     Init *pInit = holder->bgfx_init;
-    LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);
-    LOGD("init config, w = %d, h = %d", pConfig->win_width, pConfig->win_height);
+    //LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);
+    //LOGD("init config, w = %d, h = %d", pConfig->win_width, pConfig->win_height);
     pInit->platformData.nwh = pConfig->window;
     pInit->resolution.width = pConfig->win_width;
     pInit->resolution.height = pConfig->win_height;
@@ -122,28 +108,6 @@ bool LuaApp::init(LuaAppHolder *holder) {
         }
     }
     return true;
-
-    //1: func_error(string)
-    //2: func_result(...)
-    //3: func() -> ...
-    //4: ... : parameters.
-    //5: count of parameters
-    //6: count of func result
-    if (func_init) {
-        lua_pushcfunction(L, init_error);
-        lua_pushcfunction(L, initAfterCallback);
-        lua_getglobal(L, func_init);
-        lua_pushnumber(L, 0);
-        lua_pushnumber(L, 0);
-        lua_runMain(L);
-        LOGD("bgfx_runMain is called for func_init. wait callback.");
-        /*if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-            luaL_error(L, "call LuaApp init failed. func = %s", func_init);
-        }*/
-        return false;
-    } else{
-        return true;
-    }
 }
 
 int LuaApp::draw() {
@@ -162,8 +126,8 @@ int LuaApp::draw() {
 void LuaApp::doPreInit() {
     if (func_preInit) {
         lua_getglobal(L, func_preInit);
-        LOGD("doPreInit");
-        luaB_dumpStack(L);
+        //LOGD("doPreInit");
+        //luaB_dumpStack(L);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
             luaL_error(L, "call LuaApp pre-init failed. func = %s, msg = %s", func_preInit, msg);
@@ -260,10 +224,6 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
                     break;
                 }
 
-                case TYPE_BGFX_INIT_DONE:
-                    performApp(holder);
-                    break;
-
                 case TYPE_QUIT_ALL:
                     LOGD("quit all.");
                     if (data->task) {
@@ -283,6 +243,9 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
     //m_thread.shutdown();
     releaseWindow(holder->bgfx_init->platformData.nwh);
     bgfx::shutdown();
+    if(holder->config->OnExitRenderThread){
+        holder->config->OnExitRenderThread();
+    }
     LOGD("threadFunc: exit.");
     return 0;
 }

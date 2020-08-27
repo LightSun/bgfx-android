@@ -35,7 +35,8 @@
         </activity>
 
         <activity android:name=".BgfxLuaActivity"
-            android:label="BgfxNativeActivity">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="BgfxLuaActivity">
         </activity>
     </application>
 

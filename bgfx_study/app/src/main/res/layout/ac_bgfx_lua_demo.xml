@@ -1,17 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
 
-    <com.heaven7.android.bgfx.study.demo.BgfxLuaView
-        android:id="@+id/bgfx_lua_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv"
+    <androidx.appcompat.widget.AppCompatButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        />
-</FrameLayout>
+        android:onClick="onClickSwitchDemo"
+        android:text="switch demo"
+        android:textAllCaps="false" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.heaven7.android.bgfx.study.demo.BgfxLuaView
+            android:id="@+id/bgfx_lua_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@android:color/white"
+            android:visibility="gone"
+            />
+    </FrameLayout>
+
+</LinearLayout>

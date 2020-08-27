@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.heaven7.adapter.BaseSelector;
@@ -37,6 +38,7 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
         mBgfxLuaView = findViewById(R.id.bgfx_lua_view);
 
         mItems = createItems();
+        mRv.setLayoutManager(new LinearLayoutManager(this));
         mRv.setAdapter(new QuickRecycleViewAdapter<Item>(R.layout.item_name, mItems) {
             @Override
             protected void onBindData(Context context, int position, final Item item, int itemLayoutId, ViewHelper2 helper) {
@@ -44,6 +46,7 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
                         .setRootOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                mRv.setVisibility(View.GONE);
                                 mBgfxLuaView.setScriptFile(mLuaer, item.path);
                             }
                         });
@@ -52,13 +55,13 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                /*String str = mLuaer.getLuaState().doStringM("local m = {};\n" +
-                        "local bgfx = require('bgfx_lua');\n" +
-                        "return m;");
-                System.err.println(str);*/
                 mBgfxLuaView.setScriptFile(mLuaer, mItems.get(0).path);
             }
         });
+    }
+
+    public void onClickSwitchDemo(View view){
+        mRv.setVisibility(View.VISIBLE);
     }
 
     @Override
