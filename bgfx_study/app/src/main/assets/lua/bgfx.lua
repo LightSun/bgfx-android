@@ -118,18 +118,24 @@ function m.makeRef(ud_mem)
 end
 --- create vertex buffer
 --- @param mem_ref: the memory ref return from 'makeRef(ud_mem)'.
---- @param verLayout_ref:
---- @param flags: the flags
+--- @param verLayout_ref: vertex layout ref
+--- @param flags: the flags. default is 0
 --- @return vertexBufferHandle
 function m.createVertexBuffer(mem_ref, verLayout_ref, flags)
+    if(not flags) then
+        flags = 0;
+    end
     return bgfx_lua.createVertexBuffer(mem_ref, verLayout_ref, flags);
-end
+    end
 --- create vertex buffer
 --- @param mem_ref: the memory ref return from 'makeRef(ud_mem)'.
 --- @param verLayout_ref:
---- @param flags: the flags
+--- @param flags: the flags . default is 0
 --- @return IndexBufferHandle
 function m.createIndexBuffer(mem_ref, flags)
+    if not flags then
+        flags = 0;
+    end
     return bgfx_lua.createIndexBuffer(mem_ref, flags);
 end
 
