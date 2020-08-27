@@ -22,6 +22,7 @@ namespace Bgfx_lua_app {
         lua_setmetatable(L, -2);
         lua_setglobal(L, KEY_APP_HOLDER);
 
+        LOGD("create LuaAppHolder = %p", *p);
         (*p)->startLoop(pConfig);
     }
 
@@ -104,6 +105,8 @@ static int init_error(lua_State* L){
 bool LuaApp::init(LuaAppHolder *holder) {
     auto pConfig = holder->config;
     Init *pInit = holder->bgfx_init;
+    LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);
+    LOGD("init config, w = %d, h = %d", pConfig->win_width, pConfig->win_height);
     pInit->platformData.nwh = pConfig->window;
     pInit->resolution.width = pConfig->win_width;
     pInit->resolution.height = pConfig->win_height;
@@ -112,6 +115,9 @@ bool LuaApp::init(LuaAppHolder *holder) {
 
     if (func_init) {
         lua_getglobal(L, func_init);
+        if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+           luaL_error(L, "call LuaApp init failed. func = %s", func_init);
+        }
     }
     return true;
 

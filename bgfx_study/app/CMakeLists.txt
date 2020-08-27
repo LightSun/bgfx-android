@@ -65,14 +65,8 @@ add_library(
         ${SRC_meshoptimizer}
         ${SRC_font}
         ${SRC_thirds}
-)
-
-add_library(
-        bgfx_lua
-        SHARED
         ${SRC_lua}
 )
-
 find_library( # Sets the name of the path variable.
         log-lib
 
@@ -99,15 +93,9 @@ target_link_libraries(
 target_link_libraries(
         bgfx_study
         bgfx_core
-        bgfx_lua
         luajava
         native_app_glue
-        ${log-lib}
-)
 
-target_link_libraries(
-        bgfx_lua
-        bgfx_core
         lua
         ${OPENGL_LIB}
         android

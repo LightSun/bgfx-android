@@ -13,11 +13,11 @@ function m.wrapUserdata(u)
         -- get and set
         local meta = {
             __index = function(t, k)
-                print(u, "__index, k =", k);
+                print(tostring(u), "__index, k =", k);
                 return m.wrapUserdata(u.call(u, tostring(k), nil));
             end,
             __newindex = function(t, k, v)
-                print(u, "__newindex, k =", k);
+                print(tostring(u), "__newindex, k =", k);
                 return m.wrapUserdata(u.call(u, tostring(k), v));
             end,
             __tostring = function(t)

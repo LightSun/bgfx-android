@@ -255,7 +255,8 @@ local s_logo = "\z
 
 local initializer = bgfx.getInit();
 local reso = initializer.resolution;
-print(reso);
+print("bgfx: init: ", initializer);
+print("bgfx: resolution: ", reso);
 local app_pre_init = function()
    print("app_pre_init");
    initializer.type = "OpenGLES";
@@ -290,6 +291,7 @@ local app_draw = function ()
    bgfx.dbgTextPrintf(80, 2, 0x0f, "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m");
 
    local stats = bgfx.getStats();
+   print("bgfx: stats: ", stats);
    bgfx.dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters."
       , stats.width
       , stats.height

@@ -13,7 +13,6 @@ public final class NativeApi {
     static {
         System.loadLibrary("c++_shared");
         System.loadLibrary("bgfx_core");
-        System.loadLibrary("bgfx_lua");
         System.loadLibrary("bgfx_study");
     }
 
