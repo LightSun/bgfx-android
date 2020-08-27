@@ -268,7 +268,6 @@ local app_init = function ()
    print("app_init");
    --bgfx api must called from main thread. and must called after init
    bgfx.setDebug(0x00000008); -- BGFX_DEBUG_TEXT
-   print("bgfx setDebug ok ");
    bgfx.setViewClear(0
    , 3          -- BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH
    , 0x303030ff
@@ -276,7 +275,6 @@ local app_init = function ()
    , 0
    );
    print("app_init done");
-   print("resolution: w, h:", reso.width, reso.height);
 end
 local app_draw = function ()
    print("app_draw");
@@ -291,7 +289,6 @@ local app_draw = function ()
    bgfx.dbgTextPrintf(80, 2, 0x0f, "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m");
 
    local stats = bgfx.getStats();
-   print("bgfx: stats: ", stats);
    bgfx.dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters."
       , stats.width
       , stats.height

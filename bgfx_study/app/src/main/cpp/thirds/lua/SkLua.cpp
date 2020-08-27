@@ -46,10 +46,10 @@ template <typename T> void push_obj(lua_State* L, const T& obj) {
     luaL_getmetatable(L, get_mtname<T>());
     lua_setmetatable(L, -2);
 }
-//慎用： 可能造成 lua和 c层用的不是同一个对象
 template <typename T> T* push_ptr(lua_State* L, T* ptr) {
     T** ls = (T**)lua_newuserdata(L, sizeof(T*));
     *ls = ptr;
+    LOGD("push_ptr:  ls = %p, ptr = %p", ls, ptr);
     luaL_getmetatable(L, get_mtname<T>());
     lua_setmetatable(L, -2);
     return ptr;
@@ -427,6 +427,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 static int bgfx_getInit(lua_State* L){
+    LOGD("bgfx_getInit:  ");
     push_ptr<Init>(L, getBgfxInit(L));
     return 1;
 }
@@ -474,20 +475,20 @@ static int bgfx_dbgTextClear(lua_State* L){
     return 0;
 }
 static int bgfx_dbgTextImage(lua_State* L){
-    int x = luaL_checkinteger(L, -6);
-    int y = luaL_checkinteger(L, -5);
-    int w = luaL_checkinteger(L, -4);
-    int h = luaL_checkinteger(L, -3);
+    auto x = TO_NUMBER_16(L, -6);
+    auto y = TO_NUMBER_16(L, -5);
+    auto w = TO_NUMBER_16(L, -4);
+    auto h = TO_NUMBER_16(L, -3);
     const char * image = luaL_checkstring(L, -2);
-    int pitch = luaL_optinteger(L, -1, 2 * w);
-    bgfx::dbgTextImage(x, y, w, h,image, pitch);
+    auto pitch = TO_NUMBER_16(L, -1);
+    bgfx::dbgTextImage(x, y, w, h, image, pitch);
     return 0;
 }
 
 static int bgfx_dbgTextPrintf(lua_State *L) {
-    int x = luaL_checkinteger(L, -4);
-    int y = luaL_checkinteger(L, -3);
-    int attrib = luaL_checkinteger(L, -2);
+    auto x = TO_NUMBER_16(L, -4);
+    auto y = TO_NUMBER_16(L, -3);
+    auto attrib = TO_NUMBER_8(L, -2);
     const char * text = luaL_checkstring(L, -1);
     bgfx::dbgTextPrintf(x, y, attrib,"%s",text);
     return 0;
@@ -537,8 +538,9 @@ static void register_bgfx(lua_State* L) {
 
 //======= init =============
 static int init_type(lua_State* L) {
-    auto pInit = get_obj<Init>(L, -2);
+    auto pInit = get_ref<Init>(L, -2);
 
+    LOGD("init_type: pInit = %p", pInit);
     const char *type = lua_tostring(L, -1);
     if (type == NULL) {
         //get
@@ -552,7 +554,7 @@ static int init_type(lua_State* L) {
 
 //see 'BGFX_PCI_ID_NONE' and etc
 static int init_vendorId(lua_State* L){
-    auto pInit = get_obj<Init>(L, -2);
+    auto pInit = get_ref<Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -564,7 +566,7 @@ static int init_vendorId(lua_State* L){
     return 0;
 }
 static int init_deviceId(lua_State* L){
-    auto pInit = get_obj<Init>(L, -2);
+    auto pInit = get_ref<Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -575,7 +577,7 @@ static int init_deviceId(lua_State* L){
     return 0;
 }
 static int init_debug(lua_State* L){
-    auto pInit = get_obj<Init>(L, -2);
+    auto pInit = get_ref<Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -586,7 +588,7 @@ static int init_debug(lua_State* L){
     return 0;
 }
 static int init_profile(lua_State* L){
-    auto pInit = get_obj<Init>(L, -2);
+    auto pInit = get_ref<Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -599,20 +601,23 @@ static int init_profile(lua_State* L){
 
 //only get
 static int init_platformData(lua_State* L){
-    auto pInit = get_obj<Init>(L, 1);
+    auto pInit = get_ref<Init>(L, 1);
+    LOGD("init_platformData");
     push_ptr(L, &pInit->platformData);
     return 1;
 }
 
 //only get
 static int init_resolution(lua_State* L){
-    auto pInit = get_obj<Init>(L, 1);
+    auto pInit = get_ref<Init>(L, 1);
+    LOGD("init_resolution, init = %p", pInit);
     push_ptr(L, &pInit->resolution);
     return 1;
 }
 //only get
 static int init_limits(lua_State* L){
-    auto pInit = get_obj<Init>(L, 1);
+    auto pInit = get_ref<Init>(L, 1);
+    LOGD("init_limits");
     push_ptr(L, &pInit->limits);
     return 1;
 }
@@ -624,14 +629,13 @@ static int forward_call(lua_State* L){ //a.call(a, k, v)
     lua_gettable(L, 1); // {a, k, v, method}
     lua_pushvalue(L, 1); // {a, k, v, method, a}
     lua_pushvalue(L, 3); // {a, k, v, method, a, v}
-    ext_println("---------  ---------");
-    ext_prints("before call...");
-    ext_println(key);
+    LOGD("---------  ---------");
+    LOGD("before call... %s", key);
     luaB_dumpStack(L);
     int result = lua_pcall(L, 2, 1, 0); //two arguments, 1 result,
-    ext_println("after call...");
+    LOGD("after call...");
     luaB_dumpStack(L);
-    ext_println("---------  ---------");
+    LOGD("---------  ---------");
     if(result == LUA_OK){
         lua_pushvalue(L, -1);
         return 1;
@@ -655,7 +659,7 @@ const struct luaL_Reg gInit_Methods[] = {
 //------------ platform-data -----------------------------
 #define INIT_PLATFORM_DATA(x) \
 static int platformData_##x(lua_State* L){ \
-    auto pd = get_obj<PlatformData>(L, -2); \
+    auto pd = get_ref<PlatformData>(L, -2); \
     auto ud = lua_touserdata(L, -1); \
     if(ud == nullptr){ \
         return luaL_error(L, "Invalid platformData.%s", #x); \
@@ -682,7 +686,7 @@ const struct luaL_Reg gPlatformData_Methods[] = {
 //----------------------- resolution ------------------
 
 static int resolution_format(lua_State* L){
-    auto reso = get_obj<Resolution>(L, -2);
+    auto reso = get_ref<Resolution>(L, -2);
 
     const char* type = lua_tostring(L, -1);
     if(type == NULL){
@@ -696,13 +700,14 @@ static int resolution_format(lua_State* L){
 
 #define INIT_RESOLUTION(x) \
 static int resolution_##x(lua_State* L){ \
-    auto pd = get_obj<Resolution>(L, -2); \
+    auto pd = get_ref<Resolution>(L, -2); \
     int type = lua_type(L, -1); \
     if(type == LUA_TNIL){ \
         lua_pushnumber(L, pd->x); \
         return 1; \
     } \
     pd->x = lua_tointeger(L, -1); \
+    LOGD("set resolution_%s, val = %d", #x, pd->x); \
     return 0; \
 }
 INIT_RESOLUTION(width)
@@ -724,7 +729,7 @@ const struct luaL_Reg gResolution_Methods[] = {
 //----------------- Limits -----------------
 #define INIT_LIMITS(x) \
 static int limits_##x(lua_State* L){ \
-    auto pd = get_obj<Init::Limits>(L, -2); \
+    auto pd = get_ref<Init::Limits>(L, -2); \
     int type = lua_type(L, -1); \
     if(type == LUA_TNIL){ \
         lua_pushnumber(L, pd->x); \
@@ -777,7 +782,7 @@ const struct luaL_Reg gLuaApp_Methods[] = {
 
 #define STATS_NUMBER(x) \
 static int stats_##x(lua_State * L){ \
-    auto pStats = bgfx::getStats(); \
+    auto pStats = get_ref<Stats>(L, 1); \
     lua_pushnumber(L, pStats->x);\
     return 1; \
 }
@@ -878,7 +883,6 @@ const struct luaL_Reg gStats_Methods[] = {
     } while (0)
 
 void SkLua::Load(lua_State* L) {
-    //ext_println("SkLua::Load");
     //register_bgfx(L);
     REG_CLASS(L, LuaApp);
     REG_CLASS(L, Init);
@@ -893,7 +897,7 @@ inline Init *getBgfxInit(lua_State *L) {
     return Bgfx_lua_app::requireInit(L);
 }
 // here we direct load bgfx_lua.
-static const luaL_Reg testRegs[] = {
+static const luaL_Reg bgfx_funcs[] = {
         {"getInit", bgfx_getInit},
         {"newApp", bgfx_newApp},
         {"runMain", bgfx_runMain},
@@ -910,6 +914,6 @@ static const luaL_Reg testRegs[] = {
     };
 extern "C" int luaopen_bgfx_lua(lua_State* L) {
     SkLua::Load(L);
-    luaL_newlib(L, testRegs);
+    luaL_newlib(L, bgfx_funcs);
     return 1;
 }

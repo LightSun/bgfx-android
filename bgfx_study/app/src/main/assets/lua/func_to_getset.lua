@@ -7,6 +7,7 @@
 local m = {};
 
 --- wrap user data: for native
+---- a.debug = false; (set). local d = a.debug; get
 function m.wrapUserdata(u)
     if(type(u) == 'userdata') then
         local self = {};
@@ -28,6 +29,27 @@ function m.wrapUserdata(u)
         return self;
     else
         --print("only used for user data");
+        return u;
+    end
+end
+
+--- wrap userdata as get
+function m.wrapUserdataGet(u)
+    if(type(u) == 'userdata') then
+        local self = {};
+        -- get
+        local meta = {
+            __index = function(t, k)
+                print(tostring(u), "__index, k =", k);
+                return m.wrapUserdata(u.call(u, tostring(k), nil));
+            end,
+            __tostring = function(t)
+                return "wrapper: "..tostring(u);
+            end
+        };
+        setmetatable(self, meta);
+        return self;
+    else
         return u;
     end
 end

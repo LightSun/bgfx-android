@@ -38,9 +38,6 @@ function m.setDebug(debugFlags)
     return bgfx_lua.setDebug(debugFlags);
 end
 
-function m.runMan(func, resultCb, ...)
-    --todo bgfx.runMan(func, resultCb); //func, resultCb, ..., pCount
-end
 ---
 --- setViewClear
 ---  _id: the view id
@@ -49,38 +46,46 @@ end
 --- c_depth: clear depth
 --- c_stencil: clear stencil
 function m.setViewClear(_id, c_flags, c_rgba, c_depth, c_stencil)
+    print("bgfx >>> setViewClear")
     bgfx_lua.setViewClear(_id, c_flags, c_rgba, c_depth, c_stencil);
 end
 
 function m.setViewRect(_id, x, y, w, h)
+    print("bgfx >>> setViewRect")
     bgfx_lua.setViewRect(_id, x, y, w, h);
 end
 
 function m.touch(id)
+    print("bgfx >>> touch")
     bgfx_lua.touch(id);
 end
 
 function m.dbgTextClear()
+    print("bgfx >>> dbgTextClear")
     bgfx_lua.dbgTextClear();
 end
 
 --- image: const char *
 function m.dbgTextImage(x, y, w, h,image, pitch)
+    print("bgfx >>> dbgTextImage")
     bgfx_lua.dbgTextImage(x, y, w, h,image, pitch);
 end
 
 function m.dbgTextPrintf(x, y, attrib, format,...)
     local a = {...};
     local str = string.format(format, table.unpack(a));
-    bgfx_lua.dbgTextPrintf(x, y ,attrib, str);
+    print("bgfx >>> dbgTextPrintf, str =", str)
+    bgfx_lua.dbgTextPrintf(x, y , attrib, str);
 end
 
 function m.frame(capture)
+    print("bgfx >>> frame")
     bgfx_lua.frame(capture);
 end
 
 function m.getStats()
-    return bgfx_lua.getStats();
+    print("bgfx >>> getStats")
+    return func_gs.wrapUserdataGet(bgfx_lua.getStats());
 end
 
 return m;

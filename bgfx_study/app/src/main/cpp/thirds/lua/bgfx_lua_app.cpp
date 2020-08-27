@@ -37,6 +37,7 @@ namespace Bgfx_lua_app {
 
     bgfx::Init *requireInit(lua_State* L) {
         auto pHolder = getAppHolder(L);
+        LOGD("app-holder = %p", pHolder);
         if (!pHolder->bgfx_init) {
             pHolder->bgfx_init = new bgfx::Init();
             LOGD("requireInit >>> bgfx_init: addr = %p", pHolder->bgfx_init);
@@ -116,7 +117,8 @@ bool LuaApp::init(LuaAppHolder *holder) {
     if (func_init) {
         lua_getglobal(L, func_init);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-           luaL_error(L, "call LuaApp init failed. func = %s", func_init);
+            const char *msg = lua_tostring(L, -1);
+            luaL_error(L, "call LuaApp init failed. func = %s, msg = %s", func_init, msg);
         }
     }
     return true;
@@ -148,7 +150,8 @@ int LuaApp::draw() {
     if (func_draw) {
         lua_getglobal(L, func_draw);
         if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
-            luaL_error(L, "call LuaApp draw failed. func = %s", func_draw);
+            const char *msg = lua_tostring(L, -1);
+            luaL_error(L, "call LuaApp draw failed. func = %s, msg = %s", func_draw, msg);
         } else {
             return TO_NUMBER_16(L, -1);
         }
@@ -162,7 +165,8 @@ void LuaApp::doPreInit() {
         LOGD("doPreInit");
         luaB_dumpStack(L);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-            luaL_error(L, "call LuaApp pre-init failed. func = %s", func_preInit);
+            const char *msg = lua_tostring(L, -1);
+            luaL_error(L, "call LuaApp pre-init failed. func = %s, msg = %s", func_preInit, msg);
         }
     }
 }
