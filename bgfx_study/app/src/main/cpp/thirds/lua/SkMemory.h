@@ -28,6 +28,8 @@ public:
 
     void asConstant();
 
+    void destroyData();
+
     //------ index start from 0 --------
     uint32_t readUInt32(size_t index);
     uint8_t readUByte(size_t index);
@@ -39,13 +41,14 @@ public:
     void writeUShort(size_t index, uint16_t val);
     void writeFloat(size_t index, float val);
 
-private:
+public:
     void *data;
     size_t size;
-    std::atomic_int _ref;
     uint8_t _constant; // 1 is constant. 0 not.
-    const char * _dType;
+    std::atomic_int _ref;
 
+private:
+    const char * _dType;
     uint32_t getTotalBytes(lua_State *L, int tableCount, const char *t);
 };
 

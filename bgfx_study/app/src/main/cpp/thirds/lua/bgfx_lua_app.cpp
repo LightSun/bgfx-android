@@ -89,7 +89,7 @@ LuaApp::LuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME f
     this->func_destroy = func_destroy;
 }
 
-bool LuaApp::init(LuaAppHolder *holder) {
+void LuaApp::init(LuaAppHolder *holder) {
     auto pConfig = holder->config;
     Init *pInit = holder->bgfx_init;
     //LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);
@@ -107,7 +107,6 @@ bool LuaApp::init(LuaAppHolder *holder) {
             luaL_error(L, "call LuaApp init failed. func = %s, msg = %s", func_init, msg);
         }
     }
-    return true;
 }
 
 int LuaApp::draw() {
@@ -215,9 +214,8 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
                     LOGD("start LuaApp : %p", demo);
                     if (!demo->isQuit()) {
                         demo->doPreInit();
-                        if(demo->init(holder)){
-                            performApp(holder);
-                        }
+                        demo->init(holder);
+                        performApp(holder);
                     } else{
                         holder->destroyApp();
                     }

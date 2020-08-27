@@ -7,7 +7,7 @@
 
 #include "../../../core/common.h"
 #include "../../base_demo.h"
-#include "../bgfx_utils.h"
+#include "bgfx_utils.h"
 
 #include <bx/timer.h>
 #include <bx/string.h>

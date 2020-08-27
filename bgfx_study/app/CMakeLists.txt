@@ -56,13 +56,13 @@ add_library(
         SHARED
         ${SRC_android}
         ${SRC_core}
+        ${SRC_meshoptimizer}
 )
 add_library(
         bgfx_study
         SHARED
         ${SRC_study}
         ${SRC_samples}
-        ${SRC_meshoptimizer}
         ${SRC_font}
         ${SRC_thirds}
         ${SRC_lua}
@@ -95,7 +95,6 @@ target_link_libraries(
         bgfx_core
         luajava
         native_app_glue
-
         lua
         ${OPENGL_LIB}
         android

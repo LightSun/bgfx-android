@@ -80,7 +80,7 @@ public:
      * @param pConfig  the config
      * @return  true if init success.
      */
-    bool init(LuaAppHolder *pConfig);
+    void init(LuaAppHolder *pConfig);
 
     //called in sub-thread.
     int draw();

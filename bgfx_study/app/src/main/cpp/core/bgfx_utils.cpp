@@ -20,7 +20,7 @@ namespace stl = tinystl;
 #ifdef USE_NATIVE_ACTIVITY
 #include "../entry.h"
 #else
-#include "../core/common.h"
+#include "common.h"
 #endif
 
 #include <meshoptimizer/src/meshoptimizer.h>

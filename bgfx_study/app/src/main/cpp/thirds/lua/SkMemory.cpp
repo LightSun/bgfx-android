@@ -32,12 +32,9 @@ for (int i = 0; i < tableCount; ++i) { \
 }
 
 SkMemory::~SkMemory() {
-    if(data){
-        free(data);
-        data = nullptr;
-    }
+    destroyData();
 }
-SkMemory::SkMemory(lua_State *L, int tableCount, const char *t) :_ref(0), _constant(0){
+SkMemory::SkMemory(lua_State *L, int tableCount, const char *t) :_ref(1), _constant(0){
     _dType = t;
     size = getTotalBytes(L, tableCount, t);
     if(size > 0){
@@ -144,4 +141,11 @@ uint32_t SkMemory::getTotalBytes(lua_State *L, int tableCount, const char *t){
         totalSize += len * minSize;
     }
     return totalSize;
+}
+
+void SkMemory::destroyData() {
+    if(data){
+        free(data);
+        data = nullptr;
+    }
 }
