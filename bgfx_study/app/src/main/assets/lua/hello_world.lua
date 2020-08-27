@@ -263,7 +263,6 @@ local app_pre_init = function()
    reso.reset = 0x00000080; --vsync
    print('end app_pre_init ----- ')
 end
--- init run on main for bgfx require
 local app_init = function ()
    print("app_init");
    --bgfx api must called from main thread. and must called after init
@@ -276,6 +275,7 @@ local app_init = function ()
    , 0
    );
    print("app_init done");
+   print("resolution: w, h:", reso.width, reso.height);
 end
 local app_draw = function ()
    print("app_draw");

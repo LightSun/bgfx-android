@@ -110,6 +110,11 @@ bool LuaApp::init(LuaAppHolder *holder) {
     bgfx::init(*pInit);
     LOGD("bgfx init is called. holder = %p,func_init= %s ", holder, func_init);
 
+    if (func_init) {
+        lua_getglobal(L, func_init);
+    }
+    return true;
+
     //1: func_error(string)
     //2: func_result(...)
     //3: func() -> ...
