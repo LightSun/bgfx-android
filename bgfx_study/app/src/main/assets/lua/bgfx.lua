@@ -88,4 +88,8 @@ function m.getStats()
     return func_gs.wrapUserdataGet(bgfx_lua.getStats());
 end
 
+function m.newVertexLayout()
+    return bgfx_lua.newVertexLayout();
+end
+
 return m;

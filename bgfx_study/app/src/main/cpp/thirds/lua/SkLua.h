@@ -18,7 +18,6 @@
 struct lua_State;
 
 typedef float SkScalar;
-
 #define SkScalarToLua(x)    SkScalarToDouble(x)
 #define SkLuaToScalar(x)    SkDoubleToScalar(x)
 

@@ -147,7 +147,8 @@ void LuaApp::destroy() {
         if (func_destroy) {
             lua_getglobal(L, func_destroy);
             if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-                luaL_error(L, "call LuaApp destroy failed. func = %s", func_destroy);
+                const char *msg = lua_tostring(L, -1);
+                luaL_error(L, "call LuaApp destroy failed. func = %s, msg = %s", func_destroy, msg);
             }
         }
         lua_pushnil(L);
@@ -165,7 +166,7 @@ void LuaApp::destroy() {
         //destroy thread. window , and bgfx
         //m_thread.shutdown();
         // releaseWindow(getBgfxInit()->platformData.nwh);
-        // bgfx::shutdown();
+        bgfx::shutdown();
     }
 }
 
@@ -203,8 +204,7 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
     CmdData *data = nullptr;
     LuaApp *demo = nullptr;
 
-    //bgfx init and render must be in one thread.
-    //bgfx: non-render api must be called in main thread.
+    //bgfx api: should call in one thread.
     while (true) {
         auto pVoid = _thread->pop();
         if (pVoid != nullptr) {
@@ -242,7 +242,6 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
     }
     //m_thread.shutdown();
     releaseWindow(holder->bgfx_init->platformData.nwh);
-    bgfx::shutdown();
     if(holder->config->OnExitRenderThread){
         holder->config->OnExitRenderThread();
     }

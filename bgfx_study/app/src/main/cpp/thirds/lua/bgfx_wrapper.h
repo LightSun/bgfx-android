@@ -34,6 +34,12 @@ BGFX_FUNC_INT(reset);
 BGFX_FUNC_ENUM(textureFormat, bgfx::TextureFormat::Enum);
 BGFX_FUNC_NAME(textureFormat, bgfx::TextureFormat::Enum);
 
+BGFX_FUNC_ENUM(attrib, bgfx::Attrib::Enum);
+BGFX_FUNC_NAME(attrib, bgfx::Attrib::Enum);
+
+BGFX_FUNC_ENUM(attribType, bgfx::AttribType::Enum);
+BGFX_FUNC_NAME(attribType, bgfx::AttribType::Enum);
+
 extern Init *getBgfxInit(lua_State *pState);
 
 long getThreadID();

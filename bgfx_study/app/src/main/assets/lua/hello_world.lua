@@ -259,14 +259,13 @@ print("bgfx: init: ", initializer);
 print("bgfx: resolution: ", reso);
 local app_pre_init = function()
    print("app_pre_init");
-   initializer.type = "OpenGLES";
+   initializer.type = "Count";
    initializer.vendorId = 0;
    reso.reset = 0x00000080; --vsync
    print('end app_pre_init ----- ')
 end
 local app_init = function ()
    print("app_init");
-   --bgfx api must called from main thread. and must called after init
    bgfx.setDebug(0x00000008); -- BGFX_DEBUG_TEXT
    bgfx.setViewClear(0
    , 3          -- BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH

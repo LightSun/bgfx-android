@@ -12,6 +12,7 @@
 #include "lua.hpp"
 #include "bgfx_wrapper.h"
 #include "bgfx_lua_app.h"
+#include "SkMemory.h"
 
 extern "C"{
 #include <cstring>
@@ -32,6 +33,8 @@ DEF_MTNAME(PlatformData)
 DEF_MTNAME(Resolution)
 DEF_MTNAME(Init::Limits)
 DEF_MTNAME(Stats)
+DEF_MTNAME(VertexLayout)
+DEF_MTNAME(SkMemory)
 
 template <typename T, typename... Args> T* push_new(lua_State* L, Args&&... args) {
     T* addr = (T*)lua_newuserdata(L, sizeof(T));
@@ -49,7 +52,7 @@ template <typename T> void push_obj(lua_State* L, const T& obj) {
 template <typename T> T* push_ptr(lua_State* L, T* ptr) {
     T** ls = (T**)lua_newuserdata(L, sizeof(T*));
     *ls = ptr;
-    LOGD("push_ptr:  ls = %p, ptr = %p", ls, ptr);
+    //LOGD("push_ptr:  ls = %p, ptr = %p", ls, ptr);
     luaL_getmetatable(L, get_mtname<T>());
     lua_setmetatable(L, -2);
     return ptr;
@@ -508,6 +511,22 @@ static int bgfx_getStats(lua_State *L) {
     return 1;
 }
 
+static int bgfx_newVertexLayout(lua_State *L){
+    VertexLayout *layout = new VertexLayout();
+    push_ptr(L, layout);
+    return 1;
+}
+
+static int bgfx_newMemory(lua_State *L){
+    //int tableCount, type (b, s, i, f)
+    const char* type = lua_tostring(L, -1);
+    int tableCount = static_cast<int>(lua_tointeger(L, -2));
+    lua_pop(L, 2);
+    SkMemory *pMemory = new SkMemory(L, tableCount, type);
+    push_ptr(L, pMemory);
+    return 1;
+}
+
 static void register_bgfx(lua_State* L) {
     lua_newtable(L);
     lua_pushvalue(L, -1);
@@ -866,6 +885,106 @@ const struct luaL_Reg gStats_Methods[] = {
         {"numEncoders", stats_numEncoders},
         {NULL, NULL},
 };
+//---------------------- VertexLayout ----------------------
+
+static int vertexLayout_begin(lua_State* L){
+    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    //RendererType::Enum
+    const char *name = lua_tostring(L, -1);
+    if(name == nullptr){
+        pLayout->begin();
+    } else{
+        pLayout->begin(bgfx_render_enum(L, name));
+    }
+    //return this
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int vertexLayout_add(lua_State* L){
+    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    //.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+    auto _num = TO_NUMBER_8(L, 3);
+    auto _normalized = lua_toboolean(L, 4) == 1;
+    auto _asInt = lua_toboolean(L, 5) == 1;
+
+    Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
+    AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 4));
+    pLayout->add(attrib, _num, attribType, _normalized, _asInt);
+    //return this
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int vertexLayout_skip(lua_State* L){
+    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    auto _num = TO_NUMBER_8(L, -1);
+    pLayout->skip(_num);
+    //return this
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
+static int vertexLayout_decode(lua_State* L){
+    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    //.decode(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+    auto _num = TO_NUMBER_8(L, 3);
+    auto _normalized = lua_toboolean(L, 4) == 1;
+    auto _asInt = lua_toboolean(L, 5) == 1;
+
+    Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
+    AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 4));
+    pLayout->decode(attrib, _num, attribType, _normalized, _asInt);
+    //return this
+    lua_pushvalue(L, 1);
+    return 1;
+}
+static int vertexLayout_has(lua_State* L){
+    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    //bool has(Attrib::Enum _attrib);
+    Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, -1));
+    lua_pushboolean(L, pLayout->has(attrib) ? 1 : 0);
+    return 1;
+}
+static int vertexLayout_getOffset(lua_State* L){
+    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, -1));
+    //uint16_t getOffset(Attrib::Enum _attrib)
+    lua_pushnumber(L, pLayout->getOffset(attrib));
+    return 1;
+}
+static int vertexLayout_getStride(lua_State* L){
+    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    //uint16_t getStride() const { return m_stride; }
+    lua_pushnumber(L, pLayout->getStride());
+    return 1;
+}
+static int vertexLayout_getSize(lua_State* L){
+    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    //uint32_t getSize(uint32_t _num);
+    auto _num = TO_NUMBER_8(L, -1);
+    lua_pushnumber(L, pLayout->getSize(_num));
+    return 1;
+}
+
+static int vertexLayout_end(lua_State* L){
+    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    pLayout->end();
+    return 0;
+}
+
+const struct luaL_Reg gVertexLayout_Methods[] = {
+        {"begin", vertexLayout_begin},
+        {"add", vertexLayout_add},
+        {"skip", vertexLayout_skip},
+        {"decode", vertexLayout_decode},
+        {"has", vertexLayout_has},
+        {"getOffset", vertexLayout_getOffset},
+        {"getStride", vertexLayout_getStride},
+        {"getSize", vertexLayout_getSize},
+        {"ends", vertexLayout_end}, // end is key-world of lua
+        {NULL, NULL},
+};
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -886,6 +1005,8 @@ void SkLua::Load(lua_State* L) {
     REG_CLASS(L, Resolution);
     REG_CLASS(L, Init::Limits);
     REG_CLASS(L, Stats);
+    REG_CLASS(L, VertexLayout);
+    //TODO REG_CLASS(L, SkMemory);
     //TODO CallbackI*, bx::AllocatorI*
 }
 
@@ -905,6 +1026,9 @@ static const luaL_Reg bgfx_funcs[] = {
         {"dbgTextPrintf", bgfx_dbgTextPrintf},
         {"frame", bgfx_frame},
         {"getStats", bgfx_getStats},
+
+        {"newVertexLayout", bgfx_newVertexLayout},
+        {"newMemory", bgfx_newMemory},
         {nullptr, nullptr}
     };
 extern "C" int luaopen_bgfx_lua(lua_State* L) {

@@ -218,3 +218,133 @@ BGFX_FUNC_NAME(textureFormat, bgfx::TextureFormat::Enum){
             return "unknown_TextureFormat";
     }
 }
+
+/**
+ * 	Position,  //!< a_position
+			Normal,    //!< a_normal
+			Tangent,   //!< a_tangent
+			Bitangent, //!< a_bitangent
+			Color0,    //!< a_color0
+			Color1,    //!< a_color1
+			Color2,    //!< a_color2
+			Color3,    //!< a_color3
+			Indices,   //!< a_indices
+			Weight,    //!< a_weight
+			TexCoord0, //!< a_texcoord0
+			TexCoord1, //!< a_texcoord1
+			TexCoord2, //!< a_texcoord2
+			TexCoord3, //!< a_texcoord3
+			TexCoord4, //!< a_texcoord4
+			TexCoord5, //!< a_texcoord5
+			TexCoord6, //!< a_texcoord6
+			TexCoord7, //!< a_texcoord7
+
+			Count
+ */
+BGFX_FUNC_ENUM(attrib, bgfx::Attrib::Enum){
+    bgfx::Attrib::Enum id;
+#define ATTRIB_ID(x)  \
+if (strcmp(x, "Position") == 0) id = bgfx::Attrib::Enum::Position; \
+else if (strcmp(x, "Normal") == 0) id = bgfx::Attrib::Enum::Normal; \
+else if (strcmp(x, "Tangent") == 0) id = bgfx::Attrib::Enum::Tangent; \
+else if (strcmp(x, "Bitangent") == 0) id = bgfx::Attrib::Enum::Bitangent; \
+else if (strcmp(x, "Color0") == 0) id = bgfx::Attrib::Enum::Color0; \
+else if (strcmp(x, "Color1") == 0) id = bgfx::Attrib::Enum::Color1; \
+else if (strcmp(x, "Color2") == 0) id = bgfx::Attrib::Enum::Color2; \
+else if (strcmp(x, "Color3") == 0) id = bgfx::Attrib::Enum::Color3; \
+else if (strcmp(x, "Indices") == 0) id = bgfx::Attrib::Enum::Indices; \
+else if (strcmp(x, "Weight") == 0) id = bgfx::Attrib::Enum::Weight; \
+else if (strcmp(x, "Indices") == 0) id = bgfx::Attrib::Enum::Indices; \
+else if (strcmp(x, "TexCoord0") == 0) id = bgfx::Attrib::Enum::TexCoord0; \
+else if (strcmp(x, "TexCoord1") == 0) id = bgfx::Attrib::Enum::TexCoord1; \
+else if (strcmp(x, "TexCoord2") == 0) id = bgfx::Attrib::Enum::TexCoord2; \
+else if (strcmp(x, "TexCoord3") == 0) id = bgfx::Attrib::Enum::TexCoord3; \
+else if (strcmp(x, "TexCoord4") == 0) id = bgfx::Attrib::Enum::TexCoord4; \
+else if (strcmp(x, "TexCoord5") == 0) id = bgfx::Attrib::Enum::TexCoord5; \
+else if (strcmp(x, "TexCoord6") == 0) id = bgfx::Attrib::Enum::TexCoord6; \
+else if (strcmp(x, "TexCoord7") == 0) id = bgfx::Attrib::Enum::TexCoord7; \
+else if (strcmp(x, "Count") == 0) id = bgfx::Attrib::Enum::Count; \
+else LUA_REPORT_ERROR(L, "attrib", name);
+    ATTRIB_ID(name);
+    return id;
+}
+BGFX_FUNC_NAME(attrib, bgfx::Attrib::Enum){
+    switch (en) {
+        case bgfx::Attrib::Position:
+            return "Position";
+        case bgfx::Attrib::Normal:
+            return "Normal";
+        case bgfx::Attrib::Bitangent:
+            return "Bitangent";
+        case bgfx::Attrib::Color0:
+            return "Color0";
+        case bgfx::Attrib::Color1:
+            return "Color1";
+        case bgfx::Attrib::Color2:
+            return "Color2";
+        case bgfx::Attrib::Color3:
+            return "Color3";
+        case bgfx::Attrib::Indices:
+            return "Indices";
+        case bgfx::Attrib::Weight:
+            return "Weight";
+        case bgfx::Attrib::TexCoord0:
+            return "TexCoord0";
+        case bgfx::Attrib::TexCoord1:
+            return "TexCoord1";
+        case bgfx::Attrib::TexCoord2:
+            return "TexCoord2";
+        case bgfx::Attrib::TexCoord3:
+            return "TexCoord3";
+        case bgfx::Attrib::TexCoord4:
+            return "TexCoord4";
+        case bgfx::Attrib::TexCoord5:
+            return "TexCoord5";
+        case bgfx::Attrib::TexCoord6:
+            return "TexCoord6";
+        case bgfx::Attrib::TexCoord7:
+            return "TexCoord7";
+        case bgfx::Attrib::Count:
+            return "Count";
+    }
+    return "unknown_bgfx::Attrib";
+}
+
+/**
+ *          Uint8,  //!< Uint8
+			Uint10, //!< Uint10, availability depends on: `BGFX_CAPS_VERTEX_ATTRIB_UINT10`.
+			Int16,  //!< Int16
+			Half,   //!< Half, availability depends on: `BGFX_CAPS_VERTEX_ATTRIB_HALF`.
+			Float,  //!< Float
+			Count
+ */
+BGFX_FUNC_ENUM(attribType, bgfx::AttribType::Enum){
+    bgfx::AttribType::Enum id;
+#define AttribType_ID(x)  \
+if (strcmp(x, "Uint8") == 0) id = bgfx::AttribType::Enum::Uint8; \
+else if (strcmp(x, "Uint10") == 0) id = bgfx::AttribType::Enum::Uint10; \
+else if (strcmp(x, "Int16") == 0) id = bgfx::AttribType::Enum::Int16; \
+else if (strcmp(x, "Half") == 0) id = bgfx::AttribType::Enum::Half; \
+else if (strcmp(x, "Float") == 0) id = bgfx::AttribType::Enum::Float; \
+else if (strcmp(x, "Count") == 0) id = bgfx::AttribType::Enum::Count; \
+else LUA_REPORT_ERROR(L, "attribType", name);
+    AttribType_ID(name);
+    return id;
+}
+BGFX_FUNC_NAME(attribType, bgfx::AttribType::Enum){
+    switch (en) {
+        case bgfx::AttribType::Uint8:
+            return "Uint8";
+        case bgfx::AttribType::Uint10:
+            return "Uint10";
+        case bgfx::AttribType::Int16:
+            return "Int16";
+        case bgfx::AttribType::Half:
+            return "Half";
+        case bgfx::AttribType::Float:
+            return "Float";
+        case bgfx::AttribType::Count:
+            return "Count";
+    }
+    return "unknown_bgfx::AttribType";
+}
