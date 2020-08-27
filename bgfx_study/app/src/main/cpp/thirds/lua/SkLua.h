@@ -22,6 +22,7 @@ typedef float SkScalar;
 #define SkLuaToScalar(x)    SkDoubleToScalar(x)
 
 extern "C" int luaopen_bgfx_lua(lua_State* L);
+extern "C" int luaopen_bx_lua(lua_State* L);
 
 class SkLua {
 public:

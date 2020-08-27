@@ -102,6 +102,7 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject src){
 
 static const luaL_Reg bgfx_libs[] = {
         {"bgfx_lua", luaopen_bgfx_lua},
+        {"bx_lua", luaopen_bx_lua},
         {nullptr, nullptr}
 };
 extern "C" JNIEXPORT void JNICALL Java_com_heaven7_android_bgfx_study_demo_NativeApi_initLuaBgfx(

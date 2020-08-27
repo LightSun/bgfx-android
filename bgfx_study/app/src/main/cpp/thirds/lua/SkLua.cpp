@@ -7,12 +7,14 @@
 
 #include <new>
 #include <bx/hash.h>
+#include <bx/timer.h>
 #include "SkLua.h"
 #include "SkRefCnt.h"
 #include "lua.hpp"
 #include "bgfx_wrapper.h"
 #include "bgfx_lua_app.h"
 #include "SkMemory.h"
+#include "bgfx_utils.h"
 
 extern "C"{
 #include <cstring>
@@ -40,11 +42,14 @@ DEF_MTNAME(Init::Limits)
 DEF_MTNAME(Stats)
 DEF_MTNAME(VertexLayout)
 DEF_MTNAME(SkMemory)
+DEF_MTNAME(SkMemoryFFFUI)
 //----------- only get_mtname ------
 DEF_MTNAME(Memory)
 DEF_MTNAME(VertexBufferHandle)
 DEF_MTNAME(VertexLayoutHandle)
 DEF_MTNAME(IndexBufferHandle)
+DEF_MTNAME(ProgramHandle)
+DEF_MTNAME(ShaderHandle)
 
 template <typename T, typename... Args> T* push_new(lua_State* L, Args&&... args) {
     T* addr = (T*)lua_newuserdata(L, sizeof(T));
@@ -489,19 +494,33 @@ static int bgfx_newMemory(lua_State *L){
     push_ptr(L, pMemory);
     return 1;
 }
-static void release_SkMemory(void* _ptr, void* _userData){
+static int bgfx_newMemoryFFFUI(lua_State *L){
+    //int tableCount, type (b, s, i, f)
+    int tableCount = static_cast<int>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+    SkMemoryFFFUI *pMemory = new SkMemoryFFFUI(L, tableCount);
+    push_ptr(L, pMemory);
+    return 1;
+}
+static void release_Memory(void* _ptr, void* _userData){
     BX_UNUSED(_ptr);
-    SkMemory* pMemory = static_cast<SkMemory *>(_userData);
+    AbsSkMemory* pMemory = static_cast<AbsSkMemory *>(_userData);
     if(pMemory->unRef() == 0){
         pMemory->destroyData();
     }
 }
 static int bgfx_makeRef(lua_State* L){
-    auto pMemory = get_ref<SkMemory>(L, 1);
-    CHECK_MEMORY_VALID(L, pMemory)
-    pMemory->ref();
-    Memory* mem = const_cast<Memory *>(bgfx::makeRef(pMemory->data, pMemory->size,
-            release_SkMemory, pMemory));
+    AbsSkMemory * memory = get_ref<SkMemory>(L, 1);
+    if(memory == nullptr){
+        memory = get_ref<SkMemoryFFFUI>(L, 1);
+    }
+    if(memory == nullptr){
+        return luaL_error(L, "bgfx_makeRef failed. %s", lua_tostring(L, 1));
+    }
+    CHECK_MEMORY_VALID(L, memory)
+    memory->ref();
+    Memory* mem = const_cast<Memory *>(bgfx::makeRef(memory->data, memory->size,
+                                                     release_Memory, memory));
     push_ptr(L, mem);
     return 1;
 }
@@ -522,6 +541,23 @@ static int bgfx_createIndexBuffer(lua_State* L){
     return 1;
 }
 
+static int bgfx_createProgram(lua_State* L){
+    auto v_sh = get_ref<ShaderHandle>(L, 1);
+    auto f_sh = get_ref<ShaderHandle>(L, 2);
+    auto destroyShader = lua_toboolean(L, 3) == 1;
+    ProgramHandle handle = bgfx::createProgram(*v_sh, *f_sh, destroyShader);
+    push_ptr(L, &handle);
+    return 1;
+}
+
+static int bgfx_loadProgram(lua_State* L){
+    auto v_sh = lua_tostring(L, 1);
+    auto f_sh = lua_tostring(L, 2);
+    ProgramHandle handle = loadProgram(v_sh, f_sh);
+    push_ptr(L, &handle);
+    return 1;
+}
+
 static void register_bgfx(lua_State* L) {
     lua_newtable(L);
     lua_pushvalue(L, -1);
@@ -529,11 +565,9 @@ static void register_bgfx(lua_State* L) {
     // the bgfx table is still on top
 
     setfield_function(L, "getInit", bgfx_getInit);
-    //setfield_function(L, "init", bgfx_init);
     setfield_function(L, "newApp", bgfx_newApp);
-    //setfield_function(L, "runMain", bgfx_runMain);
 
-    setfield_function(L, "setDebug", bgfx_setDebug);// must called in main thread.
+    setfield_function(L, "setDebug", bgfx_setDebug);
 
     setfield_function(L, "setViewClear", bgfx_setViewClear);
     setfield_function(L, "setViewRect", bgfx_setViewRect);
@@ -871,6 +905,11 @@ const struct luaL_Reg gStats_Methods[] = {
 
         {"textureMemoryUsed", stats_textureMemoryUsed},
         {"rtMemoryUsed", stats_rtMemoryUsed},
+        {"transientVbUsed", stats_transientVbUsed},
+        {"transientIbUsed", stats_transientIbUsed},
+        {"gpuMemoryMax", stats_gpuMemoryMax},
+        {"gpuMemoryUsed", stats_gpuMemoryUsed},
+
         {"width", stats_width},
         {"height", stats_height},
         {"textWidth", stats_textWidth},
@@ -967,7 +1006,7 @@ static int vertexLayout_end(lua_State* L){
     return 0;
 }
 
-const struct luaL_Reg gVertexLayout_Methods[] = {
+const static luaL_Reg gVertexLayout_Methods[] = {
         {"begin", vertexLayout_begin},
         {"add", vertexLayout_add},
         {"skip", vertexLayout_skip},
@@ -980,22 +1019,35 @@ const struct luaL_Reg gVertexLayout_Methods[] = {
         {NULL, NULL},
 };
 //---------------------- Memory --------------------------
-static int skMemory_isValid(lua_State* L){
-    auto pMemory = get_ref<SkMemory>(L, 1);
-    lua_pushboolean(L, pMemory->_ref > 0);
-    return 1;
+#define memory_isValid(type)  \
+static int type##_isValid(lua_State* L){ \
+    auto pMemory = get_ref<type>(L, 1); \
+    lua_pushboolean(L, pMemory->_ref > 0); \
+    return 1; \
 }
-static int skMemory_gc(lua_State* L){
-    auto pMemory = get_ref<SkMemory>(L, 1);
-    if(pMemory->unRef() == 0){
-        pMemory->destroyData();
-        delete pMemory;
-    }
-    return 0;
+#define memory_gc(type) \
+static int type##_gc(lua_State* L){ \
+    auto pMemory = get_ref<type>(L, 1); \
+    if(pMemory->unRef() == 0){ \
+        pMemory->destroyData(); \
+        delete pMemory;  \
+    }\
+    return 0;\
 }
-const struct luaL_Reg gSkMemory_Methods[] = {
-        {"isValid", skMemory_isValid},
-        {"__gc", skMemory_gc},
+memory_isValid(SkMemory);
+memory_gc(SkMemory);
+
+memory_isValid(SkMemoryFFFUI);
+memory_gc(SkMemoryFFFUI);
+
+const static luaL_Reg gSkMemory_Methods[] = {
+        {"isValid", SkMemory_isValid},
+        {"__gc", SkMemory_gc},
+        {"NULL", NULL},
+};
+const static luaL_Reg gSkMemoryFFFUI_Methods[] = {
+        {"isValid", SkMemoryFFFUI_isValid},
+        {"__gc", SkMemoryFFFUI_gc},
         {"NULL", NULL},
 };
 ///////////////////////////////////////////////////////////////////////
@@ -1019,6 +1071,7 @@ void SkLua::Load(lua_State* L) {
     REG_CLASS(L, Stats);
     REG_CLASS(L, VertexLayout);
     REG_CLASS(L, SkMemory);
+    REG_CLASS(L, SkMemoryFFFUI);
     //TODO CallbackI*, bx::AllocatorI*
 }
 
@@ -1041,13 +1094,38 @@ static const luaL_Reg bgfx_funcs[] = {
 
         {"newVertexLayout", bgfx_newVertexLayout},
         {"newMemory", bgfx_newMemory},
+        {"newMemoryFFFUI", bgfx_newMemoryFFFUI},
         {"makeRef", bgfx_makeRef},
         {"createVertexBuffer", bgfx_createVertexBuffer},
         {"createIndexBuffer", bgfx_createIndexBuffer},
+        {"createProgram", bgfx_createProgram},
+
+        //----- extra relative bgfx stand api ------
+        {"loadProgram", bgfx_loadProgram},
         {nullptr, nullptr}
     };
 extern "C" int luaopen_bgfx_lua(lua_State* L) {
     SkLua::Load(L);
     luaL_newlib(L, bgfx_funcs);
+    return 1;
+}
+//--------------------------------------------------------
+static int bx_getHPCounter(lua_State* L){
+    auto i = bx::getHPCounter();
+    lua_pushinteger(L, i);
+    return 1;
+}
+static int bx_getHPFrequency(lua_State* L){
+    auto i = bx::getHPFrequency();
+    lua_pushinteger(L, i);
+    return 1;
+}
+static const luaL_Reg bx_funcs[] = {
+        {"getHPCounter", bx_getHPCounter},
+        {"getHPFrequency", bx_getHPFrequency},
+        {nullptr, nullptr}
+};
+extern "C" int luaopen_bx_lua(lua_State* L){
+    luaL_newlib(L, bx_funcs);
     return 1;
 }

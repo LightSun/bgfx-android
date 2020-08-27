@@ -42,6 +42,4 @@ BGFX_FUNC_NAME(attribType, bgfx::AttribType::Enum);
 
 extern Init *getBgfxInit(lua_State *pState);
 
-long getThreadID();
-
 #endif //BGFX_STUDY_BGFX_WRAPPER_H

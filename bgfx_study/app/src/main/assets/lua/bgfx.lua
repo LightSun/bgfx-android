@@ -87,9 +87,67 @@ function m.getStats()
     print("bgfx >>> getStats")
     return func_gs.wrapUserdataGet(bgfx_lua.getStats());
 end
-
+--- new VertexLayout.
+--- @return VertexLayout from bgfx pkg
 function m.newVertexLayout()
     return bgfx_lua.newVertexLayout();
 end
 
+--- create single type memory. type: can be 'd', 'w', 'b', 'f'.
+--- 'd' is u-int32
+--- 'w' is u-int16
+--- 'b' is u-int8
+--- 'f' is float
+--- ...: means multi table
+function m.newMemory(type, ...)
+    local tabs = {...};
+    return bgfx_lua.newVertexLayout(table.unpack(tabs), #tabs, type);
+end
+
+--- create fix type memory: 'float-float-float-uint32'
+--- ...: means multi table of 'fffui'.
+function m.newMemoryFFFUI(...)
+    local tabs = {...};
+    return bgfx_lua.newMemoryFFFUI(table.unpack(tabs), #tabs);
+end
+
+---
+---@return userdata of Memory
+function m.makeRef(ud_mem)
+    return bgfx_lua.makeRef(ud_mem);
+end
+--- create vertex buffer
+--- @param mem_ref: the memory ref return from 'makeRef(ud_mem)'.
+--- @param verLayout_ref:
+--- @param flags: the flags
+--- @return vertexBufferHandle
+function m.createVertexBuffer(mem_ref, verLayout_ref, flags)
+    return bgfx_lua.createVertexBuffer(mem_ref, verLayout_ref, flags);
+end
+--- create vertex buffer
+--- @param mem_ref: the memory ref return from 'makeRef(ud_mem)'.
+--- @param verLayout_ref:
+--- @param flags: the flags
+--- @return IndexBufferHandle
+function m.createIndexBuffer(mem_ref, flags)
+    return bgfx_lua.createIndexBuffer(mem_ref, flags);
+end
+
+---
+--- createProgram
+--- @param v_sh: ShaderHandle of vertex
+--- @param f_sh: ShaderHandle of fragment
+--- @param destroy_shader: true if destroy shader
+--- @return ProgramHandle
+function m.createProgram(v_sh, f_sh, destroy_shader)
+    return bgfx_lua.createProgram(v_sh, f_sh, destroy_shader);
+end
+---
+--- createProgram
+--- @param v_sh: name of vertex shader
+--- @param f_sh: name of fragment shader
+--- @return ProgramHandle
+function m.loadProgram(v_sh_name, f_sh_name)
+    return bgfx_lua.loadProgram(v_sh_name, f_sh_name);
+end
 return m;
