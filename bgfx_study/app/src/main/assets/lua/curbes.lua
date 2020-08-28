@@ -143,6 +143,7 @@ local app_init = function ()
     m_ibh[3] = bgfx.createIndexBuffer(bgfx.makeRef(s_cubeLineList));
     m_ibh[4] = bgfx.createIndexBuffer(bgfx.makeRef(s_cubeLineStrip));
     m_ibh[5] = bgfx.createIndexBuffer(bgfx.makeRef(s_cubePoints));
+    print("m_ibh[1] = ",m_ibh[1])
 
     print("loadProgram : m_program init")
     m_program = bgfx.loadProgram("vs_cubes", "fs_cubes");
@@ -199,21 +200,21 @@ local app_draw = function ()
             mtx[14] = 0.0;
 
             -- Set model matrix for rendering.
-            print("--------- setTransform")
+            --print("--------- setTransform")
             bgfx.setTransform(mtx);
 
             -- Set vertex and index buffer.
-            print("--------- setVertexBuffer")
+            --print("--------- setVertexBuffer")
             bgfx.setVertexBuffer(0, m_vbh);
-            print("--------- setIndexBuffer")
+            --print("--------- setIndexBuffer")
             bgfx.setIndexBuffer(ibh);
 
             -- Set render states.
-            print("--------- setState")
+            --print("--------- setState")
             bgfx.setState(state);
 
             -- Submit primitive for rendering to view 0.
-            print("--------- submit")
+            --print("--------- submit")
             bgfx.submit(0, m_program);
         end
     end

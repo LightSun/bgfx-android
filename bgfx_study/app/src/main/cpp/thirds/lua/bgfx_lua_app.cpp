@@ -119,6 +119,8 @@ int LuaApp::draw() {
             LOGE("%s", msg);
             luaL_error(L, "call LuaApp draw failed. func = %s, msg = %s", func_draw, msg);
         } else {
+            LOGD("LuaApp::draw-------------");
+            luaB_dumpStack(L);//TODO no return value .why?
             return TO_NUMBER_16(L, -1);
         }
     }

@@ -490,7 +490,7 @@ static int bgfx_createIndexBuffer(lua_State* L){
 static int bgfx_createProgram(lua_State* L){
     auto v_sh = get_ref<bgfx::ShaderHandle>(L, 1);
     auto f_sh = get_ref<bgfx::ShaderHandle>(L, 2);
-    auto destroyShader = lua_toboolean(L, 3) == 1;
+    auto destroyShader = lua_type(L, 3) != LUA_TNIL ? lua_toboolean(L, 3) == 1 : false;
     bgfx::ProgramHandle handle = bgfx::createProgram(*v_sh, *f_sh, destroyShader);
 
     auto pHandle = new bgfx::ProgramHandle();
@@ -541,7 +541,7 @@ static int bgfx_setVertexBuffer(lua_State* L){
 }
 static int bgfx_setIndexBuffer(lua_State* L){
     //bgfx::setIndexBuffer(m_vbh)
-    auto ref = get_ref<bgfx::IndexBufferHandle>(L, 2);
+    auto ref = get_ref<bgfx::IndexBufferHandle>(L, 1);
     //bgfx::IndexBufferHandle handle = { ref->idx };
     bgfx::setIndexBuffer(*ref);
     return 0;
