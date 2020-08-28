@@ -18,7 +18,8 @@ end
 local function create_callback_table (fn, name)
     local t = {}
     t.callback = fn
-    setmetatable (t, {__call =  -- 关注__call
+    setmetatable (t, {
+        __call =  -- 关注__call
                       function (tab, ...) -- 在t(xx)时，将调用到这个函数
                           tab.callback (...) -- 真正的回调
                           if(name) then

@@ -189,24 +189,31 @@ local app_draw = function ()
     for y = 1, 11, 1 do
         local yy = y - 1;
         for x = 1, 11, 1 do
+            print("y, x = ", y, x)
             local xx = x - 1;
             local mtx = mem.newMemoryArray('f', 16);
             bx.mtxRotateXY(mtx, time + time + xx*0.21, time + yy*0.37);
+            --
             mtx[12] = -15.0 + xx*3.0;
             mtx[13] = -15.0 + yy*3.0;
             mtx[14] = 0.0;
 
             -- Set model matrix for rendering.
+            print("--------- setTransform")
             bgfx.setTransform(mtx);
 
             -- Set vertex and index buffer.
+            print("--------- setVertexBuffer")
             bgfx.setVertexBuffer(0, m_vbh);
+            print("--------- setIndexBuffer")
             bgfx.setIndexBuffer(ibh);
 
             -- Set render states.
+            print("--------- setState")
             bgfx.setState(state);
 
             -- Submit primitive for rendering to view 0.
+            print("--------- submit")
             bgfx.submit(0, m_program);
         end
     end

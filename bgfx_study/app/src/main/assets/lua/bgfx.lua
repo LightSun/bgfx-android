@@ -6,7 +6,7 @@
 local m = {};
 --require("bgfx_lua");
 local func_wrap = require("func_wrap");
-local func_gs = require("func_to_getset");
+local ud_wrap = require("ud_wrap");
 
 local function dumpInit(init_wrapper, out)
     out.type = init_wrapper.type();
@@ -22,7 +22,7 @@ end
 
 function m.getInit()
     local init = bgfx_lua.getInit();
-    return func_gs.wrapUserdata(init);
+    return ud_wrap.wrapGetSet(init);
 end
 
 function m.newApp(func_pre_init, func_init, func_draw, func_destroy)
@@ -99,19 +99,19 @@ end
 --- numViews, numEncoders
 function m.getStats()
     print("bgfx >>> getStats")
-    return func_gs.wrapUserdataGet(bgfx_lua.getStats());
+    return ud_wrap.wrapGet(bgfx_lua.getStats());
 end
 
 --- number of fields can access.
 --- rendererType, homogeneousDepth, originBottomLeft, numGPUs, formats
 function m.getCaps()
-    return func_gs.wrapUserdataGet(bgfx_lua.getCaps());
+    return ud_wrap.wrapGet(bgfx_lua.getCaps());
 end
 
 --- new VertexLayout.
 --- @return VertexLayout from bgfx pkg
 function m.newVertexLayout()
-    return bgfx_lua.newVertexLayout();
+    return ud_wrap.wrapCall(bgfx_lua.newVertexLayout(), nil);
 end
 
 ---
@@ -128,8 +128,12 @@ function m.createVertexBuffer(mem_ref, verLayout_ref, flags)
     if(not flags) then
         flags = 0;
     end
-    return bgfx_lua.createVertexBuffer(mem_ref, verLayout_ref, flags);
+    -- for verLayout_ref often be wrapped. by 'ud_wrap.lua'.
+    if(verLayout_ref._unwrap) then
+        verLayout_ref = verLayout_ref._unwrap();
     end
+    return bgfx_lua.createVertexBuffer(mem_ref, verLayout_ref, flags);
+end
 --- create vertex buffer
 --- @param mem_ref: the memory ref return from 'makeRef(ud_mem)'.
 --- @param verLayout_ref:

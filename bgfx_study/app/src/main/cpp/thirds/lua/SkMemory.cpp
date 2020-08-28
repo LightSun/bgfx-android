@@ -3,6 +3,7 @@
 //
 #include "SkMemory.h"
 #include "common.h"
+#include "lua_wrapper.h"
 
 #define copy_data_f(dType, step) \
 char * addr = static_cast<char *>(data); \
@@ -93,12 +94,12 @@ float SkMemory::readFloat(size_t index) {
     addr += index;
     return *addr;
 }
-uint8_t SkMemory::readUByte(size_t index) {
+uint8_t SkMemory::readUInt8(size_t index) {
     uint8_t* addr = (uint8_t*)data;
     addr += index;
     return *addr;
 }
-uint16_t SkMemory::readUShort(size_t index) {
+uint16_t SkMemory::readUInt16(size_t index) {
     uint16_t* addr = (uint16_t*)data;
     addr += index;
     return *addr;
@@ -113,12 +114,12 @@ void SkMemory::writeFloat(size_t index, float val) {
     addr += index;
     *addr = val;
 }
-void SkMemory::writeUByte(size_t index, uint8_t val){
+void SkMemory::writeUInt8(size_t index, uint8_t val){
     uint8_t * addr = (uint8_t*)data;
     addr += index;
     *addr = val;
 }
-void SkMemory::writeUShort(size_t index, uint16_t val) {
+void SkMemory::writeUInt16(size_t index, uint16_t val) {
     uint16_t * addr = (uint16_t*)data;
     addr += index;
     *addr = val;
@@ -130,6 +131,48 @@ void SkMemory::writeUInt32(size_t index, uint32_t val) {
 }
 bool SkMemory::isFloat() {
     return _dType[0] == 'f';
+}
+int SkMemory::write(SkMemory* mem, lua_State *L) {
+    //table, index, value
+    auto index = lua_tointeger(L, -2);
+    switch (mem->_dType[0]) {
+        case 'f':
+            mem->writeFloat(index, TO_FLOAT(L, -1));
+            return 0;
+        case 'd':
+            mem->writeUInt32(index, TO_NUMBER_32(L, -1));
+            return 0;
+        case 'w':
+            mem->writeUInt16(index, TO_NUMBER_16(L, -1));
+            return 0;
+        case 'b':
+            mem->writeUInt8(index, TO_NUMBER_8(L, -1));
+            return 0;
+
+        default:
+            return luaL_error(L, "wrong data type = %s", mem->_dType);
+    }
+}
+int SkMemory::read(SkMemory* mem, lua_State *L) {
+    //table, index
+    auto index = lua_tointeger(L, -1);
+    switch (mem->_dType[0]) {
+        case 'f':
+            lua_pushnumber(L, mem->readFloat(index));
+            return 1;
+        case 'd':
+            lua_pushnumber(L, mem->readUInt32(index));
+            return 1;
+        case 'w':
+            lua_pushnumber(L, mem->readUInt16(index));
+            return 1;
+        case 'b':
+            lua_pushnumber(L, mem->readUInt8(index));
+            return 1;
+
+        default:
+            return luaL_error(L, "wrong data type = %s", mem->_dType);
+    }
 }
 
 //-----------------------------------------------------------------------
@@ -197,6 +240,7 @@ SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : AbsSkMemory(){
         lua_pop(L, 1);
     }
     lua_pop(L, 1);
+    return ;
     out:
         unRef();
 }

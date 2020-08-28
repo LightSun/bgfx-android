@@ -459,23 +459,31 @@ static int bgfx_makeRef(lua_State* L){
     memory->ref();
     bgfx::Memory* mem = const_cast<bgfx::Memory *>(bgfx::makeRef(memory->data, memory->size,
                                                      release_Memory, memory));
-    push_ptr(L, mem);
+    push_ptr<bgfx::Memory>(L, mem);
     return 1;
 }
 
 static int bgfx_createVertexBuffer(lua_State* L){
+    LOGD("bgfx_createVertexBuffer --------------- ");
+    luaB_dumpStack(L);
     auto pT = get_ref<bgfx::Memory>(L, 1);
     auto layout = get_ref<bgfx::VertexLayout>(L, 2);
     auto flags = lua_tointeger(L, 3);
     bgfx::VertexBufferHandle handle = bgfx::createVertexBuffer(pT, *layout, flags);
-    push_ptr(L, &handle);
+    //
+    auto pHandle = new bgfx::VertexBufferHandle();
+    pHandle->idx = handle.idx;
+    push_ptr(L, pHandle);
     return 1;
 }
 static int bgfx_createIndexBuffer(lua_State* L){
     auto pT = get_ref<bgfx::Memory>(L, 1);
     auto flags = lua_tointeger(L, 2);
     bgfx::IndexBufferHandle handle = bgfx::createIndexBuffer(pT, flags);
-    push_ptr(L, &handle);
+
+    auto pHandle = new bgfx::IndexBufferHandle();
+    pHandle->idx = handle.idx;
+    push_ptr(L, pHandle);
     return 1;
 }
 
@@ -484,7 +492,10 @@ static int bgfx_createProgram(lua_State* L){
     auto f_sh = get_ref<bgfx::ShaderHandle>(L, 2);
     auto destroyShader = lua_toboolean(L, 3) == 1;
     bgfx::ProgramHandle handle = bgfx::createProgram(*v_sh, *f_sh, destroyShader);
-    push_ptr(L, &handle);
+
+    auto pHandle = new bgfx::ProgramHandle();
+    pHandle->idx = handle.idx;
+    push_ptr(L, pHandle);
     return 1;
 }
 
@@ -492,7 +503,10 @@ static int bgfx_loadProgram(lua_State* L){
     auto v_sh = lua_tostring(L, 1);
     auto f_sh = lua_tostring(L, 2);
     bgfx::ProgramHandle handle = loadProgram(v_sh, f_sh);
-    push_ptr(L, &handle);
+
+    auto pHandle = new bgfx::ProgramHandle();
+    pHandle->idx = handle.idx;
+    push_ptr(L, pHandle);
     return 1;
 }
 static int bgfx_setViewTransform(lua_State* L){
@@ -520,14 +534,16 @@ static int bgfx_setTransform(lua_State* L){
 static int bgfx_setVertexBuffer(lua_State* L){
     //bgfx::setVertexBuffer(0, m_vbh)
     uint16_t stream = TO_NUMBER_16(L, 1);
-    bgfx::VertexBufferHandle *pHandle = get_ref<bgfx::VertexBufferHandle>(L, 2);
-    bgfx::setVertexBuffer(stream, *pHandle);
+    auto ref = get_ref<bgfx::VertexBufferHandle>(L, 2);
+    //bgfx::VertexBufferHandle handle = { ref->idx };
+    bgfx::setVertexBuffer(stream, *ref);
     return 0;
 }
 static int bgfx_setIndexBuffer(lua_State* L){
     //bgfx::setIndexBuffer(m_vbh)
-    bgfx::IndexBufferHandle *pHandle = get_ref<bgfx::IndexBufferHandle>(L, 1);
-    bgfx::setIndexBuffer(*pHandle);
+    auto ref = get_ref<bgfx::IndexBufferHandle>(L, 2);
+    //bgfx::IndexBufferHandle handle = { ref->idx };
+    bgfx::setIndexBuffer(*ref);
     return 0;
 }
 static int bgfx_setState(lua_State* L){
@@ -670,7 +686,7 @@ static int init_limits(lua_State* L){
     push_ptr(L, &pInit->limits);
     return 1;
 }
-//wrap method for lua get and set. see 'func_to_getset.lua'
+//wrap method for lua get and set. see 'ud_wrap.lua'
 static int forward_call(lua_State* L){ //a.call(a, k, v)
     const char *key = lua_tostring(L, -2);
     // before is {a, k, v};
@@ -685,6 +701,30 @@ static int forward_call(lua_State* L){ //a.call(a, k, v)
     LOGD("after call...");
     luaB_dumpStack(L);
     LOGD("---------  ---------");
+    if(result == LUA_OK){
+        lua_pushvalue(L, -1);
+        return 1;
+    }
+    return 0;
+}
+// {a, k, ...} => a.k(a, ...)
+static int forward_func_call(lua_State* L){
+    //a.call  (a, tostring(s), ...):  {a, k, ...} .
+    //need: {a, func, a, ...}
+    auto n = lua_gettop(L);
+    auto key = lua_tostring(L, 2);
+    lua_pushvalue(L, 2); //{a, k, ..., k}
+    lua_remove(L, 2);   // {a, ..., k}
+    lua_gettable(L, 1); // {a, ..., func}
+    lua_insert(L, 2);   // {a, func, ...}
+    lua_pushvalue(L, 1); // {a, func, ... , a}
+    lua_insert(L, 3); // {a, func, a, ...}
+    
+    LOGD("------- before func_call... %s", key);
+    luaB_dumpStack(L);
+    int result = lua_pcall(L, n - 1, 1, 0);
+    LOGD("------- after func_call... %d", result); // 0 is ok
+    luaB_dumpStack(L);
     if(result == LUA_OK){
         lua_pushvalue(L, -1);
         return 1;
@@ -979,9 +1019,12 @@ namespace gbgfx{
 //---------------------- VertexLayout ----------------------
 
 static int vertexLayout_begin(lua_State* L){
+    LOGD("vertexLayout_begin------");
+    luaB_dumpStack(L);
+
     bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //RendererType::Enum
-    const char *name = lua_tostring(L, -1);
+    const char *name = lua_tostring(L, 2);
     if(name == nullptr){
         pLayout->begin();
     } else{
@@ -995,12 +1038,12 @@ static int vertexLayout_begin(lua_State* L){
 static int vertexLayout_add(lua_State* L){
     bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 1));
-    auto _num = TO_NUMBER_8(L, 2);
-    bgfx::AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 3));
+    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
+    auto _num = TO_NUMBER_8(L, 3);
+    bgfx::AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 4));
     //opt parameter
-    auto _normalized = lua_type(L, 4) != LUA_TNIL ? lua_toboolean(L, 4) == 1 : false;
-    auto _asInt = lua_type(L, 5) != LUA_TNIL ? lua_toboolean(L, 5) == 1 : false;
+    auto _normalized = lua_type(L, 5) != LUA_TNIL ? lua_toboolean(L, 5) == 1 : false;
+    auto _asInt = lua_type(L, 6) != LUA_TNIL ? lua_toboolean(L, 6) == 1 : false;
 
     pLayout->add(attrib, _num, attribType, _normalized, _asInt);
     //return this
@@ -1010,7 +1053,7 @@ static int vertexLayout_add(lua_State* L){
 
 static int vertexLayout_skip(lua_State* L){
     bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
-    auto _num = TO_NUMBER_8(L, -1);
+    auto _num = TO_NUMBER_8(L, 2);
     pLayout->skip(_num);
     //return this
     lua_pushvalue(L, 1);
@@ -1020,12 +1063,11 @@ static int vertexLayout_skip(lua_State* L){
 static int vertexLayout_decode(lua_State* L){
     bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //.decode(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-    auto _num = TO_NUMBER_8(L, 3);
-    auto _normalized = lua_toboolean(L, 4) == 1;
-    auto _asInt = lua_toboolean(L, 5) == 1;
-
     bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
+    auto _num = TO_NUMBER_8(L, 3);
     bgfx::AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 4));
+    auto _normalized = lua_toboolean(L, 5) == 1;
+    auto _asInt = lua_toboolean(L, 6) == 1;
     pLayout->decode(attrib, _num, attribType, _normalized, _asInt);
     //return this
     lua_pushvalue(L, 1);
@@ -1034,13 +1076,13 @@ static int vertexLayout_decode(lua_State* L){
 static int vertexLayout_has(lua_State* L){
     bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //bool has(Attrib::Enum _attrib);
-    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, -1));
+    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
     lua_pushboolean(L, pLayout->has(attrib) ? 1 : 0);
     return 1;
 }
 static int vertexLayout_getOffset(lua_State* L){
     bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
-    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, -1));
+    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
     //uint16_t getOffset(Attrib::Enum _attrib)
     lua_pushnumber(L, pLayout->getOffset(attrib));
     return 1;
@@ -1054,7 +1096,7 @@ static int vertexLayout_getStride(lua_State* L){
 static int vertexLayout_getSize(lua_State* L){
     bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //uint32_t getSize(uint32_t _num);
-    auto _num = TO_NUMBER_8(L, -1);
+    auto _num = TO_NUMBER_8(L, 2);
     lua_pushnumber(L, pLayout->getSize(_num));
     return 1;
 }
@@ -1067,6 +1109,7 @@ static int vertexLayout_end(lua_State* L){
 
 namespace gbgfx {
     const static luaL_Reg VertexLayout_Methods[] = {
+            {"call",     forward_func_call},
             {"begin",     vertexLayout_begin},
             {"add",       vertexLayout_add},
             {"skip",      vertexLayout_skip},
@@ -1101,8 +1144,19 @@ memory_gc(SkMemory);
 memory_isValid(SkMemoryFFFUI);
 memory_gc(SkMemoryFFFUI);
 
+static int SkMemory_index(lua_State* L){
+    auto pMemory = get_ref<SkMemory>(L, 1);
+    return SkMemory::read(pMemory, L);
+}
+static int SkMemory_newindex(lua_State* L){
+    auto pMemory = get_ref<SkMemory>(L, 1);
+    return SkMemory::write(pMemory, L);
+}
+
 const static luaL_Reg gSkMemory_Methods[] = {
         {"isValid", SkMemory_isValid},
+        {"__newindex", SkMemory_newindex},
+        {"__index", SkMemory_index},
         {"__gc", SkMemory_gc},
         {NULL, NULL},
 };
@@ -1281,6 +1335,25 @@ extern "C" int luaopen_hmem_lua(lua_State* L){
     return 1;
 }
 ///////////////////////////////////////////////////////////////////////
+
+#define HANDLE_METHODS(t) \
+static int t##_gc(lua_State* L){ \
+    auto pT = get_ref<bgfx::t>(L, 1); \
+    delete pT;\
+    return 0;\
+}\
+namespace gbgfx{\
+    static const luaL_Reg t##_Methods[] = {\
+            {"__gc", t##_gc},\
+            {nullptr, nullptr}\
+    };\
+}
+HANDLE_METHODS(VertexBufferHandle)
+HANDLE_METHODS(VertexLayoutHandle)
+HANDLE_METHODS(IndexBufferHandle)
+HANDLE_METHODS(ProgramHandle)
+HANDLE_METHODS(ShaderHandle)
+
 DEF_MTNAME(bgfx::Init)
 DEF_MTNAME(bgfx::PlatformData)
 DEF_MTNAME(bgfx::Resolution)
@@ -1314,5 +1387,12 @@ void SkLua::Load(lua_State* L) {
     REG_CLASS(L, LuaApp);
     REG_CLASS(L, SkMemory);
     REG_CLASS(L, SkMemoryFFFUI);
+
+    REG_EMPTY_CLASS(L, bgfx::Memory);
+    REG_CLASS(L, bgfx::VertexBufferHandle);
+    REG_CLASS(L, bgfx::VertexLayoutHandle);
+    REG_CLASS(L, bgfx::IndexBufferHandle);
+    REG_CLASS(L, bgfx::ProgramHandle);
+    REG_CLASS(L, bgfx::ShaderHandle);
     //TODO CallbackI*, bx::AllocatorI*
 }

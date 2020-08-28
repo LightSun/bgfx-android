@@ -35,4 +35,13 @@ template <typename T> const char* get_mtname();
         lua_pop(L, 1); /* pop off the meta-table */ \
     } while (0)
 
+//register empty class . just used for 'get_mtname'
+#define REG_EMPTY_CLASS(L, C)                       \
+    do {                                            \
+        luaL_newmetatable(L, get_mtname<C>());      \
+        lua_pushvalue(L, -1);                       \
+        lua_setfield(L, -2, "__index");             \
+        lua_pop(L, 1); /* pop off the meta-table */ \
+    } while (0)
+
 #endif //BGFX_STUDY_LUA_WRAPPER_H
