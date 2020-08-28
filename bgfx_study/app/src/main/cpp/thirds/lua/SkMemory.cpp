@@ -54,6 +54,12 @@ void AbsSkMemory::destroyData() {
         data = nullptr;
     }
 }
+//---------------------------------------------------------------------------------
+SkMemory::SkMemory(const char *type, int len): AbsSkMemory(), _dType(type) {
+    size = getUnitSize(type) * len;
+    SkASSERT(size > 0);
+    data = malloc(size);
+}
 SkMemory::SkMemory(lua_State *L, int tableCount, const char *t) : AbsSkMemory(){
     _dType = t;
     size = getTotalBytes(L, tableCount, t);
@@ -122,27 +128,32 @@ void SkMemory::writeUInt32(size_t index, uint32_t val) {
     addr += index;
     *addr = val;
 }
+bool SkMemory::isFloat() {
+    return _dType[0] == 'f';
+}
 
 //-----------------------------------------------------------------------
-inline uint32_t SkMemory::getTotalBytes(lua_State *L, int tableCount, const char *t){
-    uint8_t minSize;
+inline int SkMemory::getUnitSize(const char *t) {
     switch (t[0]) {
         case 'f':
         case 'd':
-            minSize = 4;
-            break;
+            return 4;
         case 'w':
-            minSize = 2;
-            break;
+            return 2;
         case 'b':
-            minSize = 1;
-            break;
+            return 1;
 
         default:
-            luaL_error(L, "wrong type of memory-unit: %s", t);
             return 0;
     }
-    uint32_t totalSize = 0 ;
+}
+inline int SkMemory::getTotalBytes(lua_State *L, int tableCount, const char *t){
+    int minSize = getUnitSize(t);
+    if(minSize == 0){
+        luaL_error(L, "wrong type of memory-unit: %s", t);
+        return 0;
+    }
+    int totalSize = 0 ;
     for (int i = 0; i < tableCount; ++i) {
         size_t len = lua_rawlen(L, i + 1);
         totalSize += len * minSize;

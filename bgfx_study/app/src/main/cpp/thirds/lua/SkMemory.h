@@ -1,5 +1,5 @@
 //
-// Created by Administrator on 2020/8/27 0027.
+// Created by heaven7 on 2020/8/27 0027.
 //
 
 #ifndef BGFX_STUDY_SKMEMORY_H
@@ -37,6 +37,12 @@ public:
      * @param minUnitSize
      */
     SkMemory(lua_State* L, int tableCount, const char* type);
+    /**
+     * create memory with default data.
+     * @param type the data type
+     * @param len the array length
+     */
+    SkMemory(const char* type, int len);
 
     //------ index start from 0 --------
     uint32_t readUInt32(size_t index);
@@ -49,9 +55,13 @@ public:
     void writeUShort(size_t index, uint16_t val);
     void writeFloat(size_t index, float val);
 
-private:
+    bool isFloat();
+public:
     const char * _dType;
-    static uint32_t getTotalBytes(lua_State *L, int tableCount, const char *t);
+
+private:
+    static int getTotalBytes(lua_State *L, int tableCount, const char *t);
+    static int getUnitSize(const char* type);
 };
 
 //float,float,float, uint32_t

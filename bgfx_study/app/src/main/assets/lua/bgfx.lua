@@ -93,24 +93,6 @@ function m.newVertexLayout()
     return bgfx_lua.newVertexLayout();
 end
 
---- create single type memory. type: can be 'd', 'w', 'b', 'f'.
---- 'd' is u-int32
---- 'w' is u-int16
---- 'b' is u-int8
---- 'f' is float
---- ...: means multi table
-function m.newMemory(type, ...)
-    local tabs = {...};
-    return bgfx_lua.newVertexLayout(table.unpack(tabs), #tabs, type);
-end
-
---- create fix type memory: 'float-float-float-uint32'
---- ...: means multi table of 'fffui'.
-function m.newMemoryFFFUI(...)
-    local tabs = {...};
-    return bgfx_lua.newMemoryFFFUI(table.unpack(tabs), #tabs);
-end
-
 ---
 ---@return userdata of Memory
 function m.makeRef(ud_mem)

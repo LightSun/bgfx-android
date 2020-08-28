@@ -8,7 +8,6 @@
 #include <new>
 #include <bx/hash.h>
 #include <bx/timer.h>
-#include "SkLua.h"
 #include "SkRefCnt.h"
 #include "lua.hpp"
 #include "bgfx_wrapper.h"
@@ -16,40 +15,17 @@
 #include "SkMemory.h"
 #include "bgfx_utils.h"
 
+#include "lua_wrapper.h"
+#include "SkLua.h"
+
 extern "C"{
 #include <cstring>
 }
-
-using namespace bgfx;
 
 #define CHECK_MEMORY_VALID(L, m) \
 if(m->_ref == 0){ \
     return luaL_error(L, "Invalid sk-memory, which has already been destroyed."); \
 }
-
-// return the metatable name for a given class
-template <typename T> const char* get_mtname();
-#define DEF_MTNAME(T)                           \
-    template <> const char* get_mtname<T>() {   \
-        return #T "_LuaMetaTableName";          \
-    }
-
-DEF_MTNAME(LuaApp)
-DEF_MTNAME(Init)
-DEF_MTNAME(PlatformData)
-DEF_MTNAME(Resolution)
-DEF_MTNAME(Init::Limits)
-DEF_MTNAME(Stats)
-DEF_MTNAME(VertexLayout)
-DEF_MTNAME(SkMemory)
-DEF_MTNAME(SkMemoryFFFUI)
-//----------- only get_mtname ------
-DEF_MTNAME(Memory)
-DEF_MTNAME(VertexBufferHandle)
-DEF_MTNAME(VertexLayoutHandle)
-DEF_MTNAME(IndexBufferHandle)
-DEF_MTNAME(ProgramHandle)
-DEF_MTNAME(ShaderHandle)
 
 template <typename T, typename... Args> T* push_new(lua_State* L, Args&&... args) {
     T* addr = (T*)lua_newuserdata(L, sizeof(T));
@@ -90,12 +66,13 @@ template <typename T> T* get_ref(lua_State* L, int index) {
     return *(T**)luaL_checkudata(L, index, get_mtname<T>());
 }
 
-template <typename T> T* get_obj(lua_State* L, int index) {
-    return (T*)luaL_checkudata(L, index, get_mtname<T>());
+template <typename T> T* to_ref(lua_State* L, int index) {
+    void *d = luaL_testudata(L, index, get_mtname<T>());
+    return d != nullptr ? *((T**)d) : nullptr;
 }
 
-static bool lua2bool(lua_State* L, int index) {
-    return !!lua_toboolean(L, index);
+template <typename T> T* get_obj(lua_State* L, int index) {
+    return (T*)luaL_checkudata(L, index, get_mtname<T>());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,6 +198,7 @@ static void setarray_string(lua_State* L, int index, const char str[]) {
     lua_rawseti(L, -2, index);
 }
 
+//---------------------------------------------
 void SkLua::pushBool(bool value, const char key[]) {
     lua_pushboolean(fL, value);
     CHECK_SETFIELD(key);
@@ -336,38 +314,6 @@ static SkScalar getfield_scalar_default(lua_State* L, int index, const char key[
     return 1;
 }*/
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class AutoCallLua {
@@ -399,7 +345,7 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 static int bgfx_getInit(lua_State* L){
     LOGD("bgfx_getInit:  ");
-    push_ptr<Init>(L, getBgfxInit(L));
+    push_ptr<bgfx::Init>(L, getBgfxInit(L));
     return 1;
 }
 static int bgfx_setDebug(lua_State* L){
@@ -474,32 +420,19 @@ static int bgfx_frame(lua_State *L) {
 }
 
 static int bgfx_getStats(lua_State *L) {
-    Stats* pStats = const_cast<Stats *>(bgfx::getStats());
+    bgfx::Stats* pStats = const_cast<bgfx::Stats *>(bgfx::getStats());
     push_ptr(L, pStats);
+    return 1;
+}
+static int bgfx_getCaps(lua_State *L) {
+    bgfx::Caps* caps = const_cast<bgfx::Caps *>(bgfx::getCaps());
+    push_ptr(L, caps);
     return 1;
 }
 
 static int bgfx_newVertexLayout(lua_State *L){
-    VertexLayout *layout = new VertexLayout();
+    bgfx::VertexLayout *layout = new bgfx::VertexLayout();
     push_ptr(L, layout);
-    return 1;
-}
-
-static int bgfx_newMemory(lua_State *L){
-    //int tableCount, type (b, s, i, f)
-    const char* type = lua_tostring(L, -1);
-    int tableCount = static_cast<int>(lua_tointeger(L, -2));
-    lua_pop(L, 2);
-    SkMemory *pMemory = new SkMemory(L, tableCount, type);
-    push_ptr(L, pMemory);
-    return 1;
-}
-static int bgfx_newMemoryFFFUI(lua_State *L){
-    //int tableCount, type (b, s, i, f)
-    int tableCount = static_cast<int>(lua_tointeger(L, -1));
-    lua_pop(L, 1);
-    SkMemoryFFFUI *pMemory = new SkMemoryFFFUI(L, tableCount);
-    push_ptr(L, pMemory);
     return 1;
 }
 static void release_Memory(void* _ptr, void* _userData){
@@ -510,42 +443,42 @@ static void release_Memory(void* _ptr, void* _userData){
     }
 }
 static int bgfx_makeRef(lua_State* L){
-    AbsSkMemory * memory = get_ref<SkMemory>(L, 1);
+    AbsSkMemory * memory = to_ref<SkMemory>(L, 1);
     if(memory == nullptr){
-        memory = get_ref<SkMemoryFFFUI>(L, 1);
+        memory = to_ref<SkMemoryFFFUI>(L, 1);
     }
     if(memory == nullptr){
         return luaL_error(L, "bgfx_makeRef failed. %s", lua_tostring(L, 1));
     }
     CHECK_MEMORY_VALID(L, memory)
     memory->ref();
-    Memory* mem = const_cast<Memory *>(bgfx::makeRef(memory->data, memory->size,
+    bgfx::Memory* mem = const_cast<bgfx::Memory *>(bgfx::makeRef(memory->data, memory->size,
                                                      release_Memory, memory));
     push_ptr(L, mem);
     return 1;
 }
 
 static int bgfx_createVertexBuffer(lua_State* L){
-    auto pT = get_ref<Memory>(L, 1);
-    auto layout = get_ref<VertexLayout>(L, 2);
+    auto pT = get_ref<bgfx::Memory>(L, 1);
+    auto layout = get_ref<bgfx::VertexLayout>(L, 2);
     auto flags = lua_tointeger(L, 3);
-    VertexBufferHandle handle = bgfx::createVertexBuffer(pT, *layout, flags);
+    bgfx::VertexBufferHandle handle = bgfx::createVertexBuffer(pT, *layout, flags);
     push_ptr(L, &handle);
     return 1;
 }
 static int bgfx_createIndexBuffer(lua_State* L){
-    auto pT = get_ref<Memory>(L, 1);
+    auto pT = get_ref<bgfx::Memory>(L, 1);
     auto flags = lua_tointeger(L, 2);
-    IndexBufferHandle handle = bgfx::createIndexBuffer(pT, flags);
+    bgfx::IndexBufferHandle handle = bgfx::createIndexBuffer(pT, flags);
     push_ptr(L, &handle);
     return 1;
 }
 
 static int bgfx_createProgram(lua_State* L){
-    auto v_sh = get_ref<ShaderHandle>(L, 1);
-    auto f_sh = get_ref<ShaderHandle>(L, 2);
+    auto v_sh = get_ref<bgfx::ShaderHandle>(L, 1);
+    auto f_sh = get_ref<bgfx::ShaderHandle>(L, 2);
     auto destroyShader = lua_toboolean(L, 3) == 1;
-    ProgramHandle handle = bgfx::createProgram(*v_sh, *f_sh, destroyShader);
+    bgfx::ProgramHandle handle = bgfx::createProgram(*v_sh, *f_sh, destroyShader);
     push_ptr(L, &handle);
     return 1;
 }
@@ -553,7 +486,7 @@ static int bgfx_createProgram(lua_State* L){
 static int bgfx_loadProgram(lua_State* L){
     auto v_sh = lua_tostring(L, 1);
     auto f_sh = lua_tostring(L, 2);
-    ProgramHandle handle = loadProgram(v_sh, f_sh);
+    bgfx::ProgramHandle handle = loadProgram(v_sh, f_sh);
     push_ptr(L, &handle);
     return 1;
 }
@@ -582,7 +515,7 @@ static void register_bgfx(lua_State* L) {
 
 //======= init =============
 static int init_type(lua_State* L) {
-    auto pInit = get_ref<Init>(L, -2);
+    auto pInit = get_ref<bgfx::Init>(L, -2);
 
     LOGD("init_type: pInit = %p", pInit);
     const char *type = lua_tostring(L, -1);
@@ -598,7 +531,7 @@ static int init_type(lua_State* L) {
 
 //see 'BGFX_PCI_ID_NONE' and etc
 static int init_vendorId(lua_State* L){
-    auto pInit = get_ref<Init>(L, -2);
+    auto pInit = get_ref<bgfx::Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -610,7 +543,7 @@ static int init_vendorId(lua_State* L){
     return 0;
 }
 static int init_deviceId(lua_State* L){
-    auto pInit = get_ref<Init>(L, -2);
+    auto pInit = get_ref<bgfx::Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -621,7 +554,7 @@ static int init_deviceId(lua_State* L){
     return 0;
 }
 static int init_debug(lua_State* L){
-    auto pInit = get_ref<Init>(L, -2);
+    auto pInit = get_ref<bgfx::Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -632,7 +565,7 @@ static int init_debug(lua_State* L){
     return 0;
 }
 static int init_profile(lua_State* L){
-    auto pInit = get_ref<Init>(L, -2);
+    auto pInit = get_ref<bgfx::Init>(L, -2);
     int type = lua_type(L, -1);
     if(type == LUA_TNIL){
         //nil means get
@@ -645,7 +578,7 @@ static int init_profile(lua_State* L){
 
 //only get
 static int init_platformData(lua_State* L){
-    auto pInit = get_ref<Init>(L, 1);
+    auto pInit = get_ref<bgfx::Init>(L, 1);
     LOGD("init_platformData");
     push_ptr(L, &pInit->platformData);
     return 1;
@@ -653,14 +586,14 @@ static int init_platformData(lua_State* L){
 
 //only get
 static int init_resolution(lua_State* L){
-    auto pInit = get_ref<Init>(L, 1);
+    auto pInit = get_ref<bgfx::Init>(L, 1);
     LOGD("init_resolution, init = %p", pInit);
     push_ptr(L, &pInit->resolution);
     return 1;
 }
 //only get
 static int init_limits(lua_State* L){
-    auto pInit = get_ref<Init>(L, 1);
+    auto pInit = get_ref<bgfx::Init>(L, 1);
     LOGD("init_limits");
     push_ptr(L, &pInit->limits);
     return 1;
@@ -687,22 +620,25 @@ static int forward_call(lua_State* L){ //a.call(a, k, v)
     return 0;
 }
 
-const struct luaL_Reg gInit_Methods[] = {
-        { "call", forward_call},
-        { "type", init_type},
-        { "vendorId", init_vendorId},
-        { "deviceId", init_deviceId},
-        { "debug", init_debug},
-        { "profile", init_profile},
-        { "platformData", init_platformData},
-        { "resolution", init_resolution},
-        { "limits", init_limits},
-        {NULL, NULL},
-};
+namespace gbgfx{
+    const struct luaL_Reg Init_Methods[] = {
+            { "call", forward_call},
+            { "type", init_type},
+            { "vendorId", init_vendorId},
+            { "deviceId", init_deviceId},
+            { "debug", init_debug},
+            { "profile", init_profile},
+            { "platformData", init_platformData},
+            { "resolution", init_resolution},
+            { "limits", init_limits},
+            {NULL, NULL},
+    };
+}
+
 //------------ platform-data -----------------------------
 #define INIT_PLATFORM_DATA(x) \
 static int platformData_##x(lua_State* L){ \
-    auto pd = get_ref<PlatformData>(L, -2); \
+    auto pd = get_ref<bgfx::PlatformData>(L, -2); \
     auto ud = lua_touserdata(L, -1); \
     if(ud == nullptr){ \
         return luaL_error(L, "Invalid platformData.%s", #x); \
@@ -716,20 +652,22 @@ INIT_PLATFORM_DATA(context)
 INIT_PLATFORM_DATA(backBuffer)
 INIT_PLATFORM_DATA(backBufferDS)
 
-const struct luaL_Reg gPlatformData_Methods[] = {
-        { "call", forward_call},
-        { "nwh", platformData_nwh},
-        { "ndt", platformData_ndt},
-        { "context", platformData_context},
-        { "backBuffer", platformData_backBuffer},
-        { "backBufferDS", platformData_backBufferDS},
-        {NULL, NULL},
-};
+namespace gbgfx{
+    const struct luaL_Reg PlatformData_Methods[] = {
+            { "call", forward_call},
+            { "nwh", platformData_nwh},
+            { "ndt", platformData_ndt},
+            { "context", platformData_context},
+            { "backBuffer", platformData_backBuffer},
+            { "backBufferDS", platformData_backBufferDS},
+            {NULL, NULL},
+    };
+}
 
 //----------------------- resolution ------------------
 
 static int resolution_format(lua_State* L){
-    auto reso = get_ref<Resolution>(L, -2);
+    auto reso = get_ref<bgfx::Resolution>(L, -2);
 
     const char* type = lua_tostring(L, -1);
     if(type == NULL){
@@ -743,7 +681,7 @@ static int resolution_format(lua_State* L){
 
 #define INIT_RESOLUTION(x) \
 static int resolution_##x(lua_State* L){ \
-    auto pd = get_ref<Resolution>(L, -2); \
+    auto pd = get_ref<bgfx::Resolution>(L, -2); \
     int type = lua_type(L, -1); \
     if(type == LUA_TNIL){ \
         lua_pushnumber(L, pd->x); \
@@ -759,20 +697,22 @@ INIT_RESOLUTION(reset)
 INIT_RESOLUTION(numBackBuffers)
 INIT_RESOLUTION(maxFrameLatency)
 
-const struct luaL_Reg gResolution_Methods[] = {
-        {"call", forward_call},
-        {"format", resolution_format},
-        {"width", resolution_width},
-        {"height", resolution_height},
-        {"reset", resolution_reset},
-        {"numBackBuffers", resolution_numBackBuffers},
-        {"maxFrameLatency", resolution_maxFrameLatency},
-        {NULL, NULL},
-};
+namespace gbgfx{
+    const struct luaL_Reg Resolution_Methods[] = {
+            {"call", forward_call},
+            {"format", resolution_format},
+            {"width", resolution_width},
+            {"height", resolution_height},
+            {"reset", resolution_reset},
+            {"numBackBuffers", resolution_numBackBuffers},
+            {"maxFrameLatency", resolution_maxFrameLatency},
+            {NULL, NULL},
+    };
+}
 //----------------- Limits -----------------
 #define INIT_LIMITS(x) \
 static int limits_##x(lua_State* L){ \
-    auto pd = get_ref<Init::Limits>(L, -2); \
+    auto pd = get_ref<bgfx::Init::Limits>(L, -2); \
     int type = lua_type(L, -1); \
     if(type == LUA_TNIL){ \
         lua_pushnumber(L, pd->x); \
@@ -786,15 +726,17 @@ INIT_LIMITS(minResourceCbSize)
 INIT_LIMITS(transientVbSize)
 INIT_LIMITS(transientIbSize)
 
-namespace gInit{
-const struct luaL_Reg Limits_Methods[] = {
-        {"call", forward_call},
-        {"maxEncoders", limits_maxEncoders},
-        {"minResourceCbSize", limits_minResourceCbSize},
-        {"transientVbSize", limits_transientVbSize},
-        {"transientIbSize", limits_transientIbSize},
-        {NULL, NULL},
-};
+namespace gbgfx{
+    namespace Init{
+        const struct luaL_Reg Limits_Methods[] = {
+                {"call", forward_call},
+                {"maxEncoders", limits_maxEncoders},
+                {"minResourceCbSize", limits_minResourceCbSize},
+                {"transientVbSize", limits_transientVbSize},
+                {"transientIbSize", limits_transientIbSize},
+                {NULL, NULL},
+        };
+    }
 }
 // =============================== LuaApp =================
 static int gc_luaApp(lua_State * L){
@@ -825,7 +767,7 @@ const struct luaL_Reg gLuaApp_Methods[] = {
 
 #define STATS_NUMBER(x) \
 static int stats_##x(lua_State * L){ \
-    auto pStats = get_ref<Stats>(L, 1); \
+    auto pStats = get_ref<bgfx::Stats>(L, 1); \
     lua_pushnumber(L, pStats->x);\
     return 1; \
 }
@@ -874,54 +816,62 @@ STATS_NUMBER(numViews);
 STATS_NUMBER(numEncoders);
 //TODO ViewStats, EncoderStats
 
-const struct luaL_Reg gStats_Methods[] = {
-        {"call", forward_call},
-        {"cpuTimeFrame", stats_cpuTimeFrame},
-        {"cpuTimeBegin", stats_cpuTimeBegin},
-        {"cpuTimeEnd", stats_cpuTimeEnd},
-        {"cpuTimerFreq", stats_cpuTimerFreq},
-        {"gpuTimeBegin", stats_gpuTimeBegin},
-        {"gpuTimeEnd", stats_gpuTimeEnd},
-        {"gpuTimerFreq", stats_gpuTimerFreq},
-        {"waitRender", stats_waitRender},
-        {"waitSubmit", stats_waitSubmit},
+namespace gbgfx {
+    const struct luaL_Reg Stats_Methods[] = {
+            {"call",                    forward_call},
+            {"cpuTimeFrame",            stats_cpuTimeFrame},
+            {"cpuTimeBegin",            stats_cpuTimeBegin},
+            {"cpuTimeEnd",              stats_cpuTimeEnd},
+            {"cpuTimerFreq",            stats_cpuTimerFreq},
+            {"gpuTimeBegin",            stats_gpuTimeBegin},
+            {"gpuTimeEnd",              stats_gpuTimeEnd},
+            {"gpuTimerFreq",            stats_gpuTimerFreq},
+            {"waitRender",              stats_waitRender},
+            {"waitSubmit",              stats_waitSubmit},
 
-        {"numDraw", stats_numDraw},
-        {"numCompute", stats_numCompute},
-        {"numBlit", stats_numBlit},
-        {"maxGpuLatency", stats_maxGpuLatency},
+            {"numDraw",                 stats_numDraw},
+            {"numCompute",              stats_numCompute},
+            {"numBlit",                 stats_numBlit},
+            {"maxGpuLatency",           stats_maxGpuLatency},
 
-        {"numDynamicIndexBuffers", stats_numDynamicIndexBuffers},
-        {"numDynamicVertexBuffers", stats_numDynamicVertexBuffers},
-        {"numFrameBuffers", stats_numFrameBuffers},
-        {"numIndexBuffers", stats_numIndexBuffers},
-        {"numOcclusionQueries", stats_numOcclusionQueries},
-        {"numPrograms", stats_numPrograms},
-        {"numShaders", stats_numShaders},
-        {"numTextures", stats_numTextures},
-        {"numUniforms", stats_numUniforms},
-        {"numVertexBuffers", stats_numVertexBuffers},
-        {"numVertexLayouts", stats_numVertexLayouts},
+            {"numDynamicIndexBuffers",  stats_numDynamicIndexBuffers},
+            {"numDynamicVertexBuffers", stats_numDynamicVertexBuffers},
+            {"numFrameBuffers",         stats_numFrameBuffers},
+            {"numIndexBuffers",         stats_numIndexBuffers},
+            {"numOcclusionQueries",     stats_numOcclusionQueries},
+            {"numPrograms",             stats_numPrograms},
+            {"numShaders",              stats_numShaders},
+            {"numTextures",             stats_numTextures},
+            {"numUniforms",             stats_numUniforms},
+            {"numVertexBuffers",        stats_numVertexBuffers},
+            {"numVertexLayouts",        stats_numVertexLayouts},
 
-        {"textureMemoryUsed", stats_textureMemoryUsed},
-        {"rtMemoryUsed", stats_rtMemoryUsed},
-        {"transientVbUsed", stats_transientVbUsed},
-        {"transientIbUsed", stats_transientIbUsed},
-        {"gpuMemoryMax", stats_gpuMemoryMax},
-        {"gpuMemoryUsed", stats_gpuMemoryUsed},
+            {"textureMemoryUsed",       stats_textureMemoryUsed},
+            {"rtMemoryUsed",            stats_rtMemoryUsed},
+            {"transientVbUsed",         stats_transientVbUsed},
+            {"transientIbUsed",         stats_transientIbUsed},
+            {"gpuMemoryMax",            stats_gpuMemoryMax},
+            {"gpuMemoryUsed",           stats_gpuMemoryUsed},
 
-        {"width", stats_width},
-        {"height", stats_height},
-        {"textWidth", stats_textWidth},
-        {"textHeight", stats_textHeight},
-        {"numViews", stats_numViews},
-        {"numEncoders", stats_numEncoders},
-        {NULL, NULL},
-};
+            {"width",                   stats_width},
+            {"height",                  stats_height},
+            {"textWidth",               stats_textWidth},
+            {"textHeight",              stats_textHeight},
+            {"numViews",                stats_numViews},
+            {"numEncoders",             stats_numEncoders},
+            {NULL, NULL},
+    };
+}
+//--------------------- bgfx::Caps -----------------------
+namespace gbgfx{
+    const struct luaL_Reg Caps_Methods[] = {
+            {NULL, NULL},
+    };
+}
 //---------------------- VertexLayout ----------------------
 
 static int vertexLayout_begin(lua_State* L){
-    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //RendererType::Enum
     const char *name = lua_tostring(L, -1);
     if(name == nullptr){
@@ -935,14 +885,14 @@ static int vertexLayout_begin(lua_State* L){
 }
 
 static int vertexLayout_add(lua_State* L){
-    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
     auto _num = TO_NUMBER_8(L, 3);
     auto _normalized = lua_toboolean(L, 4) == 1;
     auto _asInt = lua_toboolean(L, 5) == 1;
 
-    Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
-    AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 4));
+    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
+    bgfx::AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 4));
     pLayout->add(attrib, _num, attribType, _normalized, _asInt);
     //return this
     lua_pushvalue(L, 1);
@@ -950,7 +900,7 @@ static int vertexLayout_add(lua_State* L){
 }
 
 static int vertexLayout_skip(lua_State* L){
-    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     auto _num = TO_NUMBER_8(L, -1);
     pLayout->skip(_num);
     //return this
@@ -959,41 +909,41 @@ static int vertexLayout_skip(lua_State* L){
 }
 
 static int vertexLayout_decode(lua_State* L){
-    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //.decode(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
     auto _num = TO_NUMBER_8(L, 3);
     auto _normalized = lua_toboolean(L, 4) == 1;
     auto _asInt = lua_toboolean(L, 5) == 1;
 
-    Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
-    AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 4));
+    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
+    bgfx::AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 4));
     pLayout->decode(attrib, _num, attribType, _normalized, _asInt);
     //return this
     lua_pushvalue(L, 1);
     return 1;
 }
 static int vertexLayout_has(lua_State* L){
-    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //bool has(Attrib::Enum _attrib);
-    Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, -1));
+    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, -1));
     lua_pushboolean(L, pLayout->has(attrib) ? 1 : 0);
     return 1;
 }
 static int vertexLayout_getOffset(lua_State* L){
-    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
-    Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, -1));
+    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
+    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, -1));
     //uint16_t getOffset(Attrib::Enum _attrib)
     lua_pushnumber(L, pLayout->getOffset(attrib));
     return 1;
 }
 static int vertexLayout_getStride(lua_State* L){
-    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //uint16_t getStride() const { return m_stride; }
     lua_pushnumber(L, pLayout->getStride());
     return 1;
 }
 static int vertexLayout_getSize(lua_State* L){
-    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //uint32_t getSize(uint32_t _num);
     auto _num = TO_NUMBER_8(L, -1);
     lua_pushnumber(L, pLayout->getSize(_num));
@@ -1001,23 +951,25 @@ static int vertexLayout_getSize(lua_State* L){
 }
 
 static int vertexLayout_end(lua_State* L){
-    VertexLayout *pLayout = get_ref<VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     pLayout->end();
     return 0;
 }
 
-const static luaL_Reg gVertexLayout_Methods[] = {
-        {"begin", vertexLayout_begin},
-        {"add", vertexLayout_add},
-        {"skip", vertexLayout_skip},
-        {"decode", vertexLayout_decode},
-        {"has", vertexLayout_has},
-        {"getOffset", vertexLayout_getOffset},
-        {"getStride", vertexLayout_getStride},
-        {"getSize", vertexLayout_getSize},
-        {"ends", vertexLayout_end}, // end is key-world of lua
-        {NULL, NULL},
-};
+namespace gbgfx {
+    const static luaL_Reg VertexLayout_Methods[] = {
+            {"begin",     vertexLayout_begin},
+            {"add",       vertexLayout_add},
+            {"skip",      vertexLayout_skip},
+            {"decode",    vertexLayout_decode},
+            {"has",       vertexLayout_has},
+            {"getOffset", vertexLayout_getOffset},
+            {"getStride", vertexLayout_getStride},
+            {"getSize",   vertexLayout_getSize},
+            {"ends",      vertexLayout_end}, // end is key-world of lua
+            {NULL, NULL},
+    };
+}
 //---------------------- Memory --------------------------
 #define memory_isValid(type)  \
 static int type##_isValid(lua_State* L){ \
@@ -1043,39 +995,15 @@ memory_gc(SkMemoryFFFUI);
 const static luaL_Reg gSkMemory_Methods[] = {
         {"isValid", SkMemory_isValid},
         {"__gc", SkMemory_gc},
-        {"NULL", NULL},
+        {NULL, NULL},
 };
 const static luaL_Reg gSkMemoryFFFUI_Methods[] = {
         {"isValid", SkMemoryFFFUI_isValid},
         {"__gc", SkMemoryFFFUI_gc},
-        {"NULL", NULL},
+        {NULL, NULL},
 };
-///////////////////////////////////////////////////////////////////////
 
-#define REG_CLASS(L, C)                             \
-    do {                                            \
-        luaL_newmetatable(L, get_mtname<C>());      \
-        lua_pushvalue(L, -1);                       \
-        lua_setfield(L, -2, "__index");             \
-        luaL_setfuncs(L, g##C##_Methods, 0);        \
-        lua_pop(L, 1); /* pop off the meta-table */ \
-    } while (0)
-
-void SkLua::Load(lua_State* L) {
-    //register_bgfx(L);
-    REG_CLASS(L, LuaApp);
-    REG_CLASS(L, Init);
-    REG_CLASS(L, PlatformData);
-    REG_CLASS(L, Resolution);
-    REG_CLASS(L, Init::Limits);
-    REG_CLASS(L, Stats);
-    REG_CLASS(L, VertexLayout);
-    REG_CLASS(L, SkMemory);
-    REG_CLASS(L, SkMemoryFFFUI);
-    //TODO CallbackI*, bx::AllocatorI*
-}
-
-inline Init *getBgfxInit(lua_State *L) {
+inline bgfx::Init *getBgfxInit(lua_State *L) {
     return Bgfx_lua_app::requireInit(L);
 }
 // here we direct load bgfx_lua.
@@ -1091,10 +1019,9 @@ static const luaL_Reg bgfx_funcs[] = {
         {"dbgTextPrintf", bgfx_dbgTextPrintf},
         {"frame", bgfx_frame},
         {"getStats", bgfx_getStats},
+        {"getCaps", bgfx_getCaps},
 
         {"newVertexLayout", bgfx_newVertexLayout},
-        {"newMemory", bgfx_newMemory},
-        {"newMemoryFFFUI", bgfx_newMemoryFFFUI},
         {"makeRef", bgfx_makeRef},
         {"createVertexBuffer", bgfx_createVertexBuffer},
         {"createIndexBuffer", bgfx_createIndexBuffer},
@@ -1120,12 +1047,116 @@ static int bx_getHPFrequency(lua_State* L){
     lua_pushinteger(L, i);
     return 1;
 }
+//bx::Vec3
+static int bx_newVec3(lua_State* L){
+    bx::Vec3 *pvec3 = new bx::Vec3(TO_FLOAT(L, 1), TO_FLOAT(L, 2), TO_FLOAT(L, 3));
+    push_ptr(L, pvec3);
+    return 1;
+}
+static int bx_mtxLookAt(lua_State* L){
+    //bx::mtxLookAt(view, eye, at); (array, Vec3, Vec3)
+    SkMemory *pMemory = get_ref<SkMemory>(L, 1);
+    bx::Vec3 *eye = get_ref<bx::Vec3>(L, 2);
+    bx::Vec3 *at = get_ref<bx::Vec3>(L, 2);
+    if(!pMemory->isFloat()){
+        return luaL_error(L, "for bx::mtxLookAt. memory data type must be float.");
+    }
+    bx::mtxLookAt(static_cast<float *>(pMemory->data), *eye, *at);
+    return 0;
+}
+//-------------------- bx::Vec3 --------------------
+static int vec3_gc(lua_State* L){
+    bx::Vec3 *pVec3 = get_ref<bx::Vec3>(L, -1);
+    delete pVec3;
+    return 0;
+}
+namespace gbx{
+    static const luaL_Reg Vec3_Methods[] = {
+            {"__gc", vec3_gc},
+            {NULL, NULL},
+    };
+}
 static const luaL_Reg bx_funcs[] = {
         {"getHPCounter", bx_getHPCounter},
         {"getHPFrequency", bx_getHPFrequency},
+        {"newVec3", bx_newVec3},
+        {"mtxLookAt", bx_mtxLookAt},
         {nullptr, nullptr}
 };
 extern "C" int luaopen_bx_lua(lua_State* L){
     luaL_newlib(L, bx_funcs);
     return 1;
+}
+
+static int mem_newMemory(lua_State *L){
+    //(tables, tableCount, type)
+    const char* type = lua_tostring(L, -1);
+    int tableCount = static_cast<int>(lua_tointeger(L, -2));
+    lua_pop(L, 2);
+    SkMemory *pMemory = new SkMemory(L, tableCount, type);
+    push_ptr(L, pMemory);
+    return 1;
+}
+static int mem_newMemoryFFFUI(lua_State *L){
+    //int tableCount, type (b, s, i, f)
+    int tableCount = static_cast<int>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+    SkMemoryFFFUI *pMemory = new SkMemoryFFFUI(L, tableCount);
+    push_ptr(L, pMemory);
+    return 1;
+}
+static int mem_newMemoryArray(lua_State *L){
+    //(type, len )
+    const char* type = lua_tostring(L, 1);
+    int len = static_cast<int>(lua_tointeger(L, 2));
+    lua_pop(L, 2);
+    SkMemory *pMemory = new SkMemory(type, len);
+    push_ptr(L, pMemory);
+    return 1;
+}
+static const luaL_Reg mem_funcs[] = {
+        {"newMemory", mem_newMemory},
+        {"newMemoryFFFUI", mem_newMemoryFFFUI},
+        {"newMemoryArray", mem_newMemoryArray},
+        {nullptr, nullptr}
+};
+extern "C" int luaopen_hmem_lua(lua_State* L){
+    luaL_newlib(L, mem_funcs);
+    return 1;
+}
+///////////////////////////////////////////////////////////////////////
+DEF_MTNAME(bgfx::Init)
+DEF_MTNAME(bgfx::PlatformData)
+DEF_MTNAME(bgfx::Resolution)
+DEF_MTNAME(bgfx::Init::Limits)
+DEF_MTNAME(bgfx::Stats)
+DEF_MTNAME(bgfx::Caps)
+DEF_MTNAME(bgfx::VertexLayout)
+DEF_MTNAME(bx::Vec3)
+DEF_MTNAME(LuaApp)
+DEF_MTNAME(SkMemory)
+DEF_MTNAME(SkMemoryFFFUI)
+//----------- only get_mtname ------
+DEF_MTNAME(bgfx::Memory)
+DEF_MTNAME(bgfx::VertexBufferHandle)
+DEF_MTNAME(bgfx::VertexLayoutHandle)
+DEF_MTNAME(bgfx::IndexBufferHandle)
+DEF_MTNAME(bgfx::ProgramHandle)
+DEF_MTNAME(bgfx::ShaderHandle)
+
+void SkLua::Load(lua_State* L) {
+    //register_bgfx(L);
+    REG_CLASS(L, bgfx::Init);
+    REG_CLASS(L, bgfx::PlatformData);
+    REG_CLASS(L, bgfx::Resolution);
+    REG_CLASS(L, bgfx::Init::Limits);
+    REG_CLASS(L, bgfx::Stats);
+    REG_CLASS(L, bgfx::Caps);
+    REG_CLASS(L, bgfx::VertexLayout);
+    REG_CLASS(L, bx::Vec3);
+
+    REG_CLASS(L, LuaApp);
+    REG_CLASS(L, SkMemory);
+    REG_CLASS(L, SkMemoryFFFUI);
+    //TODO CallbackI*, bx::AllocatorI*
 }

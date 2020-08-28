@@ -1,5 +1,6 @@
 local bgfx = require("bgfx");
 local bx = require("bx");
+local mem = require("memory");
 
 local initializer = bgfx.getInit();
 local reso = initializer.resolution;
@@ -19,7 +20,7 @@ local m_program;
 
 ------------ bgfx  ----------------
 local ms_layout = bgfx.newVertexLayout();
-local s_cubeVertices = bgfx.newMemoryFFFUI( {-1.0,  1.0,  1.0, 0xff000000},
+local s_cubeVertices = mem.newMemoryFFFUI( {-1.0,  1.0,  1.0, 0xff000000},
         { 1.0,  1.0,  1.0, 0xff0000ff },
         {-1.0, -1.0,  1.0, 0xff00ff00 },
         { 1.0, -1.0,  1.0, 0xff00ffff },
@@ -28,7 +29,7 @@ local s_cubeVertices = bgfx.newMemoryFFFUI( {-1.0,  1.0,  1.0, 0xff000000},
         {-1.0, -1.0, -1.0, 0xffffff00 },
         { 1.0, -1.0, -1.0, 0xffffffff });
 
-local s_cubeTriList = bgfx.newMemory('w', {
+local s_cubeTriList = mem.newMemory('w', {
     0, 1, 2, -- 0
 1, 3, 2,
 4, 6, 5, -- 2
@@ -43,7 +44,7 @@ local s_cubeTriList = bgfx.newMemory('w', {
 6, 3, 7,
 })
 
-local s_cubeTriStrip = bgfx.newMemory('w', {
+local s_cubeTriStrip = mem.newMemory('w', {
     0, 1, 2,
     3,
     7,
@@ -57,7 +58,7 @@ local s_cubeTriStrip = bgfx.newMemory('w', {
     4,
     5,
 })
-local s_cubeLineList = bgfx.newMemory('w', {
+local s_cubeLineList = mem.newMemory('w', {
     0, 1,
     0, 2,
     0, 4,
@@ -71,12 +72,12 @@ local s_cubeLineList = bgfx.newMemory('w', {
     5, 7,
     6, 7,
 })
-local s_cubeLineStrip = bgfx.newMemory("w", {
+local s_cubeLineStrip = mem.newMemory("w", {
     0, 2, 3, 1, 5, 7, 6, 4,
     0, 2, 6, 4, 5, 7, 3, 1,
     0,
 })
-local s_cubePoints = bgfx.newMemory('w', {
+local s_cubePoints = mem.newMemory('w', {
     0, 1, 2, 3, 4, 5, 6, 7
 })
 local s_ptNames = {

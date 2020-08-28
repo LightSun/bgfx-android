@@ -23,6 +23,7 @@ typedef float SkScalar;
 
 extern "C" int luaopen_bgfx_lua(lua_State* L);
 extern "C" int luaopen_bx_lua(lua_State* L);
+extern "C" int luaopen_hmem_lua(lua_State* L);
 
 class SkLua {
 public:

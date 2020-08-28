@@ -7,7 +7,8 @@
 #include "android_pri.h"
 #include <atomic>
 
-#include "pthread.h"
+//#include "pthread.h"
+#include "lua_wrapper.h"
 
 //#include <memory>
 namespace Bgfx_lua_app {
@@ -91,7 +92,7 @@ LuaApp::LuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME f
 
 void LuaApp::init(LuaAppHolder *holder) {
     auto pConfig = holder->config;
-    Init *pInit = holder->bgfx_init;
+    bgfx::Init *pInit = holder->bgfx_init;
     //LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);
     //LOGD("init config, w = %d, h = %d", pConfig->win_width, pConfig->win_height);
     pInit->platformData.nwh = pConfig->window;
