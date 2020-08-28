@@ -105,6 +105,7 @@ void LuaApp::init(LuaAppHolder *holder) {
         lua_getglobal(L, func_init);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
+            LOGE("%s", msg);
             luaL_error(L, "call LuaApp init failed. func = %s, msg = %s", func_init, msg);
         }
     }
@@ -115,6 +116,7 @@ int LuaApp::draw() {
         lua_getglobal(L, func_draw);
         if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
+            LOGE("%s", msg);
             luaL_error(L, "call LuaApp draw failed. func = %s, msg = %s", func_draw, msg);
         } else {
             return TO_NUMBER_16(L, -1);
@@ -130,6 +132,7 @@ void LuaApp::doPreInit() {
         //luaB_dumpStack(L);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
+            LOGE("%s", msg);
             luaL_error(L, "call LuaApp pre-init failed. func = %s, msg = %s", func_preInit, msg);
         }
     }
@@ -148,6 +151,7 @@ void LuaApp::destroy() {
             lua_getglobal(L, func_destroy);
             if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
                 const char *msg = lua_tostring(L, -1);
+                LOGE("%s", msg);
                 luaL_error(L, "call LuaApp destroy failed. func = %s, msg = %s", func_destroy, msg);
             }
         }

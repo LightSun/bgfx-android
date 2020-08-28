@@ -18,8 +18,16 @@ extern "C" {
 }
 
 template<typename T, typename Ptr>
+class BigInteger;
+
+#define BigInt64(m) BigInteger<int64_t,intptr_t>::m
+#define BigUint64(m) BigInteger<uint64_t,uintptr_t>::m
+
+//copy and changed from 'https://github.com/cloudwu/lua-int64/blob/master/int64.c'
+template<typename T, typename Ptr>
 class BigInteger {
 public:
+    //table param: 1(lua_Number/LUA_TSTRING/LUA_TLIGHTUSERDATA)
     static T
     _get(lua_State *L, int index) {
         int type = lua_type(L, index);
@@ -136,6 +144,7 @@ public:
         return 1;
     }
 
+    //negative
     static int
     _unm(lua_State *L) {
         T a = _get(L, 1);

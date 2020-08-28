@@ -169,23 +169,47 @@ function m.setViewTransform(viewId, mem_1, mem_2)
 end
 
 --- set transform
---- @param mem: memory userdata used for matrix
+--- @param mem_or_cache: memory userdata or matrix cache(uint32)
 --- @param _num: Number of matrices in array. default is 1
-function m.setTransform(mem, _num)
+function m.setTransform(mem_or_cache, _num)
     if(not _num) then
         _num = 1;
     end
-    return bgfx_lua.setTransform(mem, _num);
+    return bgfx_lua.setTransform(mem_or_cache, _num);
 end
 
---- Set model matrix from matrix cache for draw primitive.
---- @param _cache: Index in matrix cache.
---- @param _num: Number of matrices from cache. default is 1
-function m.setTransformCache(_matrix_cache, _num)
-    if(not _num) then
-        _num = 1;
-    end
-    return bgfx_lua.setTransform(_matrix_cache, _num);
+--- setVertexBuffer
+--- @param stream: uint16_t
+--- @param vertexHandle: vertex handle userdata
+function m.setVertexBuffer(stream, vertexHandle)
+    return bgfx_lua.setVertexBuffer(stream, vertexHandle);
+end
+--- setIndexBuffer
+--- @param indexHandle: index buffer handle userdata
+function m.setIndexBuffer(indexHandle)
+    return bgfx_lua.setIndexBuffer(indexHandle);
+end
+
+--- setState
+--- @param _state: uint64_t(see uint64.lua)
+--- @param _rgba: uint32_t. can be null for default 0.
+function m.setState(_state, _rgba)
+    return bgfx_lua.setState(_state, _rgba);
+end
+
+--- submit data
+--- @param _id: view id
+--- @param _program: program handle
+--- @param _depth: depth as uint32_t.  null means default 0
+--- @param _flags: flags as uint8_t. null means BGFX_DISCARD_ALL
+function m.submit(_id, _program, _depth, _flags)
+    return bgfx_lua.submit(_id, _program, _depth, _flags);
+end
+
+--- destroy handle
+--- @param handle: can be userdata of IndexBufferHandle/VertexBufferHandle/ProgramHandle
+function m.destroy(handle)
+    return bgfx_lua.destroy(handle);
 end
 
 return m;

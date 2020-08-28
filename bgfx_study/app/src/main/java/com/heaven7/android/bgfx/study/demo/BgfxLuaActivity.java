@@ -72,8 +72,9 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
 
     private List<Item> createItems() {
         List<Item> items = new ArrayList<>();
-        items.add(new Item("lua/hello_world.lua", "Hello World"));
+      //  items.add(new Item("lua/test_int64.lua", "test int64"));
         items.add(new Item("lua/curbes.lua", "Curbes"));
+        items.add(new Item("lua/hello_world.lua", "Hello World"));
         return items;
     }
 

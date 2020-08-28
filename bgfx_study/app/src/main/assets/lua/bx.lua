@@ -22,8 +22,8 @@ end
 --- @param mem_f: float memory userdata .
 --- @param vec3_eye: vector3 for eye
 --- @param vec3_at: vector3 for at
---- @param vec3_up: vector3 for at. default is {0, 1,0}
---- @param handness: default is 'Left'.
+--- @param vec3_up: vector3 for at. null means default is {0, 1,0}
+--- @param handness: null means default is 'Left'.
 function m.mtxLookAt(mem_f, vec3_eye, vec3_at, vec3_up, handness)
     return bx1.mtxLookAt(mem_f, vec3_eye, vec3_at, vec3_up, handness);
 end

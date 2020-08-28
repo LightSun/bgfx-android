@@ -3,9 +3,6 @@
 //
 #include "int64.h"
 
-#define BigInt64(m) BigInteger<int64_t,intptr_t>::m
-#define BigUint64(m) BigInteger<uint64_t,uintptr_t>::m
-
 static void make_meta_int64(lua_State *L) {
     luaL_Reg lib[] = {
             { "__add", BigInt64(_add) },
@@ -61,7 +58,7 @@ extern "C" int luaopen_int64(lua_State *L) {
 
     return 1;
 }
-
+//intptr_t and uintptr_t:   https://blog.csdn.net/cs_zhanyb/article/details/16973379
 extern "C" int luaopen_uint64(lua_State *L) {
     if (sizeof(uintptr_t) != sizeof(uint64_t)) {
         return luaL_error(L, "Only support u-64bit architecture");

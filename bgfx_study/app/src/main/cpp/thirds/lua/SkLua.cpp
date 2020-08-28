@@ -437,7 +437,7 @@ static int bgfx_getCaps(lua_State *L) {
 
 static int bgfx_newVertexLayout(lua_State *L){
     bgfx::VertexLayout *layout = new bgfx::VertexLayout();
-    push_ptr(L, layout);
+    push_ptr<bgfx::VertexLayout>(L, layout);
     return 1;
 }
 static void release_Memory(void* _ptr, void* _userData){
@@ -530,6 +530,51 @@ static int bgfx_setIndexBuffer(lua_State* L){
     bgfx::setIndexBuffer(*pHandle);
     return 0;
 }
+static int bgfx_setState(lua_State* L){
+    //bgfx::setState(m_vbh)
+    uint64_t state = BigUint64(_get(L, 1));
+    uint32_t _rgb; //default is zero
+    if(lua_type(L, 2) == LUA_TNIL){
+        _rgb = 0;
+    } else{
+        _rgb = TO_NUMBER_32(L, 2);
+    }
+    bgfx::setState(state, _rgb);
+    return 0;
+}
+static int bgfx_submit(lua_State* L){
+    //bgfx::submit(
+    //		  ViewId _id
+    //		, ProgramHandle _program
+    //		, uint32_t _depth = 0
+    //		, uint8_t _flags  = BGFX_DISCARD_ALL
+    //		)
+    uint8_t id = TO_NUMBER_8(L, 1);
+    bgfx::ProgramHandle *pHandle = get_ref<bgfx::ProgramHandle>(L, 2);
+    uint32_t _depth = lua_type(L, 3) != LUA_TNIL ? TO_NUMBER_32(L, 3) : 0;
+    uint8_t _flags = lua_type(L, 4) != LUA_TNIL ? TO_NUMBER_8(L, 4) : static_cast<uint8_t>(BGFX_DISCARD_ALL);
+    bgfx::submit(id, *pHandle, _depth, _flags);
+    return 0;
+}
+static int bgfx_destroy(lua_State* L){
+    bgfx::IndexBufferHandle *h1 = to_ref<bgfx::IndexBufferHandle>(L, 1);
+    if(h1 != nullptr){
+        bgfx::destroy(*h1);
+        return 0;
+    }
+    bgfx::VertexBufferHandle *h2 = to_ref<bgfx::VertexBufferHandle>(L, 1);
+    if(h2 != nullptr){
+        bgfx::destroy(*h2);
+        return 0;
+    }
+    bgfx::ProgramHandle *h3 = to_ref<bgfx::ProgramHandle>(L, 1);
+    if(h3 != nullptr){
+        bgfx::destroy(*h3);
+        return 0;
+    }
+    return luaL_error(L, "unsupport bgfx::destroy type. %s", lua_tostring(L, 1));
+}
+
 static void register_bgfx(lua_State* L) {
     lua_newtable(L);
     lua_pushvalue(L, -1);
@@ -950,12 +995,13 @@ static int vertexLayout_begin(lua_State* L){
 static int vertexLayout_add(lua_State* L){
     bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
     //.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-    auto _num = TO_NUMBER_8(L, 3);
-    auto _normalized = lua_toboolean(L, 4) == 1;
-    auto _asInt = lua_toboolean(L, 5) == 1;
+    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 1));
+    auto _num = TO_NUMBER_8(L, 2);
+    bgfx::AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 3));
+    //opt parameter
+    auto _normalized = lua_type(L, 4) != LUA_TNIL ? lua_toboolean(L, 4) == 1 : false;
+    auto _asInt = lua_type(L, 5) != LUA_TNIL ? lua_toboolean(L, 5) == 1 : false;
 
-    bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
-    bgfx::AttribType::Enum attribType = bgfx_attribType_enum(L, lua_tostring(L, 4));
     pLayout->add(attrib, _num, attribType, _normalized, _asInt);
     //return this
     lua_pushvalue(L, 1);
@@ -1091,8 +1137,12 @@ static const luaL_Reg bgfx_funcs[] = {
         {"createProgram", bgfx_createProgram},
         {"setViewTransform", bgfx_setViewTransform},
         {"setTransform", bgfx_setTransform},
+
         {"setVertexBuffer", bgfx_setVertexBuffer},
         {"setIndexBuffer", bgfx_setIndexBuffer},
+        {"setState", bgfx_setState},
+        {"submit", bgfx_submit},
+        {"destroy", bgfx_destroy},
 
         //----- extra relative bgfx stand api ------
         {"loadProgram", bgfx_loadProgram},
@@ -1195,18 +1245,18 @@ extern "C" int luaopen_bx_lua(lua_State* L){
 }
 
 static int mem_newMemory(lua_State *L){
-    //(tables, tableCount, type)
-    const char* type = lua_tostring(L, -1);
-    int tableCount = static_cast<int>(lua_tointeger(L, -2));
-    lua_pop(L, 2);
+    //(type, table...)
+    int n = lua_gettop(L);
+    const char* type = lua_tostring(L, 1);
+    lua_remove(L, 1);
+    int tableCount = n - 1;
     SkMemory *pMemory = new SkMemory(L, tableCount, type);
     push_ptr(L, pMemory);
     return 1;
 }
 static int mem_newMemoryFFFUI(lua_State *L){
-    //int tableCount, type (b, s, i, f)
-    int tableCount = static_cast<int>(lua_tointeger(L, -1));
-    lua_pop(L, 1);
+    //(table...)
+    int tableCount = lua_gettop(L);
     SkMemoryFFFUI *pMemory = new SkMemoryFFFUI(L, tableCount);
     push_ptr(L, pMemory);
     return 1;

@@ -167,11 +167,16 @@ SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : AbsSkMemory(){
     SkASSERT(size > 0);
     data = malloc(size);
 
+    //LOGD("----- new SkMemoryFFFUI -----");
+    //luaB_dumpStack(L);
     char * addr = static_cast<char *>(data);
     int type;
     for (int i = 0; i < tableCount; ++i) {
+       // LOGD("----- table %d -----", i);
         for (int idx = 0; idx < 3; ++idx) {
+          //  LOGD("----- member index = %d -----", idx);
             type = lua_rawgeti(L, i + 1, idx + 1);
+          //  luaB_dumpStack(L);
             if(type != LUA_TNUMBER){
                 luaL_error(L, "create SkMemoryFFFUI failed. for error data type = %d", type);
                 goto out;
@@ -180,7 +185,9 @@ SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : AbsSkMemory(){
             addr += 4;
             lua_pop(L, 1);
         }
+       // LOGD("----- member index = 3 -----");
         type = lua_rawgeti(L, i + 1, 4);
+       // luaB_dumpStack(L);
         if(type != LUA_TNUMBER){
             luaL_error(L, "create SkMemoryFFFUI failed. for error data type = %d", type);
             goto out;
