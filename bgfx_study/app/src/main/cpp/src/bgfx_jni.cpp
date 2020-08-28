@@ -5,16 +5,17 @@
 #include "base_demo.h"
 #include "samples/samples.h"
 #include "common.h"
+
 #include "lua/bgfx_lua_app.h"
-#include "lua/lualib.h"
 #include "lua/SkLua.h"
+#include "lua/lua.hpp"
+#include <lua/int64.h>
 
 using namespace heaven7_Bgfx_demo;
 
 #ifdef ANDROID
 #include <android/native_window_jni.h>
 #include <android/native_window.h>
-#include <lua/bgfx_lua_app.h>
 #include "android/asset_manager_jni.h"
 #include "android/asset_manager.h"
 #endif
@@ -104,6 +105,8 @@ static const luaL_Reg bgfx_libs[] = {
         {"bgfx_lua", luaopen_bgfx_lua},
         {"bx_lua", luaopen_bx_lua},
         {"hmem_lua", luaopen_hmem_lua},
+        {"int64", luaopen_int64},
+        {"uint64", luaopen_uint64},
         {nullptr, nullptr}
 };
 extern "C" JNIEXPORT void JNICALL Java_com_heaven7_android_bgfx_study_demo_NativeApi_initLuaBgfx(

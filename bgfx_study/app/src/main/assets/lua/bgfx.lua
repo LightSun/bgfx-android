@@ -83,10 +83,31 @@ function m.frame(capture)
     bgfx_lua.frame(capture);
 end
 
+--- number of fields can access.
+--- cpuTimeFrame, cpuTimeBegin, cpuTimeEnd, cpuTimerFreq
+--- gpuTimeBegin, gpuTimeEnd, gpuTimerFreq
+--- waitRender, waitSubmit
+--- numDraw, numCompute, numBlit, maxGpuLatency
+--- numDynamicIndexBuffers, numDynamicVertexBuffers, numFrameBuffers
+--- numIndexBuffers, numOcclusionQueries,
+--- numPrograms, numShaders, numTextures,numUniforms
+--- numVertexBuffers, numVertexLayouts
+--- textureMemoryUsed, rtMemoryUsed
+--- transientVbUsed, transientIbUsed
+--- gpuMemoryMax, gpuMemoryUsed
+--- width, height, textWidth, textHeight
+--- numViews, numEncoders
 function m.getStats()
     print("bgfx >>> getStats")
     return func_gs.wrapUserdataGet(bgfx_lua.getStats());
 end
+
+--- number of fields can access.
+--- rendererType, homogeneousDepth, originBottomLeft, numGPUs, formats
+function m.getCaps()
+    return func_gs.wrapUserdataGet(bgfx_lua.getCaps());
+end
+
 --- new VertexLayout.
 --- @return VertexLayout from bgfx pkg
 function m.newVertexLayout()
@@ -138,4 +159,33 @@ end
 function m.loadProgram(v_sh_name, f_sh_name)
     return bgfx_lua.loadProgram(v_sh_name, f_sh_name);
 end
+
+--- set setViewTransform
+--- @param viewId: view id
+--- @param mem_1: memory userdata. often is float type
+--- @param mem_2: memory userdata. often is float type
+function m.setViewTransform(viewId, mem_1, mem_2)
+    return bgfx_lua.setViewTransform(viewId, mem_1, mem_2);
+end
+
+--- set transform
+--- @param mem: memory userdata used for matrix
+--- @param _num: Number of matrices in array. default is 1
+function m.setTransform(mem, _num)
+    if(not _num) then
+        _num = 1;
+    end
+    return bgfx_lua.setTransform(mem, _num);
+end
+
+--- Set model matrix from matrix cache for draw primitive.
+--- @param _cache: Index in matrix cache.
+--- @param _num: Number of matrices from cache. default is 1
+function m.setTransformCache(_matrix_cache, _num)
+    if(not _num) then
+        _num = 1;
+    end
+    return bgfx_lua.setTransform(_matrix_cache, _num);
+end
+
 return m;

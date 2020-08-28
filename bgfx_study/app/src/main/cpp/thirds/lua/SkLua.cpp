@@ -18,6 +18,11 @@
 #include "lua_wrapper.h"
 #include "SkLua.h"
 
+#include <stdint.h>
+#include <bx/math.h>
+
+#include "int64.h"
+
 extern "C"{
 #include <cstring>
 }
@@ -490,7 +495,41 @@ static int bgfx_loadProgram(lua_State* L){
     push_ptr(L, &handle);
     return 1;
 }
-
+static int bgfx_setViewTransform(lua_State* L){
+   // bgfx::setViewTransform(0, view, proj);
+    uint16_t id = TO_NUMBER_16(L, 1);
+    SkMemory *m1 = get_ref<SkMemory>(L, 2);
+    SkMemory *m2 = get_ref<SkMemory>(L, 3);
+    //m1 ,m2 often should be float* as float-array
+    bgfx::setViewTransform(id, m1->data, m2->data);
+    return 0;
+}
+static int bgfx_setTransform(lua_State* L){
+    //bgfx::setTransform
+    if(lua_type(L, 1) == LUA_TNUMBER){
+        uint32_t _cache = TO_NUMBER_32(L, 1);
+        uint16_t _num = TO_NUMBER_16(L, 2);
+        bgfx::setTransform(_cache, _num);
+    } else{
+        SkMemory *pMemory = get_ref<SkMemory>(L, 1);
+        uint16_t _num = TO_NUMBER_16(L, 2);
+        bgfx::setTransform(pMemory->data, _num);
+    }
+    return 0;
+}
+static int bgfx_setVertexBuffer(lua_State* L){
+    //bgfx::setVertexBuffer(0, m_vbh)
+    uint16_t stream = TO_NUMBER_16(L, 1);
+    bgfx::VertexBufferHandle *pHandle = get_ref<bgfx::VertexBufferHandle>(L, 2);
+    bgfx::setVertexBuffer(stream, *pHandle);
+    return 0;
+}
+static int bgfx_setIndexBuffer(lua_State* L){
+    //bgfx::setIndexBuffer(m_vbh)
+    bgfx::IndexBufferHandle *pHandle = get_ref<bgfx::IndexBufferHandle>(L, 1);
+    bgfx::setIndexBuffer(*pHandle);
+    return 0;
+}
 static void register_bgfx(lua_State* L) {
     lua_newtable(L);
     lua_pushvalue(L, -1);
@@ -498,18 +537,6 @@ static void register_bgfx(lua_State* L) {
     // the bgfx table is still on top
 
     setfield_function(L, "getInit", bgfx_getInit);
-    setfield_function(L, "newApp", bgfx_newApp);
-
-    setfield_function(L, "setDebug", bgfx_setDebug);
-
-    setfield_function(L, "setViewClear", bgfx_setViewClear);
-    setfield_function(L, "setViewRect", bgfx_setViewRect);
-    setfield_function(L, "touch", bgfx_touch);
-    setfield_function(L, "dbgTextClear", bgfx_dbgTextClear);
-    setfield_function(L, "dbgTextImage", bgfx_dbgTextImage);
-    setfield_function(L, "dbgTextPrintf", bgfx_dbgTextPrintf);
-    setfield_function(L, "frame", bgfx_frame);
-    setfield_function(L, "getStats", bgfx_getStats);
     lua_pop(L, 1);  // pop off the Sk table
 }
 
@@ -863,8 +890,44 @@ namespace gbgfx {
     };
 }
 //--------------------- bgfx::Caps -----------------------
+static int caps_renderType(lua_State* L){
+    bgfx::Caps *pCaps = get_ref<bgfx::Caps>(L, 1);
+    const char *type = bgfx_render_name(L, pCaps->rendererType);
+    lua_pushstring(L, type);
+    return 1;
+}
+static int caps_homogeneousDepth(lua_State* L){
+    bgfx::Caps *pCaps = get_ref<bgfx::Caps>(L, 1);
+    lua_pushboolean(L, pCaps->homogeneousDepth ? 1: 0);
+    return 1;
+}
+static int caps_originBottomLeft(lua_State* L){
+    bgfx::Caps *pCaps = get_ref<bgfx::Caps>(L, 1);
+    lua_pushboolean(L, pCaps->originBottomLeft ? 1: 0);
+    return 1;
+}
+static int caps_numGPUs(lua_State* L){
+    bgfx::Caps *pCaps = get_ref<bgfx::Caps>(L, 1);
+    lua_pushinteger(L, pCaps->numGPUs);
+    return 1;
+}
+static int caps_formats(lua_State* L){
+    bgfx::Caps *pCaps = get_ref<bgfx::Caps>(L, 1);
+    lua_newtable(L);
+    for (int i = 0, size = sizeof(pCaps->formats)/pCaps->formats[0]; i < size; ++i) {
+        // make it base-1 to match lua convention
+        setarray_number(L, i + 1, pCaps->formats[i]);
+    }
+    return 1;
+}
 namespace gbgfx{
     const struct luaL_Reg Caps_Methods[] = {
+            {"call", forward_call},
+            {"rendererType", caps_renderType},
+            {"homogeneousDepth", caps_homogeneousDepth},
+            {"originBottomLeft", caps_originBottomLeft},
+            {"numGPUs", caps_numGPUs},
+            {"formats", caps_formats},
             {NULL, NULL},
     };
 }
@@ -1026,6 +1089,10 @@ static const luaL_Reg bgfx_funcs[] = {
         {"createVertexBuffer", bgfx_createVertexBuffer},
         {"createIndexBuffer", bgfx_createIndexBuffer},
         {"createProgram", bgfx_createProgram},
+        {"setViewTransform", bgfx_setViewTransform},
+        {"setTransform", bgfx_setTransform},
+        {"setVertexBuffer", bgfx_setVertexBuffer},
+        {"setIndexBuffer", bgfx_setIndexBuffer},
 
         //----- extra relative bgfx stand api ------
         {"loadProgram", bgfx_loadProgram},
@@ -1057,11 +1124,48 @@ static int bx_mtxLookAt(lua_State* L){
     //bx::mtxLookAt(view, eye, at); (array, Vec3, Vec3)
     SkMemory *pMemory = get_ref<SkMemory>(L, 1);
     bx::Vec3 *eye = get_ref<bx::Vec3>(L, 2);
-    bx::Vec3 *at = get_ref<bx::Vec3>(L, 2);
+    bx::Vec3 *at = get_ref<bx::Vec3>(L, 3);
+    bx::Vec3 *_up = to_ref<bx::Vec3>(L, 4);
+    const char *type = lua_tostring(L, 5);
+    bx::Handness::Enum en = type != nullptr ? bgfx_handness_enum(L, type) : bx::Handness::Enum::Left;
     if(!pMemory->isFloat()){
         return luaL_error(L, "for bx::mtxLookAt. memory data type must be float.");
     }
-    bx::mtxLookAt(static_cast<float *>(pMemory->data), *eye, *at);
+    if(_up == nullptr){
+        bx::Vec3 up = bx::Vec3(0.0f, 1.0f, 0.0f);
+        _up = &up;
+    }
+    //_up and en had default parameter
+    bx::mtxLookAt(static_cast<float *>(pMemory->data), *eye, *at, *_up, en);
+    return 0;
+}
+static int bx_mtxProj(lua_State* L){
+    //bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+    SkMemory *pMemory = get_ref<SkMemory>(L, 1);
+    float _ut = TO_FLOAT(L, 2);
+    float _dt = TO_FLOAT(L, 3);
+    float _lt = TO_FLOAT(L, 4);
+    float _rt = TO_FLOAT(L, 5);
+    float _near = TO_FLOAT(L, 6);
+    float _far = TO_FLOAT(L, 7);
+    bool homogeneousNdc = lua2bool(L, 8);
+    const char *handness = lua_tostring(L, 9);
+    bx::Handness::Enum en = handness != nullptr ? bgfx_handness_enum(L, handness) : bx::Handness::Enum::Left;
+    if(!pMemory->isFloat()){
+        return luaL_error(L, "for bx::mtxLookAt. memory data type must be float.");
+    }
+    bx::mtxProj(static_cast<float *>(pMemory->data), _ut, _dt, _lt, _rt, _near, _far, homogeneousNdc, en);
+    return 0;
+}
+static int bx_mtxRotateXY(lua_State* L){
+    //bx::mtxRotateXY(mtx, time + xx*0.21f, time + yy*0.37f);
+    SkMemory *pMemory = get_ref<SkMemory>(L, 1);
+    float ax = TO_FLOAT(L, 2);
+    float ay = TO_FLOAT(L, 3);
+    if(!pMemory->isFloat()){
+        return luaL_error(L, "for bx::mtxRotateXY. memory data type must be float.");
+    }
+    bx::mtxRotateXY(static_cast<float *>(pMemory->data), ax, ay);
     return 0;
 }
 //-------------------- bx::Vec3 --------------------
@@ -1081,6 +1185,8 @@ static const luaL_Reg bx_funcs[] = {
         {"getHPFrequency", bx_getHPFrequency},
         {"newVec3", bx_newVec3},
         {"mtxLookAt", bx_mtxLookAt},
+        {"mtxProj", bx_mtxProj},
+        {"mtxRotateXY", bx_mtxRotateXY},
         {nullptr, nullptr}
 };
 extern "C" int luaopen_bx_lua(lua_State* L){

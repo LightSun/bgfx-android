@@ -7,6 +7,7 @@
 
 #include "bgfx/bgfx.h"
 #include "bx/debug.h"
+#include "bx/math.h"
 #include "../../core/global.h"
 #include "lua.hpp"
 
@@ -34,6 +35,9 @@ BGFX_FUNC_NAME(attrib, bgfx::Attrib::Enum);
 
 BGFX_FUNC_ENUM(attribType, bgfx::AttribType::Enum);
 BGFX_FUNC_NAME(attribType, bgfx::AttribType::Enum);
+
+BGFX_FUNC_ENUM(handness, bx::Handness::Enum);
+BGFX_FUNC_NAME(handness, bx::Handness::Enum);
 
 extern bgfx::Init *getBgfxInit(lua_State *pState);
 

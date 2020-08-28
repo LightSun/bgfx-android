@@ -36,6 +36,10 @@
         #endif
     #endif
 #endif
+
+#ifndef NULL
+#define NULL 0
+#endif
 /**
  * @param str the full string
  * @param s the delimiter

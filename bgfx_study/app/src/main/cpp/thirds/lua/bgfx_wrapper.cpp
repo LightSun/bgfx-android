@@ -343,3 +343,23 @@ BGFX_FUNC_NAME(attribType, bgfx::AttribType::Enum){
     }
     return "unknown_bgfx::AttribType";
 }
+
+BGFX_FUNC_ENUM(handness, bx::Handness::Enum){
+    bx::Handness::Enum id = bx::Handness::Enum::Left;
+#define Handness_ID(x)  \
+if (strcmp(x, "Left") == 0) id = bx::Handness::Enum::Left; \
+else if (strcmp(x, "Right") == 0) id = bx::Handness::Enum::Right; \
+else LUA_REPORT_ERROR(L, "handness", name);
+    Handness_ID(name);
+    return id;
+}
+
+BGFX_FUNC_NAME(handness, bx::Handness::Enum){
+    switch (en) {
+        case bx::Handness::Enum::Left:
+            return "Left";
+        case bx::Handness::Enum::Right:
+            return "Right";
+    }
+    return "unknown_bx::Handness";
+}

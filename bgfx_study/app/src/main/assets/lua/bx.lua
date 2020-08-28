@@ -14,4 +14,40 @@ function m.getHPFrequency()
     return bx1.getHPFrequency();
 end
 
+--- create vector3 by x, y, z . and x/y/z should be float.
+function m.newVec3(x, y, z)
+    return bx1.newVec3(x, y, z);
+end
+--- mtxLookAt
+--- @param mem_f: float memory userdata .
+--- @param vec3_eye: vector3 for eye
+--- @param vec3_at: vector3 for at
+--- @param vec3_up: vector3 for at. default is {0, 1,0}
+--- @param handness: default is 'Left'.
+function m.mtxLookAt(mem_f, vec3_eye, vec3_at, vec3_up, handness)
+    return bx1.mtxLookAt(mem_f, vec3_eye, vec3_at, vec3_up, handness);
+end
+
+--- mtxProj
+--- @param mem_f:  float memory userdata.
+--- @param _ut: float
+--- @param _dt: float
+--- @param _lt: float
+--- @param _rt: float
+--- @param _near: float
+--- @param _far: float
+--- @param homogeneousNdc: bool
+--- @param handness: 'Left' or 'Right'. default is 'Left'
+function m.mtxProj(mem_f, _ut, _dt, _lt, _rt, _near, _far, homogeneousNdc, handness)
+    return bx1.mtxProj(mem_f, _ut, _dt, _lt, _rt, _near, _far, homogeneousNdc, handness);
+end
+
+--- mtxRotateXY
+--- @param mem_f:  float memory userdata.
+--- @param _ax: float
+--- @param _ay: float
+function m.mtxRotateXY(mem_f, _ax, _ay)
+    return bx1.mtxRotateXY(mem_f, _ax, _ay);
+end
+
 return m;
