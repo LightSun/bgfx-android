@@ -1,6 +1,7 @@
 //
 // Created by Administrator on 2020/8/27 0027.
 //
+#include "printer.h"
 #include "SkMemory.h"
 #include "common.h"
 #include "lua_wrapper.h"
@@ -174,7 +175,20 @@ int SkMemory::read(SkMemory* mem, lua_State *L) {
             return luaL_error(L, "wrong data type = %s", mem->_dType);
     }
 }
-
+const char * SkMemory::toString() {
+    switch (_dType[0]) {
+        case 'f':
+            return Printer::printArray<float>((float*)data, size / 4);
+        case 'd':
+            return Printer::printArray<uint32_t>((uint32_t*)data, size / 4);
+        case 'w':
+            return Printer::printArray<uint16_t>((uint16_t*)data, size / 2);
+        case 'b':
+            return Printer::printArray<uint8_t>((uint8_t*)data, size);
+        default:
+            return nullptr;
+    }
+}
 //-----------------------------------------------------------------------
 inline int SkMemory::getUnitSize(const char *t) {
     switch (t[0]) {

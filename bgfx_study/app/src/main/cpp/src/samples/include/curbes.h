@@ -32,6 +32,6 @@ namespace heaven7_Bgfx_demo{
        bool m_g;
        bool m_b;
        bool m_a;
-       Printer printer;
+       Printer printer{1};
    };
 }

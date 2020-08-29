@@ -5,61 +5,88 @@
 #include "printer.h"
 #include <sstream>
 
-const char *Printer::printFloatArray(float *array, int len) {
-    std::ostringstream ss;
-    printFloatArray(array, len, ss);
-    return ss.str().c_str();
-}
-
-void Printer::printFloatArray(float *array, int len, std::ostringstream &ss) {
-    ss << "[";
-    for (int i = 0; i < len; ++i) {
-        ss << array[i];
-        if (i != len - 1) {
-            ss << ",";
-        }
-    }
-    ss << "]";
-}
-
 //--------------
+Printer::Printer(): Printer(-1) {
+
+}
+Printer::Printer(int count): count(count), alreadyCount(0) {
+
+}
 Printer &Printer::append(const char *str) {
-    buf << str;
+    if(alreadyCount < count){
+        buf << str;
+    }
     return *this;
 }
 Printer &Printer::appendArray(float *array, int len) {
-    printFloatArray(array, len, buf);
+    if(alreadyCount < count) {
+        printArray<float>(array, len, buf);
+    }
     return *this;
 }
 
 Printer & Printer::append(unsigned long val) {
-    buf << val;
+    if(alreadyCount < count){
+        buf << val;
+    }
     return *this;
 }
 Printer & Printer::append(int val) {
-    buf << val;
+    if(alreadyCount < count){
+        buf << val;
+    }
     return *this;
 }
 Printer & Printer::append(long val) {
-    buf << val;
+    if(alreadyCount < count){
+        buf << val;
+    }
     return *this;
 }
 Printer & Printer::append(uint8_t val) {
-    buf << val;
+    if(alreadyCount < count){
+        buf << val;
+    }
     return *this;
 }
 Printer & Printer::append(uint16_t val) {
-    buf << val;
+    if(alreadyCount < count){
+        buf << val;
+    }
     return *this;
 }
 Printer & Printer::append(uint32_t val) {
-    buf << val;
+    if(alreadyCount < count){
+        buf << val;
+    }
     return *this;
 }
 
-const char *Printer::end() {
-    auto result = buf.str().c_str();
+const char *Printer::end(void (*Log)(const char* str), int maxLen) {
+    alreadyCount ++;
+    //overflow
+    if(count > 0 && alreadyCount > count){
+        return NULL;
+    }
+    auto result = buf.str();
     buf.clear();
-    return result;
+    if(Log != nullptr && result.length() > maxLen){
+        int mod = result.length() % maxLen ;
+        int size = mod > 0 ? result.length() / maxLen + 1 : result.length() / maxLen;
+        long start = 0;
+        bool enough;
+        for (int i = 0; i < size; ++i) {
+            enough = (result.length() - start) >= maxLen;
+            if(enough){
+                Log(result.substr(start, start + maxLen).c_str());
+            } else{
+                Log(result.substr(start).c_str());
+            }
+            start += maxLen;
+        }
+    }
+    return result.c_str();
 }
-
+void Printer::reset() {
+    alreadyCount = 0;
+}

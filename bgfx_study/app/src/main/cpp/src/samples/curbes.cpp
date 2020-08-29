@@ -6,6 +6,10 @@
 #include "bgfx_utils.h"
 #include "bx/timer.h"
 
+static void __log(const char* str){
+    LOGW("%s", str);
+}
+
 struct PosColorVertex
 {
     float m_x;
@@ -222,6 +226,10 @@ namespace heaven7_Bgfx_demo{
                 mtx[12] = -15.0f + float(xx)*3.0f;
                 mtx[13] = -15.0f + float(yy)*3.0f;
                 mtx[14] = 0.0f;
+
+                std::ostringstream ss;
+                auto str = Printer::mprintf(ss, "(xx, yy) = (%l, %l)\n", xx, yy).str().c_str();
+                printer.append(str);
                 printer.append("mtxRotateXY: ").appendArray(mtx, 16).append("\n");
 
                 // Set model matrix for rendering.
@@ -239,7 +247,8 @@ namespace heaven7_Bgfx_demo{
             }
         }
         printer.append("----- end 11*11 curbes -----\n");
-
+        //for android logcat limit 4k
+        printer.end(__log, 3800);
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.
         bgfx::frame();

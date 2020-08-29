@@ -56,6 +56,7 @@ public:
     void writeFloat(size_t index, float val);
 
     bool isFloat();
+    const char* toString();
 
     static int read(SkMemory* mem, lua_State* L);
     static int write(SkMemory* mem, lua_State* L);

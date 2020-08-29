@@ -152,6 +152,7 @@ local app_init = function ()
     m_timeOffset = bx.getHPCounter();
     print("app_init done");
 end
+local logFirst = true;
 local app_draw = function ()
     print("app_draw");
     local m_width = reso.width;
@@ -164,10 +165,18 @@ local app_draw = function ()
     --Set view and projection matrix for view 0.
     local view = mem.newMemoryArray('f', 16);
     bx.mtxLookAt(view, eye, at);
+    if(logFirst) then
+        print("mtxLookAt: "..tostring(view));
+    end
 
     local proj = mem.newMemoryArray('f', 16);
     --bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+    --todo wait resolve diff with cpp.
     bx.mtxProj(proj, 60, m_width / m_height, 0.1, 100, bgfx.getCaps().homogeneousDepth);
+    if(logFirst) then
+        print("mtxProj: "..tostring(proj));
+    end
+
     bgfx.setViewTransform(0, view, proj);
     --Set view 0 default viewport.
     bgfx.setViewRect(0, 0, 0, m_width, m_height);
@@ -186,9 +195,15 @@ local app_draw = function ()
          | BGFX_STATE_CULL_CW
          | BGFX_STATE_MSAA
          | s_ptState[m_pt]
-    print("state", state)
+    --print("state", state)
+    if(logFirst) then
+        print("state: "..tostring(state));
+    end
     --state = int64(72339412612022291);
 
+    if(logFirst) then
+        print("----- start 11*11 curbes -----\n")
+    end
     for y = 1, 11, 1 do
         local yy = y - 1;
         for x = 1, 11, 1 do
@@ -200,6 +215,10 @@ local app_draw = function ()
             mtx[12] = -15.0 + xx*3.0;
             mtx[13] = -15.0 + yy*3.0;
             mtx[14] = 0.0;
+            if(logFirst) then
+                print("(xx, yy) = (".. xx..", "..yy..")")
+                print("mtxRotateXY: "..tostring(mtx));
+            end
 
             -- Set model matrix for rendering.
             --print("--------- setTransform")
@@ -220,6 +239,10 @@ local app_draw = function ()
             bgfx.submit(0, m_program);
         end
     end
+    if(logFirst) then
+        print("----- end 11*11 curbes -----\n")
+    end
+    logFirst = nil;
     -- Advance to next frame. Rendering thread will be kicked to
     -- process submitted rendering primitives.
     bgfx.frame();
