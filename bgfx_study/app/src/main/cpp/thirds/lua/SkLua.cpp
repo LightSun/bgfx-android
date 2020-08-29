@@ -852,9 +852,10 @@ namespace gbgfx{
 }
 // =============================== LuaApp =================
 static int gc_luaApp(lua_State * L){
+    //here we don't gc lua_app. wait. it really need recycle. draw failed or user-quit.or switch next app
     LOGD("gc_luaApp");
     LuaApp *pApp = get_obj<LuaApp>(L, 1);
-    pApp->quit();
+    //pApp->quit();
     return 0;
 }
 static int destroy_luaApp(lua_State * L){

@@ -2,7 +2,11 @@
 local lib = require "int64"
 
 local int64 = lib.new
-print(0xff000000)
+--print(0xff000000)
+
+--  int64: 0x101005000000010	int64: 0x101005000000020
+print(int64(72339412612022291), int64(0x10100500000001F)) -- state: curbes.cpp, curbes.lua
+
 print("int64(0x0100000000000000)", int64(0x0100000000000000))
 print(lib.tostring(int64 "\1\2\3\4\5\6\7\8"))
 

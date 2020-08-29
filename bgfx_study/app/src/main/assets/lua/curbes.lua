@@ -9,7 +9,7 @@ local reso = initializer.resolution;
 
 --------- fields ----------
 local m_timeOffset;
-local m_pt = 1;
+local m_pt = 2;
 
 local m_r = true;
 local m_g = true;
@@ -102,14 +102,14 @@ local s_ptState = {
     int64(0x0004000000000000),
 };
 
-local BGFX_STATE_WRITE_R = 1;
-local BGFX_STATE_WRITE_G = 2;
-local BGFX_STATE_WRITE_B = 4;
-local BGFX_STATE_WRITE_A = 8;
-local BGFX_STATE_WRITE_Z = 0;
-local BGFX_STATE_DEPTH_TEST_LESS = 0x10;
-local BGFX_STATE_CULL_CW = int64(0x1000000000);
-local BGFX_STATE_CULL_CCW = int64(0x2000000000);
+local BGFX_STATE_WRITE_R = int64(0x0000000000000001);
+local BGFX_STATE_WRITE_G = int64(0x0000000000000002);
+local BGFX_STATE_WRITE_B = int64(0x0000000000000004);
+local BGFX_STATE_WRITE_A = int64(0x0000000000000008);
+local BGFX_STATE_WRITE_Z = int64(0x0000004000000000);
+local BGFX_STATE_DEPTH_TEST_LESS = int64(0x0000000000000010);
+local BGFX_STATE_CULL_CW =  int64(0x0000001000000000);
+local BGFX_STATE_CULL_CCW = int64(0x0000002000000000);
 local BGFX_STATE_MSAA = int64(0x0100000000000000);
 ---------------------------
 local app_pre_init = function()
@@ -186,14 +186,16 @@ local app_draw = function ()
          + BGFX_STATE_CULL_CW
          + BGFX_STATE_MSAA
          + s_ptState[m_pt]
+    print("state", state)
+    state = int64(72339412612022291);
 
     for y = 1, 11, 1 do
         local yy = y - 1;
         for x = 1, 11, 1 do
-            print("y, x = ", y, x)
+            --print("y, x = ", y, x)
             local xx = x - 1;
             local mtx = mem.newMemoryArray('f', 16);
-            bx.mtxRotateXY(mtx, time + time + xx*0.21, time + yy*0.37);
+            bx.mtxRotateXY(mtx, time + xx*0.21, time + yy*0.37);
             --
             mtx[12] = -15.0 + xx*3.0;
             mtx[13] = -15.0 + yy*3.0;

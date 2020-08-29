@@ -192,6 +192,8 @@ namespace heaven7_Bgfx_demo{
         bgfx::touch(0);
 
         bgfx::IndexBufferHandle ibh = m_ibh[m_pt];
+        //0x10100500000001F
+        //72339412612022291
         uint64_t state = 0
                          | (m_r ? BGFX_STATE_WRITE_R : 0)
                          | (m_g ? BGFX_STATE_WRITE_G : 0)
@@ -203,6 +205,7 @@ namespace heaven7_Bgfx_demo{
                          | BGFX_STATE_MSAA
                          | s_ptState[m_pt]
         ;
+        LOGD("%lld/n", state);
 
         // Submit 11x11 cubes.
         for (uint32_t yy = 0; yy < 11; ++yy)

@@ -120,8 +120,10 @@ int LuaApp::draw() {
             luaL_error(L, "call LuaApp draw failed. func = %s, msg = %s", func_draw, msg);
         } else {
             LOGD("LuaApp::draw-------------");
-            luaB_dumpStack(L);//TODO no return value .why?
-            return TO_NUMBER_16(L, -1);
+            auto result = TO_NUMBER_16(L, -1);
+            lua_pop(L, 1);
+            //luaB_dumpStack(L);
+            return result;
         }
     }
     return -1;
@@ -136,7 +138,7 @@ void LuaApp::doPreInit() {
             const char *msg = lua_tostring(L, -1);
             LOGE("%s", msg);
             luaL_error(L, "call LuaApp pre-init failed. func = %s, msg = %s", func_preInit, msg);
-        }
+        } 
     }
 }
 
@@ -171,7 +173,7 @@ void LuaApp::destroy() {
 
         //destroy thread. window , and bgfx
         //m_thread.shutdown();
-        // releaseWindow(getBgfxInit()->platformData.nwh);
+        //releaseWindow(getBgfxInit()->platformData.nwh);
         bgfx::shutdown();
     }
 }
@@ -181,6 +183,7 @@ bool LuaApp::isDestroyed() {
 }
 
 void LuaApp::quit() {
+    LOGD("LuaApp quit:...");
     shouldQuit.store(true, std::memory_order_release);//对读线程可见
 }
 

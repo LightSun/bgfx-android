@@ -21,10 +21,11 @@ local function create_callback_table (fn, name)
     setmetatable (t, {
         __call =  -- 关注__call
                       function (tab, ...) -- 在t(xx)时，将调用到这个函数
-                          tab.callback (...) -- 真正的回调
+                          local result = tab.callback (...) -- 真正的回调
                           if(name) then
                               del_callback (name);  -- 回调完毕，清除wrap建立的数据
                           end
+                          return result;
                       end })
     return t
 end
