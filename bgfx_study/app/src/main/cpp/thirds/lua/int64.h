@@ -104,6 +104,14 @@ public:
         return 1;
     }
 
+    static int _bor(lua_State* L){
+        // op: |
+        T a = _get(L, 1);
+        T b = _get(L, 2);
+        _set(L, a | b);
+        return 1;
+    }
+
     static int
     _mod(lua_State *L) {
         T a = _get(L, 1);

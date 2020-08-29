@@ -12,6 +12,7 @@ static void make_meta_int64(lua_State *L) {
             { "__mod", BigInt64(_mod) },
             { "__unm", BigInt64(_unm) },
             { "__pow", BigInt64(_pow) },
+            { "__bor", BigInt64(_bor) },
             { "__eq", BigInt64(_eq) },
             { "__lt", BigInt64(_lt) },
             { "__le", BigInt64(_le) },
@@ -31,6 +32,7 @@ static void make_meta_uint64(lua_State *L) {
             { "__mod", BigUint64(_mod) },
             { "__unm", BigUint64(_unm) },
             { "__pow", BigUint64(_pow) },
+            { "__bor", BigUint64(_bor) },
             { "__eq", BigUint64(_eq) },
             { "__lt", BigUint64(_lt) },
             { "__le", BigUint64(_le) },
@@ -64,7 +66,7 @@ extern "C" int luaopen_uint64(lua_State *L) {
         return luaL_error(L, "Only support u-64bit architecture");
     }
     lua_pushlightuserdata(L, NULL);
-    make_meta_int64(L);
+    make_meta_uint64(L);
     lua_setmetatable(L,-2);
     lua_pop(L,1);
 

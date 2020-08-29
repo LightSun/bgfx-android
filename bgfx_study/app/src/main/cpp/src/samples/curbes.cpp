@@ -178,9 +178,11 @@ namespace heaven7_Bgfx_demo{
         {
             float view[16];
             bx::mtxLookAt(view, eye, at);
+            printer.append("mtxLookAt: ").appendArray(view, 16).append("\n");
 
             float proj[16];
             bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+            printer.append("mtxProj: ").appendArray(proj, 16).append("\n");
             bgfx::setViewTransform(0, view, proj);
 
             // Set view 0 default viewport.
@@ -192,8 +194,7 @@ namespace heaven7_Bgfx_demo{
         bgfx::touch(0);
 
         bgfx::IndexBufferHandle ibh = m_ibh[m_pt];
-        //0x10100500000001F
-        //72339412612022291
+        //0x101005000000013
         uint64_t state = 0
                          | (m_r ? BGFX_STATE_WRITE_R : 0)
                          | (m_g ? BGFX_STATE_WRITE_G : 0)
@@ -205,9 +206,13 @@ namespace heaven7_Bgfx_demo{
                          | BGFX_STATE_MSAA
                          | s_ptState[m_pt]
         ;
-        LOGD("%lld/n", state);
+        printer.append("state: ").append(state).append("\n");;
+        LOGD("%#llx", state); //uint64 0x101005000000013
+       // state = 0x10100500000001F;
+       // LOGD("%#llx", state);
 
         // Submit 11x11 cubes.
+        printer.append("----- start 11*11 curbes -----\n");
         for (uint32_t yy = 0; yy < 11; ++yy)
         {
             for (uint32_t xx = 0; xx < 11; ++xx)
@@ -217,6 +222,7 @@ namespace heaven7_Bgfx_demo{
                 mtx[12] = -15.0f + float(xx)*3.0f;
                 mtx[13] = -15.0f + float(yy)*3.0f;
                 mtx[14] = 0.0f;
+                printer.append("mtxRotateXY: ").appendArray(mtx, 16).append("\n");
 
                 // Set model matrix for rendering.
                 bgfx::setTransform(mtx);
@@ -232,6 +238,7 @@ namespace heaven7_Bgfx_demo{
                 bgfx::submit(0, m_program);
             }
         }
+        printer.append("----- end 11*11 curbes -----\n");
 
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.

@@ -7,10 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class BgfxDemoActivity extends AppCompatActivity {
 
-   /* static {
-        System.loadLibrary("bgfx_study");
-    }*/
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

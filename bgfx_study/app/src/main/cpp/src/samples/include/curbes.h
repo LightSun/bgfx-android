@@ -3,6 +3,7 @@
 //
 
 #include "../../base_demo.h"
+#include "printer.h"
 
 static const uint64_t s_ptState[]
         {
@@ -31,5 +32,6 @@ namespace heaven7_Bgfx_demo{
        bool m_g;
        bool m_b;
        bool m_a;
+       Printer printer;
    };
 }

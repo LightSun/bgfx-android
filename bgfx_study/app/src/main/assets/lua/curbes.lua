@@ -177,17 +177,17 @@ local app_draw = function ()
     bgfx.touch(0);
     local ibh = m_ibh[m_pt];
 
-    local state = int64(0) + (m_r and BGFX_STATE_WRITE_R or 0)
-         + (m_g and BGFX_STATE_WRITE_G or 0)
-         + (m_b and BGFX_STATE_WRITE_B or 0)
-         + (m_a and BGFX_STATE_WRITE_A or 0)
-         + BGFX_STATE_WRITE_Z
-         + BGFX_STATE_DEPTH_TEST_LESS
-         + BGFX_STATE_CULL_CW
-         + BGFX_STATE_MSAA
-         + s_ptState[m_pt]
+    local state = int64(0) | (m_r and BGFX_STATE_WRITE_R or 0)
+         | (m_g and BGFX_STATE_WRITE_G or 0)
+         | (m_b and BGFX_STATE_WRITE_B or 0)
+         | (m_a and BGFX_STATE_WRITE_A or 0)
+         | BGFX_STATE_WRITE_Z
+         | BGFX_STATE_DEPTH_TEST_LESS
+         | BGFX_STATE_CULL_CW
+         | BGFX_STATE_MSAA
+         | s_ptState[m_pt]
     print("state", state)
-    state = int64(72339412612022291);
+    --state = int64(72339412612022291);
 
     for y = 1, 11, 1 do
         local yy = y - 1;
