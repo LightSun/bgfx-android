@@ -158,6 +158,9 @@ local app_draw = function ()
     local m_width = reso.width;
     local m_height = reso.height;
     local time = (bx.getHPCounter()-m_timeOffset)*1.0/bx.getHPFrequency();
+    if(logFirst) then
+        print("time: ", time)
+    end
     --
     local at = bx.newVec3(0, 0, 0);
     local eye = bx.newVec3(0, 0, -35);

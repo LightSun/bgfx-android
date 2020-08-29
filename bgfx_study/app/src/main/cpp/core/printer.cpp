@@ -5,6 +5,13 @@
 #include "printer.h"
 #include <sstream>
 
+#define APPEND(type) \
+Printer &Printer::append(type str) { \
+    if(alreadyCount < count){ \
+        buf << str; \
+    } \
+    return *this; \
+}
 //--------------
 Printer::Printer(): Printer(-1) {
 
@@ -12,56 +19,21 @@ Printer::Printer(): Printer(-1) {
 Printer::Printer(int count): count(count), alreadyCount(0) {
 
 }
-Printer &Printer::append(const char *str) {
-    if(alreadyCount < count){
-        buf << str;
-    }
-    return *this;
-}
+APPEND(float)
+APPEND(double)
+APPEND(const char *)
+APPEND(unsigned long)
+APPEND(int)
+APPEND(long)
+APPEND(uint8_t)
+APPEND(uint16_t)
+APPEND(uint32_t)
 Printer &Printer::appendArray(float *array, int len) {
     if(alreadyCount < count) {
         printArray<float>(array, len, buf);
     }
     return *this;
 }
-
-Printer & Printer::append(unsigned long val) {
-    if(alreadyCount < count){
-        buf << val;
-    }
-    return *this;
-}
-Printer & Printer::append(int val) {
-    if(alreadyCount < count){
-        buf << val;
-    }
-    return *this;
-}
-Printer & Printer::append(long val) {
-    if(alreadyCount < count){
-        buf << val;
-    }
-    return *this;
-}
-Printer & Printer::append(uint8_t val) {
-    if(alreadyCount < count){
-        buf << val;
-    }
-    return *this;
-}
-Printer & Printer::append(uint16_t val) {
-    if(alreadyCount < count){
-        buf << val;
-    }
-    return *this;
-}
-Printer & Printer::append(uint32_t val) {
-    if(alreadyCount < count){
-        buf << val;
-    }
-    return *this;
-}
-
 const char *Printer::end(void (*Log)(const char* str), int maxLen) {
     alreadyCount ++;
     //overflow

@@ -174,6 +174,7 @@ namespace heaven7_Bgfx_demo{
         int m_width = config.win_width;
         int m_height = config.win_height;
         float time = (float)( (bx::getHPCounter()-m_timeOffset)/double(bx::getHPFrequency() ) );
+        printer.append("time: ").append(time).append("\n");
 
         const bx::Vec3 at  = { 0.0f, 0.0f,   0.0f };
         const bx::Vec3 eye = { 0.0f, 0.0f, -35.0f };
@@ -228,7 +229,7 @@ namespace heaven7_Bgfx_demo{
                 mtx[14] = 0.0f;
 
                 std::ostringstream ss;
-                auto str = Printer::mprintf(ss, "(xx, yy) = (%l, %l)\n", xx, yy).str().c_str();
+                auto str = Printer::mprintf(ss, "(xx, yy) = (%d, %d)\n", xx, yy).str().c_str();
                 printer.append(str);
                 printer.append("mtxRotateXY: ").appendArray(mtx, 16).append("\n");
 

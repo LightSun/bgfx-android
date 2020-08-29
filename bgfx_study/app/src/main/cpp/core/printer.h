@@ -20,6 +20,8 @@ public:
     Printer(int count);
     Printer();
 
+    Printer& append(float val);
+    Printer& append(double val);
     Printer& append(const char* str);
     Printer& append(uint64_t val);
     Printer& append(long val);
