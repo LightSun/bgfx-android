@@ -531,9 +531,9 @@ static int bgfx_loadProgram(lua_State *L) {
 
 static int bgfx_setViewTransform(lua_State *L) {
     // bgfx::setViewTransform(0, view, proj);
-    uint16_t id = TO_NUMBER_16(L, 1);
-    SkMemory *m1 = get_ref<SkMemory>(L, 2);
-    SkMemory *m2 = get_ref<SkMemory>(L, 3);
+    auto id = TO_NUMBER_16(L, 1);
+    auto *m1 = get_ref<SkMemory>(L, 2);
+    auto *m2 = get_ref<SkMemory>(L, 3);
     //m1 ,m2 often should be float* as float-array
     bgfx::setViewTransform(id, m1->data, m2->data);
     return 0;
@@ -1333,10 +1333,10 @@ static int bx_newVec3(lua_State *L) {
 
 static int bx_mtxLookAt(lua_State *L) {
     //bx::mtxLookAt(view, eye, at); (array, Vec3, Vec3)
-    SkMemory *pMemory = get_ref<SkMemory>(L, 1);
-    bx::Vec3 *eye = get_ref<bx::Vec3>(L, 2);
-    bx::Vec3 *at = get_ref<bx::Vec3>(L, 3);
-    bx::Vec3 *_up = to_ref<bx::Vec3>(L, 4);
+    auto *pMemory = get_ref<SkMemory>(L, 1);
+    auto *eye = get_ref<bx::Vec3>(L, 2);
+    auto *at = get_ref<bx::Vec3>(L, 3);
+    auto *_up = to_ref<bx::Vec3>(L, 4);
     const char *type = lua_tostring(L, 5);
     bx::Handness::Enum en =
             type != nullptr ? bgfx_handness_enum(L, type) : bx::Handness::Enum::Left;
@@ -1352,24 +1352,87 @@ static int bx_mtxLookAt(lua_State *L) {
     return 0;
 }
 
-static int bx_mtxProj(lua_State *L) {
-    //bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-    SkMemory *pMemory = get_ref<SkMemory>(L, 1);
-    float _ut = TO_FLOAT(L, 2);
-    float _dt = TO_FLOAT(L, 3);
-    float _lt = TO_FLOAT(L, 4);
-    float _rt = TO_FLOAT(L, 5);
-    float _near = TO_FLOAT(L, 6);
-    float _far = TO_FLOAT(L, 7);
-    bool homogeneousNdc = lua2bool(L, 8);
-    const char *handness = lua_tostring(L, 9);
+//normal 6
+static inline int bx_mtxProj6(lua_State *L){
+    auto *pMemory = get_ref<SkMemory>(L, 1);
+    auto *_fovy = get_ref<SkMemory>(L, 2);
+    auto _near = TO_FLOAT(L, 3);
+    auto _far = TO_FLOAT(L, 4);
+    bool homogeneousNdc = lua2bool(L, 5);
+    const char *handness = lua_tostring(L, 6);
     bx::Handness::Enum en =
             handness != nullptr ? bgfx_handness_enum(L, handness) : bx::Handness::Enum::Left;
     if (!pMemory->isFloat()) {
-        return luaL_error(L, "for bx::mtxLookAt. memory data type must be float.");
+        return luaL_error(L, "for bx::mtxProj. memory data type must be float.");
     }
-    bx::mtxProj(static_cast<float *>(pMemory->data), _ut, _dt, _lt, _rt, _near, _far,
+    if (!_fovy->isFloat()) {
+        return luaL_error(L, "for bx::mtxProj. _fovy memory data type must be float.");
+    }
+    //float[4]
+    if(_fovy->size != 4 * 4){
+        return luaL_error(L, "for bx::mtxProj. _fovy memory data must be float[4].");
+    }
+    bx::mtxProj(static_cast<float *>(pMemory->data), static_cast<float *>(_fovy->data), _near, _far, homogeneousNdc, en);
+    return 0;
+}
+static inline int bx_mtxProj7(lua_State *L){
+    //  float* _result, float _fovy, float _aspect, float _near, float _far, bool _homogeneousNdc, Handness::Enum _handness = Handness::Left
+    auto *pMemory = get_ref<SkMemory>(L, 1);
+    auto _fovy = TO_FLOAT(L, 2);
+    auto _aspect = TO_FLOAT(L, 3);
+    auto _near = TO_FLOAT(L, 4);
+    auto _far = TO_FLOAT(L, 5);
+    bool homogeneousNdc = lua2bool(L, 6);
+    const char *handness = lua_tostring(L, 7);
+    bx::Handness::Enum en =
+            handness != nullptr ? bgfx_handness_enum(L, handness) : bx::Handness::Enum::Left;
+    if (!pMemory->isFloat()) {
+        return luaL_error(L, "for bx::mtxProj. memory data type must be float.");
+    }
+    bx::mtxProj(static_cast<float *>(pMemory->data), _fovy, _aspect, _near, _far,
                 homogeneousNdc, en);
+    return 0;
+}
+
+static int bx_mtxProj(lua_State *L) {
+    auto n = lua_gettop(L);
+    switch (n){
+        case 8:
+        case 9:{
+            SkMemory *pMemory = get_ref<SkMemory>(L, 1);
+            auto _ut = TO_FLOAT(L, 2);
+            auto _dt = TO_FLOAT(L, 3);
+            auto _lt = TO_FLOAT(L, 4);
+            auto _rt = TO_FLOAT(L, 5);
+            auto _near = TO_FLOAT(L, 6);
+            auto _far = TO_FLOAT(L, 7);
+            bool homogeneousNdc = lua2bool(L, 8);
+            const char *handness = lua_tostring(L, 9);
+            bx::Handness::Enum en =
+                    handness != nullptr ? bgfx_handness_enum(L, handness) : bx::Handness::Enum::Left;
+            if (!pMemory->isFloat()) {
+                return luaL_error(L, "for bx::mtxProj. memory data type must be float.");
+            }
+            bx::mtxProj(static_cast<float *>(pMemory->data), _ut, _dt, _lt, _rt, _near, _far,
+                        homogeneousNdc, en);
+            return 0;
+        }
+        case 7:{
+            return bx_mtxProj7(L);
+        }
+        case 5:
+            return bx_mtxProj6(L);
+
+        case 6:{
+            //can be 6 or 7. for Handness is opt parameter.
+            if(lua_type(L, 6) == LUA_TBOOLEAN){
+                return bx_mtxProj7(L);
+            }
+            return bx_mtxProj6(L);
+        }
+        default:
+            return luaL_error(L, "wrong arguments for bx::mtxProj.");
+    }
     return 0;
 }
 

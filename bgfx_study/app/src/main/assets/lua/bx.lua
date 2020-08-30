@@ -38,8 +38,32 @@ end
 --- @param _far: float
 --- @param homogeneousNdc: bool
 --- @param handness: 'Left' or 'Right'. default is 'Left'
-function m.mtxProj(mem_f, _ut, _dt, _lt, _rt, _near, _far, homogeneousNdc, handness)
+function m.mtxProj9(mem_f, _ut, _dt, _lt, _rt, _near, _far, homogeneousNdc, handness)
+    if(not handness) then
+        handness = 'Left';
+    end
     return bx1.mtxProj(mem_f, _ut, _dt, _lt, _rt, _near, _far, homogeneousNdc, handness);
+end
+
+function m.mtxProj7(mem_f, _fovy, _aspect,  _near, _far, homogeneousNdc, handness)
+    --float* _result, float _fovy, float _aspect, float _near, float _far, bool _homogeneousNdc, Handness::Enum _handness = Handness::Left
+    if(not handness) then
+        handness = 'Left';
+    end
+    return bx1.mtxProj(mem_f, _fovy, _aspect, _near, _far, homogeneousNdc, handness);
+end
+---
+function m.mtxProj6(mem_f, mem_fov, _near, _far, homogeneousNdc, handness)
+    -- float* _result, const float _fov[4], float _near, float _far, bool _homogeneousNdc, Handness::Enum _handness = Handness::Left
+    if(not handness) then
+        handness = 'Left';
+    end
+    return bx1.mtxProj(mem_f, mem_fov, _near, _far, homogeneousNdc, handness);
+end
+--- mtxProj : compat mtxProj6, mtxProj7, mtxProj9
+--- @param mem_f:  float memory userdata.
+function m.mtxProj(mem_f, ...)
+    return bx1.mtxProj(mem_f, ...);
 end
 
 --- mtxRotateXY

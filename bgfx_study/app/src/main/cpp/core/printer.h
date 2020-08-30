@@ -9,12 +9,16 @@
 
 class Printer{
 
+typedef void (*Log)(const char* str);
+
 private:
     std::ostringstream buf;
     /** the call count of end() method. or else return empty string. */
     int count;
     /** the already count of end */
     int alreadyCount;
+
+    Log log;
 
 public:
     Printer(int count);
@@ -30,16 +34,29 @@ public:
     Printer& append(uint8_t val);
     Printer& append(uint16_t val);
     Printer& appendArray(float* array, int len);
+    Printer& logFunc(Log log);
+    const char * prints();
     /**
-     * end the printer and output.
-     * @param Log the log function. can called multi
-     * @param maxLen the max len of one log. this is useful when you want to split-logs.
+     * count and end the printer and output.
      * @return null if over count. or a normal str.
      */
-    const char* end(void (*Log)(const char* str), int maxLen);
+    const char* end();
     void reset();
 
 public:
+
+    template<typename ...Args>
+    static const char* format(const char *fmt, Args &&... args) {
+        //asprintf: some char will be wrong.
+        char* cstr;
+        int c = snprintf(NULL, 0, fmt, std::forward<Args>(args)...);
+        cstr = new char[ c + 1 ];
+        snprintf(cstr, c + 1, fmt, std::forward<Args>(args)...);
+
+        std::string a(cstr);
+        free(cstr);
+        return cstr;
+    }
     template<class T>
     inline static const char* printArray(T* array, int len){
         std::ostringstream ss;
@@ -58,68 +75,6 @@ public:
         }
         ss << "]";
     }
-
-    template<typename T, typename... Args>
-    static std::ostringstream & mprintf(std::ostringstream & ostr,
-                           const char * fstr, const T & x) throw()
-    {
-        size_t i=0;
-        char c = fstr[0];
-
-        while (c != '%')
-        {
-            if(c == 0) return ostr; // string is finished
-            ostr << c;
-            c = fstr[++i];
-        };
-        c = fstr[++i];
-        ostr << x;
-
-        if(c==0) return ostr; //
-
-        // print the rest of the stirng
-        ostr << &fstr[++i];
-        return ostr;
-    }
-    template<typename T, typename... Args>
-    static std::ostringstream & mprintf(std::ostringstream & ostr,
-                           const char * fstr, const T & x, Args... args) throw()
-    {
-        size_t i=0;
-        char c = fstr[0];
-
-        while (c != '%')
-        {
-            if(c == 0) return ostr; // string is finished
-            ostr << c;
-            c = fstr[++i];
-        };
-        c = fstr[++i];
-        ostr << x;
-
-        if(c==0) return ostr; // string is finished
-
-        return mprintf(ostr, &fstr[++i], args...);
-    }
-    /** example
-     * int main()
-{
-    int c = 50*6;
-    double a = 34./67.;
-    std::string q = "Hello!";
-
-    // put only two arguments
-    // the symbol after % does not matter at all
-    mprintf(std::cout, "%f + %f = %a \n", c, a);
-
-    // print string object: for real printf one should write q.c_str()
-    mprintf(std::cout, "message: \"%s\". \n", q);
-
-    // the last argument will be ignored
-    mprintf(std::cout, "%z + %f\n", (long)a, 12, 544 );
-
-}
-     */
 };
 
 

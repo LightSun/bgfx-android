@@ -34,6 +34,12 @@ for (int i = 0; i < tableCount; ++i) { \
     } \
 }
 
+#define ARRAY_INIT(type) \
+type* arr = static_cast<type *>(data); \
+for (int i = 0; i < len; ++i) { \
+arr[i] = 0; \
+}
+
 AbsSkMemory::~AbsSkMemory() {
     destroyData();
 }
@@ -61,6 +67,24 @@ SkMemory::SkMemory(const char *type, int len): AbsSkMemory(), _dType(type) {
     size = getUnitSize(type) * len;
     SkASSERT(size > 0);
     data = malloc(size);
+    switch (type[0]) {
+        case 'f': {
+            ARRAY_INIT(float);
+        }
+            break;
+        case 'd': {
+            ARRAY_INIT(uint32_t);
+        }
+            break;
+        case 'w': {
+            ARRAY_INIT(uint16_t);
+        }
+            break;
+        case 'b':{
+            ARRAY_INIT(uint8_t);
+        }
+            break;
+    }
 }
 SkMemory::SkMemory(lua_State *L, int tableCount, const char *t) : AbsSkMemory(){
     _dType = t;

@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".BgfxDemoActivity"
-            android:label="BgfxDemoActivity"
+            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait">
         </activity>
         <activity android:name=".BgfxNativeActivity"
@@ -36,7 +36,7 @@
 
         <activity android:name=".BgfxLuaActivity"
             android:theme="@style/AppTheme.NoActionBar"
-            android:label="BgfxLuaActivity">
+            >
         </activity>
     </application>
 

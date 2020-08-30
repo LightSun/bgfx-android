@@ -34,31 +34,29 @@ Printer &Printer::appendArray(float *array, int len) {
     }
     return *this;
 }
-const char *Printer::end(void (*Log)(const char* str), int maxLen) {
+Printer& Printer::logFunc(Printer::Log _log) {
+    this->log = _log;
+    return *this;
+}
+const char * Printer::prints() {
+    auto cstr = buf.str().c_str();
+    if(log != nullptr){
+        log(cstr);
+    }
+    buf.str("");
+    buf.clear();
+    return cstr;
+}
+const char *Printer::end() {
     alreadyCount ++;
     //overflow
     if(count > 0 && alreadyCount > count){
         return NULL;
     }
-    auto result = buf.str();
-    buf.clear();
-    if(Log != nullptr && result.length() > maxLen){
-        int mod = result.length() % maxLen ;
-        int size = mod > 0 ? result.length() / maxLen + 1 : result.length() / maxLen;
-        long start = 0;
-        bool enough;
-        for (int i = 0; i < size; ++i) {
-            enough = (result.length() - start) >= maxLen;
-            if(enough){
-                Log(result.substr(start, start + maxLen).c_str());
-            } else{
-                Log(result.substr(start).c_str());
-            }
-            start += maxLen;
-        }
-    }
-    return result.c_str();
+    return prints();
 }
 void Printer::reset() {
+    buf.str("");
+    buf.clear();
     alreadyCount = 0;
 }

@@ -169,12 +169,13 @@ namespace heaven7_Bgfx_demo{
         m_program = loadProgram("vs_cubes", "fs_cubes");
 
         m_timeOffset = bx::getHPCounter();
+        printer.logFunc(__log);
     }
     int CurbesDemo::draw() {
         int m_width = config.win_width;
         int m_height = config.win_height;
         float time = (float)( (bx::getHPCounter()-m_timeOffset)/double(bx::getHPFrequency() ) );
-        printer.append("time: ").append(time).append("\n");
+        printer.append("time: ").append(time).prints();
 
         const bx::Vec3 at  = { 0.0f, 0.0f,   0.0f };
         const bx::Vec3 eye = { 0.0f, 0.0f, -35.0f };
@@ -183,11 +184,11 @@ namespace heaven7_Bgfx_demo{
         {
             float view[16];
             bx::mtxLookAt(view, eye, at);
-            printer.append("mtxLookAt: ").appendArray(view, 16).append("\n");
+            printer.append("mtxLookAt: ").appendArray(view, 16).prints();
 
             float proj[16];
             bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-            printer.append("mtxProj: ").appendArray(proj, 16).append("\n");
+            printer.append("mtxProj: ").appendArray(proj, 16).prints();
             bgfx::setViewTransform(0, view, proj);
 
             // Set view 0 default viewport.
@@ -211,27 +212,26 @@ namespace heaven7_Bgfx_demo{
                          | BGFX_STATE_MSAA
                          | s_ptState[m_pt]
         ;
-        printer.append("state: ").append(state).append("\n");;
+        printer.append("state: ").append(state).prints();
         LOGD("%#llx", state); //uint64 0x101005000000013
        // state = 0x10100500000001F;
        // LOGD("%#llx", state);
 
         // Submit 11x11 cubes.
-        printer.append("----- start 11*11 curbes -----\n");
+        printer.append("----- start 11*11 curbes -----").prints();
         for (uint32_t yy = 0; yy < 11; ++yy)
         {
             for (uint32_t xx = 0; xx < 11; ++xx)
             {
                 float mtx[16];
+                printer.append("pre mtxRotateXY:").appendArray(mtx, 16).prints();
                 bx::mtxRotateXY(mtx, time + xx*0.21f, time + yy*0.37f);
                 mtx[12] = -15.0f + float(xx)*3.0f;
                 mtx[13] = -15.0f + float(yy)*3.0f;
                 mtx[14] = 0.0f;
 
-                std::ostringstream ss;
-                auto str = Printer::mprintf(ss, "(xx, yy) = (%d, %d)\n", xx, yy).str().c_str();
-                printer.append(str);
-                printer.append("mtxRotateXY: ").appendArray(mtx, 16).append("\n");
+                printer.append(Printer::format("(xx, yy) = (%d , %d)", xx, yy)).prints();
+                printer.append("mtxRotateXY: ").appendArray(mtx, 16).prints();
 
                 // Set model matrix for rendering.
                 bgfx::setTransform(mtx);
@@ -247,9 +247,7 @@ namespace heaven7_Bgfx_demo{
                 bgfx::submit(0, m_program);
             }
         }
-        printer.append("----- end 11*11 curbes -----\n");
-        //for android logcat limit 4k
-        printer.end(__log, 3800);
+        printer.append("----- end 11*11 curbes -----").end();
         // Advance to next frame. Rendering thread will be kicked to
         // process submitted rendering primitives.
         bgfx::frame();

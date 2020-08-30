@@ -213,6 +213,7 @@ local app_draw = function ()
             --print("y, x = ", y, x)
             local xx = x - 1;
             local mtx = mem.newMemoryArray('f', 16);
+            --print("pre mtxRotateXY: "..tostring(mtx));
             bx.mtxRotateXY(mtx, time + xx*0.21, time + yy*0.37);
             --
             mtx[12] = -15.0 + xx*3.0;
