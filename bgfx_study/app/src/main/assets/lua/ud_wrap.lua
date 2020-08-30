@@ -16,11 +16,11 @@ function m.wrapGetSet(u)
         -- get and set
         local meta = {
             __index = function(t, k)
-                print('wrapGetSet', tostring(u), "__index, k =", k);
+                --print('wrapGetSet', tostring(u), "__index, k =", k);
                 return m.wrapGetSet(u.call(u, tostring(k), nil));
             end,
             __newindex = function(t, k, v)
-                print('wrapGetSet', tostring(u), "__newindex, k =", k);
+                --print('wrapGetSet', tostring(u), "__newindex, k =", k);
                 return m.wrapGetSet(u.call(u, tostring(k), v));
             end,
             __tostring = function(t)
@@ -43,7 +43,7 @@ function m.wrapGet(u)
         -- get
         local meta = {
             __index = function(t, k)
-                print('wrapGet: ',tostring(u), "__index, k =", k);
+                --print('wrapGet: ',tostring(u), "__index, k =", k);
                 return m.wrapGetSet(u.call(u, tostring(k), nil));
             end,
             __tostring = function(t)
@@ -69,7 +69,7 @@ function m.wrapCall(u, recursive)
 
         local meta = {
             __index = function(t, k, ...)
-                print('wrapCall: ',tostring(u), "__index, k =", k);
+                --print('wrapCall: ',tostring(u), "__index, k =", k);
                 local func = function(...)
                     local p = {...};
                     if(recursive) then

@@ -31,6 +31,11 @@ extern "C" {
 if(m->_ref == 0){ \
     return luaL_error(L, "Invalid sk-memory, which has already been destroyed."); \
 }
+#define PUT_HANDLE(type) \
+auto pHandle = new bgfx::type(); \
+pHandle->idx = handle.idx; \
+push_ptr(L, pHandle);
+
 
 template<typename T, typename... Args>
 T *push_new(lua_State *L, Args &&... args) {
@@ -489,9 +494,7 @@ static int bgfx_createVertexBuffer(lua_State *L) {
     auto flags = lua_tointeger(L, 3);
     bgfx::VertexBufferHandle handle = bgfx::createVertexBuffer(pT, *layout, flags);
     //
-    auto pHandle = new bgfx::VertexBufferHandle();
-    pHandle->idx = handle.idx;
-    push_ptr(L, pHandle);
+    PUT_HANDLE(VertexBufferHandle)
     return 1;
 }
 
@@ -500,9 +503,7 @@ static int bgfx_createIndexBuffer(lua_State *L) {
     auto flags = lua_tointeger(L, 2);
     bgfx::IndexBufferHandle handle = bgfx::createIndexBuffer(pT, flags);
 
-    auto pHandle = new bgfx::IndexBufferHandle();
-    pHandle->idx = handle.idx;
-    push_ptr(L, pHandle);
+    PUT_HANDLE(IndexBufferHandle)
     return 1;
 }
 
@@ -512,9 +513,7 @@ static int bgfx_createProgram(lua_State *L) {
     auto destroyShader = lua_type(L, 3) != LUA_TNIL ? lua_toboolean(L, 3) == 1 : false;
     bgfx::ProgramHandle handle = bgfx::createProgram(*v_sh, *f_sh, destroyShader);
 
-    auto pHandle = new bgfx::ProgramHandle();
-    pHandle->idx = handle.idx;
-    push_ptr(L, pHandle);
+    PUT_HANDLE(ProgramHandle)
     return 1;
 }
 
@@ -523,9 +522,7 @@ static int bgfx_loadProgram(lua_State *L) {
     auto f_sh = lua_tostring(L, 2);
     bgfx::ProgramHandle handle = loadProgram(v_sh, f_sh);
 
-    auto pHandle = new bgfx::ProgramHandle();
-    pHandle->idx = handle.idx;
-    push_ptr(L, pHandle);
+    PUT_HANDLE(ProgramHandle)
     return 1;
 }
 
@@ -535,7 +532,7 @@ static int bgfx_setViewTransform(lua_State *L) {
     auto *m1 = get_ref<SkMemory>(L, 2);
     auto *m2 = get_ref<SkMemory>(L, 3);
     //m1 ,m2 often should be float* as float-array
-    bgfx::setViewTransform(id, m1->data, m2->data);
+    bgfx::setViewTransform(id, m1->data, static_cast<float *>(m2->data));
     return 0;
 }
 
@@ -726,13 +723,13 @@ static int forward_call(lua_State *L) { //a.call(a, k, v)
     lua_gettable(L, 1); // {a, k, v, method}
     lua_pushvalue(L, 1); // {a, k, v, method, a}
     lua_pushvalue(L, 3); // {a, k, v, method, a, v}
-    LOGD("---------  ---------");
-    LOGD("before call... %s", key);
-    luaB_dumpStack(L);
+    //LOGD("---------  ---------");
+    //LOGD("before call... %s", key);
+    //luaB_dumpStack(L);
     int result = lua_pcall(L, 2, 1, 0); //two arguments, 1 result,
-    LOGD("after call...");
-    luaB_dumpStack(L);
-    LOGD("---------  ---------");
+    //LOGD("after call...");
+    //luaB_dumpStack(L);
+    //LOGD("---------  ---------");
     if (result == LUA_OK) {
         lua_pushvalue(L, -1);
         return 1;
@@ -753,11 +750,11 @@ static int forward_func_call(lua_State *L) {
     lua_pushvalue(L, 1); // {a, func, ... , a}
     lua_insert(L, 3); // {a, func, a, ...}
 
-    LOGD("------- before func_call... %s", key);
-    luaB_dumpStack(L);
+    //LOGD("------- before func_call... %s", key);
+    //luaB_dumpStack(L);
     int result = lua_pcall(L, n - 1, 1, 0);
-    LOGD("------- after func_call... %d", result); // 0 is ok
-    luaB_dumpStack(L);
+    //LOGD("------- after func_call... %d", result); // 0 is ok
+    //luaB_dumpStack(L);
     if (result == LUA_OK) {
         lua_pushvalue(L, -1);
         return 1;
@@ -878,11 +875,8 @@ static int limits_##x(lua_State* L){ \
 }
 
 INIT_LIMITS(maxEncoders)
-
 INIT_LIMITS(minResourceCbSize)
-
 INIT_LIMITS(transientVbSize)
-
 INIT_LIMITS(transientIbSize)
 
 namespace gbgfx {
@@ -937,75 +931,40 @@ static int stats_##x(lua_State * L){ \
 }
 
 STATS_NUMBER(cpuTimeFrame);
-
 STATS_NUMBER(cpuTimeBegin);
-
 STATS_NUMBER(cpuTimeEnd);
-
 STATS_NUMBER(cpuTimerFreq);
-
 STATS_NUMBER(gpuTimeBegin);
-
 STATS_NUMBER(gpuTimeEnd);
-
 STATS_NUMBER(gpuTimerFreq);
-
 STATS_NUMBER(waitRender);
-
 STATS_NUMBER(waitSubmit);
-
 STATS_NUMBER(numDraw);
-
 STATS_NUMBER(numCompute);
-
 STATS_NUMBER(numBlit);
-
 STATS_NUMBER(maxGpuLatency);
-
 STATS_NUMBER(numDynamicIndexBuffers);
-
 STATS_NUMBER(numDynamicVertexBuffers);
-
 STATS_NUMBER(numFrameBuffers);
-
 STATS_NUMBER(numIndexBuffers);
-
 STATS_NUMBER(numOcclusionQueries);
-
 STATS_NUMBER(numPrograms);
-
 STATS_NUMBER(numShaders);
-
 STATS_NUMBER(numTextures);
-
 STATS_NUMBER(numUniforms);
-
 STATS_NUMBER(numVertexBuffers);
-
 STATS_NUMBER(numVertexLayouts);
-
 STATS_NUMBER(textureMemoryUsed);
-
 STATS_NUMBER(rtMemoryUsed);
-
 STATS_NUMBER(transientVbUsed);
-
 STATS_NUMBER(transientIbUsed);
-
 STATS_NUMBER(gpuMemoryMax);
-
 STATS_NUMBER(gpuMemoryUsed);
-
 STATS_NUMBER(width);
-
 STATS_NUMBER(height);
-
 STATS_NUMBER(textWidth);
-
 STATS_NUMBER(textHeight);
-
 STATS_NUMBER(numViews);
-
 STATS_NUMBER(numEncoders);
 //TODO ViewStats, EncoderStats
 
@@ -1230,13 +1189,10 @@ static int type##_gc(lua_State* L){ \
     return 0;\
 }
 
-memory_isValid(SkMemory);
-
-memory_gc(SkMemory);
-
-memory_isValid(SkMemoryFFFUI);
-
-memory_gc(SkMemoryFFFUI);
+memory_isValid(SkMemory)
+memory_gc(SkMemory)
+memory_isValid(SkMemoryFFFUI)
+memory_gc(SkMemoryFFFUI)
 
 static int SkMemory_index(lua_State *L) {
     auto pMemory = get_ref<SkMemory>(L, 1);
@@ -1519,6 +1475,7 @@ extern "C" int luaopen_hmem_lua(lua_State *L) {
 #define HANDLE_METHODS(t) \
 static int t##_gc(lua_State* L){ \
     auto pT = get_ref<bgfx::t>(L, 1); \
+    LOGD("handle is recycled."); \
     delete pT;\
     return 0;\
 }\
@@ -1530,47 +1487,28 @@ namespace gbgfx{\
 }
 
 HANDLE_METHODS(VertexBufferHandle)
-
 HANDLE_METHODS(VertexLayoutHandle)
-
 HANDLE_METHODS(IndexBufferHandle)
-
 HANDLE_METHODS(ProgramHandle)
-
 HANDLE_METHODS(ShaderHandle)
 
 DEF_MTNAME(bgfx::Init)
-
 DEF_MTNAME(bgfx::PlatformData)
-
 DEF_MTNAME(bgfx::Resolution)
-
 DEF_MTNAME(bgfx::Init::Limits)
-
 DEF_MTNAME(bgfx::Stats)
-
 DEF_MTNAME(bgfx::Caps)
-
 DEF_MTNAME(bgfx::VertexLayout)
-
 DEF_MTNAME(bx::Vec3)
-
 DEF_MTNAME(LuaApp)
-
 DEF_MTNAME(SkMemory)
-
 DEF_MTNAME(SkMemoryFFFUI)
 //----------- only get_mtname ------
 DEF_MTNAME(bgfx::Memory)
-
 DEF_MTNAME(bgfx::VertexBufferHandle)
-
 DEF_MTNAME(bgfx::VertexLayoutHandle)
-
 DEF_MTNAME(bgfx::IndexBufferHandle)
-
 DEF_MTNAME(bgfx::ProgramHandle)
-
 DEF_MTNAME(bgfx::ShaderHandle)
 
 void SkLua::Load(lua_State *L) {

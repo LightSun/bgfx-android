@@ -14,16 +14,14 @@ local mem = require("hmem_lua");
 --- 'f' is float
 --- ...: means multi array.
 function m.newMemory(type, ...)
-    local tabs = {...};
-    return mem.newMemory(type, table.unpack(tabs));
+    return mem.newMemory(type, ...);
 end
 
 --- create fix type memory: 'float-float-float-uint32'
 --- ...: means multi table of 'fffui'.
 function m.newMemoryFFFUI(...)
-    local tabs = {...};
     -- lua 'table.unpack()' as parameter must be the final parameter.or else the lua stack only contains first parameter.
-    return mem.newMemoryFFFUI(table.unpack(tabs));
+    return mem.newMemoryFFFUI(...);
 end
 --- create single type memory array. type: can be 'd', 'w', 'b', 'f'.
 --- 'd' is u-int32

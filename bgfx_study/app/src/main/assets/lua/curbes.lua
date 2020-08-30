@@ -112,6 +112,8 @@ local BGFX_STATE_CULL_CW =  int64(0x0000001000000000);
 local BGFX_STATE_CULL_CCW = int64(0x0000002000000000);
 local BGFX_STATE_MSAA = int64(0x0100000000000000);
 ---------------------------
+---
+local app;
 local app_pre_init = function()
     print("app_pre_init");
     initializer.type = "Count";
@@ -174,7 +176,6 @@ local app_draw = function ()
 
     local proj = mem.newMemoryArray('f', 16);
     --bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-    --todo wait resolve diff with cpp.
     bx.mtxProj(proj, 60, m_width / m_height, 0.1, 100, bgfx.getCaps().homogeneousDepth);
     if(logFirst) then
         print("mtxProj: "..tostring(proj));
@@ -202,7 +203,6 @@ local app_draw = function ()
     if(logFirst) then
         print("state: "..tostring(state));
     end
-    --state = int64(72339412612022291);
 
     if(logFirst) then
         print("----- start 11*11 curbes -----\n")
@@ -262,5 +262,5 @@ local app_destroy = function ()
     end
 end
 
-local app = bgfx.newApp(app_pre_init, app_init, app_draw, app_destroy);
+app = bgfx.newApp(app_pre_init, app_init, app_draw, app_destroy);
 app.start(app);

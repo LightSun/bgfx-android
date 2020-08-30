@@ -18,7 +18,6 @@ public:
     int unRef();
     void asConstant();
     void destroyData();
-
 public:
     void *data;
     size_t size;
