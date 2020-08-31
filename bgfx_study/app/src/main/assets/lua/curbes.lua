@@ -131,26 +131,20 @@ local app_init = function ()
     , 0
     );
     -- init layout
-    print("ms_layout init")
     ms_layout
             .begin()
             .add("Position", 3, "Float")
             .add("Color0",   4, "Uint8", true)
             .ends();
-    print("createVertexBuffer : m_vbh init")
     m_vbh = bgfx.createVertexBuffer(bgfx.makeRef(s_cubeVertices), ms_layout);
-    print("createIndexBuffer : m_ibh[] init all")
     m_ibh[1] = bgfx.createIndexBuffer(bgfx.makeRef(s_cubeTriList));
     m_ibh[2] = bgfx.createIndexBuffer(bgfx.makeRef(s_cubeTriStrip));
     m_ibh[3] = bgfx.createIndexBuffer(bgfx.makeRef(s_cubeLineList));
     m_ibh[4] = bgfx.createIndexBuffer(bgfx.makeRef(s_cubeLineStrip));
     m_ibh[5] = bgfx.createIndexBuffer(bgfx.makeRef(s_cubePoints));
-    print("m_ibh[1] = ",m_ibh[1])
 
-    print("loadProgram : m_program init")
     m_program = bgfx.loadProgram("vs_cubes", "fs_cubes");
 
-    print("getHPCounter")
     m_timeOffset = bx.getHPCounter();
     print("app_init done, m_timeOffset = ", m_timeOffset);
 end
@@ -229,21 +223,16 @@ local app_draw = function ()
             end
 
             -- Set model matrix for rendering.
-            --print("--------- setTransform")
             bgfx.setTransform(mtx);
 
             -- Set vertex and index buffer.
-            --print("--------- setVertexBuffer")
             bgfx.setVertexBuffer(0, m_vbh);
-            --print("--------- setIndexBuffer")
             bgfx.setIndexBuffer(ibh);
 
             -- Set render states.
-            --print("--------- setState")
             bgfx.setState(state);
 
             -- Submit primitive for rendering to view 0.
-            --print("--------- submit")
             bgfx.submit(0, m_program);
         end
     end
