@@ -9,6 +9,9 @@
 #include "include/hello_world.h"
 #include "include/curbes.h"
 #include "include/font_10.h"
+#include "include/instancing.h"
+#include "include/bump.h"
+#include "include/callback.h"
 
 namespace heaven7_Bgfx_demo{
     template <typename T> BaseDemo* create0();
@@ -20,6 +23,9 @@ namespace heaven7_Bgfx_demo{
     DEF_METHOD_NAME(HelloWorldDemo)
     DEF_METHOD_NAME(CurbesDemo)
     DEF_METHOD_NAME(FontDemo)
+    DEF_METHOD_NAME(InstancingDemo)
+    DEF_METHOD_NAME(BumpDemo)
+    DEF_METHOD_NAME(CallbackDemo)
 
     template <typename T> BaseDemo* createDemo(InitConfig* config){
         BaseDemo* demo = create0<T>();

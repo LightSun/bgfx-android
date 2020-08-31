@@ -38,6 +38,9 @@ namespace heaven7_Bgfx_demo {
         int m_debug;
         int m_reset;
         bx::Thread m_thread;
+
+        bgfx::CallbackI*  m_callback;
+        bx::AllocatorI* m_allocator;
     };
 }
 //}

@@ -37,6 +37,8 @@ namespace heaven7_Bgfx_demo{
         init.platformData.context = NULL;
         init.platformData.backBuffer = NULL;
         init.platformData.backBufferDS = NULL;
+        init.callback = m_callback;
+        init.allocator = m_allocator;
         bgfx::init(init);
 
         // Enable debug text.

@@ -12,7 +12,12 @@ static void make_meta_int64(lua_State *L) {
             { "__mod", BigInt64(_mod) },
             { "__unm", BigInt64(_unm) },
             { "__pow", BigInt64(_pow) },
+
             { "__bor", BigInt64(_bor) },
+             { "__band", BigInt64(_band) },
+            { "__bxor", BigInt64(_bxor) },
+            { "__bnot", BigInt64(_bnot) },
+
             { "__eq", BigInt64(_eq) },
             { "__lt", BigInt64(_lt) },
             { "__le", BigInt64(_le) },
@@ -32,7 +37,12 @@ static void make_meta_uint64(lua_State *L) {
             { "__mod", BigUint64(_mod) },
             { "__unm", BigUint64(_unm) },
             { "__pow", BigUint64(_pow) },
+
             { "__bor", BigUint64(_bor) },
+            { "__band", BigUint64(_band) },
+            { "__bxor", BigUint64(_bxor) },
+            { "__bnot", BigUint64(_bnot) },
+
             { "__eq", BigUint64(_eq) },
             { "__lt", BigUint64(_lt) },
             { "__le", BigUint64(_le) },

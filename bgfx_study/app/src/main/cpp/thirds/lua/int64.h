@@ -23,7 +23,6 @@ class BigInteger;
 
 #define BigInt64(m) BigInteger<int64_t,intptr_t>::m
 #define BigUint64(m) BigInteger<uint64_t,uintptr_t>::m
-#define MAX_INT64 0x7fffffff;
 
 //copy and changed from 'https://github.com/cloudwu/lua-int64/blob/master/int64.c'
 template<typename T, typename Ptr>
@@ -115,6 +114,26 @@ public:
         T a = _get(L, 1);
         T b = _get(L, 2);
         _set(L, a | b);
+        return 1;
+    }
+    static int _band(lua_State* L){
+        // op: &
+        T a = _get(L, 1);
+        T b = _get(L, 2);
+        _set(L, a & b);
+        return 1;
+    }
+    static int _bxor(lua_State* L){
+        // op: ^
+        T a = _get(L, 1);
+        T b = _get(L, 2);
+        _set(L, a ^ b);
+        return 1;
+    }
+    static int _bnot(lua_State* L){
+        // op: ~
+        T a = _get(L, 1);
+        _set(L, ~ a);
         return 1;
     }
 
