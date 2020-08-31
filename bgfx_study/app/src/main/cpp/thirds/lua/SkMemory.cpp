@@ -7,13 +7,13 @@
 #include "lua_wrapper.h"
 
 #define copy_data_f(dType, step) \
-char * addr = static_cast<char *>(data); \
+dType * addr = static_cast<dType *>(data); \
 for (int i = 0; i < tableCount; ++i) { \
     idx = 1; \
     type = lua_rawgeti(L, i + 1, idx); \
     for (; type != LUA_TNIL ;) { \
         *addr = static_cast<dType>(lua_tonumber(L, -1)); \
-        addr += step; \
+        addr ++; \
         lua_pop(L, 1); \
         ++idx; \
         type = lua_rawgeti(L, i + 1, idx); \
@@ -21,13 +21,13 @@ for (int i = 0; i < tableCount; ++i) { \
 }
 
 #define copy_data_i(dType, step) \
-char * addr = static_cast<char *>(data); \
+dType * addr = static_cast<dType *>(data); \
 for (int i = 0; i < tableCount; ++i) { \
     idx = 1; \
     type = lua_rawgeti(L, i + 1, idx); \
     for (; type != LUA_TNIL ;) { \
         *addr = static_cast<dType>(lua_tointeger(L, -1)); \
-        addr += step; \
+        addr ++; \
         lua_pop(L, 1); \
         ++idx; \
         type = lua_rawgeti(L, i + 1, idx); \
@@ -250,7 +250,10 @@ SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : AbsSkMemory(){
 
     //LOGD("----- new SkMemoryFFFUI -----");
     //luaB_dumpStack(L);
-    char * addr = static_cast<char *>(data);
+    float* addr_f = static_cast<float *>(data);
+    uint32_t* addr_ui = static_cast<uint32_t *>(data);
+    int index = 0;
+
     int type;
     for (int i = 0; i < tableCount; ++i) {
        // LOGD("----- table %d -----", i);
@@ -262,8 +265,8 @@ SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : AbsSkMemory(){
                 luaL_error(L, "create SkMemoryFFFUI failed. for error data type = %d", type);
                 goto out;
             }
-            *addr = static_cast<float >(lua_tonumber(L, -1));
-            addr += 4;
+            *(addr_f + index) = TO_FLOAT(L, -1);
+            index ++;
             lua_pop(L, 1);
         }
        // LOGD("----- member index = 3 -----");
@@ -273,12 +276,37 @@ SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : AbsSkMemory(){
             luaL_error(L, "create SkMemoryFFFUI failed. for error data type = %d", type);
             goto out;
         }
-        *addr = static_cast<uint32_t>(lua_tointeger(L, -1));
-        addr += 4;
+        *(addr_ui + index) = TO_NUMBER_32(L, -1);
+        index ++;
         lua_pop(L, 1);
     }
     lua_pop(L, 1);
     return ;
     out:
         unRef();
+}
+
+int SkMemoryFFFUI::read(SkMemoryFFFUI *mem, lua_State *L) {
+    //table, index
+    auto index = lua_tointeger(L, -1);
+    if((index + 1) % 4 == 0){
+        uint32_t * addr = static_cast<uint32_t *>(mem->data);
+        lua_pushnumber(L, addr[index]);
+    } else{
+        float * addr = static_cast<float *>(mem->data);
+        lua_pushnumber(L, addr[index]);
+    }
+    return 1;
+}
+int SkMemoryFFFUI::write(SkMemoryFFFUI *mem, lua_State *L) {
+    //table, index, value
+    auto index = lua_tointeger(L, -2);
+    if((index + 1) % 4 == 0){ //ui
+        uint32_t * addr = static_cast<uint32_t *>(mem->data);
+        addr[index] = TO_NUMBER_32(L, -1);
+    } else{
+        float * addr = static_cast<float *>(mem->data);
+        addr[index] = TO_FLOAT(L, -1);
+    }
+    return 0;
 }

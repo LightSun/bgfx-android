@@ -98,6 +98,10 @@ void LuaApp::init(LuaAppHolder *holder) {
     pInit->platformData.nwh = pConfig->window;
     pInit->resolution.width = pConfig->win_width;
     pInit->resolution.height = pConfig->win_height;
+    pInit->platformData.ndt = NULL;
+    pInit->platformData.context = NULL;
+    pInit->platformData.backBuffer = NULL;
+    pInit->platformData.backBufferDS = NULL;
     bgfx::init(*pInit);
     LOGD("bgfx init is called. holder = %p,func_init= %s ", holder, func_init);
 

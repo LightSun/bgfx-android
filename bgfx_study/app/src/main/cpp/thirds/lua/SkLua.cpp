@@ -1210,6 +1210,16 @@ static int SkMemory_toString(lua_State *L) {
     return 1;
 }
 
+static int SkMemoryFFFUI_index(lua_State *L) {
+    auto pMemory = get_ref<SkMemoryFFFUI>(L, 1);
+    return SkMemoryFFFUI::read(pMemory, L);
+}
+
+static int SkMemoryFFFUI_newindex(lua_State *L) {
+    auto pMemory = get_ref<SkMemoryFFFUI>(L, 1);
+    return SkMemoryFFFUI::write(pMemory, L);
+}
+
 const static luaL_Reg gSkMemory_Methods[] = {
         {"isValid",    SkMemory_isValid},
         {"__tostring", SkMemory_toString},
@@ -1220,6 +1230,8 @@ const static luaL_Reg gSkMemory_Methods[] = {
 };
 const static luaL_Reg gSkMemoryFFFUI_Methods[] = {
         {"isValid", SkMemoryFFFUI_isValid},
+        {"__newindex", SkMemoryFFFUI_newindex},
+        {"__index",    SkMemoryFFFUI_index},
         {"__gc",    SkMemoryFFFUI_gc},
         {NULL, NULL},
 };

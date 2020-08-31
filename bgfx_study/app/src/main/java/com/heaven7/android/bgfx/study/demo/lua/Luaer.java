@@ -116,7 +116,7 @@ public final class Luaer {
     public void initEnv(final boolean force){
         FileUtils.deleteDir(new File(LUA_DIR));
 
-        final List<String> clibs = Arrays.asList(/*"cjson",*/ "bgfx_lua");
+        final List<String> clibs = Arrays.asList();
         LuaWrapper.getDefault().registerLuaSearcher(new LuaSearcher() {
             @Override
             public String getLuaFilepath(String module) {

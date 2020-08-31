@@ -68,5 +68,6 @@ public class MainActivity extends AbsMainActivity {
     protected void addDemos(List<ActivityInfo> list) {
         list.add(new ActivityInfo(BgfxLuaActivity.class, "bgfx lua demo"));
         list.add(new ActivityInfo(BgfxDemoActivity.class, "bgfx c++ demo"));
+        list.add(new ActivityInfo(LuaUnitTestsAc.class, "lua Tests"));
     }
 }

@@ -154,11 +154,15 @@ local app_init = function ()
     m_timeOffset = bx.getHPCounter();
     print("app_init done, m_timeOffset = ", m_timeOffset);
 end
+
 local logFirst = true;
+--local time = 0;
 local app_draw = function ()
     print("app_draw");
     local m_width = reso.width;
     local m_height = reso.height;
+
+    --time = time + 1.0/60.0;
     local time = (bx.getHPCounter()-m_timeOffset)*1.0/bx.getHPFrequency();
     if(logFirst) then
         print("time: ", time)

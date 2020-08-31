@@ -38,6 +38,10 @@
             android:theme="@style/AppTheme.NoActionBar"
             >
         </activity>
+        <activity android:name=".LuaUnitTestsAc"
+            android:label="LuaUnitTestsAc"
+            >
+        </activity>
     </application>
 
 </manifest>

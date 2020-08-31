@@ -71,6 +71,9 @@ private:
 class SkMemoryFFFUI : public AbsSkMemory{
 public:
     SkMemoryFFFUI(lua_State* L, int tableCount);
+
+    static int read(SkMemoryFFFUI* mem, lua_State* L);
+    static int write(SkMemoryFFFUI* mem, lua_State* L);
 };
 
 #endif //BGFX_STUDY_SKMEMORY_H
