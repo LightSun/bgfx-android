@@ -6,9 +6,9 @@
 #include "common.h"
 #include "lua_wrapper.h"
 
-#define copy_data_f(dType, start,step) \
+#define copy_data_f(dType) \
 dType * addr = static_cast<dType *>(data); \
-for (int i = start; i < tableCount; ++i) { \
+for (int i = start; i < start + tableCount; ++i) { \
     idx = 1; \
     type = lua_rawgeti(L, i + 1, idx); \
     for (; type != LUA_TNIL ;) { \
@@ -20,9 +20,9 @@ for (int i = start; i < tableCount; ++i) { \
     } \
 }
 
-#define copy_data_i(dType, start ,step) \
+#define copy_data_i(dType) \
 dType * addr = static_cast<dType *>(data); \
-for (int i = start; i < tableCount; ++i) { \
+for (int i = start; i < start + tableCount; ++i) { \
     idx = 1; \
     type = lua_rawgeti(L, i + 1, idx); \
     for (; type != LUA_TNIL ;) { \
@@ -34,11 +34,35 @@ for (int i = start; i < tableCount; ++i) { \
     } \
 }
 
+
 #define ARRAY_INIT(type) \
 type* arr = static_cast<type *>(data); \
 for (int i = 0; i < len; ++i) { \
 arr[i] = 0; \
 }
+
+#define READ(type) \
+type read_##type(SkMemory* mem, int index){ \
+auto addr = static_cast<type*>(mem->data); \
+addr += index; \
+return *addr; \
+}
+READ(float)
+READ(uint8_t)
+READ(uint16_t)
+READ(uint32_t)
+
+#define WRITE(type) \
+void write_##type(SkMemory* mem, int index, type val){ \
+auto addr = static_cast<type*>(mem->data); \
+addr += index; \
+*addr = val; \
+}
+WRITE(float)
+WRITE(uint8_t)
+WRITE(uint16_t)
+WRITE(uint32_t)
+
 
 AbsSkMemory::~AbsSkMemory() {
     destroyData();
@@ -50,6 +74,7 @@ int AbsSkMemory::ref() {
     return _ref.fetch_add(1);
 }
 int AbsSkMemory::unRef() {
+    LOGD("-- unRef ");
     return _ref.fetch_add(-1);
 }
 
@@ -86,7 +111,7 @@ SkMemory::SkMemory(const char *type, int len): AbsSkMemory(), _dType(type) {
             break;
     }
 }
-SkMemory::SkMemory(lua_State *L, int startIndex, int tableCount, const char *t) : AbsSkMemory(){
+SkMemory::SkMemory(lua_State *L, int start, int tableCount, const char *t) : AbsSkMemory(){
     _dType = t;
     size = getTotalBytes(L, tableCount, t);
     SkASSERT(size > 0);
@@ -95,19 +120,19 @@ SkMemory::SkMemory(lua_State *L, int startIndex, int tableCount, const char *t) 
     int idx;
     switch (t[0]) {
         case 'f': {
-            copy_data_f(float, startIndex ,4);
+            copy_data_f(float);
         }
             break;
         case 'd': {
-            copy_data_i(uint32_t,startIndex,  4);
+            copy_data_i(uint32_t);
         }
             break;
         case 'w': {
-            copy_data_i(uint16_t, startIndex, 2);
+            copy_data_i(uint16_t);
         }
             break;
         case 'b':{
-            copy_data_i(uint8_t , startIndex, 2);
+            copy_data_i(uint8_t);
         }
             break;
     }
@@ -116,65 +141,30 @@ SkMemory::SkMemory(lua_State *L, int startIndex, int tableCount, const char *t) 
 SkMemory::SkMemory(lua_State *L, int tableCount, const char *t) : SkMemory(L, 0, tableCount, t){
 }
 
-float SkMemory::readFloat(size_t index) {
-    float* addr = (float*)data;
-    addr += index;
-    return *addr;
-}
-uint8_t SkMemory::readUInt8(size_t index) {
-    uint8_t* addr = (uint8_t*)data;
-    addr += index;
-    return *addr;
-}
-uint16_t SkMemory::readUInt16(size_t index) {
-    uint16_t* addr = (uint16_t*)data;
-    addr += index;
-    return *addr;
-}
-uint32_t SkMemory::readUInt32(size_t index) {
-    uint32_t* addr = (uint32_t*)data;
-    addr += index;
-    return *addr;
-}
-void SkMemory::writeFloat(size_t index, float val) {
-    float* addr = (float*)data;
-    addr += index;
-    *addr = val;
-}
-void SkMemory::writeUInt8(size_t index, uint8_t val){
-    uint8_t * addr = (uint8_t*)data;
-    addr += index;
-    *addr = val;
-}
-void SkMemory::writeUInt16(size_t index, uint16_t val) {
-    uint16_t * addr = (uint16_t*)data;
-    addr += index;
-    *addr = val;
-}
-void SkMemory::writeUInt32(size_t index, uint32_t val) {
-    uint32_t * addr = (uint32_t*)data;
-    addr += index;
-    *addr = val;
-}
 bool SkMemory::isFloat() {
     return _dType[0] == 'f';
 }
 int SkMemory::write(SkMemory* mem, lua_State *L) {
     //table, index, value
     auto index = lua_tointeger(L, -2);
+    if(index >= mem->getLength()){
+        return luaL_error(L, "index(%d) out of range(%d).", index, mem->getLength());
+    }
     switch (mem->_dType[0]) {
         case 'f':
-            mem->writeFloat(index, TO_FLOAT(L, -1));
+            write_float(mem, index, TO_FLOAT(L, -1));
             return 0;
         case 'd':
-            mem->writeUInt32(index, TO_NUMBER_32(L, -1));
+            write_uint32_t(mem, index, TO_NUMBER_32(L, -1));
             return 0;
         case 'w':
-            mem->writeUInt16(index, TO_NUMBER_16(L, -1));
+            write_uint16_t(mem, index, TO_NUMBER_16(L, -1));
             return 0;
-        case 'b':
-            mem->writeUInt8(index, TO_NUMBER_8(L, -1));
+        case 'b': {
+            auto val = TO_NUMBER_8(L, -1);
+            write_uint8_t(mem, index, val);
             return 0;
+        }
 
         default:
             return luaL_error(L, "wrong data type = %s", mem->_dType);
@@ -183,19 +173,25 @@ int SkMemory::write(SkMemory* mem, lua_State *L) {
 int SkMemory::read(SkMemory* mem, lua_State *L) {
     //table, index
     auto index = lua_tointeger(L, -1);
+    if(index >= mem->getLength()){
+        return luaL_error(L, "index(%d) out of range(%d).", index, mem->getLength());
+    }
     switch (mem->_dType[0]) {
         case 'f':
-            lua_pushnumber(L, mem->readFloat(index));
+            lua_pushnumber(L, read_float(mem, index));
             return 1;
         case 'd':
-            lua_pushnumber(L, mem->readUInt32(index));
+            lua_pushnumber(L, read_uint32_t(mem, index));
             return 1;
         case 'w':
-            lua_pushnumber(L, mem->readUInt16(index));
+            lua_pushnumber(L, read_uint16_t(mem, index));
             return 1;
-        case 'b':
-            lua_pushnumber(L, mem->readUInt8(index));
+
+        case 'b': {
+            auto v = read_uint8_t(mem, index);
+            lua_pushnumber(L, v);
             return 1;
+        }
 
         default:
             return luaL_error(L, "wrong data type = %s", mem->_dType);
@@ -210,7 +206,7 @@ const char * SkMemory::toString() {
         case 'w':
             return Printer::printArray<uint16_t>((uint16_t*)data, size / 2);
         case 'b':
-            return Printer::printArray<uint8_t>((uint8_t*)data, size);
+            return Printer::printArray<uint8_t>((uint8_t*)data, size);//TODO have bug ?
         default:
             return nullptr;
     }
@@ -264,18 +260,14 @@ SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : AbsSkMemory(){
     data = malloc(size);
 
     //LOGD("----- new SkMemoryFFFUI -----");
-    //luaB_dumpStack(L);
     float* addr_f = static_cast<float *>(data);
     uint32_t* addr_ui = static_cast<uint32_t *>(data);
     int index = 0;
 
     int type;
     for (int i = 0; i < tableCount; ++i) {
-       // LOGD("----- table %d -----", i);
         for (int idx = 0; idx < 3; ++idx) {
-          //  LOGD("----- member index = %d -----", idx);
             type = lua_rawgeti(L, i + 1, idx + 1);
-          //  luaB_dumpStack(L);
             if(type != LUA_TNUMBER){
                 luaL_error(L, "create SkMemoryFFFUI failed. for error data type = %d", type);
                 goto out;
@@ -284,9 +276,7 @@ SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : AbsSkMemory(){
             index ++;
             lua_pop(L, 1);
         }
-       // LOGD("----- member index = 3 -----");
         type = lua_rawgeti(L, i + 1, 4);
-       // luaB_dumpStack(L);
         if(type != LUA_TNUMBER){
             luaL_error(L, "create SkMemoryFFFUI failed. for error data type = %d", type);
             goto out;
@@ -326,6 +316,9 @@ int SkMemoryFFFUI::getLength() {
 int SkMemoryFFFUI::read(SkMemoryFFFUI *mem, lua_State *L) {
     //table, index
     auto index = lua_tointeger(L, -1);
+    if(index >= mem->getLength()){
+        return luaL_error(L, "index(%d) out of range(%d).", index, mem->getLength());
+    }
     if((index + 1) % 4 == 0){
         uint32_t * addr = static_cast<uint32_t *>(mem->data);
         lua_pushnumber(L, addr[index]);
@@ -338,6 +331,9 @@ int SkMemoryFFFUI::read(SkMemoryFFFUI *mem, lua_State *L) {
 int SkMemoryFFFUI::write(SkMemoryFFFUI *mem, lua_State *L) {
     //table, index, value
     auto index = lua_tointeger(L, -2);
+    if(index >= mem->getLength()){
+        return luaL_error(L, "index(%d) out of range(%d).", index, mem->getLength());
+    }
     if((index + 1) % 4 == 0){ //ui
         uint32_t * addr = static_cast<uint32_t *>(mem->data);
         addr[index] = TO_NUMBER_32(L, -1);
@@ -354,14 +350,15 @@ SkMemoryMatrix::~SkMemoryMatrix() {
 SkMemoryMatrix::SkMemoryMatrix(lua_State *L, const char *type) {
     int tableCount = lua_gettop(L);
     count = tableCount;
-    array = static_cast<SkMemory **>(malloc(sizeof(SkMemory *) * tableCount));
+    array = new SkMemory*[tableCount];
     for (int i = 0; i < tableCount; ++i) {
         array[i] = new SkMemory(L, i, 1, type);
+        //LOGD("array[%d]: \n %s", i, array[i]->toString());//TODO乱码
     }
 }
 SkMemoryMatrix::SkMemoryMatrix(const char *type, int rowCount, int columnCount) {
     count = rowCount;
-    array = static_cast<SkMemory **>(malloc(sizeof(SkMemory *) * rowCount));
+    array = new SkMemory*[rowCount];
     for (int i = 0; i < rowCount; ++i) {
         array[i] = new SkMemory(type, columnCount);
     }
@@ -380,12 +377,18 @@ bool SkMemoryMatrix::isValid() {
 int SkMemoryMatrix::read(SkMemoryMatrix *mem, lua_State *L,  void (*Push)(lua_State*, SkMemory*)) {
     //table, index
     lua_Integer index = lua_tointeger(L, 2);
+    if(index >= mem->count){
+        return luaL_error(L, "index(%d) out of range(%d).", index, mem->count);
+    }
     Push(L, mem->array[index]);
     return 1;
 }
 int SkMemoryMatrix::write(SkMemoryMatrix *mem, lua_State *L, SkMemory *(*Pull)(lua_State *, int)){
     //table, index, val
     lua_Integer index = lua_tointeger(L, 2);
+    if(index >= mem->count){
+        return luaL_error(L, "index(%d) out of range(%d).", index, mem->count);
+    }
     mem->array[index] = Pull(L, 3);
     return 0;
 }
@@ -401,7 +404,7 @@ const char* SkMemoryMatrix::toString() {
     for (int i = 0; i < count; ++i) {
         ss << array[i]->toString();
         if(i != count - 1){
-            ss << ',\n'; //todo windows
+            ss << ",";
         }
     }
     ss << "}";

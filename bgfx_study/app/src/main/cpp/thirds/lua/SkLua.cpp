@@ -1194,13 +1194,21 @@ static int type##_len(lua_State* L){ \
     lua_pushinteger(L, pMemory->getLength()); \
     return 1; \
 }
+#define memory_tostring(type) \
+static int type##_tostring(lua_State *L) { \
+    auto pMemory = get_ref<type>(L, 1); \
+    lua_pushstring(L, pMemory->toString());\
+    return 1; \
+}
 
 memory_isValid(SkMemory)
 memory_isValid(SkMemoryFFFUI)
 memory_gc(SkMemory)
 memory_gc(SkMemoryFFFUI)
-memory_len(SkMemory) //todo wait fix
+memory_len(SkMemory)
 memory_len(SkMemoryFFFUI)
+memory_tostring(SkMemory)
+memory_tostring(SkMemoryFFFUI)
 
 static int SkMemory_index(lua_State *L) {
     auto pMemory = get_ref<SkMemory>(L, 1);
@@ -1210,12 +1218,6 @@ static int SkMemory_index(lua_State *L) {
 static int SkMemory_newindex(lua_State *L) {
     auto pMemory = get_ref<SkMemory>(L, 1);
     return SkMemory::write(pMemory, L);
-}
-
-static int SkMemory_toString(lua_State *L) {
-    auto pMemory = get_ref<SkMemory>(L, 1);
-    lua_pushstring(L, pMemory->toString());
-    return 1;
 }
 
 static int SkMemoryFFFUI_index(lua_State *L) {
@@ -1231,7 +1233,7 @@ static int SkMemoryFFFUI_newindex(lua_State *L) {
 const static luaL_Reg gSkMemory_Methods[] = {
         {"isValid",    SkMemory_isValid},
         {"__len",      SkMemory_len},
-        {"__tostring", SkMemory_toString},
+        {"__tostring", SkMemory_tostring},
         {"__newindex", SkMemory_newindex},
         {"__index",    SkMemory_index},
         {"__gc",       SkMemory_gc},
@@ -1240,6 +1242,7 @@ const static luaL_Reg gSkMemory_Methods[] = {
 const static luaL_Reg gSkMemoryFFFUI_Methods[] = {
         {"isValid", SkMemoryFFFUI_isValid},
         {"__len", SkMemoryFFFUI_len},
+        {"__tostring", SkMemoryFFFUI_tostring},
         {"__newindex", SkMemoryFFFUI_newindex},
         {"__index",    SkMemoryFFFUI_index},
         {"__gc",    SkMemoryFFFUI_gc},
@@ -1262,8 +1265,7 @@ static int SkMemoryMatrix_index(lua_State *L) {
 }
 static int SkMemoryMatrix_newindex(lua_State *L) {
     auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
-    SkMemoryMatrix::write(pMemory, L, SkMemory_pull);
-    return 0;
+    return SkMemoryMatrix::write(pMemory, L, SkMemory_pull);
 }
 static int SkMemoryMatrix_gc(lua_State *L) {
     auto pMemory = get_ref<SkMemoryMatrix>(L, 1);

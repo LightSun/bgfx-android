@@ -56,6 +56,7 @@ assert(s_cubeVertices[28] == 1)
 assert(s_cubeVertices[29] == -1)
 assert(s_cubeVertices[30] == -1)
 assert(s_cubeVertices[31] == 0xffffffff)
+print(tostring(s_cubeVertices))
 
 local t =  {
     0, 1, 2, -- 0
@@ -73,21 +74,26 @@ local t =  {
 };
 local aa = mem.newMemory('w', t);
 for i = 1, #t do
-    print("i = ", i)
-    print(aa[i-1], t[i]);
     assert(aa[i-1] == t[i]);
 end
+--print(tostring(aa))
+
+local m2 = mem.newMemory('b',  {1, 2, 3}, {4, 5, 6});
+--print("m2: ",tostring(m2))
+
 
 local mat = mem.newMemoryMatrix('b', {1, 2, 3}, {4, 5, 6});
 assert(#mat == 2)
+assert(#(mat[0]) == 3)
 assert(#(mat[1]) == 3)
-assert(#(mat[2]) == 3)
 
 assert(mat[0][0] == 1)
 assert(mat[0][1] == 2)
 assert(mat[0][2] == 3)
 
-assert(mat[1][0] == 1)
-assert(mat[1][1] == 2)
-assert(mat[1][2] == 3)
+assert(mat[1][0] == 4)
+assert(mat[1][1] == 5)
+assert(mat[1][2] == 6)
+print("tostring(mat)----------")
+--print(tostring(mat))
 --mem.newMemoryMatrix('d', 4, 4);

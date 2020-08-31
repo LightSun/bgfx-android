@@ -23,8 +23,8 @@ public:
     void asConstant();
     void destroyData();
 
-    int getLength();
-    const char* toString() ;
+    virtual int getLength() = 0;
+    virtual const char* toString() = 0;
 public:
     void *data;
     size_t size;
@@ -54,15 +54,6 @@ public:
     SkMemory(lua_State* L, int startIndex, int tableCount, const char* type);
 
     //------ index start from 0 --------
-    uint32_t readUInt32(size_t index);
-    uint8_t readUInt8(size_t index);
-    uint16_t readUInt16(size_t index);
-    float readFloat(size_t index);
-
-    void writeUInt32(size_t index, uint32_t val);
-    void writeUInt8(size_t index, uint8_t val);
-    void writeUInt16(size_t index, uint16_t val);
-    void writeFloat(size_t index, float val);
 
     bool isFloat();
     const char* toString() ;

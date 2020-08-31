@@ -61,7 +61,9 @@ public:
     inline static const char* printArray(T* array, int len){
         std::ostringstream ss;
         printArray<T>(array, len, ss);
-        return ss.str().c_str();
+        auto sr = ss.str();
+        std::string a(sr);
+        return a.c_str();
     }
 
     template<class T>
@@ -74,6 +76,7 @@ public:
             }
         }
         ss << "]";
+        ss.flush();
     }
 };
 
