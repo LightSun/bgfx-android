@@ -34,4 +34,10 @@ function m.newMemoryArray(type, len)
     return mem.newMemoryArray(type, len);
 end
 
+--- create memory matrix .
+--- @param ...: can be tables or (rowCount, columnCount)
+function m.newMemoryMatrix(type, ...)
+    return mem.newMemoryMatrix(type, ...);
+end
+
 return m;

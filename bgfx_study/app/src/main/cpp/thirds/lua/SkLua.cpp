@@ -1188,11 +1188,19 @@ static int type##_gc(lua_State* L){ \
     }\
     return 0;\
 }
+#define memory_len(type)  \
+static int type##_len(lua_State* L){ \
+    auto pMemory = get_ref<type>(L, 1); \
+    lua_pushinteger(L, pMemory->getLength()); \
+    return 1; \
+}
 
 memory_isValid(SkMemory)
-memory_gc(SkMemory)
 memory_isValid(SkMemoryFFFUI)
+memory_gc(SkMemory)
 memory_gc(SkMemoryFFFUI)
+memory_len(SkMemory) //todo wait fix
+memory_len(SkMemoryFFFUI)
 
 static int SkMemory_index(lua_State *L) {
     auto pMemory = get_ref<SkMemory>(L, 1);
@@ -1222,6 +1230,7 @@ static int SkMemoryFFFUI_newindex(lua_State *L) {
 
 const static luaL_Reg gSkMemory_Methods[] = {
         {"isValid",    SkMemory_isValid},
+        {"__len",      SkMemory_len},
         {"__tostring", SkMemory_toString},
         {"__newindex", SkMemory_newindex},
         {"__index",    SkMemory_index},
@@ -1230,9 +1239,59 @@ const static luaL_Reg gSkMemory_Methods[] = {
 };
 const static luaL_Reg gSkMemoryFFFUI_Methods[] = {
         {"isValid", SkMemoryFFFUI_isValid},
+        {"__len", SkMemoryFFFUI_len},
         {"__newindex", SkMemoryFFFUI_newindex},
         {"__index",    SkMemoryFFFUI_index},
         {"__gc",    SkMemoryFFFUI_gc},
+        {NULL, NULL},
+};
+#define PUSH_PTR(type) \
+void type##_push(lua_State* L, type* ptr){ \
+    push_ptr<type>(L, ptr); \
+}
+#define PULL_PTR(type) \
+type* type##_pull(lua_State* L,int index){ \
+    return get_ref<type>(L, index); \
+}
+PUSH_PTR(SkMemory);
+PULL_PTR(SkMemory);
+
+static int SkMemoryMatrix_index(lua_State *L) {
+    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    return SkMemoryMatrix::read(pMemory, L, SkMemory_push);
+}
+static int SkMemoryMatrix_newindex(lua_State *L) {
+    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    SkMemoryMatrix::write(pMemory, L, SkMemory_pull);
+    return 0;
+}
+static int SkMemoryMatrix_gc(lua_State *L) {
+    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    delete pMemory;
+    return 0;
+}
+static int SkMemoryMatrix_isValid(lua_State *L) {
+    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    lua_pushboolean(L, pMemory->isValid() ? 1 : 0);
+    return 1;
+}
+static int SkMemoryMatrix_len(lua_State *L) {
+    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    lua_pushinteger(L, pMemory->getRowCount());
+    return 1;
+}
+static int SkMemoryMatrix_tostring(lua_State *L) {
+    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    lua_pushstring(L, pMemory->toString());
+    return 1;
+}
+const static luaL_Reg gSkMemoryMatrix_Methods[] = {
+        {"isValid", SkMemoryMatrix_isValid},
+        {"__len", SkMemoryMatrix_len},
+        {"__tostring", SkMemoryMatrix_tostring},
+        {"__newindex", SkMemoryMatrix_newindex},
+        {"__index",    SkMemoryMatrix_index},
+        {"__gc",    SkMemoryMatrix_gc},
         {NULL, NULL},
 };
 
@@ -1471,11 +1530,29 @@ static int mem_newMemoryArray(lua_State *L) {
     push_ptr(L, pMemory);
     return 1;
 }
+static int mem_newMemoryMatrix(lua_State *L){
+    auto t = lua_tostring(L, 1);
+    int luaType = lua_type(L, 2);
+    if(luaType == LUA_TNUMBER){
+        int rowCount = static_cast<int>(lua_tointeger(L, 2));
+        int columnCount = static_cast<int>(lua_tointeger(L, 3));
+        SkMemoryMatrix* matrix = new SkMemoryMatrix(t, rowCount, columnCount);
+        push_ptr(L, matrix);
+    } else if(luaType == LUA_TTABLE){
+        lua_remove(L, 1);
+        SkMemoryMatrix* matrix = new SkMemoryMatrix(L, t);
+        push_ptr(L, matrix);
+    } else{
+        return luaL_error(L, "wrong arguments for create SkMemoryMatrix.");
+    }
+    return 1;
+}
 
 static const luaL_Reg mem_funcs[] = {
         {"newMemory",      mem_newMemory},
         {"newMemoryFFFUI", mem_newMemoryFFFUI},
         {"newMemoryArray", mem_newMemoryArray},
+        {"newMemoryMatrix", mem_newMemoryMatrix},
         {nullptr,          nullptr}
 };
 extern "C" int luaopen_hmem_lua(lua_State *L) {
@@ -1515,6 +1592,7 @@ DEF_MTNAME(bx::Vec3)
 DEF_MTNAME(LuaApp)
 DEF_MTNAME(SkMemory)
 DEF_MTNAME(SkMemoryFFFUI)
+DEF_MTNAME(SkMemoryMatrix)
 //----------- only get_mtname ------
 DEF_MTNAME(bgfx::Memory)
 DEF_MTNAME(bgfx::VertexBufferHandle)
@@ -1537,6 +1615,7 @@ void SkLua::Load(lua_State *L) {
     REG_CLASS(L, LuaApp);
     REG_CLASS(L, SkMemory);
     REG_CLASS(L, SkMemoryFFFUI);
+    REG_CLASS(L, SkMemoryMatrix);
 
     REG_EMPTY_CLASS(L, bgfx::Memory);
     REG_CLASS(L, bgfx::VertexBufferHandle);

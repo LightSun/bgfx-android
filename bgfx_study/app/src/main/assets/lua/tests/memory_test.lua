@@ -78,3 +78,16 @@ for i = 1, #t do
     assert(aa[i-1] == t[i]);
 end
 
+local mat = mem.newMemoryMatrix('b', {1, 2, 3}, {4, 5, 6});
+assert(#mat == 2)
+assert(#(mat[1]) == 3)
+assert(#(mat[2]) == 3)
+
+assert(mat[0][0] == 1)
+assert(mat[0][1] == 2)
+assert(mat[0][2] == 3)
+
+assert(mat[1][0] == 1)
+assert(mat[1][1] == 2)
+assert(mat[1][2] == 3)
+--mem.newMemoryMatrix('d', 4, 4);
