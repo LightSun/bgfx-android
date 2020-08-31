@@ -15,6 +15,7 @@ extern "C" {
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <float.h>
 }
 
 template<typename T, typename Ptr>
@@ -22,6 +23,7 @@ class BigInteger;
 
 #define BigInt64(m) BigInteger<int64_t,intptr_t>::m
 #define BigUint64(m) BigInteger<uint64_t,uintptr_t>::m
+#define MAX_INT64 0x7fffffff;
 
 //copy and changed from 'https://github.com/cloudwu/lua-int64/blob/master/int64.c'
 template<typename T, typename Ptr>
@@ -99,8 +101,12 @@ public:
         if (b == 0) {
             return luaL_error(L, "div by zero");
         }
+        //in lua -- may be we want a float.
+        if(a <= DBL_MAX && b <= DBL_MAX){ //double max
+            lua_pushnumber(L, (double) a / (double)b);
+            return 1;
+        }
         _set(L, a / b);
-
         return 1;
     }
 

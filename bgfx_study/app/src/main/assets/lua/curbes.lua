@@ -9,7 +9,7 @@ local reso = initializer.resolution;
 
 --------- fields ----------
 local m_timeOffset;
-local m_pt = 2;
+local m_pt = 1;
 
 local m_r = true;
 local m_g = true;
@@ -152,7 +152,7 @@ local app_init = function ()
 
     print("getHPCounter")
     m_timeOffset = bx.getHPCounter();
-    print("app_init done");
+    print("app_init done, m_timeOffset = ", m_timeOffset);
 end
 local logFirst = true;
 local app_draw = function ()

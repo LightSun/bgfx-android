@@ -1270,13 +1270,13 @@ extern "C" int luaopen_bgfx_lua(lua_State *L) {
 //--------------------------------------------------------
 static int bx_getHPCounter(lua_State *L) {
     auto i = bx::getHPCounter();
-    lua_pushinteger(L, i);
+    BigInt64(_set(L, i));
     return 1;
 }
 
 static int bx_getHPFrequency(lua_State *L) {
     auto i = bx::getHPFrequency();
-    lua_pushinteger(L, i);
+    BigInt64(_set(L, i));
     return 1;
 }
 

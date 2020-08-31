@@ -13,6 +13,9 @@ local m = {};
 function m.wrapGetSet(u)
     if(type(u) == 'userdata') then
         local self = {};
+        function self._unwrap()
+            return u;
+        end
         -- get and set
         local meta = {
             __index = function(t, k)
@@ -40,6 +43,9 @@ end
 function m.wrapGet(u)
     if(type(u) == 'userdata') then
         local self = {};
+        function self._unwrap()
+            return u;
+        end
         -- get
         local meta = {
             __index = function(t, k)
