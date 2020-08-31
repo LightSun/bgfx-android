@@ -68,7 +68,7 @@ public:
 
     template<class T>
     inline static void printArray(T* array, int len, std::ostringstream& ss){
-        ss << "[";
+        ss << "["; //std::string 是可变字符串.
         for (int i = 0; i < len; ++i) {
             ss << array[i];
             if (i != len - 1) {
