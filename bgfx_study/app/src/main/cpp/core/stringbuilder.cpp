@@ -34,6 +34,8 @@
 
 #include "stringbuilder.h"
 #include "stringbuilder_pri.h"
+#include "SkUTF.h"
+#include "log.h"
 
 namespace SB {
     static const std::map<unsigned char,const char*> _DEF_FORMATS = {
@@ -102,7 +104,6 @@ namespace SB {
     StringBuilder &StringBuilder::append(const char *str) {
         int len = 0;
         StringFragment *frag = NULL;
-
         if (NULL == str || '\0' == *str)
             return *this;
 

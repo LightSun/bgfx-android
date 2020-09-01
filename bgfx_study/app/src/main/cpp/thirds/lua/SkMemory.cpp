@@ -1,6 +1,8 @@
 //
 // Created by Administrator on 2020/8/27 0027.
 //
+#include <SkUTF.h>
+
 #include "printer.h"
 #include "SkMemory.h"
 #include "common.h"
@@ -218,6 +220,8 @@ const char * SkMemory::toString() {
     std::string sr;
     ss.toString(sr);
     const char *result = sr.c_str();
+   /* auto i = SkUTF::CountUTF8(result, sr.length());
+    LOGD("%s :  utf8 count = %d", result, i);*/
     return result;
 }
 //-----------------------------------------------------------------------
@@ -412,10 +416,13 @@ const char* SkMemoryMatrix::toString() {
     ss << "{";
     for (int i = 0; i < count; ++i) {
         ss << array[i]->toString();
+        LOGD("SkMemoryMatrix: %s", ss.str().c_str());
         if(i != count - 1){
             ss << ",";
         }
     }
     ss << "}";
-    return ss.str().c_str();
+    auto stdStr = ss.str();
+    auto result = stdStr.c_str();
+    return result;
 }

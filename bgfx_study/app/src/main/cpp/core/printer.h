@@ -49,7 +49,6 @@ public:
 
     template<typename ...Args>
     static const char* format(const char *fmt, Args &&... args) {
-        //asprintf: some char will be wrong.
         char* cstr;
         int c = snprintf(NULL, 0, fmt, std::forward<Args>(args)...);
         cstr = new char[ c + 1 ];

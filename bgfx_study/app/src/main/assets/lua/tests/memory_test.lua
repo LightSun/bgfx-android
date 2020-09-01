@@ -78,7 +78,7 @@ for i = 1, #t do
 end
 --print(tostring(aa))
 
-local m2 = mem.newMemory('b',  {1, 2, 3}, {4, 5, 6});
+local m2 = mem.newMemory('w',  {1, 2, 3}, {4, 5, 6});
 print("m2: ",tostring(m2))
 
 
@@ -95,5 +95,5 @@ assert(mat[1][0] == 4)
 assert(mat[1][1] == 5)
 assert(mat[1][2] == 6)
 print("tostring(mat)----------")
---print(tostring(mat))
+print(tostring(mat))
 --mem.newMemoryMatrix('d', 4, 4);
