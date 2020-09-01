@@ -5,6 +5,7 @@
 #ifndef BGFX_STUDY_PRINTER_H
 #define BGFX_STUDY_PRINTER_H
 
+#include "stringbuilder.h"
 #include <sstream>
 
 class Printer{
@@ -55,30 +56,14 @@ public:
 
         std::string a(cstr);
         free(cstr);
-        return cstr;
-    }
-    template<class T>
-    inline static const char* printArray(T* array, int len){
-        std::ostringstream ss;
-        printArray<T>(array, len, ss);
-        auto sr = ss.str();
-        std::string a(sr);
         return a.c_str();
     }
 
-    template<class T>
-    inline static void printArray(T* array, int len, std::ostringstream& ss){
-        ss << "["; //std::string 是可变字符串.
-        for (int i = 0; i < len; ++i) {
-            ss << array[i];
-            if (i != len - 1) {
-                ss << ",";
-            }
-        }
-        ss << "]";
-        ss.flush();
-    }
+    static void printArray(float array[], int len, std::ostringstream& ss);
+    static void printArray(uint16_t array[], int len, std::ostringstream& ss);
+    static void printArray(uint8_t  array[], int len, std::ostringstream& ss);
+    static void printArray(uint32_t array[], int len, std::ostringstream& ss);
+    static void printArray(uint64_t array[], int len, std::ostringstream& ss);
 };
-
 
 #endif //BGFX_STUDY_PRINTER_H

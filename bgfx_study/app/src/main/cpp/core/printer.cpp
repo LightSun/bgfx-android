@@ -30,7 +30,7 @@ APPEND(uint16_t)
 APPEND(uint32_t)
 Printer &Printer::appendArray(float *array, int len) {
     if(alreadyCount < count) {
-        printArray<float>(array, len, buf);
+        printArray(array, len, buf);
     }
     return *this;
 }
@@ -60,3 +60,60 @@ void Printer::reset() {
     buf.clear();
     alreadyCount = 0;
 }
+
+
+void Printer::printArray(float array[], int len, std::ostringstream& ss){
+    ss << "[";
+    for (int i = 0; i < len; ++i) {
+        ss << array[i];
+        if (i != len - 1) {
+            ss << ",";
+        }
+    }
+    ss << "]";
+}
+void Printer::printArray(uint64_t array[], int len, std::ostringstream& ss){
+    ss << "[";
+    for (int i = 0; i < len; ++i) {
+        ss << array[i];
+        if (i != len - 1) {
+            ss << ",";
+        }
+    }
+    ss << "]";
+}
+void Printer::printArray(uint32_t array[], int len, std::ostringstream& ss){
+    ss << "[";
+    for (int i = 0; i < len; ++i) {
+        ss << array[i];
+        if (i != len - 1) {
+            ss << ",";
+        }
+    }
+    ss << "]";
+}
+void Printer::printArray(uint16_t array[], int len, std::ostringstream& ss){
+    ss << "[";
+    for (int i = 0; i < len; ++i) {
+        ss << array[i];
+        if (i != len - 1) {
+            ss << ",";
+        }
+    }
+    ss << "]";
+}
+void Printer::printArray(uint8_t array[], int len, std::ostringstream& ss){
+    ss << "[";
+    for (int i = 0; i < len; ++i) {
+        ss << array[i];
+        if (i != len - 1) {
+            ss << ",";
+        }
+    }
+    ss << "]";
+}
+/*PRINT_ARRAY(float);
+PRINT_ARRAY(uint64_t);
+PRINT_ARRAY(uint32_t);
+PRINT_ARRAY(uint16_t);
+PRINT_ARRAY(uint8_t);*/

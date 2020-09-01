@@ -198,18 +198,26 @@ int SkMemory::read(SkMemory* mem, lua_State *L) {
     }
 }
 const char * SkMemory::toString() {
+    std::ostringstream ss;
     switch (_dType[0]) {
         case 'f':
-            return Printer::printArray<float>((float*)data, size / 4);
+            Printer::printArray((float*)data, size / 4, ss);
+            break;
         case 'd':
-            return Printer::printArray<uint32_t>((uint32_t*)data, size / 4);
+            Printer::printArray((uint32_t*)data, size / 4,ss );
+            break;
         case 'w':
-            return Printer::printArray<uint16_t>((uint16_t*)data, size / 2);
+            Printer::printArray((uint16_t*)data, size / 2, ss);
+            break;
         case 'b':
-            return Printer::printArray<uint8_t>((uint8_t*)data, size);//TODO have bug ?
+            Printer::printArray((uint8_t*)data, size, ss);
+            break;
         default:
             return nullptr;
     }
+    auto sr = ss.str();
+    const char *result = sr.c_str();
+    return result;
 }
 //-----------------------------------------------------------------------
 inline int SkMemory::getUnitSize(const char *t) {

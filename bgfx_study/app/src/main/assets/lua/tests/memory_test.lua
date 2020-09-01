@@ -79,7 +79,7 @@ end
 --print(tostring(aa))
 
 local m2 = mem.newMemory('b',  {1, 2, 3}, {4, 5, 6});
---print("m2: ",tostring(m2))
+print("m2: ",tostring(m2))
 
 
 local mat = mem.newMemoryMatrix('b', {1, 2, 3}, {4, 5, 6});
