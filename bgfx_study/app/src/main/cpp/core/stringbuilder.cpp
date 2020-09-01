@@ -48,19 +48,19 @@ namespace SB {
             {T_LONG_LONG, "%lld"},
             {T_U_LONG, "%lu"},
             {T_U_LONG_LONG, "%llu"},
-            {T_FLOAT, "%g"},
+            {T_FLOAT, "%g"}, //%g used to remove the suffix zero. this is useful for float and double.
             {T_DOUBLE, "%g"},
             {T_SHORT, "%d"},
             {T_U_SHORT, "%u"},
     };
-#define _D_MAP (static_cast<std::map<unsigned char,const char*>>(_DEF_FORMATS))
+#define _D_MAP (const_cast<std::map<unsigned char, const char *> &>(_DEF_FORMATS))
 /*
  * sb_create returns a pointer to a new StringBuilder or NULL if memory is not
  * available.
  */
-    StringBuilder::StringBuilder() : StringBuilder(_D_MAP) {
+    StringBuilder::StringBuilder():StringBuilder(_D_MAP){
     }
-    StringBuilder::StringBuilder(std::map<unsigned char, const char *> formatMap) : root(nullptr), trunk(nullptr), m_length(0) {
+    StringBuilder::StringBuilder(std::map<unsigned char, const char *>& formatMap) : root(nullptr), trunk(nullptr), m_length(0) {
         m_format = formatMap;
     }
 
@@ -184,6 +184,12 @@ namespace SB {
     StringBuilder& StringBuilder::append(void* _val){
         return appendf("%p", _val);
     }
+    StringBuilder & StringBuilder::append(StringBuilder &other) {
+        std::string str;
+        other.toString(str);
+        auto result = str.c_str();
+        return append(result);
+    }
     //--------------- append -----------
 #define APPEND(t,type) \
 StringBuilder& StringBuilder::append(type _val){ \
@@ -211,7 +217,12 @@ StringBuilder& StringBuilder::append(type _val){ \
     StringBuilder& StringBuilder::operator<<(void* _val) {
         return appendf("%p", _val);
     }
-
+    StringBuilder & StringBuilder::operator<<(StringBuilder &other) {
+        std::string str;
+        other.toString(str);
+        auto result = str.c_str();
+        return append(result);
+    }
 #define OP(t, type) \
 StringBuilder& StringBuilder::operator<<(type _val) { \
     return appendf(m_format[t], _val);\

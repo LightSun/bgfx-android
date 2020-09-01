@@ -32,7 +32,9 @@
 #include <map>
 
 namespace SB{
-#define SB_MAX_FRAG_LENGTH	4096
+#ifndef SB_MAX_FRAG_LENGTH
+#define SB_MAX_FRAG_LENGTH	2048
+#endif
 
 #define T_BOOL 1
 #define T_INT 2
@@ -56,7 +58,7 @@ public:
      * create string builder. which can control format of output,
      * @param formatMap  the format define map
      */
-    StringBuilder(std::map<unsigned char,const char*> formatMap);
+    StringBuilder(std::map<unsigned char,const char*>& formatMap);
     /**
    * create string builder with default formats
    */
@@ -81,6 +83,8 @@ public:
     StringBuilder& append(double _val);
     StringBuilder& append(short _val);
     StringBuilder& append(unsigned short _val);
+
+    StringBuilder& append(StringBuilder& other);
 
     /**
      * you need to release the char*
@@ -108,6 +112,8 @@ public:
 
     StringBuilder& operator <<(short _val);
     StringBuilder& operator <<(unsigned short _val);
+    StringBuilder& operator <<(StringBuilder& other);
+
 private:
     StringFragment* root;
     StringFragment* trunk;

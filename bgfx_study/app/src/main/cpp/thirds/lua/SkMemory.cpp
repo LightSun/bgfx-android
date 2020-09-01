@@ -163,8 +163,7 @@ int SkMemory::write(SkMemory* mem, lua_State *L) {
             write_uint16_t(mem, index, TO_NUMBER_16(L, -1));
             return 0;
         case 'b': {
-            auto val = TO_NUMBER_8(L, -1);
-            write_uint8_t(mem, index, val);
+            write_uint8_t(mem, index, TO_NUMBER_8(L, -1));
             return 0;
         }
 
@@ -190,8 +189,7 @@ int SkMemory::read(SkMemory* mem, lua_State *L) {
             return 1;
 
         case 'b': {
-            auto v = read_uint8_t(mem, index);
-            lua_pushnumber(L, v);
+            lua_pushnumber(L, read_uint8_t(mem, index));
             return 1;
         }
 
@@ -416,7 +414,7 @@ const char* SkMemoryMatrix::toString() {
     ss << "{";
     for (int i = 0; i < count; ++i) {
         ss << array[i]->toString();
-        LOGD("SkMemoryMatrix: %s", ss.str().c_str());
+        //LOGD("SkMemoryMatrix: %s", ss.str().c_str());
         if(i != count - 1){
             ss << ",";
         }
