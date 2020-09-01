@@ -13,7 +13,8 @@ class Printer{
 typedef void (*Log)(const char* str);
 
 private:
-    std::ostringstream buf;
+    //std::ostringstream buf;
+    SB::StringBuilder buf;
     /** the call count of end() method. or else return empty string. */
     int count;
     /** the already count of end */
@@ -59,11 +60,11 @@ public:
         return a.c_str();
     }
 
-    static void printArray(float array[], int len, std::ostringstream& ss);
-    static void printArray(uint16_t array[], int len, std::ostringstream& ss);
-    static void printArray(uint8_t  array[], int len, std::ostringstream& ss);
-    static void printArray(uint32_t array[], int len, std::ostringstream& ss);
-    static void printArray(uint64_t array[], int len, std::ostringstream& ss);
+    static void printArray(float array[], int len, SB::StringBuilder& ss);
+    static void printArray(uint16_t array[], int len, SB::StringBuilder& ss);
+    static void printArray(uint8_t  array[], int len, SB::StringBuilder& ss);
+    static void printArray(uint32_t array[], int len, SB::StringBuilder& ss);
+    static void printArray(uint64_t array[], int len, SB::StringBuilder& ss);
 };
 
 #endif //BGFX_STUDY_PRINTER_H

@@ -39,13 +39,14 @@ Printer& Printer::logFunc(Printer::Log _log) {
     return *this;
 }
 const char * Printer::prints() {
-    auto cstr = buf.str().c_str();
+    std::string str;
+    buf.toString(str);
+    const char *result = str.c_str();
     if(log != nullptr){
-        log(cstr);
+        log(result);
     }
-    buf.str("");
-    buf.clear();
-    return cstr;
+    buf.reset();
+    return result;
 }
 const char *Printer::end() {
     alreadyCount ++;
@@ -56,13 +57,12 @@ const char *Printer::end() {
     return prints();
 }
 void Printer::reset() {
-    buf.str("");
-    buf.clear();
+    buf.reset();
     alreadyCount = 0;
 }
 
 
-void Printer::printArray(float array[], int len, std::ostringstream& ss){
+void Printer::printArray(float array[], int len, SB::StringBuilder& ss){
     ss << "[";
     for (int i = 0; i < len; ++i) {
         ss << array[i];
@@ -72,7 +72,7 @@ void Printer::printArray(float array[], int len, std::ostringstream& ss){
     }
     ss << "]";
 }
-void Printer::printArray(uint64_t array[], int len, std::ostringstream& ss){
+void Printer::printArray(uint64_t array[], int len, SB::StringBuilder& ss){
     ss << "[";
     for (int i = 0; i < len; ++i) {
         ss << array[i];
@@ -82,7 +82,7 @@ void Printer::printArray(uint64_t array[], int len, std::ostringstream& ss){
     }
     ss << "]";
 }
-void Printer::printArray(uint32_t array[], int len, std::ostringstream& ss){
+void Printer::printArray(uint32_t array[], int len, SB::StringBuilder& ss){
     ss << "[";
     for (int i = 0; i < len; ++i) {
         ss << array[i];
@@ -92,7 +92,7 @@ void Printer::printArray(uint32_t array[], int len, std::ostringstream& ss){
     }
     ss << "]";
 }
-void Printer::printArray(uint16_t array[], int len, std::ostringstream& ss){
+void Printer::printArray(uint16_t array[], int len, SB::StringBuilder& ss){
     ss << "[";
     for (int i = 0; i < len; ++i) {
         ss << array[i];
@@ -102,7 +102,7 @@ void Printer::printArray(uint16_t array[], int len, std::ostringstream& ss){
     }
     ss << "]";
 }
-void Printer::printArray(uint8_t array[], int len, std::ostringstream& ss){
+void Printer::printArray(uint8_t array[], int len, SB::StringBuilder& ss){
     ss << "[";
     for (int i = 0; i < len; ++i) {
         ss << array[i];

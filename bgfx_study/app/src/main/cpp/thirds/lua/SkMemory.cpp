@@ -198,7 +198,7 @@ int SkMemory::read(SkMemory* mem, lua_State *L) {
     }
 }
 const char * SkMemory::toString() {
-    std::ostringstream ss;
+    SB::StringBuilder ss;
     switch (_dType[0]) {
         case 'f':
             Printer::printArray((float*)data, size / 4, ss);
@@ -215,7 +215,8 @@ const char * SkMemory::toString() {
         default:
             return nullptr;
     }
-    auto sr = ss.str();
+    std::string sr;
+    ss.toString(sr);
     const char *result = sr.c_str();
     return result;
 }

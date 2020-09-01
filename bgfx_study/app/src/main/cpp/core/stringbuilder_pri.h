@@ -11,6 +11,7 @@ extern "C" {
             StringFragment *next;
             int length;
             char *str;
+            ~StringFragment();
         } StringFragment;
     }
 }

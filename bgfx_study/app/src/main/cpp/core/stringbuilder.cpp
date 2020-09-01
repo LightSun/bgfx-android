@@ -39,15 +39,15 @@ namespace SB {
     static const std::map<unsigned char,const char*> _DEF_FORMATS = {
             {T_BOOL, "%d"},
             {T_CHAR, "%c"},
-            {T_U_CHAR, "%u"},
+            {T_U_CHAR, "%d"},
             {T_U_INT, "%u"},
             {T_INT, "%d"},
             {T_LONG, "%ld"},
             {T_LONG_LONG, "%lld"},
             {T_U_LONG, "%lu"},
             {T_U_LONG_LONG, "%llu"},
-            {T_FLOAT, "%f"},
-            {T_DOUBLE, "%lf"},
+            {T_FLOAT, "%g"},
+            {T_DOUBLE, "%g"},
             {T_SHORT, "%d"},
             {T_U_SHORT, "%u"},
     };
@@ -93,6 +93,9 @@ namespace SB {
         return root == nullptr;
     }
 
+    StringFragment::~StringFragment() {
+        free(str);
+    }
 /*
  * sb_append adds a copy of the given string to a StringBuilder.
  */
@@ -104,15 +107,13 @@ namespace SB {
             return *this;
 
         len = strlen(str);
-        frag = (StringFragment *) malloc(sizeof(StringFragment) + (sizeof(char) * len));
-        if (frag == nullptr) {
-            printf("malloc failed for StringFragment");
-            return *this;
-        }
+        frag = new StringFragment();
 
         frag->next = NULL;
         frag->length = len;
-        memcpy((void *) &frag->str, (const void *) str, sizeof(char) * (len + 1));
+        frag->str = static_cast<char *>(malloc(len + 1));
+        strcpy(frag->str, str);
+       // memcpy((void *) &frag->str, (const void *) str, sizeof(char) * (len + 1));
 
         m_length += len;
         if (NULL == root)
@@ -165,7 +166,8 @@ namespace SB {
 
         c = buf;
         for (frag = root; frag; frag = frag->next) {
-            memcpy(c, &frag->str, sizeof(char) * frag->length);
+            stpcpy(c, frag->str);
+           // memcpy(c, &frag->str, sizeof(char) * frag->length);
             c += frag->length;
         }
 
