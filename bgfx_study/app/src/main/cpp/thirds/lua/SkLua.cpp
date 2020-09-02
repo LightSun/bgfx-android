@@ -1289,7 +1289,8 @@ static int SkMemoryMatrix_columnCount(lua_State *L) {
 }
 static int SkMemoryMatrix_tostring(lua_State *L) {
     auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
-    lua_pushstring(L, pMemory->toString());
+    const char *str = pMemory->toString();
+    lua_pushstring(L, str);
     return 1;
 }
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
@@ -1632,5 +1633,5 @@ void SkLua::Load(lua_State *L) {
     REG_CLASS(L, bgfx::IndexBufferHandle);
     REG_CLASS(L, bgfx::ProgramHandle);
     REG_CLASS(L, bgfx::ShaderHandle);
-    //TODO CallbackI*, bx::AllocatorI*
+    //TODO Callback
 }

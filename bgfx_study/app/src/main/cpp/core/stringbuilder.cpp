@@ -119,7 +119,7 @@ if(formatMap[type] == nullptr){\
             return *this;
         }
         int rc = 0;
-        char buf[SB_MAX_FRAG_LENGTH];
+        char buf[SB_MAX_FRAG_LENGTH] = {0}; //'\0'
         va_list args;
 
         va_start (args, format);

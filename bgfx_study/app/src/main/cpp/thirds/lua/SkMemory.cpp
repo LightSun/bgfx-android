@@ -419,8 +419,10 @@ const char* SkMemoryMatrix::toString() {
     toString(*ss);
     std::string str;
     ss->toString(str);
-    auto result = str.c_str();
+    const char* result = str.c_str();
     delete(ss);
+    //auto i = SkUTF::CountUTF8(result, str.length());
+    //LOGD("SkMemoryMatrix >>> %s, utf8 count = %d", result, i);
     return result;
 }
 
