@@ -15,7 +15,7 @@ typedef void (*Log)(const char* str);
 private:
     //std::ostringstream buf;
     SB::StringBuilder buf;
-    /** the call count of end() method. or else return empty string. */
+    /** the call count of end() method. or else return null. */
     int count;
     /** the already count of end */
     int alreadyCount;

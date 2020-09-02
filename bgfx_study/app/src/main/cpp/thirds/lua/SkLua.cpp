@@ -1282,6 +1282,11 @@ static int SkMemoryMatrix_len(lua_State *L) {
     lua_pushinteger(L, pMemory->getRowCount());
     return 1;
 }
+static int SkMemoryMatrix_columnCount(lua_State *L) {
+    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    lua_pushinteger(L, pMemory->getColumnCount());
+    return 1;
+}
 static int SkMemoryMatrix_tostring(lua_State *L) {
     auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
     lua_pushstring(L, pMemory->toString());
@@ -1289,6 +1294,8 @@ static int SkMemoryMatrix_tostring(lua_State *L) {
 }
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
         {"isValid", SkMemoryMatrix_isValid},
+        {"getColumnCount", SkMemoryMatrix_columnCount},
+        {"getRowCount", SkMemoryMatrix_len},
         {"__len", SkMemoryMatrix_len},
         {"__tostring", SkMemoryMatrix_tostring},
         {"__newindex", SkMemoryMatrix_newindex},
