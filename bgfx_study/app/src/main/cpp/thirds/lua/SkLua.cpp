@@ -1197,7 +1197,7 @@ static int type##_len(lua_State* L){ \
 #define memory_tostring(type) \
 static int type##_tostring(lua_State *L) { \
     auto pMemory = get_ref<type>(L, 1); \
-    lua_pushstring(L, pMemory->toString());\
+    PUSH_STRING_PTR(L, pMemory) \
     return 1; \
 }
 
@@ -1289,8 +1289,7 @@ static int SkMemoryMatrix_columnCount(lua_State *L) {
 }
 static int SkMemoryMatrix_tostring(lua_State *L) {
     auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
-    const char *str = pMemory->toString();
-    lua_pushstring(L, str);
+    PUSH_STRING_PTR(L, pMemory)
     return 1;
 }
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {

@@ -8,6 +8,18 @@
 #include "common.h"
 #include "lua_wrapper.h"
 
+#define FUNC_TO_STRING(type) \
+const char * type::toString() { \
+SB::StringBuilder* ss = new SB::StringBuilder(); \
+toString(*ss); \
+auto result = ss->toString(); \
+delete(ss); \
+return result; \
+}
+FUNC_TO_STRING(SkMemory)
+FUNC_TO_STRING(SkMemoryFFFUI)
+FUNC_TO_STRING(SkMemoryMatrix)
+
 #define copy_data_f(dType) \
 dType * addr = static_cast<dType *>(data); \
 for (int i = start; i < start + tableCount; ++i) { \
@@ -215,15 +227,6 @@ void SkMemory::toString(SB::StringBuilder& ss) {
     /* auto i = SkUTF::CountUTF8(result, sr.length());
      LOGD("%s :  utf8 count = %d", result, i);*/
 }
-const char * SkMemory::toString() {
-    SB::StringBuilder* ss = new SB::StringBuilder();
-    toString(*ss);
-    std::string str;
-    ss->toString(str);
-    const char *result = str.c_str();
-    delete(ss);
-    return result;
-}
 //-----------------------------------------------------------------------
 inline int SkMemory::getUnitSize(const char *t) {
     switch (t[0]) {
@@ -320,13 +323,6 @@ void SkMemoryFFFUI::toString(SB::StringBuilder &ss) {
     }
     ss << "]";
 }
-const char* SkMemoryFFFUI::toString() {
-    SB::StringBuilder ss;
-    toString(ss);
-    std::string str;
-    ss.toString(str);
-    return str.c_str();
-}
 int SkMemoryFFFUI::getLength() {
     return size / 4;
 }
@@ -416,24 +412,13 @@ int SkMemoryMatrix::getRowCount() {
 int SkMemoryMatrix::getColumnCount() {
     return array ?array[0]->getLength() : 0;
 }
-const char* SkMemoryMatrix::toString() {
-    SB::StringBuilder* ss = new SB::StringBuilder();
-    toString(*ss);
-    std::string str;
-    ss->toString(str);
-    const char* result = str.c_str();
-    delete(ss);
-    //auto i = SkUTF::CountUTF8(result, str.length());
-    //LOGD("SkMemoryMatrix >>> %s, utf8 count = %d", result, i);
-    return result;
-}
 
 void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
     ss << "{";
     for (int i = 0; i < count; ++i) {
         array[i]->toString(ss);
         if(i != count - 1){
-            ss << ", ";
+            ss << ",";
         }
     }
     ss << "}";

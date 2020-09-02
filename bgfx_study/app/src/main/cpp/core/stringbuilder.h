@@ -6,7 +6,7 @@
 #ifndef BGFX_STUDY_STRINGBUILDER_H
 #define BGFX_STUDY_STRINGBUILDER_H
 
-#include <string>
+//#include <string>
 #include <map>
 
 namespace SB{
@@ -69,11 +69,11 @@ public:
     StringBuilder& append(StringBuilder& other);
 
     /**
+     * get the string fragments. note: you need to call free() after call this.
      * you need to release the char*
      * @return the string
      */
     char* toString();
-    void toString(std::string& out);
     void reset();
     int length();
 

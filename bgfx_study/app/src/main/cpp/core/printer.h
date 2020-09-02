@@ -47,16 +47,20 @@ public:
 
 public:
 
+    /**
+     * after call this .you need to delete
+     * @tparam Args
+     * @param fmt
+     * @param args
+     * @return
+     */
     template<typename ...Args>
     static const char* format(const char *fmt, Args &&... args) {
         char* cstr;
         int c = snprintf(NULL, 0, fmt, std::forward<Args>(args)...);
         cstr = new char[ c + 1 ];
         snprintf(cstr, c + 1, fmt, std::forward<Args>(args)...);
-
-        std::string a(cstr);
-        free(cstr);
-        return a.c_str();
+        return cstr;
     }
 
     static void printArray(float array[], int len, SB::StringBuilder& ss);

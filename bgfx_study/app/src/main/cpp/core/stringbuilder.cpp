@@ -100,8 +100,8 @@ if(formatMap[type] == nullptr){\
         frag->next = NULL;
         frag->length = len;
         frag->str = static_cast<char *>(malloc(len + 1));
-        strcpy(frag->str, str);
-        // memcpy((void *) &frag->str, (const void *) str, sizeof(char) * (len + 1));
+        //strcpy(frag->str, str);
+         memcpy((void *) frag->str, (const void *) str, sizeof(char) * (len + 1));
 
         m_length += len;
         if (NULL == root)
@@ -143,8 +143,8 @@ if(formatMap[type] == nullptr){\
 
         c = buf;
         for (frag = root; frag; frag = frag->next) {
-            stpcpy(c, frag->str);
-            // memcpy(c, &frag->str, sizeof(char) * frag->length);
+           // strncpy(c, frag->str, frag->length);
+            memcpy(c, frag->str, sizeof(char) * frag->length);
             c += frag->length;
         }
 
@@ -152,22 +152,16 @@ if(formatMap[type] == nullptr){\
         return buf;
     }
 
-    void StringBuilder::toString(std::string &out) {
-        StringFragment *frag = NULL;
-        for (frag = root; frag; frag = frag->next) {
-            out.append(frag->str);
-        }
-    }
-
     StringBuilder &StringBuilder::append(void *_val) {
         return appendf("%p", _val);
     }
 
     StringBuilder &StringBuilder::append(StringBuilder &other) {
-        std::string str;
-        other.toString(str);
-        auto result = str.c_str();
-        return append(result);
+        const char* str = other.toString();
+        append(str);
+        //malloc / calloc / realloc
+        free((void *) str);
+        return *this;
     }
     //--------------- append -----------
 #define APPEND(t, type) \
@@ -211,10 +205,7 @@ StringBuilder& StringBuilder::append(type _val){ \
     }
 
     StringBuilder &StringBuilder::operator<<(StringBuilder &other) {
-        std::string str;
-        other.toString(str);
-        auto result = str.c_str();
-        return append(result);
+        return append(other);
     }
 
 #define OP(t, type) \

@@ -230,8 +230,10 @@ namespace heaven7_Bgfx_demo{
                 mtx[13] = -15.0f + float(yy)*3.0f;
                 mtx[14] = 0.0f;
 
-                printer.append(Printer::format("(xx, yy)=(%u , %u)", xx, yy)).prints();
+                auto xxyy = Printer::format("(xx, yy)=(%u , %u)", xx, yy);
+                printer.append(xxyy).prints();
                 printer.append("mtxRotateXY: ").appendArray(mtx, 16).prints();
+                delete(xxyy);
 
                 // Set model matrix for rendering.
                 bgfx::setTransform(mtx);

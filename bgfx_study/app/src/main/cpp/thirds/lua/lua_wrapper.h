@@ -12,6 +12,16 @@
 #include "SkMemory.h"
 #include "bgfx_lua_app.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+#include <malloc.h>
+
+#ifdef __cplusplus
+}
+#endif
+
 #define lua2bool(L, idx) lua_toboolean(L, idx) == 1
 
 #define TO_NUMBER_8(L, idx) static_cast<uint8_t>(lua_tonumber(L, idx))
@@ -43,5 +53,11 @@ template <typename T> const char* get_mtname();
         lua_setfield(L, -2, "__index");             \
         lua_pop(L, 1); /* pop off the meta-table */ \
     } while (0)
+
+//push string and then release
+#define PUSH_STRING_PTR(L, ptr) \
+const char* str = ptr->toString(); \
+lua_pushstring(L, str);\
+free((void*)str);
 
 #endif //BGFX_STUDY_LUA_WRAPPER_H

@@ -39,14 +39,14 @@ Printer& Printer::logFunc(Printer::Log _log) {
     return *this;
 }
 const char * Printer::prints() {
-    std::string str;
-    buf.toString(str);
-    const char *result = str.c_str();
+    auto result = buf.toString();
+    std::string str(result);
     if(log != nullptr){
         log(result);
     }
     buf.reset();
-    return result;
+    free(result);
+    return str.c_str();
 }
 const char *Printer::end() {
     alreadyCount ++;
