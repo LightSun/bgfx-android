@@ -6,7 +6,7 @@
 #define BGFX_STUDY_PRINTER_H
 
 #include "stringbuilder.h"
-#include <sstream>
+//#include <sstream>
 
 class Printer{
 
