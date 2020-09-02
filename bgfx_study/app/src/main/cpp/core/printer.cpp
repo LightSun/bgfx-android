@@ -38,82 +38,26 @@ Printer& Printer::logFunc(Printer::Log _log) {
     this->log = _log;
     return *this;
 }
-const char * Printer::prints() {
+SB::StringBuilder & Printer::getBuffer() {
+    return buf;
+}
+void Printer::prints() {
     auto result = buf.toString();
-    std::string str(result);
     if(log != nullptr){
         log(result);
     }
     buf.reset();
     free(result);
-    return str.c_str();
 }
-const char *Printer::end() {
+void Printer::end() {
     alreadyCount ++;
     //overflow
     if(count > 0 && alreadyCount > count){
-        return NULL;
+        return;
     }
-    return prints();
+    prints();
 }
 void Printer::reset() {
     buf.reset();
     alreadyCount = 0;
 }
-
-
-void Printer::printArray(float array[], int len, SB::StringBuilder& ss){
-    ss << "[";
-    for (int i = 0; i < len; ++i) {
-        ss << array[i];
-        if (i != len - 1) {
-            ss << ",";
-        }
-    }
-    ss << "]";
-}
-void Printer::printArray(uint64_t array[], int len, SB::StringBuilder& ss){
-    ss << "[";
-    for (int i = 0; i < len; ++i) {
-        ss << array[i];
-        if (i != len - 1) {
-            ss << ",";
-        }
-    }
-    ss << "]";
-}
-void Printer::printArray(uint32_t array[], int len, SB::StringBuilder& ss){
-    ss << "[";
-    for (int i = 0; i < len; ++i) {
-        ss << array[i];
-        if (i != len - 1) {
-            ss << ",";
-        }
-    }
-    ss << "]";
-}
-void Printer::printArray(uint16_t array[], int len, SB::StringBuilder& ss){
-    ss << "[";
-    for (int i = 0; i < len; ++i) {
-        ss << array[i];
-        if (i != len - 1) {
-            ss << ",";
-        }
-    }
-    ss << "]";
-}
-void Printer::printArray(uint8_t array[], int len, SB::StringBuilder& ss){
-    ss << "[";
-    for (int i = 0; i < len; ++i) {
-        ss << array[i];
-        if (i != len - 1) {
-            ss << ",";
-        }
-    }
-    ss << "]";
-}
-/*PRINT_ARRAY(float);
-PRINT_ARRAY(uint64_t);
-PRINT_ARRAY(uint32_t);
-PRINT_ARRAY(uint16_t);
-PRINT_ARRAY(uint8_t);*/

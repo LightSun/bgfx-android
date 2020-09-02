@@ -37,37 +37,51 @@ public:
     Printer& append(uint16_t val);
     Printer& appendArray(float* array, int len);
     Printer& logFunc(Log log);
-    const char * prints();
+
+    SB::StringBuilder& getBuffer();
+
+    void prints();
     /**
      * count and end the printer and output.
      * @return null if over count. or a normal str.
      */
-    const char* end();
+    void end();
     void reset();
 
 public:
 
     /**
-     * after call this .you need to delete
-     * @tparam Args
-     * @param fmt
-     * @param args
-     * @return
+     * after call this .you need to free to release chars
+     * @tparam Args the arguments type
+     * @param fmt the format
+     * @param args the real arguments
+     * @return the formated string
      */
     template<typename ...Args>
     static const char* format(const char *fmt, Args &&... args) {
         char* cstr;
         int c = snprintf(NULL, 0, fmt, std::forward<Args>(args)...);
-        cstr = new char[ c + 1 ];
+        cstr = static_cast<char *>(malloc(c + 1));
         snprintf(cstr, c + 1, fmt, std::forward<Args>(args)...);
         return cstr;
     }
 
-    static void printArray(float array[], int len, SB::StringBuilder& ss);
-    static void printArray(uint16_t array[], int len, SB::StringBuilder& ss);
-    static void printArray(uint8_t  array[], int len, SB::StringBuilder& ss);
-    static void printArray(uint32_t array[], int len, SB::StringBuilder& ss);
-    static void printArray(uint64_t array[], int len, SB::StringBuilder& ss);
+#define PRINT_ARRAY(type) \
+static void printArray(type array[], int len, SB::StringBuilder& ss){ \
+    ss << "["; \
+    for (int i = 0; i < len; ++i) { \
+        ss << array[i]; \
+        if (i != len - 1) { \
+            ss << ","; \
+        } \
+    } \
+    ss << "]"; \
+}
+    PRINT_ARRAY(float)
+    PRINT_ARRAY(uint64_t)
+    PRINT_ARRAY(uint32_t)
+    PRINT_ARRAY(uint16_t)
+    PRINT_ARRAY(uint8_t)
 };
 
 #endif //BGFX_STUDY_PRINTER_H
