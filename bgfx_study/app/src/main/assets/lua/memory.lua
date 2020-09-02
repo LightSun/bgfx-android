@@ -12,7 +12,8 @@ local mem = require("hmem_lua");
 --- 'w' is u-int16
 --- 'b' is u-int8
 --- 'f' is float
---- ...: means multi array.
+--- ...: means multi array. or just a int for the length of memory.
+--- params: (type, table...) or (type, len)
 function m.newMemory(type, ...)
     return mem.newMemory(type, ...);
 end
@@ -23,19 +24,9 @@ function m.newMemoryFFFUI(...)
     -- lua 'table.unpack()' as parameter must be the final parameter.or else the lua stack only contains first parameter.
     return mem.newMemoryFFFUI(...);
 end
---- create single type memory array. type: can be 'd', 'w', 'b', 'f'.
---- 'd' is u-int32
---- 'w' is u-int16
---- 'b' is u-int8
---- 'f' is float
---- @param type: data type
---- @param len: the length of array
-function m.newMemoryArray(type, len)
-    return mem.newMemoryArray(type, len);
-end
 
 --- create memory matrix .
---- @param ...: can be tables or (rowCount, columnCount)
+--- @param ...: can be (tables) or (rowCount, columnCount)
 function m.newMemoryMatrix(type, ...)
     return mem.newMemoryMatrix(type, ...);
 end

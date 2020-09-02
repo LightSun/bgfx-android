@@ -1512,13 +1512,25 @@ extern "C" int luaopen_bx_lua(lua_State *L) {
 }
 
 static int mem_newMemory(lua_State *L) {
-    //(type, table...)
-    int n = lua_gettop(L);
+    //(type, table...) or (type, len )
     const char *type = lua_tostring(L, 1);
-    lua_remove(L, 1);
-    int tableCount = n - 1;
-    SkMemory *pMemory = new SkMemory(L, tableCount, type);
-    push_ptr(L, pMemory);
+    int n = lua_gettop(L);
+    auto secondType = lua_type(L, 2);
+    if(secondType == LUA_TNUMBER){
+        //(type, len )
+        int len = static_cast<int>(lua_tointeger(L, 2));
+        lua_pop(L, 2);
+        SkMemory *pMemory = new SkMemory(type, len);
+        push_ptr(L, pMemory);
+    } else if(secondType == LUA_TTABLE){
+        //(type, table...)
+        lua_remove(L, 1);
+        int tableCount = n - 1;
+        SkMemory *pMemory = new SkMemory(L, tableCount, type);
+        push_ptr(L, pMemory);
+    } else{
+        return luaL_error(L, "wrong arguments for newMemory");
+    }
     return 1;
 }
 
@@ -1526,16 +1538,6 @@ static int mem_newMemoryFFFUI(lua_State *L) {
     //(table...)
     int tableCount = lua_gettop(L);
     SkMemoryFFFUI *pMemory = new SkMemoryFFFUI(L, tableCount);
-    push_ptr(L, pMemory);
-    return 1;
-}
-
-static int mem_newMemoryArray(lua_State *L) {
-    //(type, len )
-    const char *type = lua_tostring(L, 1);
-    int len = static_cast<int>(lua_tointeger(L, 2));
-    lua_pop(L, 2);
-    SkMemory *pMemory = new SkMemory(type, len);
     push_ptr(L, pMemory);
     return 1;
 }
@@ -1560,7 +1562,6 @@ static int mem_newMemoryMatrix(lua_State *L){
 static const luaL_Reg mem_funcs[] = {
         {"newMemory",      mem_newMemory},
         {"newMemoryFFFUI", mem_newMemoryFFFUI},
-        {"newMemoryArray", mem_newMemoryArray},
         {"newMemoryMatrix", mem_newMemoryMatrix},
         {nullptr,          nullptr}
 };

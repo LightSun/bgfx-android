@@ -166,13 +166,13 @@ local app_draw = function ()
     local eye = bx.newVec3(0, 0, -35);
 
     --Set view and projection matrix for view 0.
-    local view = mem.newMemoryArray('f', 16);
+    local view = mem.newMemory('f', 16);
     bx.mtxLookAt(view, eye, at);
     if(logFirst) then
         print("mtxLookAt: "..tostring(view));
     end
 
-    local proj = mem.newMemoryArray('f', 16);
+    local proj = mem.newMemory('f', 16);
     --bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
     bx.mtxProj(proj, 60, m_width / m_height, 0.1, 100, bgfx.getCaps().homogeneousDepth);
     if(logFirst) then
@@ -210,7 +210,7 @@ local app_draw = function ()
         for x = 1, 11, 1 do
             --print("y, x = ", y, x)
             local xx = x - 1;
-            local mtx = mem.newMemoryArray('f', 16);
+            local mtx = mem.newMemory('f', 16);
             --print("pre mtxRotateXY: "..tostring(mtx));
             bx.mtxRotateXY(mtx, time + xx*0.21, time + yy*0.37);
             --
