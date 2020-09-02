@@ -79,10 +79,19 @@ end
 --print(tostring(aa))
 
 local m2 = mem.newMemory('w',  {1, 2, 3}, {4, 5, 6});
-print("m2: "..tostring(m2))
+print("w: "..tostring(m2))
+
+m2 = mem.newMemory('b',  {1, 2, 3}, {4, 5, 6});
+print("b: "..tostring(m2))
+
+m2 = mem.newMemory('d',  {1, 2, 3}, {4, 5, 6});
+print("d: "..tostring(m2))
+
+m2 = mem.newMemory('f',  {1, 2, 3}, {4, 5, 6});
+print("f: "..tostring(m2))
 
 
-local mat = mem.newMemoryMatrix('b', {1, 2, 3}, {4, 5, 6});
+local mat = mem.newMemoryMatrix('d', {1, 2, 3}, {4, 5, 6});
 assert(#mat == 2)
 assert(#(mat[0]) == 3)
 assert(#(mat[1]) == 3)
@@ -94,6 +103,13 @@ assert(mat[0][2] == 3)
 assert(mat[1][0] == 4)
 assert(mat[1][1] == 5)
 assert(mat[1][2] == 6)
-print("tostring(mat)----------")
-print(tostring(mat))
+
+mat = mem.newMemoryMatrix('d', {1, 2, 3}, {4, 5, 6});
+print("mat->d", mat)
+mat = mem.newMemoryMatrix('w', {1, 2, 3}, {4, 5, 6});
+print("mat->w", mat)
+mat = mem.newMemoryMatrix('f', {1, 2, 3}, {4, 5, 6});
+print("mat->f", mat)
+mat = mem.newMemoryMatrix('b', {1, 2, 3}, {4, 5, 6});
+print("mat->b", mat)
 --mem.newMemoryMatrix('d', 4, 4);

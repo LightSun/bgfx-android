@@ -12,6 +12,9 @@
 class SkMemory;
 class SkMemoryFFFUI;
 class SkMemoryMatrix;
+namespace SB{
+    class StringBuilder;
+}
 
 class AbsSkMemory{
 
@@ -25,6 +28,7 @@ public:
 
     virtual int getLength() = 0;
     virtual const char* toString() = 0;
+    virtual void toString(SB::StringBuilder& sb) = 0;
 public:
     void *data;
     size_t size;
@@ -57,6 +61,7 @@ public:
 
     bool isFloat();
     const char* toString() ;
+    void toString(SB::StringBuilder& sb);
 
     static int read(SkMemory* mem, lua_State* L);
     static int write(SkMemory* mem, lua_State* L);
@@ -77,6 +82,7 @@ public:
 
     int getLength();
     const char* toString();
+    void toString(SB::StringBuilder& sb);
 
     static int read(SkMemoryFFFUI* mem, lua_State* L);
     static int write(SkMemoryFFFUI* mem, lua_State* L);
@@ -105,6 +111,7 @@ public:
     int getRowCount();
     int getColumnCount();
     const char* toString();
+    void toString(SB::StringBuilder& sb);
 
     static int read(SkMemoryMatrix* mem, lua_State* L, void (*Push)(lua_State* L, SkMemory* ptr));
     static int write(SkMemoryMatrix* mem, lua_State* L, SkMemory* (*Pull)(lua_State* L, int idx));

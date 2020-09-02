@@ -197,14 +197,13 @@ int SkMemory::read(SkMemory* mem, lua_State *L) {
             return luaL_error(L, "wrong data type = %s", mem->_dType);
     }
 }
-const char * SkMemory::toString() {
-    SB::StringBuilder ss;
+void SkMemory::toString(SB::StringBuilder& ss) {
     switch (_dType[0]) {
         case 'f':
             Printer::printArray((float*)data, size / 4, ss);
             break;
         case 'd':
-            Printer::printArray((uint32_t*)data, size / 4,ss );
+            Printer::printArray((uint32_t*)data, size / 4, ss );
             break;
         case 'w':
             Printer::printArray((uint16_t*)data, size / 2, ss);
@@ -212,14 +211,17 @@ const char * SkMemory::toString() {
         case 'b':
             Printer::printArray((uint8_t*)data, size, ss);
             break;
-        default:
-            return nullptr;
     }
-    std::string sr;
-    ss.toString(sr);
-    const char *result = sr.c_str();
-   /* auto i = SkUTF::CountUTF8(result, sr.length());
-    LOGD("%s :  utf8 count = %d", result, i);*/
+    /* auto i = SkUTF::CountUTF8(result, sr.length());
+     LOGD("%s :  utf8 count = %d", result, i);*/
+}
+const char * SkMemory::toString() {
+    SB::StringBuilder* ss = new SB::StringBuilder();
+    toString(*ss);
+    std::string str;
+    ss->toString(str);
+    const char *result = str.c_str();
+    delete(ss);
     return result;
 }
 //-----------------------------------------------------------------------
@@ -301,11 +303,10 @@ SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : AbsSkMemory(){
     out:
         unRef();
 }
-const char* SkMemoryFFFUI::toString() {
+void SkMemoryFFFUI::toString(SB::StringBuilder &ss) {
     uint32_t * addr_ui = static_cast<uint32_t *>(data);
     float * addr_f = static_cast<float *>(data);
 
-    std::ostringstream ss;
     ss << "[";
     for(int i = 0, len = size / 4 ; i < len ; i ++ ){
         if((i + 1) % 4 == 0){
@@ -318,7 +319,11 @@ const char* SkMemoryFFFUI::toString() {
         }
     }
     ss << "]";
-    return ss.str().c_str();
+}
+const char* SkMemoryFFFUI::toString() {
+    SB::StringBuilder ss;
+    toString(ss);
+    return ss.toString();
 }
 int SkMemoryFFFUI::getLength() {
     return size / 4;
@@ -410,17 +415,22 @@ int SkMemoryMatrix::getColumnCount() {
     return array ?array[0]->getLength() : 0;
 }
 const char* SkMemoryMatrix::toString() {
-    std::ostringstream ss;
+    SB::StringBuilder* ss = new SB::StringBuilder();
+    toString(*ss);
+    std::string str;
+    ss->toString(str);
+    auto result = str.c_str();
+    delete(ss);
+    return result;
+}
+
+void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
     ss << "{";
     for (int i = 0; i < count; ++i) {
-        ss << array[i]->toString();
-        //LOGD("SkMemoryMatrix: %s", ss.str().c_str());
+        array[i]->toString(ss);
         if(i != count - 1){
-            ss << ",";
+            ss << ", ";
         }
     }
     ss << "}";
-    auto stdStr = ss.str();
-    auto result = stdStr.c_str();
-    return result;
 }

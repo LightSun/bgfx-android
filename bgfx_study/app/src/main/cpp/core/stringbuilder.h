@@ -30,6 +30,10 @@ namespace SB{
 
 struct StringFragment;
 
+/**
+ * the string builder.
+ * why i develop this. for 'std::ostringstream << uint8_t' have bug.
+ */
 class StringBuilder{
 public:
     /**
