@@ -323,7 +323,9 @@ void SkMemoryFFFUI::toString(SB::StringBuilder &ss) {
 const char* SkMemoryFFFUI::toString() {
     SB::StringBuilder ss;
     toString(ss);
-    return ss.toString();
+    std::string str;
+    ss.toString(str);
+    return str.c_str();
 }
 int SkMemoryFFFUI::getLength() {
     return size / 4;

@@ -3,8 +3,8 @@
  * writer: Heaven7
  */
 
-#ifndef SB_H
-#define SB_H
+#ifndef BGFX_STUDY_STRINGBUILDER_H
+#define BGFX_STUDY_STRINGBUILDER_H
 
 #include <string>
 #include <map>
