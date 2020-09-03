@@ -80,12 +80,13 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,
         config->OnExitRenderThread = java_onExitRenderThread;
         Bgfx_lua_app::startApp(ptr, config);
     } else{
-        //HelloWorldDemo, CurbesDemo, FontDemo, InstancingDemo, BumpDemo,CallbackDemo
+        //HelloWorldDemo, CurbesDemo, FontDemo, InstancingDemo, BumpDemo,
+        // CallbackDemo, VectorDisplayDemo
         InitConfig config;
         config.window = mWindow;
         config.win_width = ANativeWindow_getWidth(mWindow);
         config.win_height = ANativeWindow_getHeight(mWindow);
-        demo = createDemo<CurbesDemo>(&config);
+        demo = createDemo<VectorDisplayDemo>(&config);
         demo->startLoop();
     }
 }

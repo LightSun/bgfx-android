@@ -12,6 +12,7 @@
 #include "include/instancing.h"
 #include "include/bump.h"
 #include "include/callback.h"
+#include "include/vectordisplay_23.h"
 
 namespace heaven7_Bgfx_demo{
     template <typename T> BaseDemo* create0();
@@ -26,6 +27,7 @@ namespace heaven7_Bgfx_demo{
     DEF_METHOD_NAME(InstancingDemo)
     DEF_METHOD_NAME(BumpDemo)
     DEF_METHOD_NAME(CallbackDemo)
+    DEF_METHOD_NAME(VectorDisplayDemo)
 
     template <typename T> BaseDemo* createDemo(InitConfig* config){
         BaseDemo* demo = create0<T>();

@@ -26,7 +26,6 @@ class IMemory{
 public:
 
     IMemory();
-    ~IMemory();
 
     int ref();
     int unRef();

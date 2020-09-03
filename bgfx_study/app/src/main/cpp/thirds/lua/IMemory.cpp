@@ -14,9 +14,6 @@ return result; \
 }
 FUNC_TO_STRING(IMemory)
 
-IMemory::~IMemory() {
-    destroyData();
-}
 IMemory::IMemory():_ref(1) {
 
 }
