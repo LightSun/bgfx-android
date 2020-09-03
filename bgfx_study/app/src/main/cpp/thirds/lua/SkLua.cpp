@@ -8,18 +8,19 @@
 #include <new>
 #include <bx/hash.h>
 #include <bx/timer.h>
+#include <bx/math.h>
+
 #include "SkRefCnt.h"
 #include "lua.hpp"
+
 #include "bgfx_wrapper.h"
 #include "bgfx_lua_app.h"
 #include "SkMemory.h"
 #include "bgfx_utils.h"
 
-#include "lua_wrapper.h"
 #include "SkLua.h"
-
+#include "LuaUtils.h"
 #include <stdint.h>
-#include <bx/math.h>
 
 #include "int64.h"
 
@@ -36,62 +37,21 @@ auto pHandle = new bgfx::type(); \
 pHandle->idx = handle.idx; \
 push_ptr(L, pHandle);
 
-
-template<typename T, typename... Args>
-T *push_new(lua_State *L, Args &&... args) {
-    T *addr = (T *) lua_newuserdata(L, sizeof(T));
-    new(addr) T(std::forward<Args>(args)...);
-    luaL_getmetatable(L, get_mtname<T>());
-    lua_setmetatable(L, -2);
-    return addr;
-}
-
-template<typename T>
-void push_obj(lua_State *L, const T &obj) {
-    new(lua_newuserdata(L, sizeof(T))) T(obj);
-    luaL_getmetatable(L, get_mtname<T>());
-    lua_setmetatable(L, -2);
-}
-
 template<typename T>
 T *push_ptr(lua_State *L, T *ptr) {
-    T **ls = (T **) lua_newuserdata(L, sizeof(T *));
-    *ls = ptr;
-    //LOGD("push_ptr:  ls = %p, ptr = %p", ls, ptr);
-    luaL_getmetatable(L, get_mtname<T>());
-    lua_setmetatable(L, -2);
-    return ptr;
+    return LuaUtils::push_ptr<T>(L, ptr);
 }
-
-template<typename T>
-T *push_ref(lua_State *L, T *ref) {
-    *(T **) lua_newuserdata(L, sizeof(T *)) = SkSafeRef(ref);
-    luaL_getmetatable(L, get_mtname<T>());
-    lua_setmetatable(L, -2);
-    return ref;
-}
-
-template<typename T>
-void push_ref(lua_State *L, sk_sp<T> sp) {
-    *(T **) lua_newuserdata(L, sizeof(T *)) = sp.release();
-    luaL_getmetatable(L, get_mtname<T>());
-    lua_setmetatable(L, -2);
-}
-
 template<typename T>
 T *get_ref(lua_State *L, int index) {
-    return *(T **) luaL_checkudata(L, index, get_mtname<T>());
+    return LuaUtils::get_ref<T>(L, index);
 }
-
 template<typename T>
 T *to_ref(lua_State *L, int index) {
-    void *d = luaL_testudata(L, index, get_mtname<T>());
-    return d != nullptr ? *((T **) d) : nullptr;
+    return LuaUtils::to_ref<T>(L, index);
 }
-
 template<typename T>
 T *get_obj(lua_State *L, int index) {
-    return (T *) luaL_checkudata(L, index, get_mtname<T>());
+    return LuaUtils::get_obj<T>(L, index);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,74 +93,15 @@ bool SkLua::runCode(const void *code, size_t size) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define CHECK_SETFIELD(key) do if (key) lua_setfield(fL, -2, key); while (0)
-
-static void setfield_bool_if(lua_State *L, const char key[], bool pred) {
-    if (pred) {
-        lua_pushboolean(L, true);
-        lua_setfield(L, -2, key);
-    }
-}
-
-static void setfield_string(lua_State *L, const char key[], const char value[]) {
-    lua_pushstring(L, value);
-    lua_setfield(L, -2, key);
-}
-
-static void setfield_number(lua_State *L, const char key[], double value) {
-    lua_pushnumber(L, value);
-    lua_setfield(L, -2, key);
-}
-
-static void setfield_boolean(lua_State *L, const char key[], bool value) {
-    lua_pushboolean(L, value);
-    lua_setfield(L, -2, key);
-}
-
-static void setfield_scalar(lua_State *L, const char key[], SkScalar value) {
-    setfield_number(L, key, SkScalarToLua(value));
-}
-
 static void setfield_function(lua_State *L,
                               const char key[], lua_CFunction value) {
     lua_pushcfunction(L, value);
     lua_setfield(L, -2, key);
 }
 
-static int lua2int_def(lua_State *L, int index, int defaultValue) {
-    if (lua_isnumber(L, index)) {
-        return (int) lua_tonumber(L, index);
-    } else {
-        return defaultValue;
-    }
-}
-
 static SkScalar lua2scalar(lua_State *L, int index) {
     SkASSERT(lua_isnumber(L, index));
     return SkLuaToScalar(lua_tonumber(L, index));
-}
-
-static SkScalar lua2scalar_def(lua_State *L, int index, SkScalar defaultValue) {
-    if (lua_isnumber(L, index)) {
-        return SkLuaToScalar(lua_tonumber(L, index));
-    } else {
-        return defaultValue;
-    }
-}
-
-static SkScalar getarray_scalar(lua_State *L, int stackIndex, int arrayIndex) {
-    SkASSERT(lua_istable(L, stackIndex));
-    lua_rawgeti(L, stackIndex, arrayIndex);
-
-    SkScalar value = lua2scalar(L, -1);
-    lua_pop(L, 1);
-    return value;
-}
-
-static void getarray_scalars(lua_State *L, int stackIndex, SkScalar dst[], int count) {
-    for (int i = 0; i < count; ++i) {
-        dst[i] = getarray_scalar(L, stackIndex, i + 1);
-    }
 }
 
 static void setarray_number(lua_State *L, int index, double value) {
@@ -210,11 +111,6 @@ static void setarray_number(lua_State *L, int index, double value) {
 
 static void setarray_scalar(lua_State *L, int index, SkScalar value) {
     setarray_number(L, index, SkScalarToLua(value));
-}
-
-static void setarray_string(lua_State *L, int index, const char str[]) {
-    lua_pushstring(L, str);
-    lua_rawseti(L, -2, index);
 }
 
 //---------------------------------------------
@@ -240,15 +136,6 @@ void SkLua::pushString(const bx::StringView &str, const char key[]) {
     CHECK_SETFIELD(key);
 }
 
-/*void SkLua::pushColor(SkColor color, const char key[]) {
-    lua_newtable(fL);
-    setfield_number(fL, "a", SkColorGetA(color) / 255.0);
-    setfield_number(fL, "r", SkColorGetR(color) / 255.0);
-    setfield_number(fL, "g", SkColorGetG(color) / 255.0);
-    setfield_number(fL, "b", SkColorGetB(color) / 255.0);
-    CHECK_SETFIELD(key);
-}*/
-
 void SkLua::pushU32(uint32_t value, const char key[]) {
     lua_pushnumber(fL, (double) value);
     CHECK_SETFIELD(key);
@@ -268,18 +155,6 @@ void SkLua::pushArrayU16(const uint16_t array[], int count, const char key[]) {
     CHECK_SETFIELD(key);
 }
 
-/*void SkLua::pushArrayPoint(const SkPoint array[], int count, const char key[]) {
-    lua_newtable(fL);
-    for (int i = 0; i < count; ++i) {
-        // make it base-1 to match lua convention
-        lua_newtable(fL);
-        this->pushScalar(array[i].fX, "x");
-        this->pushScalar(array[i].fY, "y");
-        lua_rawseti(fL, -2, i + 1);
-    }
-    CHECK_SETFIELD(key);
-}*/
-
 void SkLua::pushArrayScalar(const SkScalar array[], int count, const char key[]) {
     lua_newtable(fL);
     for (int i = 0; i < count; ++i) {
@@ -288,78 +163,6 @@ void SkLua::pushArrayScalar(const SkScalar array[], int count, const char key[])
     }
     CHECK_SETFIELD(key);
 }
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-static SkScalar getfield_scalar(lua_State *L, int index, const char key[]) {
-    SkASSERT(lua_istable(L, index));
-    lua_pushstring(L, key);
-    lua_gettable(L, index);
-
-    SkScalar value = lua2scalar(L, -1);
-    lua_pop(L, 1);
-    return value;
-}
-
-static SkScalar getfield_scalar_default(lua_State *L, int index, const char key[], SkScalar def) {
-    SkASSERT(lua_istable(L, index));
-    lua_pushstring(L, key);
-    lua_gettable(L, index);
-
-    SkScalar value;
-    if (lua_isnil(L, -1)) {
-        value = def;
-    } else {
-        value = lua2scalar(L, -1);
-    }
-    lua_pop(L, 1);
-    return value;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-
-/*static int lpaint_getEffects(lua_State* L) {
-    const SkPaint* paint = get_obj<SkPaint>(L, 1);
-
-    lua_newtable(L);
-    setfield_bool_if(L, "pathEffect",  !!paint->getPathEffect());
-    setfield_bool_if(L, "maskFilter",  !!paint->getMaskFilter());
-    setfield_bool_if(L, "shader",      !!paint->getShader());
-    setfield_bool_if(L, "colorFilter", !!paint->getColorFilter());
-    setfield_bool_if(L, "imageFilter", !!paint->getImageFilter());
-    return 1;
-}*/
-
-///////////////////////////////////////////////////////////////////////////////
-
-class AutoCallLua {
-public:
-    AutoCallLua(lua_State *L, const char func[], const char verb[]) : fL(L) {
-        lua_getglobal(L, func);
-        if (!lua_isfunction(L, -1)) {
-            int t = lua_type(L, -1);
-            SkDebugf("--- expected function %d\n", t);
-        }
-
-        lua_newtable(L);
-        setfield_string(L, "verb", verb);
-    }
-
-    ~AutoCallLua() {
-        if (lua_pcall(fL, 1, 0, 0) != LUA_OK) {
-            SkDebugf("lua err: %s\n", lua_tostring(fL, -1));
-        }
-        lua_settop(fL, -1);
-    }
-
-private:
-    lua_State *fL;
-};
-
-#define AUTO_LUA(verb)  AutoCallLua acl(fL, fFunc.c_str(), verb)
 
 ///////////////////////////////////////////////////////////////////////////////
 static int bgfx_getInit(lua_State *L) {
@@ -380,7 +183,7 @@ static int bgfx_newApp(lua_State *L) {
     const char *fn_init = luaL_checkstring(L, -3);
     const char *fn_draw = luaL_checkstring(L, -2);
     const char *fn_destroy = luaL_checkstring(L, -1);
-    push_new<LuaApp>(L, L, fn_pre_init, fn_init, fn_draw, fn_destroy);
+    LuaUtils::push_new<LuaApp>(L, L, fn_pre_init, fn_init, fn_draw, fn_destroy);
     return 1;
 }
 

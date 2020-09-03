@@ -6,7 +6,7 @@
 #include "printer.h"
 #include "SkMemory.h"
 #include "common.h"
-#include "lua_wrapper.h"
+#include "LuaUtils.h"
 
 
 #define copy_data_f(dType) \

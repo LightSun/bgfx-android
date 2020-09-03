@@ -2,13 +2,11 @@
 // Created by Administrator on 2020/8/22 0022.
 //
 
+#include "LuaUtils.h"
 #include "bgfx_lua_app.h"
 #include "bx/debug.h"
 #include "android_pri.h"
 #include <atomic>
-
-//#include "pthread.h"
-#include "lua_wrapper.h"
 
 //#include <memory>
 namespace Bgfx_lua_app {

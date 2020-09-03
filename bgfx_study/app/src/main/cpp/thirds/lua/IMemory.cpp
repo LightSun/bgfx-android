@@ -27,7 +27,13 @@ int IMemory::unRef() {
     return _ref.fetch_add(-1);
 }
 
-//--------------------------------------
+//-------------------------------------
+SimpleMemory::SimpleMemory():IMemory() {
+
+}
+SimpleMemory::~SimpleMemory(){
+    destroyData();
+}
 void SimpleMemory::destroyData() {
     if(data){
         free(data);
