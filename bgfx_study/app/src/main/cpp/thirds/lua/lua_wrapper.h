@@ -54,10 +54,4 @@ template <typename T> const char* get_mtname();
         lua_pop(L, 1); /* pop off the meta-table */ \
     } while (0)
 
-//push string and then release
-#define PUSH_STRING_PTR(L, ptr) \
-const char* str = ptr->toString(); \
-lua_pushstring(L, str);\
-free((void*)str);
-
 #endif //BGFX_STUDY_LUA_WRAPPER_H

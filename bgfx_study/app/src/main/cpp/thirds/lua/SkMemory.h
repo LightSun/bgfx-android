@@ -5,9 +5,8 @@
 #ifndef BGFX_STUDY_SKMEMORY_H
 #define BGFX_STUDY_SKMEMORY_H
 
-#include <stdint.h>
-#include <atomic>
 #include "lua.hpp"
+#include "IMemory.h"
 
 class SkMemory;
 class SkMemoryFFFUI;
@@ -16,27 +15,7 @@ namespace SB{
     class StringBuilder;
 }
 
-class AbsSkMemory{
-
-public:
-    ~AbsSkMemory();
-    AbsSkMemory();
-    int ref();
-    int unRef();
-    void asConstant();
-    void destroyData();
-
-    virtual int getLength() = 0;
-    virtual const char* toString() = 0;
-    virtual void toString(SB::StringBuilder& sb) = 0;
-public:
-    void *data;
-    size_t size;
-    uint8_t _constant; // 1 is constant. 0 not.
-    std::atomic_int _ref;
-};
-
-class SkMemory : public AbsSkMemory{
+class SkMemory : public SimpleMemory{
 
 public:
 
@@ -60,7 +39,6 @@ public:
     //------ index start from 0 --------
 
     bool isFloat();
-    const char* toString() ;
     void toString(SB::StringBuilder& sb);
 
     static int read(SkMemory* mem, lua_State* L);
@@ -76,18 +54,17 @@ private:
 };
 
 //float,float,float, uint32_t
-class SkMemoryFFFUI : public AbsSkMemory{
+class SkMemoryFFFUI : public SimpleMemory{
 public:
     SkMemoryFFFUI(lua_State* L, int tableCount);
 
     int getLength();
-    const char* toString();
     void toString(SB::StringBuilder& sb);
 
     static int read(SkMemoryFFFUI* mem, lua_State* L);
     static int write(SkMemoryFFFUI* mem, lua_State* L);
 };
-class SkMemoryMatrix{
+class SkMemoryMatrix: public IMemory{
 public:
     ~SkMemoryMatrix();
     /**
@@ -106,11 +83,11 @@ public:
 
     void destroyData();
 
-    bool isValid();
+    bool isValid() ;
 
+    inline int getLength() { return getRowCount();}
     int getRowCount();
     int getColumnCount();
-    const char* toString();
     void toString(SB::StringBuilder& sb);
 
     static int read(SkMemoryMatrix* mem, lua_State* L, void (*Push)(lua_State* L, SkMemory* ptr));

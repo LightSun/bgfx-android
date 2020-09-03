@@ -8,17 +8,6 @@
 #include "common.h"
 #include "lua_wrapper.h"
 
-#define FUNC_TO_STRING(type) \
-const char * type::toString() { \
-SB::StringBuilder* ss = new SB::StringBuilder(); \
-toString(*ss); \
-auto result = ss->toString(); \
-delete(ss); \
-return result; \
-}
-FUNC_TO_STRING(SkMemory)
-FUNC_TO_STRING(SkMemoryFFFUI)
-FUNC_TO_STRING(SkMemoryMatrix)
 
 #define copy_data_f(dType) \
 dType * addr = static_cast<dType *>(data); \
@@ -77,32 +66,8 @@ WRITE(uint8_t)
 WRITE(uint16_t)
 WRITE(uint32_t)
 
-
-AbsSkMemory::~AbsSkMemory() {
-    destroyData();
-}
-AbsSkMemory::AbsSkMemory():_ref(1) {
-
-}
-int AbsSkMemory::ref() {
-    return _ref.fetch_add(1);
-}
-int AbsSkMemory::unRef() {
-    LOGD("-- unRef ");
-    return _ref.fetch_add(-1);
-}
-
-void AbsSkMemory::asConstant() {
-    _constant = 1;
-}
-void AbsSkMemory::destroyData() {
-    if(data){
-        free(data);
-        data = nullptr;
-    }
-}
 //---------------------------------------------------------------------------------
-SkMemory::SkMemory(const char *type, int len): AbsSkMemory(), _dType(type) {
+SkMemory::SkMemory(const char *type, int len): SimpleMemory(), _dType(type) {
     size = getUnitSize(type) * len;
     SkASSERT(size > 0);
     data = malloc(size);
@@ -125,7 +90,7 @@ SkMemory::SkMemory(const char *type, int len): AbsSkMemory(), _dType(type) {
             break;
     }
 }
-SkMemory::SkMemory(lua_State *L, int start, int tableCount, const char *t) : AbsSkMemory(){
+SkMemory::SkMemory(lua_State *L, int start, int tableCount, const char *t) : SimpleMemory(){
     _dType = t;
     size = getTotalBytes(L, tableCount, t);
     SkASSERT(size > 0);
@@ -270,7 +235,7 @@ int SkMemory::getLength() {
 }
 
 //------------------------ SkMemoryFFFI ----------------------
-SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : AbsSkMemory(){
+SkMemoryFFFUI::SkMemoryFFFUI(lua_State *L, int tableCount) : SimpleMemory(){
     size = 4 * 4 * tableCount;
     SkASSERT(size > 0);
     data = malloc(size);
@@ -361,7 +326,7 @@ int SkMemoryFFFUI::write(SkMemoryFFFUI *mem, lua_State *L) {
 SkMemoryMatrix::~SkMemoryMatrix() {
     destroyData();
 }
-SkMemoryMatrix::SkMemoryMatrix(lua_State *L, const char *type) {
+SkMemoryMatrix::SkMemoryMatrix(lua_State *L, const char *type): IMemory(){
     int tableCount = lua_gettop(L);
     count = tableCount;
     array = new SkMemory*[tableCount];
@@ -370,7 +335,7 @@ SkMemoryMatrix::SkMemoryMatrix(lua_State *L, const char *type) {
         //LOGD("array[%d]: \n %s", i, array[i]->toString());//TODO乱码
     }
 }
-SkMemoryMatrix::SkMemoryMatrix(const char *type, int rowCount, int columnCount) {
+SkMemoryMatrix::SkMemoryMatrix(const char *type, int rowCount, int columnCount): IMemory() {
     count = rowCount;
     array = new SkMemory*[rowCount];
     for (int i = 0; i < rowCount; ++i) {

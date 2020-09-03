@@ -464,14 +464,14 @@ static int bgfx_newVertexLayout(lua_State *L) {
 
 static void release_Memory(void *_ptr, void *_userData) {
     BX_UNUSED(_ptr);
-    AbsSkMemory *pMemory = static_cast<AbsSkMemory *>(_userData);
+    IMemory *pMemory = static_cast<IMemory *>(_userData);
     if (pMemory->unRef() == 0) {
         pMemory->destroyData();
     }
 }
 
 static int bgfx_makeRef(lua_State *L) {
-    AbsSkMemory *memory = to_ref<SkMemory>(L, 1);
+    SimpleMemory * memory = to_ref<SkMemory>(L, 1);
     if (memory == nullptr) {
         memory = to_ref<SkMemoryFFFUI>(L, 1);
     }
@@ -1195,10 +1195,12 @@ static int type##_len(lua_State* L){ \
     return 1; \
 }
 #define memory_tostring(type) \
-static int type##_tostring(lua_State *L) { \
+static int type##_tostring(lua_State *L) {\
     auto pMemory = get_ref<type>(L, 1); \
-    PUSH_STRING_PTR(L, pMemory) \
-    return 1; \
+    const char* str = ((IMemory*)pMemory)->toString();\
+    lua_pushstring(L, str);\
+    free((void*)str);\
+    return 1;\
 }
 
 memory_isValid(SkMemory)
@@ -1289,7 +1291,7 @@ static int SkMemoryMatrix_columnCount(lua_State *L) {
 }
 static int SkMemoryMatrix_tostring(lua_State *L) {
     auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
-    PUSH_STRING_PTR(L, pMemory)
+    MEM_PUSH_TO_STRING(L, pMemory);
     return 1;
 }
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
