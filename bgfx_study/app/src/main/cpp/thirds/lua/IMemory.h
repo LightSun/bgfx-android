@@ -32,7 +32,6 @@ public:
     int unRef();
 
     virtual void destroyData() = 0;
-
     virtual bool isValid() = 0;
 
     virtual int getLength() = 0;
@@ -55,11 +54,10 @@ class SimpleMemory :public IMemory{
 public:
     SimpleMemory();
     ~SimpleMemory();
+
     void destroyData();
     bool isValid();
 
-    virtual int getLength() = 0;
-    virtual void toString(SB::StringBuilder& sb) = 0;
 public:
     void *data;
     size_t size;

@@ -371,9 +371,6 @@ int SkMemoryMatrix::write(SkMemoryMatrix *mem, lua_State *L, SkMemory *(*Pull)(l
     mem->array[index] = Pull(L, 3);
     return 0;
 }
-int SkMemoryMatrix::getRowCount() {
-    return count;
-}
 int SkMemoryMatrix::getColumnCount() {
     return array ?array[0]->getLength() : 0;
 }

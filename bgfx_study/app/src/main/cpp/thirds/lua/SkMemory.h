@@ -85,8 +85,8 @@ public:
 
     bool isValid() ;
 
-    inline int getLength() { return getRowCount();}
-    int getRowCount();
+    inline int getLength() { return count;}
+    int getRowCount(){ return count; }
     int getColumnCount();
     void toString(SB::StringBuilder& sb);
 

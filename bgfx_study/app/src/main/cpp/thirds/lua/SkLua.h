@@ -9,7 +9,6 @@
 #define SkLua_DEFINED
 
 #include <stdint.h>
-//#include <atomic>
 
 #include "bx/string.h"
 #include "SkScalar.h"
@@ -17,7 +16,6 @@
 
 struct lua_State;
 
-typedef float SkScalar;
 #define SkScalarToLua(x)    SkScalarToDouble(x)
 #define SkLuaToScalar(x)    SkDoubleToScalar(x)
 
