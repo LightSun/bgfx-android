@@ -142,10 +142,10 @@ static int bgfx_setDebug(lua_State *L) {
 
 //new app. this should only be called only once.
 static int bgfx_newApp(lua_State *L) {
-    const char *fn_pre_init = luaL_checkstring(L, -4);
-    const char *fn_init = luaL_checkstring(L, -3);
+    const char *fn_pre_init = lua_tostring(L, -4);
+    const char *fn_init = lua_tostring(L, -3);
     const char *fn_draw = luaL_checkstring(L, -2);
-    const char *fn_destroy = luaL_checkstring(L, -1);
+    const char *fn_destroy = lua_tostring(L, -1);
     LuaUtils::push_new<LuaApp>(L, L, fn_pre_init, fn_init, fn_draw, fn_destroy);
     return 1;
 }

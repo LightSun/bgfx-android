@@ -17,6 +17,14 @@
 #define TO_NUMBER_16(L, idx) static_cast<uint16_t>(lua_tonumber(L, idx))
 #define TO_NUMBER_32(L, idx) static_cast<uint32_t>(lua_tonumber(L, idx))
 #define TO_FLOAT(L, idx) static_cast<float>(lua_tonumber(L, idx))
+#define LUA_OPT(L, idx, func_idx, defVal) \
+if(lua_type(L, idx) != nullptr){ \
+    return func_idx(L, idx)); \
+} \
+return defVal;
+
+#define OPT_Number_8(L, idx, defVal) LUA_OPT(L, idx, TO_NUMBER_8, defVal);
+
 
 //return the metatable name for a given class
 template <typename T> const char* get_mtname();
