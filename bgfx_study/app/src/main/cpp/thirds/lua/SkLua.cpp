@@ -35,24 +35,7 @@ if(m->_ref == 0){ \
 #define PUT_HANDLE(type) \
 auto pHandle = new bgfx::type(); \
 pHandle->idx = handle.idx; \
-push_ptr(L, pHandle);
-
-template<typename T>
-T *push_ptr(lua_State *L, T *ptr) {
-    return LuaUtils::push_ptr<T>(L, ptr);
-}
-template<typename T>
-T *get_ref(lua_State *L, int index) {
-    return LuaUtils::get_ref<T>(L, index);
-}
-template<typename T>
-T *to_ref(lua_State *L, int index) {
-    return LuaUtils::to_ref<T>(L, index);
-}
-template<typename T>
-T *get_obj(lua_State *L, int index) {
-    return LuaUtils::get_obj<T>(L, index);
-}
+LuaUtils::push_ptr(L, pHandle);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -93,26 +76,6 @@ bool SkLua::runCode(const void *code, size_t size) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void setfield_function(lua_State *L,
-                              const char key[], lua_CFunction value) {
-    lua_pushcfunction(L, value);
-    lua_setfield(L, -2, key);
-}
-
-static SkScalar lua2scalar(lua_State *L, int index) {
-    SkASSERT(lua_isnumber(L, index));
-    return SkLuaToScalar(lua_tonumber(L, index));
-}
-
-static void setarray_number(lua_State *L, int index, double value) {
-    lua_pushnumber(L, value);
-    lua_rawseti(L, -2, index);
-}
-
-static void setarray_scalar(lua_State *L, int index, SkScalar value) {
-    setarray_number(L, index, SkScalarToLua(value));
-}
-
 //---------------------------------------------
 void SkLua::pushBool(bool value, const char key[]) {
     lua_pushboolean(fL, value);
@@ -150,7 +113,7 @@ void SkLua::pushArrayU16(const uint16_t array[], int count, const char key[]) {
     lua_newtable(fL);
     for (int i = 0; i < count; ++i) {
         // make it base-1 to match lua convention
-        setarray_number(fL, i + 1, (double) array[i]);
+        LuaUtils::setarray_number(fL, i + 1, (double) array[i]);
     }
     CHECK_SETFIELD(key);
 }
@@ -159,7 +122,7 @@ void SkLua::pushArrayScalar(const SkScalar array[], int count, const char key[])
     lua_newtable(fL);
     for (int i = 0; i < count; ++i) {
         // make it base-1 to match lua convention
-        setarray_scalar(fL, i + 1, array[i]);
+        LuaUtils::setarray_scalar(fL, i + 1, array[i]);
     }
     CHECK_SETFIELD(key);
 }
@@ -167,7 +130,7 @@ void SkLua::pushArrayScalar(const SkScalar array[], int count, const char key[])
 ///////////////////////////////////////////////////////////////////////////////
 static int bgfx_getInit(lua_State *L) {
     LOGD("bgfx_getInit:  ");
-    push_ptr<bgfx::Init>(L, getBgfxInit(L));
+    LuaUtils::push_ptr<bgfx::Init>(L, getBgfxInit(L));
     return 1;
 }
 
@@ -189,7 +152,7 @@ static int bgfx_newApp(lua_State *L) {
 
 static int bgfx_setViewClear(lua_State *L) {
     uint8_t _stencil = TO_NUMBER_8(L, -1);
-    SkScalar _depth = lua2scalar(L, -2);
+    SkScalar _depth = LuaUtils::lua2scalar(L, -2);
     uint32_t _rgba = TO_NUMBER_32(L, -3);
     uint16_t _flags = TO_NUMBER_16(L, -4);
     uint16_t _id = TO_NUMBER_16(L, -5);
@@ -249,19 +212,19 @@ static int bgfx_frame(lua_State *L) {
 
 static int bgfx_getStats(lua_State *L) {
     bgfx::Stats *pStats = const_cast<bgfx::Stats *>(bgfx::getStats());
-    push_ptr(L, pStats);
+    LuaUtils::push_ptr(L, pStats);
     return 1;
 }
 
 static int bgfx_getCaps(lua_State *L) {
     bgfx::Caps *caps = const_cast<bgfx::Caps *>(bgfx::getCaps());
-    push_ptr(L, caps);
+    LuaUtils::push_ptr(L, caps);
     return 1;
 }
 
 static int bgfx_newVertexLayout(lua_State *L) {
     bgfx::VertexLayout *layout = new bgfx::VertexLayout();
-    push_ptr<bgfx::VertexLayout>(L, layout);
+    LuaUtils::push_ptr<bgfx::VertexLayout>(L, layout);
     return 1;
 }
 
@@ -274,9 +237,9 @@ static void release_Memory(void *_ptr, void *_userData) {
 }
 
 static int bgfx_makeRef(lua_State *L) {
-    SimpleMemory * memory = to_ref<SkMemory>(L, 1);
+    SimpleMemory * memory = LuaUtils::to_ref<SkMemory>(L, 1);
     if (memory == nullptr) {
-        memory = to_ref<SkMemoryFFFUI>(L, 1);
+        memory = LuaUtils::to_ref<SkMemoryFFFUI>(L, 1);
     }
     if (memory == nullptr) {
         return luaL_error(L, "bgfx_makeRef failed. %s", lua_tostring(L, 1));
@@ -285,15 +248,15 @@ static int bgfx_makeRef(lua_State *L) {
     memory->ref();
     bgfx::Memory *mem = const_cast<bgfx::Memory *>(bgfx::makeRef(memory->data, memory->size,
                                                                  release_Memory, memory));
-    push_ptr<bgfx::Memory>(L, mem);
+    LuaUtils::push_ptr<bgfx::Memory>(L, mem);
     return 1;
 }
 
 static int bgfx_createVertexBuffer(lua_State *L) {
     LOGD("bgfx_createVertexBuffer --------------- ");
     luaB_dumpStack(L);
-    auto pT = get_ref<bgfx::Memory>(L, 1);
-    auto layout = get_ref<bgfx::VertexLayout>(L, 2);
+    auto pT = LuaUtils::get_ref<bgfx::Memory>(L, 1);
+    auto layout = LuaUtils::get_ref<bgfx::VertexLayout>(L, 2);
     auto flags = lua_tointeger(L, 3);
     bgfx::VertexBufferHandle handle = bgfx::createVertexBuffer(pT, *layout, flags);
     //
@@ -302,7 +265,7 @@ static int bgfx_createVertexBuffer(lua_State *L) {
 }
 
 static int bgfx_createIndexBuffer(lua_State *L) {
-    auto pT = get_ref<bgfx::Memory>(L, 1);
+    auto pT = LuaUtils::get_ref<bgfx::Memory>(L, 1);
     auto flags = lua_tointeger(L, 2);
     bgfx::IndexBufferHandle handle = bgfx::createIndexBuffer(pT, flags);
 
@@ -311,8 +274,8 @@ static int bgfx_createIndexBuffer(lua_State *L) {
 }
 
 static int bgfx_createProgram(lua_State *L) {
-    auto v_sh = get_ref<bgfx::ShaderHandle>(L, 1);
-    auto f_sh = get_ref<bgfx::ShaderHandle>(L, 2);
+    auto v_sh = LuaUtils::get_ref<bgfx::ShaderHandle>(L, 1);
+    auto f_sh = LuaUtils::get_ref<bgfx::ShaderHandle>(L, 2);
     auto destroyShader = lua_type(L, 3) != LUA_TNIL ? lua_toboolean(L, 3) == 1 : false;
     bgfx::ProgramHandle handle = bgfx::createProgram(*v_sh, *f_sh, destroyShader);
 
@@ -332,8 +295,8 @@ static int bgfx_loadProgram(lua_State *L) {
 static int bgfx_setViewTransform(lua_State *L) {
     // bgfx::setViewTransform(0, view, proj);
     auto id = TO_NUMBER_16(L, 1);
-    auto *m1 = get_ref<SkMemory>(L, 2);
-    auto *m2 = get_ref<SkMemory>(L, 3);
+    auto *m1 = LuaUtils::get_ref<SkMemory>(L, 2);
+    auto *m2 = LuaUtils::get_ref<SkMemory>(L, 3);
     //m1 ,m2 often should be float* as float-array
     bgfx::setViewTransform(id, m1->data, static_cast<float *>(m2->data));
     return 0;
@@ -346,7 +309,7 @@ static int bgfx_setTransform(lua_State *L) {
         uint16_t _num = TO_NUMBER_16(L, 2);
         bgfx::setTransform(_cache, _num);
     } else {
-        SkMemory *pMemory = get_ref<SkMemory>(L, 1);
+        SkMemory *pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
         uint16_t _num = TO_NUMBER_16(L, 2);
         bgfx::setTransform(pMemory->data, _num);
     }
@@ -356,7 +319,7 @@ static int bgfx_setTransform(lua_State *L) {
 static int bgfx_setVertexBuffer(lua_State *L) {
     //bgfx::setVertexBuffer(0, m_vbh)
     uint16_t stream = TO_NUMBER_16(L, 1);
-    auto ref = get_ref<bgfx::VertexBufferHandle>(L, 2);
+    auto ref = LuaUtils::get_ref<bgfx::VertexBufferHandle>(L, 2);
     //bgfx::VertexBufferHandle handle = { ref->idx };
     bgfx::setVertexBuffer(stream, *ref);
     return 0;
@@ -364,7 +327,7 @@ static int bgfx_setVertexBuffer(lua_State *L) {
 
 static int bgfx_setIndexBuffer(lua_State *L) {
     //bgfx::setIndexBuffer(m_vbh)
-    auto ref = get_ref<bgfx::IndexBufferHandle>(L, 1);
+    auto ref = LuaUtils::get_ref<bgfx::IndexBufferHandle>(L, 1);
     //bgfx::IndexBufferHandle handle = { ref->idx };
     bgfx::setIndexBuffer(*ref);
     return 0;
@@ -391,7 +354,7 @@ static int bgfx_submit(lua_State *L) {
     //		, uint8_t _flags  = BGFX_DISCARD_ALL
     //		)
     uint8_t id = TO_NUMBER_8(L, 1);
-    bgfx::ProgramHandle *pHandle = get_ref<bgfx::ProgramHandle>(L, 2);
+    bgfx::ProgramHandle *pHandle = LuaUtils::get_ref<bgfx::ProgramHandle>(L, 2);
     uint32_t _depth = lua_type(L, 3) != LUA_TNIL ? TO_NUMBER_32(L, 3) : 0;
     uint8_t _flags =
             lua_type(L, 4) != LUA_TNIL ? TO_NUMBER_8(L, 4) : static_cast<uint8_t>(BGFX_DISCARD_ALL);
@@ -400,17 +363,17 @@ static int bgfx_submit(lua_State *L) {
 }
 
 static int bgfx_destroy(lua_State *L) {
-    bgfx::IndexBufferHandle *h1 = to_ref<bgfx::IndexBufferHandle>(L, 1);
+    bgfx::IndexBufferHandle *h1 = LuaUtils::to_ref<bgfx::IndexBufferHandle>(L, 1);
     if (h1 != nullptr) {
         bgfx::destroy(*h1);
         return 0;
     }
-    bgfx::VertexBufferHandle *h2 = to_ref<bgfx::VertexBufferHandle>(L, 1);
+    bgfx::VertexBufferHandle *h2 = LuaUtils::to_ref<bgfx::VertexBufferHandle>(L, 1);
     if (h2 != nullptr) {
         bgfx::destroy(*h2);
         return 0;
     }
-    bgfx::ProgramHandle *h3 = to_ref<bgfx::ProgramHandle>(L, 1);
+    bgfx::ProgramHandle *h3 = LuaUtils::to_ref<bgfx::ProgramHandle>(L, 1);
     if (h3 != nullptr) {
         bgfx::destroy(*h3);
         return 0;
@@ -424,13 +387,13 @@ static void register_bgfx(lua_State *L) {
     lua_setglobal(L, "bgfx_lua");
     // the bgfx table is still on top
 
-    setfield_function(L, "getInit", bgfx_getInit);
+    LuaUtils::setfield_function(L, "getInit", bgfx_getInit);
     lua_pop(L, 1);  // pop off the Sk table
 }
 
 //======= init =============
 static int init_type(lua_State *L) {
-    auto pInit = get_ref<bgfx::Init>(L, -2);
+    auto pInit = LuaUtils::get_ref<bgfx::Init>(L, -2);
 
     LOGD("init_type: pInit = %p", pInit);
     const char *type = lua_tostring(L, -1);
@@ -446,7 +409,7 @@ static int init_type(lua_State *L) {
 
 //see 'BGFX_PCI_ID_NONE' and etc
 static int init_vendorId(lua_State *L) {
-    auto pInit = get_ref<bgfx::Init>(L, -2);
+    auto pInit = LuaUtils::get_ref<bgfx::Init>(L, -2);
     int type = lua_type(L, -1);
     if (type == LUA_TNIL) {
         //nil means get
@@ -459,7 +422,7 @@ static int init_vendorId(lua_State *L) {
 }
 
 static int init_deviceId(lua_State *L) {
-    auto pInit = get_ref<bgfx::Init>(L, -2);
+    auto pInit = LuaUtils::get_ref<bgfx::Init>(L, -2);
     int type = lua_type(L, -1);
     if (type == LUA_TNIL) {
         //nil means get
@@ -471,7 +434,7 @@ static int init_deviceId(lua_State *L) {
 }
 
 static int init_debug(lua_State *L) {
-    auto pInit = get_ref<bgfx::Init>(L, -2);
+    auto pInit = LuaUtils::get_ref<bgfx::Init>(L, -2);
     int type = lua_type(L, -1);
     if (type == LUA_TNIL) {
         //nil means get
@@ -483,7 +446,7 @@ static int init_debug(lua_State *L) {
 }
 
 static int init_profile(lua_State *L) {
-    auto pInit = get_ref<bgfx::Init>(L, -2);
+    auto pInit = LuaUtils::get_ref<bgfx::Init>(L, -2);
     int type = lua_type(L, -1);
     if (type == LUA_TNIL) {
         //nil means get
@@ -496,25 +459,25 @@ static int init_profile(lua_State *L) {
 
 //only get
 static int init_platformData(lua_State *L) {
-    auto pInit = get_ref<bgfx::Init>(L, 1);
+    auto pInit = LuaUtils::get_ref<bgfx::Init>(L, 1);
     LOGD("init_platformData");
-    push_ptr(L, &pInit->platformData);
+    LuaUtils::push_ptr(L, &pInit->platformData);
     return 1;
 }
 
 //only get
 static int init_resolution(lua_State *L) {
-    auto pInit = get_ref<bgfx::Init>(L, 1);
+    auto pInit = LuaUtils::get_ref<bgfx::Init>(L, 1);
     LOGD("init_resolution, init = %p", pInit);
-    push_ptr(L, &pInit->resolution);
+    LuaUtils::push_ptr(L, &pInit->resolution);
     return 1;
 }
 
 //only get
 static int init_limits(lua_State *L) {
-    auto pInit = get_ref<bgfx::Init>(L, 1);
+    auto pInit = LuaUtils::get_ref<bgfx::Init>(L, 1);
     LOGD("init_limits");
-    push_ptr(L, &pInit->limits);
+    LuaUtils::push_ptr(L, &pInit->limits);
     return 1;
 }
 
@@ -583,7 +546,7 @@ namespace gbgfx {
 //------------ platform-data -----------------------------
 #define INIT_PLATFORM_DATA(x) \
 static int platformData_##x(lua_State* L){ \
-    auto pd = get_ref<bgfx::PlatformData>(L, -2); \
+    auto pd = LuaUtils::get_ref<bgfx::PlatformData>(L, -2); \
     auto ud = lua_touserdata(L, -1); \
     if(ud == nullptr){ \
         return luaL_error(L, "Invalid platformData.%s", #x); \
@@ -617,7 +580,7 @@ namespace gbgfx {
 //----------------------- resolution ------------------
 
 static int resolution_format(lua_State *L) {
-    auto reso = get_ref<bgfx::Resolution>(L, -2);
+    auto reso = LuaUtils::get_ref<bgfx::Resolution>(L, -2);
 
     const char *type = lua_tostring(L, -1);
     if (type == NULL) {
@@ -631,7 +594,7 @@ static int resolution_format(lua_State *L) {
 
 #define INIT_RESOLUTION(x) \
 static int resolution_##x(lua_State* L){ \
-    auto pd = get_ref<bgfx::Resolution>(L, -2); \
+    auto pd = LuaUtils::get_ref<bgfx::Resolution>(L, -2); \
     int type = lua_type(L, -1); \
     if(type == LUA_TNIL){ \
         lua_pushnumber(L, pd->x); \
@@ -667,7 +630,7 @@ namespace gbgfx {
 //----------------- Limits -----------------
 #define INIT_LIMITS(x) \
 static int limits_##x(lua_State* L){ \
-    auto pd = get_ref<bgfx::Init::Limits>(L, -2); \
+    auto pd = LuaUtils::get_ref<bgfx::Init::Limits>(L, -2); \
     int type = lua_type(L, -1); \
     if(type == LUA_TNIL){ \
         lua_pushnumber(L, pd->x); \
@@ -699,20 +662,20 @@ namespace gbgfx {
 static int gc_luaApp(lua_State *L) {
     //here we don't gc lua_app. wait. it really need recycle. draw failed or user-quit.or switch next app
     LOGD("gc_luaApp");
-    LuaApp *pApp = get_obj<LuaApp>(L, 1);
+    LuaApp *pApp = LuaUtils::get_obj<LuaApp>(L, 1);
     //pApp->quit();
     return 0;
 }
 
 static int destroy_luaApp(lua_State *L) {
     LOGD("destroy_luaApp");
-    LuaApp *pApp = get_obj<LuaApp>(L, 1);
+    LuaApp *pApp = LuaUtils::get_obj<LuaApp>(L, 1);
     pApp->quit();
     return 0;
 }
 
 static int start_luaApp(lua_State *L) {
-    LuaApp *pApp = get_obj<LuaApp>(L, 1);
+    LuaApp *pApp = LuaUtils::get_obj<LuaApp>(L, 1);
     pApp->start();
     return 0;
 }
@@ -728,7 +691,7 @@ const struct luaL_Reg gLuaApp_Methods[] = {
 
 #define STATS_NUMBER(x) \
 static int stats_##x(lua_State * L){ \
-    auto pStats = get_ref<bgfx::Stats>(L, 1); \
+    auto pStats = LuaUtils::get_ref<bgfx::Stats>(L, 1); \
     lua_pushnumber(L, pStats->x);\
     return 1; \
 }
@@ -820,36 +783,36 @@ namespace gbgfx {
 
 //--------------------- bgfx::Caps -----------------------
 static int caps_renderType(lua_State *L) {
-    bgfx::Caps *pCaps = get_ref<bgfx::Caps>(L, 1);
+    bgfx::Caps *pCaps = LuaUtils::get_ref<bgfx::Caps>(L, 1);
     const char *type = bgfx_render_name(L, pCaps->rendererType);
     lua_pushstring(L, type);
     return 1;
 }
 
 static int caps_homogeneousDepth(lua_State *L) {
-    bgfx::Caps *pCaps = get_ref<bgfx::Caps>(L, 1);
+    bgfx::Caps *pCaps = LuaUtils::get_ref<bgfx::Caps>(L, 1);
     lua_pushboolean(L, pCaps->homogeneousDepth ? 1 : 0);
     return 1;
 }
 
 static int caps_originBottomLeft(lua_State *L) {
-    bgfx::Caps *pCaps = get_ref<bgfx::Caps>(L, 1);
+    bgfx::Caps *pCaps = LuaUtils::get_ref<bgfx::Caps>(L, 1);
     lua_pushboolean(L, pCaps->originBottomLeft ? 1 : 0);
     return 1;
 }
 
 static int caps_numGPUs(lua_State *L) {
-    bgfx::Caps *pCaps = get_ref<bgfx::Caps>(L, 1);
+    bgfx::Caps *pCaps = LuaUtils::get_ref<bgfx::Caps>(L, 1);
     lua_pushinteger(L, pCaps->numGPUs);
     return 1;
 }
 
 static int caps_formats(lua_State *L) {
-    bgfx::Caps *pCaps = get_ref<bgfx::Caps>(L, 1);
+    bgfx::Caps *pCaps = LuaUtils::get_ref<bgfx::Caps>(L, 1);
     lua_newtable(L);
     for (int i = 0, size = sizeof(pCaps->formats) / pCaps->formats[0]; i < size; ++i) {
         // make it base-1 to match lua convention
-        setarray_number(L, i + 1, pCaps->formats[i]);
+        LuaUtils::setarray_number(L, i + 1, pCaps->formats[i]);
     }
     return 1;
 }
@@ -871,7 +834,7 @@ static int vertexLayout_begin(lua_State *L) {
     LOGD("vertexLayout_begin------");
     luaB_dumpStack(L);
 
-    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = LuaUtils::get_ref<bgfx::VertexLayout>(L, 1);
     //RendererType::Enum
     const char *name = lua_tostring(L, 2);
     if (name == nullptr) {
@@ -885,7 +848,7 @@ static int vertexLayout_begin(lua_State *L) {
 }
 
 static int vertexLayout_add(lua_State *L) {
-    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = LuaUtils::get_ref<bgfx::VertexLayout>(L, 1);
     //.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
     bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
     auto _num = TO_NUMBER_8(L, 3);
@@ -901,7 +864,7 @@ static int vertexLayout_add(lua_State *L) {
 }
 
 static int vertexLayout_skip(lua_State *L) {
-    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = LuaUtils::get_ref<bgfx::VertexLayout>(L, 1);
     auto _num = TO_NUMBER_8(L, 2);
     pLayout->skip(_num);
     //return this
@@ -910,7 +873,7 @@ static int vertexLayout_skip(lua_State *L) {
 }
 
 static int vertexLayout_decode(lua_State *L) {
-    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = LuaUtils::get_ref<bgfx::VertexLayout>(L, 1);
     //.decode(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
     bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
     auto _num = TO_NUMBER_8(L, 3);
@@ -924,7 +887,7 @@ static int vertexLayout_decode(lua_State *L) {
 }
 
 static int vertexLayout_has(lua_State *L) {
-    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = LuaUtils::get_ref<bgfx::VertexLayout>(L, 1);
     //bool has(Attrib::Enum _attrib);
     bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
     lua_pushboolean(L, pLayout->has(attrib) ? 1 : 0);
@@ -932,7 +895,7 @@ static int vertexLayout_has(lua_State *L) {
 }
 
 static int vertexLayout_getOffset(lua_State *L) {
-    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = LuaUtils::get_ref<bgfx::VertexLayout>(L, 1);
     bgfx::Attrib::Enum attrib = bgfx_attrib_enum(L, lua_tostring(L, 2));
     //uint16_t getOffset(Attrib::Enum _attrib)
     lua_pushnumber(L, pLayout->getOffset(attrib));
@@ -940,14 +903,14 @@ static int vertexLayout_getOffset(lua_State *L) {
 }
 
 static int vertexLayout_getStride(lua_State *L) {
-    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = LuaUtils::get_ref<bgfx::VertexLayout>(L, 1);
     //uint16_t getStride() const { return m_stride; }
     lua_pushnumber(L, pLayout->getStride());
     return 1;
 }
 
 static int vertexLayout_getSize(lua_State *L) {
-    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = LuaUtils::get_ref<bgfx::VertexLayout>(L, 1);
     //uint32_t getSize(uint32_t _num);
     auto _num = TO_NUMBER_8(L, 2);
     lua_pushnumber(L, pLayout->getSize(_num));
@@ -955,7 +918,7 @@ static int vertexLayout_getSize(lua_State *L) {
 }
 
 static int vertexLayout_end(lua_State *L) {
-    bgfx::VertexLayout *pLayout = get_ref<bgfx::VertexLayout>(L, 1);
+    bgfx::VertexLayout *pLayout = LuaUtils::get_ref<bgfx::VertexLayout>(L, 1);
     pLayout->end();
     return 0;
 }
@@ -978,13 +941,13 @@ namespace gbgfx {
 //---------------------- Memory --------------------------
 #define memory_isValid(type)  \
 static int type##_isValid(lua_State* L){ \
-    auto pMemory = get_ref<type>(L, 1); \
+    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
     lua_pushboolean(L, pMemory->_ref > 0); \
     return 1; \
 }
 #define memory_gc(type) \
 static int type##_gc(lua_State* L){ \
-    auto pMemory = get_ref<type>(L, 1); \
+    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
     if(pMemory->unRef() == 0){ \
         pMemory->destroyData(); \
         delete pMemory;  \
@@ -993,13 +956,13 @@ static int type##_gc(lua_State* L){ \
 }
 #define memory_len(type)  \
 static int type##_len(lua_State* L){ \
-    auto pMemory = get_ref<type>(L, 1); \
+    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
     lua_pushinteger(L, pMemory->getLength()); \
     return 1; \
 }
 #define memory_tostring(type) \
 static int type##_tostring(lua_State *L) {\
-    auto pMemory = get_ref<type>(L, 1); \
+    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
     const char* str = ((IMemory*)pMemory)->toString();\
     lua_pushstring(L, str);\
     free((void*)str);\
@@ -1016,22 +979,22 @@ memory_tostring(SkMemory)
 memory_tostring(SkMemoryFFFUI)
 
 static int SkMemory_index(lua_State *L) {
-    auto pMemory = get_ref<SkMemory>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
     return SkMemory::read(pMemory, L);
 }
 
 static int SkMemory_newindex(lua_State *L) {
-    auto pMemory = get_ref<SkMemory>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
     return SkMemory::write(pMemory, L);
 }
 
 static int SkMemoryFFFUI_index(lua_State *L) {
-    auto pMemory = get_ref<SkMemoryFFFUI>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemoryFFFUI>(L, 1);
     return SkMemoryFFFUI::read(pMemory, L);
 }
 
 static int SkMemoryFFFUI_newindex(lua_State *L) {
-    auto pMemory = get_ref<SkMemoryFFFUI>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemoryFFFUI>(L, 1);
     return SkMemoryFFFUI::write(pMemory, L);
 }
 
@@ -1055,45 +1018,45 @@ const static luaL_Reg gSkMemoryFFFUI_Methods[] = {
 };
 #define PUSH_PTR(type) \
 void type##_push(lua_State* L, type* ptr){ \
-    push_ptr<type>(L, ptr); \
+    LuaUtils::push_ptr<type>(L, ptr); \
 }
 #define PULL_PTR(type) \
 type* type##_pull(lua_State* L,int index){ \
-    return get_ref<type>(L, index); \
+    return LuaUtils::get_ref<type>(L, index); \
 }
 PUSH_PTR(SkMemory);
 PULL_PTR(SkMemory);
 
 static int SkMemoryMatrix_index(lua_State *L) {
-    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     return SkMemoryMatrix::read(pMemory, L, SkMemory_push);
 }
 static int SkMemoryMatrix_newindex(lua_State *L) {
-    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     return SkMemoryMatrix::write(pMemory, L, SkMemory_pull);
 }
 static int SkMemoryMatrix_gc(lua_State *L) {
-    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     delete pMemory;
     return 0;
 }
 static int SkMemoryMatrix_isValid(lua_State *L) {
-    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     lua_pushboolean(L, pMemory->isValid() ? 1 : 0);
     return 1;
 }
 static int SkMemoryMatrix_len(lua_State *L) {
-    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     lua_pushinteger(L, pMemory->getRowCount());
     return 1;
 }
 static int SkMemoryMatrix_columnCount(lua_State *L) {
-    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     lua_pushinteger(L, pMemory->getColumnCount());
     return 1;
 }
 static int SkMemoryMatrix_tostring(lua_State *L) {
-    auto pMemory = get_ref<SkMemoryMatrix>(L, 1);
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     MEM_PUSH_TO_STRING(L, pMemory);
     return 1;
 }
@@ -1168,16 +1131,16 @@ static int bx_getHPFrequency(lua_State *L) {
 //bx::Vec3
 static int bx_newVec3(lua_State *L) {
     bx::Vec3 *pvec3 = new bx::Vec3(TO_FLOAT(L, 1), TO_FLOAT(L, 2), TO_FLOAT(L, 3));
-    push_ptr(L, pvec3);
+    LuaUtils::push_ptr(L, pvec3);
     return 1;
 }
 
 static int bx_mtxLookAt(lua_State *L) {
     //bx::mtxLookAt(view, eye, at); (array, Vec3, Vec3)
-    auto *pMemory = get_ref<SkMemory>(L, 1);
-    auto *eye = get_ref<bx::Vec3>(L, 2);
-    auto *at = get_ref<bx::Vec3>(L, 3);
-    auto *_up = to_ref<bx::Vec3>(L, 4);
+    auto *pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
+    auto *eye = LuaUtils::get_ref<bx::Vec3>(L, 2);
+    auto *at = LuaUtils::get_ref<bx::Vec3>(L, 3);
+    auto *_up = LuaUtils::to_ref<bx::Vec3>(L, 4);
     const char *type = lua_tostring(L, 5);
     bx::Handness::Enum en =
             type != nullptr ? bgfx_handness_enum(L, type) : bx::Handness::Enum::Left;
@@ -1195,8 +1158,8 @@ static int bx_mtxLookAt(lua_State *L) {
 
 //normal 6
 static inline int bx_mtxProj6(lua_State *L){
-    auto *pMemory = get_ref<SkMemory>(L, 1);
-    auto *_fovy = get_ref<SkMemory>(L, 2);
+    auto *pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
+    auto *_fovy = LuaUtils::get_ref<SkMemory>(L, 2);
     auto _near = TO_FLOAT(L, 3);
     auto _far = TO_FLOAT(L, 4);
     bool homogeneousNdc = lua2bool(L, 5);
@@ -1218,7 +1181,7 @@ static inline int bx_mtxProj6(lua_State *L){
 }
 static inline int bx_mtxProj7(lua_State *L){
     //  float* _result, float _fovy, float _aspect, float _near, float _far, bool _homogeneousNdc, Handness::Enum _handness = Handness::Left
-    auto *pMemory = get_ref<SkMemory>(L, 1);
+    auto *pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
     auto _fovy = TO_FLOAT(L, 2);
     auto _aspect = TO_FLOAT(L, 3);
     auto _near = TO_FLOAT(L, 4);
@@ -1240,7 +1203,7 @@ static int bx_mtxProj(lua_State *L) {
     switch (n){
         case 8:
         case 9:{
-            SkMemory *pMemory = get_ref<SkMemory>(L, 1);
+            SkMemory *pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
             auto _ut = TO_FLOAT(L, 2);
             auto _dt = TO_FLOAT(L, 3);
             auto _lt = TO_FLOAT(L, 4);
@@ -1279,7 +1242,7 @@ static int bx_mtxProj(lua_State *L) {
 
 static int bx_mtxRotateXY(lua_State *L) {
     //bx::mtxRotateXY(mtx, time + xx*0.21f, time + yy*0.37f);
-    SkMemory *pMemory = get_ref<SkMemory>(L, 1);
+    SkMemory *pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
     float ax = TO_FLOAT(L, 2);
     float ay = TO_FLOAT(L, 3);
     if (!pMemory->isFloat()) {
@@ -1291,7 +1254,7 @@ static int bx_mtxRotateXY(lua_State *L) {
 
 //-------------------- bx::Vec3 --------------------
 static int vec3_gc(lua_State *L) {
-    bx::Vec3 *pVec3 = get_ref<bx::Vec3>(L, -1);
+    bx::Vec3 *pVec3 = LuaUtils::get_ref<bx::Vec3>(L, -1);
     delete pVec3;
     return 0;
 }
@@ -1326,13 +1289,13 @@ static int mem_newMemory(lua_State *L) {
         int len = static_cast<int>(lua_tointeger(L, 2));
         lua_pop(L, 2);
         SkMemory *pMemory = new SkMemory(type, len);
-        push_ptr(L, pMemory);
+        LuaUtils::push_ptr(L, pMemory);
     } else if(secondType == LUA_TTABLE){
         //(type, table...)
         lua_remove(L, 1);
         int tableCount = n - 1;
         SkMemory *pMemory = new SkMemory(L, tableCount, type);
-        push_ptr(L, pMemory);
+        LuaUtils::push_ptr(L, pMemory);
     } else{
         return luaL_error(L, "wrong arguments for newMemory");
     }
@@ -1343,7 +1306,7 @@ static int mem_newMemoryFFFUI(lua_State *L) {
     //(table...)
     int tableCount = lua_gettop(L);
     SkMemoryFFFUI *pMemory = new SkMemoryFFFUI(L, tableCount);
-    push_ptr(L, pMemory);
+    LuaUtils::push_ptr(L, pMemory);
     return 1;
 }
 static int mem_newMemoryMatrix(lua_State *L){
@@ -1353,11 +1316,11 @@ static int mem_newMemoryMatrix(lua_State *L){
         int rowCount = static_cast<int>(lua_tointeger(L, 2));
         int columnCount = static_cast<int>(lua_tointeger(L, 3));
         SkMemoryMatrix* matrix = new SkMemoryMatrix(t, rowCount, columnCount);
-        push_ptr(L, matrix);
+        LuaUtils::push_ptr(L, matrix);
     } else if(luaType == LUA_TTABLE){
         lua_remove(L, 1);
         SkMemoryMatrix* matrix = new SkMemoryMatrix(L, t);
-        push_ptr(L, matrix);
+        LuaUtils::push_ptr(L, matrix);
     } else{
         return luaL_error(L, "wrong arguments for create SkMemoryMatrix.");
     }
@@ -1378,7 +1341,7 @@ extern "C" int luaopen_hmem_lua(lua_State *L) {
 
 #define HANDLE_METHODS(t) \
 static int t##_gc(lua_State* L){ \
-    auto pT = get_ref<bgfx::t>(L, 1); \
+    auto pT = LuaUtils::get_ref<bgfx::t>(L, 1); \
     LOGD("handle is recycled."); \
     delete pT;\
     return 0;\

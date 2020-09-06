@@ -6,9 +6,12 @@
 #define BGFX_STUDY_LUAUTILS_H
 
 #include "SkRefCnt.h"
+#include "SkScalar.h"
 #include "lua.hpp"
 
 #define lua2bool(L, idx) lua_toboolean(L, idx) == 1
+#define SkScalarToLua(x)    SkScalarToDouble(x)
+#define SkLuaToScalar(x)    SkDoubleToScalar(x)
 
 #define TO_NUMBER_8(L, idx) static_cast<uint8_t>(lua_tonumber(L, idx))
 #define TO_NUMBER_16(L, idx) static_cast<uint16_t>(lua_tonumber(L, idx))
@@ -102,6 +105,25 @@ public:
         return (T *) luaL_checkudata(L, index, get_mtname<T>());
     }
 
+    static void setfield_function(lua_State *L,
+                                  const char key[], lua_CFunction value) {
+        lua_pushcfunction(L, value);
+        lua_setfield(L, -2, key);
+    }
+
+    static SkScalar lua2scalar(lua_State *L, int index) {
+        SkASSERT(lua_isnumber(L, index));
+        return SkLuaToScalar(lua_tonumber(L, index));
+    }
+
+    static void setarray_number(lua_State *L, int index, double value) {
+        lua_pushnumber(L, value);
+        lua_rawseti(L, -2, index);
+    }
+
+    static void setarray_scalar(lua_State *L, int index, SkScalar value) {
+        setarray_number(L, index, SkScalarToLua(value));
+    }
 };
 
 #endif //BGFX_STUDY_LUAUTILS_H
