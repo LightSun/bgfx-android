@@ -44,6 +44,15 @@ public:
      * @return the result
      */
     static int write(lua_State* L, char t, void* data, int totalIndex);
+
+    /**
+    * read data as string to string builder
+    * @param sb the string builder
+    * @param type the type
+    * @param data the data
+    * @param totalIndex total index as bytes
+    */
+    static void toString(SB::StringBuilder& sb, char t, void* data, int totalIndex);
 };
 
 class MemoryAllocator{

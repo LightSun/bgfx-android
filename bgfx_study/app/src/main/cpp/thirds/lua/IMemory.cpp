@@ -30,6 +30,33 @@ int MemoryUtils::getUnitSize(char t) {
             return 0;
     }
 }
+void MemoryUtils::toString(SB::StringBuilder &sb, char t, void *data, int totalIndex) {
+    uint8_t * addr = static_cast<uint8_t *>(data);
+    addr += totalIndex;
+    switch (t) {
+        case 'f': {
+            sb << *(float*)addr;
+        }break;
+
+        case 'd':{
+            sb << *(uint32_t *)addr;
+        }
+        break;
+
+        case 'w':{
+            sb << *(uint16_t *)addr;
+        }
+        break;
+
+        case 'b':{
+            sb << *(uint8_t *)addr;
+        }
+        break;
+
+        default:
+            LOGE("wrong type = %c", t);
+    }
+}
 int MemoryUtils::read(lua_State *L, char t, void *data, int totalIndex) {
     uint8_t * addr = static_cast<uint8_t *>(data);
     addr += totalIndex;
@@ -49,7 +76,8 @@ int MemoryUtils::read(lua_State *L, char t, void *data, int totalIndex) {
         }break;
 
         default:
-            return luaL_error(L, "unknown type of %c", t);
+            luaL_error(L, "unknown type of %c", t);
+            return -1;
     }
     return 0;
 }
@@ -72,7 +100,8 @@ int MemoryUtils::write(lua_State *L, char t, void *data, int totalIndex) {
         }break;
 
         default:
-            return luaL_error(L, "unknown type of %c", t);
+            luaL_error(L, "unknown type of %c", t);
+            return -1;
     }
     return 0;
 }

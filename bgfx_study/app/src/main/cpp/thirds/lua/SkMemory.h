@@ -42,7 +42,13 @@ public:
     bool isFloat();
     void toString(SB::StringBuilder& sb);
 
+    /**
+     * read data from memory to lua stack
+     */
     static int read(SkMemory* mem, lua_State* L);
+    /**
+    * write data from lua stack to memory
+    */
     static int write(SkMemory* mem, lua_State* L);
 
     int getLength();
@@ -60,7 +66,8 @@ class SkAnyMemory : public SimpleMemory{
 
 public:
     /**
-     * create a memory by multi table. every table has fixes 'types' data.
+     * create a memory by multi table. every table has 'like' 'types' data. for example.
+     * 'dfb' -> every table data can be [1, 2.0, 1] or [1, 2.0, 1, 1, 2.0, 1]
      * @param L the lua stack
      * @param types the types.
      */
@@ -70,18 +77,19 @@ public:
     * @param types the types.
     * @param count the table count.
     */
-    SkAnyMemory(lua_State *L,const char* types, int count);
+    SkAnyMemory(const char* types, int count);
 
     void toString(SB::StringBuilder& sb);
 
-    int getLength(){return  _tabCount * _tabSize;}
+    int getLength(){return  _tabCount * _elementCount;}
+
+    static int read(SkAnyMemory* mem, lua_State* L);
+    static int write(SkAnyMemory* mem, lua_State* L);
 
 public:
-    uint16_t _tabCount; //table count.
-    uint16_t _tabSize;  //table size
     const char* _types;
-
-//private: uint8_t* tabSpace;// like dwbf: [4,2,1,4]
+    uint16_t _tabCount;      //table count.
+    uint16_t _elementCount;  //element count of every table
 };
 
 //float,float,float, uint32_t

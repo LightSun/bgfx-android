@@ -237,7 +237,7 @@ static void release_Memory(void *_ptr, void *_userData) {
 }
 
 static int bgfx_makeRef(lua_State *L) {
-    SimpleMemory * memory = LuaUtils::to_ref<SkMemory>(L, 1);
+    SimpleMemory *memory = LuaUtils::to_ref<SkMemory>(L, 1);
     if (memory == nullptr) {
         memory = LuaUtils::to_ref<SkMemoryFFFUI>(L, 1);
     }
@@ -641,8 +641,11 @@ static int limits_##x(lua_State* L){ \
 }
 
 INIT_LIMITS(maxEncoders)
+
 INIT_LIMITS(minResourceCbSize)
+
 INIT_LIMITS(transientVbSize)
+
 INIT_LIMITS(transientIbSize)
 
 namespace gbgfx {
@@ -697,40 +700,75 @@ static int stats_##x(lua_State * L){ \
 }
 
 STATS_NUMBER(cpuTimeFrame);
+
 STATS_NUMBER(cpuTimeBegin);
+
 STATS_NUMBER(cpuTimeEnd);
+
 STATS_NUMBER(cpuTimerFreq);
+
 STATS_NUMBER(gpuTimeBegin);
+
 STATS_NUMBER(gpuTimeEnd);
+
 STATS_NUMBER(gpuTimerFreq);
+
 STATS_NUMBER(waitRender);
+
 STATS_NUMBER(waitSubmit);
+
 STATS_NUMBER(numDraw);
+
 STATS_NUMBER(numCompute);
+
 STATS_NUMBER(numBlit);
+
 STATS_NUMBER(maxGpuLatency);
+
 STATS_NUMBER(numDynamicIndexBuffers);
+
 STATS_NUMBER(numDynamicVertexBuffers);
+
 STATS_NUMBER(numFrameBuffers);
+
 STATS_NUMBER(numIndexBuffers);
+
 STATS_NUMBER(numOcclusionQueries);
+
 STATS_NUMBER(numPrograms);
+
 STATS_NUMBER(numShaders);
+
 STATS_NUMBER(numTextures);
+
 STATS_NUMBER(numUniforms);
+
 STATS_NUMBER(numVertexBuffers);
+
 STATS_NUMBER(numVertexLayouts);
+
 STATS_NUMBER(textureMemoryUsed);
+
 STATS_NUMBER(rtMemoryUsed);
+
 STATS_NUMBER(transientVbUsed);
+
 STATS_NUMBER(transientIbUsed);
+
 STATS_NUMBER(gpuMemoryMax);
+
 STATS_NUMBER(gpuMemoryUsed);
+
 STATS_NUMBER(width);
+
 STATS_NUMBER(height);
+
 STATS_NUMBER(textWidth);
+
 STATS_NUMBER(textHeight);
+
 STATS_NUMBER(numViews);
+
 STATS_NUMBER(numEncoders);
 //TODO ViewStats, EncoderStats
 
@@ -969,16 +1007,43 @@ static int type##_tostring(lua_State *L) {\
     return 1;\
 }
 
+#define memory_index(type) \
+static int type##_index(lua_State *L) { \
+    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
+    return type::read(pMemory, L); \
+}
+
+#define memory_newindex(type) \
+static int type##_newindex(lua_State *L) { \
+    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
+    return type::write(pMemory, L); \
+}
+
 memory_isValid(SkMemory)
 memory_isValid(SkMemoryFFFUI)
+memory_isValid(SkAnyMemory)
+
 memory_gc(SkMemory)
 memory_gc(SkMemoryFFFUI)
+memory_gc(SkAnyMemory)
+
 memory_len(SkMemory)
 memory_len(SkMemoryFFFUI)
+memory_len(SkAnyMemory)
+
 memory_tostring(SkMemory)
 memory_tostring(SkMemoryFFFUI)
+memory_tostring(SkAnyMemory)
 
-static int SkMemory_index(lua_State *L) {
+memory_index(SkMemory)
+memory_index(SkMemoryFFFUI)
+memory_index(SkAnyMemory)
+
+memory_newindex(SkMemory)
+memory_newindex(SkMemoryFFFUI)
+memory_newindex(SkAnyMemory)
+
+/*static int SkMemory_index(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
     return SkMemory::read(pMemory, L);
 }
@@ -996,8 +1061,16 @@ static int SkMemoryFFFUI_index(lua_State *L) {
 static int SkMemoryFFFUI_newindex(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryFFFUI>(L, 1);
     return SkMemoryFFFUI::write(pMemory, L);
-}
-
+}*/
+const static luaL_Reg gSkAnyMemory_Methods[] = {
+        {"isValid",    SkAnyMemory_isValid},
+        {"__len",      SkAnyMemory_len},
+        {"__tostring", SkAnyMemory_tostring},
+        {"__newindex",        SkAnyMemory_newindex},
+        {"__index",           SkAnyMemory_index},
+        {"__gc",       SkAnyMemory_gc},
+        {NULL, NULL},
+};
 const static luaL_Reg gSkMemory_Methods[] = {
         {"isValid",    SkMemory_isValid},
         {"__len",      SkMemory_len},
@@ -1008,12 +1081,12 @@ const static luaL_Reg gSkMemory_Methods[] = {
         {NULL, NULL},
 };
 const static luaL_Reg gSkMemoryFFFUI_Methods[] = {
-        {"isValid", SkMemoryFFFUI_isValid},
-        {"__len", SkMemoryFFFUI_len},
+        {"isValid",    SkMemoryFFFUI_isValid},
+        {"__len",      SkMemoryFFFUI_len},
         {"__tostring", SkMemoryFFFUI_tostring},
         {"__newindex", SkMemoryFFFUI_newindex},
         {"__index",    SkMemoryFFFUI_index},
-        {"__gc",    SkMemoryFFFUI_gc},
+        {"__gc",       SkMemoryFFFUI_gc},
         {NULL, NULL},
 };
 #define PUSH_PTR(type) \
@@ -1024,51 +1097,59 @@ void type##_push(lua_State* L, type* ptr){ \
 type* type##_pull(lua_State* L,int index){ \
     return LuaUtils::get_ref<type>(L, index); \
 }
-PUSH_PTR(SkMemory);
-PULL_PTR(SkMemory);
+
+PUSH_PTR(SkMemory)
+PULL_PTR(SkMemory)
 
 static int SkMemoryMatrix_index(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     return SkMemoryMatrix::read(pMemory, L, SkMemory_push);
 }
+
 static int SkMemoryMatrix_newindex(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     return SkMemoryMatrix::write(pMemory, L, SkMemory_pull);
 }
+
 static int SkMemoryMatrix_gc(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     delete pMemory;
     return 0;
 }
+
 static int SkMemoryMatrix_isValid(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     lua_pushboolean(L, pMemory->isValid() ? 1 : 0);
     return 1;
 }
+
 static int SkMemoryMatrix_len(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     lua_pushinteger(L, pMemory->getRowCount());
     return 1;
 }
+
 static int SkMemoryMatrix_columnCount(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     lua_pushinteger(L, pMemory->getColumnCount());
     return 1;
 }
+
 static int SkMemoryMatrix_tostring(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     MEM_PUSH_TO_STRING(L, pMemory);
     return 1;
 }
+
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
-        {"isValid", SkMemoryMatrix_isValid},
+        {"isValid",        SkMemoryMatrix_isValid},
         {"getColumnCount", SkMemoryMatrix_columnCount},
-        {"getRowCount", SkMemoryMatrix_len},
-        {"__len", SkMemoryMatrix_len},
-        {"__tostring", SkMemoryMatrix_tostring},
-        {"__newindex", SkMemoryMatrix_newindex},
-        {"__index",    SkMemoryMatrix_index},
-        {"__gc",    SkMemoryMatrix_gc},
+        {"getRowCount",    SkMemoryMatrix_len},
+        {"__len",          SkMemoryMatrix_len},
+        {"__tostring",     SkMemoryMatrix_tostring},
+        {"__newindex",     SkMemoryMatrix_newindex},
+        {"__index",        SkMemoryMatrix_index},
+        {"__gc",           SkMemoryMatrix_gc},
         {NULL, NULL},
 };
 
@@ -1157,7 +1238,7 @@ static int bx_mtxLookAt(lua_State *L) {
 }
 
 //normal 6
-static inline int bx_mtxProj6(lua_State *L){
+static inline int bx_mtxProj6(lua_State *L) {
     auto *pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
     auto *_fovy = LuaUtils::get_ref<SkMemory>(L, 2);
     auto _near = TO_FLOAT(L, 3);
@@ -1173,13 +1254,15 @@ static inline int bx_mtxProj6(lua_State *L){
         return luaL_error(L, "for bx::mtxProj. _fovy memory data type must be float.");
     }
     //float[4]
-    if(_fovy->size != 4 * 4){
+    if (_fovy->size != 4 * 4) {
         return luaL_error(L, "for bx::mtxProj. _fovy memory data must be float[4].");
     }
-    bx::mtxProj(static_cast<float *>(pMemory->data), static_cast<float *>(_fovy->data), _near, _far, homogeneousNdc, en);
+    bx::mtxProj(static_cast<float *>(pMemory->data), static_cast<float *>(_fovy->data), _near, _far,
+                homogeneousNdc, en);
     return 0;
 }
-static inline int bx_mtxProj7(lua_State *L){
+
+static inline int bx_mtxProj7(lua_State *L) {
     //  float* _result, float _fovy, float _aspect, float _near, float _far, bool _homogeneousNdc, Handness::Enum _handness = Handness::Left
     auto *pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
     auto _fovy = TO_FLOAT(L, 2);
@@ -1200,9 +1283,9 @@ static inline int bx_mtxProj7(lua_State *L){
 
 static int bx_mtxProj(lua_State *L) {
     auto n = lua_gettop(L);
-    switch (n){
+    switch (n) {
         case 8:
-        case 9:{
+        case 9: {
             SkMemory *pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
             auto _ut = TO_FLOAT(L, 2);
             auto _dt = TO_FLOAT(L, 3);
@@ -1213,7 +1296,8 @@ static int bx_mtxProj(lua_State *L) {
             bool homogeneousNdc = lua2bool(L, 8);
             const char *handness = lua_tostring(L, 9);
             bx::Handness::Enum en =
-                    handness != nullptr ? bgfx_handness_enum(L, handness) : bx::Handness::Enum::Left;
+                    handness != nullptr ? bgfx_handness_enum(L, handness)
+                                        : bx::Handness::Enum::Left;
             if (!pMemory->isFloat()) {
                 return luaL_error(L, "for bx::mtxProj. memory data type must be float.");
             }
@@ -1221,15 +1305,15 @@ static int bx_mtxProj(lua_State *L) {
                         homogeneousNdc, en);
             return 0;
         }
-        case 7:{
+        case 7: {
             return bx_mtxProj7(L);
         }
         case 5:
             return bx_mtxProj6(L);
 
-        case 6:{
+        case 6: {
             //can be 6 or 7. for Handness is opt parameter.
-            if(lua_type(L, 6) == LUA_TBOOLEAN){
+            if (lua_type(L, 6) == LUA_TBOOLEAN) {
                 return bx_mtxProj7(L);
             }
             return bx_mtxProj6(L);
@@ -1284,19 +1368,38 @@ static int mem_new(lua_State *L) {
     const char *type = lua_tostring(L, 1);
     int n = lua_gettop(L);
     auto secondType = lua_type(L, 2);
-    if(secondType == LUA_TNUMBER){
-        //(type, len )
+    if (secondType == LUA_TNUMBER) {
+        //(type, len)
         int len = static_cast<int>(lua_tointeger(L, 2));
         lua_pop(L, 2);
-        SkMemory *pMemory = new SkMemory(type, len);
-        LuaUtils::push_ptr(L, pMemory);
-    } else if(secondType == LUA_TTABLE){
+        if (strlen(type) == 1) {
+            SkMemory *pMemory = new SkMemory(type, len);
+            LuaUtils::push_ptr(L, pMemory);
+        } else {
+            //multi types
+            SkAnyMemory *pMemory = new SkAnyMemory(type, len);
+            if(!pMemory->isValid()){
+                delete pMemory;
+                return 0;
+            }
+            LuaUtils::push_ptr(L, pMemory);
+        }
+    } else if (secondType == LUA_TTABLE) {
         //(type, table...)
         lua_remove(L, 1);
         int tableCount = n - 1;
-        SkMemory *pMemory = new SkMemory(L, tableCount, type);
-        LuaUtils::push_ptr(L, pMemory);
-    } else{
+        if (strlen(type) == 1) {
+            SkMemory *pMemory = new SkMemory(L, tableCount, type);
+            LuaUtils::push_ptr(L, pMemory);
+        } else {
+            SkAnyMemory *pMemory = new SkAnyMemory(L, type);
+            if(!pMemory->isValid()){
+                delete pMemory;
+                return 0;
+            }
+            LuaUtils::push_ptr(L, pMemory);
+        }
+    } else {
         return luaL_error(L, "wrong arguments for Memory.new");
     }
     return 1;
@@ -1309,29 +1412,30 @@ static int mem_newFFFUI(lua_State *L) {
     LuaUtils::push_ptr(L, pMemory);
     return 1;
 }
-static int mem_newMatrix(lua_State *L){
+
+static int mem_newMatrix(lua_State *L) {
     auto t = lua_tostring(L, 1);
     int luaType = lua_type(L, 2);
-    if(luaType == LUA_TNUMBER){
+    if (luaType == LUA_TNUMBER) {
         int rowCount = static_cast<int>(lua_tointeger(L, 2));
         int columnCount = static_cast<int>(lua_tointeger(L, 3));
-        SkMemoryMatrix* matrix = new SkMemoryMatrix(t, rowCount, columnCount);
+        SkMemoryMatrix *matrix = new SkMemoryMatrix(t, rowCount, columnCount);
         LuaUtils::push_ptr(L, matrix);
-    } else if(luaType == LUA_TTABLE){
+    } else if (luaType == LUA_TTABLE) {
         lua_remove(L, 1);
-        SkMemoryMatrix* matrix = new SkMemoryMatrix(L, t);
+        SkMemoryMatrix *matrix = new SkMemoryMatrix(L, t);
         LuaUtils::push_ptr(L, matrix);
-    } else{
+    } else {
         return luaL_error(L, "wrong arguments for create Memory Matrix.");
     }
     return 1;
 }
 
 static const luaL_Reg mem_funcs[] = {
-        {"new",      mem_new},
-        {"newFFFUI", mem_newFFFUI},
+        {"new",       mem_new},
+        {"newFFFUI",  mem_newFFFUI},
         {"newMatrix", mem_newMatrix},
-        {nullptr,          nullptr}
+        {nullptr,     nullptr}
 };
 extern "C" int luaopen_hmem_lua(lua_State *L) {
     luaL_newlib(L, mem_funcs);
@@ -1354,29 +1458,51 @@ namespace gbgfx{\
 }
 
 HANDLE_METHODS(VertexBufferHandle)
+
 HANDLE_METHODS(VertexLayoutHandle)
+
 HANDLE_METHODS(IndexBufferHandle)
+
 HANDLE_METHODS(ProgramHandle)
+
 HANDLE_METHODS(ShaderHandle)
 
 DEF_MTNAME(bgfx::Init)
+
 DEF_MTNAME(bgfx::PlatformData)
+
 DEF_MTNAME(bgfx::Resolution)
+
 DEF_MTNAME(bgfx::Init::Limits)
+
 DEF_MTNAME(bgfx::Stats)
+
 DEF_MTNAME(bgfx::Caps)
+
 DEF_MTNAME(bgfx::VertexLayout)
+
 DEF_MTNAME(bx::Vec3)
+
 DEF_MTNAME(LuaApp)
+
 DEF_MTNAME(SkMemory)
+
 DEF_MTNAME(SkMemoryFFFUI)
+
+DEF_MTNAME(SkAnyMemory)
+
 DEF_MTNAME(SkMemoryMatrix)
 //----------- only get_mtname ------
 DEF_MTNAME(bgfx::Memory)
+
 DEF_MTNAME(bgfx::VertexBufferHandle)
+
 DEF_MTNAME(bgfx::VertexLayoutHandle)
+
 DEF_MTNAME(bgfx::IndexBufferHandle)
+
 DEF_MTNAME(bgfx::ProgramHandle)
+
 DEF_MTNAME(bgfx::ShaderHandle)
 
 void SkLua::Load(lua_State *L) {
@@ -1393,6 +1519,7 @@ void SkLua::Load(lua_State *L) {
     REG_CLASS(L, LuaApp);
     REG_CLASS(L, SkMemory);
     REG_CLASS(L, SkMemoryFFFUI);
+    REG_CLASS(L, SkAnyMemory);
     REG_CLASS(L, SkMemoryMatrix);
 
     REG_EMPTY_CLASS(L, bgfx::Memory);

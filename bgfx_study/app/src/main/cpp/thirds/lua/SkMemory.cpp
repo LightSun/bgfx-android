@@ -224,34 +224,54 @@ int SkMemory::getLength() {
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(types, lua_gettop(L)){
     size_t len = strlen(types);
     int totalIndex = 0;
-    _tabSize = lua_rawlen(L, 1); //all size must be the same
-    if(_tabSize % len != 0){
-        luaL_error(L, "wrong length of lua array");
+    //
+    const size_t tabLen = lua_rawlen(L, 1); //all size must be the same
+    if(tabLen % len != 0){
+        luaL_error(L, "wrong length of lua table");
         return ;
     }
-    //TODO
+    _elementCount = tabLen;
+    //compute one size(bytes) of table.
+    int bytes = 0;
+    for (int i = 0; i < tabLen; ++i) {
+        bytes += MemoryUtils::getUnitSize(types[i % len]);
+    }
+    this->size = bytes * lua_gettop(L);
+    data = malloc(this->size);
+    //init data
     for (int i = 0; i < _tabCount; ++i) {
         size_t rawlen = lua_rawlen(L, i + 1);
-        if(rawlen != _tabSize){
+        if(rawlen != tabLen){
             luaL_error(L, "table array length not the same");
-            break;
+            goto fail;
         }
         //tabSize += rawlen;
         for (int idx = 0; ; ++idx) {
             int type = lua_rawgeti(L, i + 1, idx + 1);
             if(type == LUA_TNIL){
+                lua_pop(L, 1);
                 break;
             }
             char t = types[idx % len];
-            MemoryUtils::read(L, t, data, totalIndex);
+            if(MemoryUtils::read(L, t, data, totalIndex) < 0){
+                lua_pop(L, 1);
+                goto fail;
+            }
             lua_pop(L, 1);
             totalIndex += MemoryUtils::getUnitSize(t);
         }
     }
+    return ;
+    fail:
+      unRef();
+      FREE_POINTER(data)
+      size = 0;
+      _elementCount = 0;
+      _tabCount = 0;
 }
-SkAnyMemory::SkAnyMemory(lua_State *L,const char *types, int count): SimpleMemory(), _types(types), _tabCount(count) {
+SkAnyMemory::SkAnyMemory(const char *types, int count): SimpleMemory(), _types(types), _tabCount(count) {
     size_t len = strlen(types);
-    _tabSize = len;
+    _elementCount = len;
 
     int size = 0;
     for (int i = 0; i < len; ++i) {
@@ -262,7 +282,61 @@ SkAnyMemory::SkAnyMemory(lua_State *L,const char *types, int count): SimpleMemor
     data = malloc(this->size);
 }
 void SkAnyMemory::toString(SB::StringBuilder &sb) {
-    //TODO
+    size_t len = strlen(_types);
+    size_t bytes = 0;
+    char t;
+    for (int i = 0; i < _tabCount; ++i) {
+        for (int j = 0; j < _elementCount; ++j) {
+            t = _types[j % len];
+            MemoryUtils::toString(sb, t, data, bytes);
+            bytes += MemoryUtils::getUnitSize(t);
+        }
+    }
+}
+int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
+    //table, index
+    auto index = lua_tointeger(L, -1);
+    if(index >= mem->getLength()){
+        return luaL_error(L, "index(%d) out of range(%d).", index, mem->getLength());
+    }
+    //base bytes
+    int bytes = index / mem->_elementCount * mem->size / mem->_tabCount;
+    const auto typesLen = strlen(mem->_types);
+    char t;
+    for (int i = 0, len = index % mem->_elementCount; i < len; ++i) {
+        t = mem->_types[i % typesLen];
+        //for last we read data to lua stack
+        if(i == len - 1){
+            if(MemoryUtils::write(L, t, mem->data, bytes) < 0){
+                return 0;
+            }
+            return 1;
+        }
+        bytes += MemoryUtils::getUnitSize(t);
+    }
+    return luaL_error(L, "wrong index");
+}
+int SkAnyMemory::write(SkAnyMemory *mem, lua_State *L) {
+    //table, index, value
+    auto index = lua_tointeger(L, -2);
+    if(index >= mem->getLength()){
+        return luaL_error(L, "index(%d) out of range(%d).", index, mem->getLength());
+    }
+    //base bytes
+    int bytes = index / mem->_elementCount * mem->size / mem->_tabCount;
+    const auto typesLen = strlen(mem->_types);
+    char t;
+    for (int i = 0, len = index % mem->_elementCount; i < len; ++i) {
+        t = mem->_types[i % typesLen];
+        //for last we read data to lua stack
+        if(i == len - 1){
+            if(MemoryUtils::read(L, t, mem->data, bytes) < 0){
+                return 0;
+            }
+            return 1;
+        }
+        bytes += MemoryUtils::getUnitSize(t);
+    }
 }
 
 //------------------------ SkMemoryFFFI ----------------------
