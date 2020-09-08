@@ -6,7 +6,7 @@
 
 local mem = require("memory")
 
-local s_cubeVertices = mem.newMemoryFFFUI(
+local s_cubeVertices = mem.newFFFUI(
         {-1.0,  1.0,  1.0, 0xff000000 },
         { 1.0,  1.0,  1.0, 0xff0000ff },
         {-1.0, -1.0,  1.0, 0xff00ff00 },
@@ -72,26 +72,26 @@ local t =  {
     2, 3, 6, -- 10
     6, 3, 7,
 };
-local aa = mem.newMemory('w', t);
+local aa = mem.new('w', t);
 for i = 1, #t do
     assert(aa[i-1] == t[i]);
 end
 --print(tostring(aa))
 
-local m2 = mem.newMemory('w',  {1, 2, 3}, {4, 5, 6});
+local m2 = mem.new('w',  { 1, 2, 3}, { 4, 5, 6});
 print("w: "..tostring(m2))
 
-m2 = mem.newMemory('b',  {1, 2, 3}, {4, 5, 6});
+m2 = mem.new('b',  { 1, 2, 3}, { 4, 5, 6});
 print("b: "..tostring(m2))
 
-m2 = mem.newMemory('d',  {1, 2, 3}, {4, 5, 6});
+m2 = mem.new('d',  { 1, 2, 3}, { 4, 5, 6});
 print("d: "..tostring(m2))
 
-m2 = mem.newMemory('f',  {1, 2, 3}, {4, 5, 6});
+m2 = mem.new('f',  { 1, 2, 3}, { 4, 5, 6});
 print("f: "..tostring(m2))
 
 
-local mat = mem.newMemoryMatrix('d', {1, 2, 3}, {4, 5, 6});
+local mat = mem.newMatrix('d', { 1, 2, 3}, { 4, 5, 6});
 assert(#mat == 2)
 assert(#(mat[0]) == 3)
 assert(#(mat[1]) == 3)
@@ -104,12 +104,12 @@ assert(mat[1][0] == 4)
 assert(mat[1][1] == 5)
 assert(mat[1][2] == 6)
 
-mat = mem.newMemoryMatrix('d', {1, 2, 3}, {4, 5, 6});
+mat = mem.newMatrix('d', { 1, 2, 3}, { 4, 5, 6});
 print("mat->d", mat)
-mat = mem.newMemoryMatrix('w', {1, 2, 3}, {4, 5, 6});
+mat = mem.newMatrix('w', { 1, 2, 3}, { 4, 5, 6});
 print("mat->w", mat)
-mat = mem.newMemoryMatrix('f', {1, 2, 3}, {4, 5, 6});
+mat = mem.newMatrix('f', { 1, 2, 3}, { 4, 5, 6});
 print("mat->f", mat)
-mat = mem.newMemoryMatrix('b', {1, 2, 3}, {4, 5, 6});
+mat = mem.newMatrix('b', { 1, 2, 3}, { 4, 5, 6});
 print("mat->b", mat)
---mem.newMemoryMatrix('d', 4, 4);
+--mem.newMatrix('d', 4, 4);

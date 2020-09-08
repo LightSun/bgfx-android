@@ -14,21 +14,21 @@ local mem = require("hmem_lua");
 --- 'f' is float
 --- ...: means multi array. or just a int for the length of memory.
 --- params: (type, table...) or (type, len)
-function m.newMemory(type, ...)
-    return mem.newMemory(type, ...);
+function m.new(type, ...)
+    return mem.new(type, ...);
 end
 
 --- create fix type memory: 'float-float-float-uint32'
 --- ...: means multi table of 'fffui'.
-function m.newMemoryFFFUI(...)
+function m.newFFFUI(...)
     -- lua 'table.unpack()' as parameter must be the final parameter.or else the lua stack only contains first parameter.
-    return mem.newMemoryFFFUI(...);
+    return mem.newFFFUI(...);
 end
 
 --- create memory matrix .
 --- @param ...: can be (tables) or (rowCount, columnCount)
-function m.newMemoryMatrix(type, ...)
-    return mem.newMemoryMatrix(type, ...);
+function m.newMatrix(type, ...)
+    return mem.newMatrix(type, ...);
 end
 
 return m;

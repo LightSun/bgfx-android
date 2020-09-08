@@ -1279,7 +1279,7 @@ extern "C" int luaopen_bx_lua(lua_State *L) {
     return 1;
 }
 
-static int mem_newMemory(lua_State *L) {
+static int mem_new(lua_State *L) {
     //(type, table...) or (type, len )
     const char *type = lua_tostring(L, 1);
     int n = lua_gettop(L);
@@ -1297,19 +1297,19 @@ static int mem_newMemory(lua_State *L) {
         SkMemory *pMemory = new SkMemory(L, tableCount, type);
         LuaUtils::push_ptr(L, pMemory);
     } else{
-        return luaL_error(L, "wrong arguments for newMemory");
+        return luaL_error(L, "wrong arguments for Memory.new");
     }
     return 1;
 }
 
-static int mem_newMemoryFFFUI(lua_State *L) {
+static int mem_newFFFUI(lua_State *L) {
     //(table...)
     int tableCount = lua_gettop(L);
     SkMemoryFFFUI *pMemory = new SkMemoryFFFUI(L, tableCount);
     LuaUtils::push_ptr(L, pMemory);
     return 1;
 }
-static int mem_newMemoryMatrix(lua_State *L){
+static int mem_newMatrix(lua_State *L){
     auto t = lua_tostring(L, 1);
     int luaType = lua_type(L, 2);
     if(luaType == LUA_TNUMBER){
@@ -1322,15 +1322,15 @@ static int mem_newMemoryMatrix(lua_State *L){
         SkMemoryMatrix* matrix = new SkMemoryMatrix(L, t);
         LuaUtils::push_ptr(L, matrix);
     } else{
-        return luaL_error(L, "wrong arguments for create SkMemoryMatrix.");
+        return luaL_error(L, "wrong arguments for create Memory Matrix.");
     }
     return 1;
 }
 
 static const luaL_Reg mem_funcs[] = {
-        {"newMemory",      mem_newMemory},
-        {"newMemoryFFFUI", mem_newMemoryFFFUI},
-        {"newMemoryMatrix", mem_newMemoryMatrix},
+        {"new",      mem_new},
+        {"newFFFUI", mem_newFFFUI},
+        {"newMatrix", mem_newMatrix},
         {nullptr,          nullptr}
 };
 extern "C" int luaopen_hmem_lua(lua_State *L) {

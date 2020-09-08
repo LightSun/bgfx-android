@@ -23,7 +23,7 @@ if(lua_type(L, idx) != nullptr){ \
 } \
 return defVal;
 
-#define OPT_Number_8(L, idx, defVal) LUA_OPT(L, idx, TO_NUMBER_8, defVal);
+#define OPT_Number_8(L, idx, defVal) LUA_OPT(L, idx, TO_NUMBER_8, defVal)
 
 
 //return the metatable name for a given class
@@ -58,7 +58,8 @@ class LuaUtils{
 public:
     template<typename T, typename... Args>
     static T *push_new(lua_State *L, Args &&... args) {
-        T *addr = (T *) lua_newuserdata(L, sizeof(T));
+        //lua_pushstring(L, "test userdatauv");
+        T *addr = (T *) lua_newuserdatauv(L, sizeof(T), 1);
         new(addr) T(std::forward<Args>(args)...);
         luaL_getmetatable(L, get_mtname<T>());
         lua_setmetatable(L, -2);

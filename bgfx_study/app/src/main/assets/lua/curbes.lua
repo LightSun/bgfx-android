@@ -22,7 +22,7 @@ local m_program;
 
 ------------ bgfx  ----------------
 local ms_layout = bgfx.newVertexLayout();
-local s_cubeVertices = mem.newMemoryFFFUI( {-1.0,  1.0,  1.0, 0xff000000},
+local s_cubeVertices = mem.newFFFUI( { -1.0, 1.0, 1.0, 0xff000000},
         { 1.0,  1.0,  1.0, 0xff0000ff },
         {-1.0, -1.0,  1.0, 0xff00ff00 },
         { 1.0, -1.0,  1.0, 0xff00ffff },
@@ -31,7 +31,7 @@ local s_cubeVertices = mem.newMemoryFFFUI( {-1.0,  1.0,  1.0, 0xff000000},
         {-1.0, -1.0, -1.0, 0xffffff00 },
         { 1.0, -1.0, -1.0, 0xffffffff });
 
-local s_cubeTriList = mem.newMemory('w', {
+local s_cubeTriList = mem.new('w', {
     0, 1, 2, -- 0
 1, 3, 2,
 4, 6, 5, -- 2
@@ -46,7 +46,7 @@ local s_cubeTriList = mem.newMemory('w', {
 6, 3, 7,
 })
 
-local s_cubeTriStrip = mem.newMemory('w', {
+local s_cubeTriStrip = mem.new('w', {
     0, 1, 2,
     3,
     7,
@@ -60,7 +60,7 @@ local s_cubeTriStrip = mem.newMemory('w', {
     4,
     5,
 })
-local s_cubeLineList = mem.newMemory('w', {
+local s_cubeLineList = mem.new('w', {
     0, 1,
     0, 2,
     0, 4,
@@ -74,12 +74,12 @@ local s_cubeLineList = mem.newMemory('w', {
     5, 7,
     6, 7,
 })
-local s_cubeLineStrip = mem.newMemory("w", {
+local s_cubeLineStrip = mem.new("w", {
     0, 2, 3, 1, 5, 7, 6, 4,
     0, 2, 6, 4, 5, 7, 3, 1,
     0,
 })
-local s_cubePoints = mem.newMemory('w', {
+local s_cubePoints = mem.new('w', {
     0, 1, 2, 3, 4, 5, 6, 7
 })
 local s_ptNames = {
@@ -166,13 +166,13 @@ local app_draw = function ()
     local eye = bx.newVec3(0, 0, -35);
 
     --Set view and projection matrix for view 0.
-    local view = mem.newMemory('f', 16);
+    local view = mem.new('f', 16);
     bx.mtxLookAt(view, eye, at);
     if(logFirst) then
         print("mtxLookAt: "..tostring(view));
     end
 
-    local proj = mem.newMemory('f', 16);
+    local proj = mem.new('f', 16);
     --bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
     bx.mtxProj(proj, 60, m_width / m_height, 0.1, 100, bgfx.getCaps().homogeneousDepth);
     if(logFirst) then
@@ -210,7 +210,7 @@ local app_draw = function ()
         for x = 1, 11, 1 do
             --print("y, x = ", y, x)
             local xx = x - 1;
-            local mtx = mem.newMemory('f', 16);
+            local mtx = mem.new('f', 16);
             --print("pre mtxRotateXY: "..tostring(mtx));
             bx.mtxRotateXY(mtx, time + xx*0.21, time + yy*0.37);
             --
