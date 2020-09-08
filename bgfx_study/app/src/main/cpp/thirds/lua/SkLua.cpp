@@ -1043,31 +1043,12 @@ memory_newindex(SkMemory)
 memory_newindex(SkMemoryFFFUI)
 memory_newindex(SkAnyMemory)
 
-/*static int SkMemory_index(lua_State *L) {
-    auto pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
-    return SkMemory::read(pMemory, L);
-}
-
-static int SkMemory_newindex(lua_State *L) {
-    auto pMemory = LuaUtils::get_ref<SkMemory>(L, 1);
-    return SkMemory::write(pMemory, L);
-}
-
-static int SkMemoryFFFUI_index(lua_State *L) {
-    auto pMemory = LuaUtils::get_ref<SkMemoryFFFUI>(L, 1);
-    return SkMemoryFFFUI::read(pMemory, L);
-}
-
-static int SkMemoryFFFUI_newindex(lua_State *L) {
-    auto pMemory = LuaUtils::get_ref<SkMemoryFFFUI>(L, 1);
-    return SkMemoryFFFUI::write(pMemory, L);
-}*/
 const static luaL_Reg gSkAnyMemory_Methods[] = {
         {"isValid",    SkAnyMemory_isValid},
         {"__len",      SkAnyMemory_len},
         {"__tostring", SkAnyMemory_tostring},
-        {"__newindex",        SkAnyMemory_newindex},
-        {"__index",           SkAnyMemory_index},
+        {"__newindex", SkAnyMemory_newindex},
+        {"__index",    SkAnyMemory_index},
         {"__gc",       SkAnyMemory_gc},
         {NULL, NULL},
 };
@@ -1458,51 +1439,31 @@ namespace gbgfx{\
 }
 
 HANDLE_METHODS(VertexBufferHandle)
-
 HANDLE_METHODS(VertexLayoutHandle)
-
 HANDLE_METHODS(IndexBufferHandle)
-
 HANDLE_METHODS(ProgramHandle)
-
 HANDLE_METHODS(ShaderHandle)
 
 DEF_MTNAME(bgfx::Init)
-
 DEF_MTNAME(bgfx::PlatformData)
-
 DEF_MTNAME(bgfx::Resolution)
-
 DEF_MTNAME(bgfx::Init::Limits)
-
 DEF_MTNAME(bgfx::Stats)
-
 DEF_MTNAME(bgfx::Caps)
-
 DEF_MTNAME(bgfx::VertexLayout)
-
 DEF_MTNAME(bx::Vec3)
 
 DEF_MTNAME(LuaApp)
-
 DEF_MTNAME(SkMemory)
-
 DEF_MTNAME(SkMemoryFFFUI)
-
 DEF_MTNAME(SkAnyMemory)
-
 DEF_MTNAME(SkMemoryMatrix)
 //----------- only get_mtname ------
 DEF_MTNAME(bgfx::Memory)
-
 DEF_MTNAME(bgfx::VertexBufferHandle)
-
 DEF_MTNAME(bgfx::VertexLayoutHandle)
-
 DEF_MTNAME(bgfx::IndexBufferHandle)
-
 DEF_MTNAME(bgfx::ProgramHandle)
-
 DEF_MTNAME(bgfx::ShaderHandle)
 
 void SkLua::Load(lua_State *L) {
