@@ -10,6 +10,7 @@
 
 class SkMemory;
 class SkMemoryFFFUI;
+class SkAnyMemory;
 class SkMemoryMatrix;
 namespace SB{
     class StringBuilder;
@@ -50,7 +51,37 @@ public:
     const char * _dType;
 private:
     static int getTotalBytes(lua_State *L, int tableCount, const char *t);
-    static int getUnitSize(const char* type);
+};
+
+/**
+ * any types memory. a continuously space. this can contains multi table.
+ */
+class SkAnyMemory : public SimpleMemory{
+
+public:
+    /**
+     * create a memory by multi table. every table has fixes 'types' data.
+     * @param L the lua stack
+     * @param types the types.
+     */
+    SkAnyMemory(lua_State* L,const char* types);
+    /**
+    * create empty a memory with fix count length, every table has fixes 'types' data.
+    * @param types the types.
+    * @param count the table count.
+    */
+    SkAnyMemory(lua_State *L,const char* types, int count);
+
+    void toString(SB::StringBuilder& sb);
+
+    int getLength(){return  _tabCount * _tabSize;}
+
+public:
+    uint16_t _tabCount; //table count.
+    uint16_t _tabSize;  //table size
+    const char* _types;
+
+//private: uint8_t* tabSpace;// like dwbf: [4,2,1,4]
 };
 
 //float,float,float, uint32_t

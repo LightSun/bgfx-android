@@ -14,12 +14,53 @@ namespace SB{
 }
 class IMemory;
 class SimpleMemory;
+class MemoryUtils;
+class MemoryAllocator;
 
 //push string and then release
 #define MEM_PUSH_TO_STRING(L, ptr) \
 const char* str = ((IMemory*)ptr)->toString(); \
 lua_pushstring(L, str);\
 free((void*)str);
+
+class MemoryUtils{
+public:
+    static int getUnitSize(char type);
+    /**
+     * read data from lua stack
+     * @param L the lua stack
+     * @param type the type
+     * @param data the data
+     * @param totalIndex total index as bytes
+     * @return the result
+     */
+    static int read(lua_State *L, char t, void* data, int totalIndex);
+    /**
+     * write single data to lua stack
+     * @param L the lua stack
+     * @param t the type of single data
+     * @param data the data addr
+     * @param totalIndex the total bytes index
+     * @return the result
+     */
+    static int write(lua_State* L, char t, void* data, int totalIndex);
+};
+
+class MemoryAllocator{
+
+public:
+    MemoryAllocator();
+    ~MemoryAllocator();
+
+    void* require(char type);
+    void releaseAll();
+
+private:
+    float* f;
+    uint8_t * u8;
+    uint16_t * u16;
+    uint32_t * u32;
+};
 
 class IMemory{
 

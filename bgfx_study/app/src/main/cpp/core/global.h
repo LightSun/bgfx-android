@@ -11,6 +11,10 @@
 #define SkDebugf(fmt, ...)  bx::debugPrintf(fmt, __VA_ARGS__)
 
 
+#define FREE_POINTER(q) if(q){ \
+    free(q);  \
+    q = nullptr; \
+}
 #define DESTROY_POINTER(q) if(q){ \
     delete q;  \
     q = nullptr; \

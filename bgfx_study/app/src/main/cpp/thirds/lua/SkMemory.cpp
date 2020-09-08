@@ -68,7 +68,7 @@ WRITE(uint32_t)
 
 //---------------------------------------------------------------------------------
 SkMemory::SkMemory(const char *type, int len): SimpleMemory(), _dType(type) {
-    size = getUnitSize(type) * len;
+    size = MemoryUtils::getUnitSize(type[0]) * len;
     SkASSERT(size > 0);
     data = malloc(size);
     switch (type[0]) {
@@ -193,22 +193,8 @@ void SkMemory::toString(SB::StringBuilder& ss) {
      LOGD("%s :  utf8 count = %d", result, i);*/
 }
 //-----------------------------------------------------------------------
-inline int SkMemory::getUnitSize(const char *t) {
-    switch (t[0]) {
-        case 'f':
-        case 'd':
-            return 4;
-        case 'w':
-            return 2;
-        case 'b':
-            return 1;
-
-        default:
-            return 0;
-    }
-}
 inline int SkMemory::getTotalBytes(lua_State *L, int tableCount, const char *t){
-    int minSize = getUnitSize(t);
+    int minSize = MemoryUtils::getUnitSize(t[0]);
     if(minSize == 0){
         luaL_error(L, "wrong type of memory-unit: %s", t);
         return 0;
@@ -232,6 +218,51 @@ int SkMemory::getLength() {
             return size;
     }
     return 0;
+}
+//======================= SKAnyMemory ===================================
+
+SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(types, lua_gettop(L)){
+    size_t len = strlen(types);
+    int totalIndex = 0;
+    _tabSize = lua_rawlen(L, 1); //all size must be the same
+    if(_tabSize % len != 0){
+        luaL_error(L, "wrong length of lua array");
+        return ;
+    }
+    //TODO
+    for (int i = 0; i < _tabCount; ++i) {
+        size_t rawlen = lua_rawlen(L, i + 1);
+        if(rawlen != _tabSize){
+            luaL_error(L, "table array length not the same");
+            break;
+        }
+        //tabSize += rawlen;
+        for (int idx = 0; ; ++idx) {
+            int type = lua_rawgeti(L, i + 1, idx + 1);
+            if(type == LUA_TNIL){
+                break;
+            }
+            char t = types[idx % len];
+            MemoryUtils::read(L, t, data, totalIndex);
+            lua_pop(L, 1);
+            totalIndex += MemoryUtils::getUnitSize(t);
+        }
+    }
+}
+SkAnyMemory::SkAnyMemory(lua_State *L,const char *types, int count): SimpleMemory(), _types(types), _tabCount(count) {
+    size_t len = strlen(types);
+    _tabSize = len;
+
+    int size = 0;
+    for (int i = 0; i < len; ++i) {
+        size += MemoryUtils::getUnitSize(types[i]);
+    }
+    SkASSERT(size > 0);
+    this->size = size * count;
+    data = malloc(this->size);
+}
+void SkAnyMemory::toString(SB::StringBuilder &sb) {
+    //TODO
 }
 
 //------------------------ SkMemoryFFFI ----------------------
