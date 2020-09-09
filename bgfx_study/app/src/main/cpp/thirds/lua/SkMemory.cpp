@@ -74,7 +74,17 @@ WRITE(int)
 WRITE(char)
 WRITE(double)
 
+#define COPY_SINGLE_DATA(type) \
+{ auto pData = (type *) (dstMem->data); \
+auto srcData = (type *) (data); \
+pData += dstIndex; \
+srcData += srcIndex; \
+*pData = *srcData; }
+
 //---------------------------------------------------------------------------------
+SkMemory::SkMemory(){
+
+}
 SkMemory::SkMemory(const char *type, int len): SimpleMemory(), _dType(type) {
     size = MemoryUtils::getUnitSize(type[0]) * len;
     SkASSERT(size > 0);
@@ -302,6 +312,38 @@ inline int SkMemory::getTotalBytes(lua_State *L, int tableCount, const char *t){
 int SkMemory::getLength() {
     return size / MemoryUtils::getUnitSize(_dType[0]);
 }
+
+void SkMemory::writeTo(SkMemory *dstMem, int dstIndex, int srcIndex) {
+    switch (_dType[0]) {
+        case 'f':
+        COPY_SINGLE_DATA(float)
+            break;
+        case 'd':
+        COPY_SINGLE_DATA(uint32_t)
+            break;
+        case 'w':
+        COPY_SINGLE_DATA(uint16_t)
+            break;
+        case 'b':
+        COPY_SINGLE_DATA(int8_t)
+            break;
+
+        case 's':
+        COPY_SINGLE_DATA(short)
+            break;
+        case 'i':
+        COPY_SINGLE_DATA(int)
+            break;
+        case 'c':
+        COPY_SINGLE_DATA(char)
+            break;
+
+        case 'F':
+        COPY_SINGLE_DATA(double)
+            break;
+    }
+}
+
 //======================= SKAnyMemory ===================================
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){
 
@@ -587,6 +629,10 @@ SkMemoryMatrix::SkMemoryMatrix(const char *type, int rowCount, int columnCount):
         array = nullptr;
     }
 }
+SkMemoryMatrix::SkMemoryMatrix(int count):count(count) {
+    array = new SkMemory*[count];
+    anyArray = nullptr;
+}
 void SkMemoryMatrix::destroyData() {
     if(array){
         delete[](array);
@@ -664,6 +710,28 @@ void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
 }
 
 SkMemoryMatrix * SkMemoryMatrix::transpose() {
-    //TODO transpose
-    return nullptr;
+    if(isSingleType()){
+        auto mat = new SkMemoryMatrix(getColumnCount());
+        const char* t = array[0]->_dType;
+        int size = MemoryUtils::getUnitSize(t[0]) * getRowCount();
+
+        for (int i = 0; i < mat->count; ++i) {
+            auto pMemory = new SkMemory();
+            pMemory->_dType = t;
+            pMemory->size = size;
+            pMemory->data = malloc(size);
+            copyData(pMemory, i);
+            mat->array[i] = pMemory;
+        }
+        return mat;
+    } else{
+        //for type of SkAnyMemory doesn't support transpose.
+        return nullptr;
+    }
+}
+
+void SkMemoryMatrix::copyData(SkMemory *pMemory, int columnIndex){
+    for (int i = 0; i < count; ++i) {
+        array[i]->writeTo(pMemory, i, columnIndex);
+    }
 }

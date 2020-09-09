@@ -132,3 +132,9 @@ assert(m3[7] == 9)
 
 m3 = mem.new('dwf', {1,2,3,4,5,6}, {5,6,7,8,9,10});
 print("any: mem->dwf", m3)
+
+--- test transpose
+--mat = mem.newMatrix('d', { 1, 2, 3}, { 4, 5, 6}, {7,8,9});
+--print("mat->transpose before", mat)
+--mat = mat.transpose(mat);
+--print("mat->transpose", mat)

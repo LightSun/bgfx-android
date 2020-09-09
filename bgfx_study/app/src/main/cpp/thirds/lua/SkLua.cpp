@@ -1130,8 +1130,18 @@ static int SkMemoryMatrix_tostring(lua_State *L) {
     MEM_PUSH_TO_STRING(L, pMemory);
     return 1;
 }
+static int SkMemoryMatrix_transpose(lua_State *L) {
+    auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, -1);
+    auto pMatrix = mat->transpose();
+    if(pMatrix == nullptr){
+        return luaL_error(L, "this matrix doesn't support transpose. please convert data type first");
+    }
+    LuaUtils::push_ptr(L, pMatrix);
+    return 1;
+}
 
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
+        {"transpose",      SkMemoryMatrix_transpose},
         {"isValid",        SkMemoryMatrix_isValid},
         {"getColumnCount", SkMemoryMatrix_columnCount},
         {"getRowCount",    SkMemoryMatrix_len},

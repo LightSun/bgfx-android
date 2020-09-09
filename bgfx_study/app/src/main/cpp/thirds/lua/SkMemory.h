@@ -38,6 +38,9 @@ public:
 
     //startIndex: table start index, from 0 means lua stack from 1
     SkMemory(lua_State* L, int startIndex, int tableCount, const char* type);
+    //
+    SkMemory();
+
 
     //------ index start from 0 --------
 
@@ -54,6 +57,14 @@ public:
     static int write(SkMemory* mem, lua_State* L);
 
     int getLength();
+
+    /**
+     * write a data to dst memory
+     * @param dstMem
+     * @param dstIndex
+     * @param srcIndex
+     */
+    void writeTo(SkMemory *dstMem, int dstIndex, int srcIndex);
 
 public:
     const char * _dType;
@@ -153,9 +164,13 @@ public:
     static int write(SkMemoryMatrix* mem, lua_State* L, SkAnyMemory* (*Pull)(lua_State* L, int idx));
 
 private:
+    SkMemoryMatrix(int count);
+
     SkMemory** array;
     SkAnyMemory** anyArray;
     int count;
+
+    void copyData(SkMemory *pMemory, int columnIndex);
 };
 
 #endif //BGFX_STUDY_SKMEMORY_H
