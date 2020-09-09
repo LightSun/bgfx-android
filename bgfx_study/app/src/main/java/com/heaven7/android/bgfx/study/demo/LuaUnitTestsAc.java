@@ -52,6 +52,7 @@ public class LuaUnitTestsAc extends AppCompatActivity {
         List<BgfxLuaActivity.Item> items = new ArrayList<>();
         items.add(new BgfxLuaActivity.Item("lua/test_int64.lua", "test int64"));
         items.add(new BgfxLuaActivity.Item("lua/tests/memory_test.lua", "test memory"));
+        items.add(new BgfxLuaActivity.Item("lua/tests/memory_test2.lua", "test memory2"));
         return items;
     }
     public void runTest(BgfxLuaActivity.Item item){

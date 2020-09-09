@@ -1131,7 +1131,7 @@ static int SkMemoryMatrix_tostring(lua_State *L) {
     return 1;
 }
 static int SkMemoryMatrix_transpose(lua_State *L) {
-    auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, -1);
+    auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     auto pMatrix = mat->transpose();
     if(pMatrix == nullptr){
         return luaL_error(L, "this matrix doesn't support transpose. please convert data type first");
