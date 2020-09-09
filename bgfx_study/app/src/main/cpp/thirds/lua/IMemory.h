@@ -53,6 +53,14 @@ public:
     * @param totalIndex total index as bytes
     */
     static void toString(SB::StringBuilder& sb, char t, void* data, int totalIndex);
+
+    /**
+     * init array element
+     * @param t the data type
+     * @param data the total data
+     * @param totalIndex the expect index as bytes to init
+     */
+    static void init(char t, void* data, int totalIndex);
 };
 
 class MemoryAllocator{

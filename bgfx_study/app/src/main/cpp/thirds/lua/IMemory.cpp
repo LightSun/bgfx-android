@@ -105,6 +105,27 @@ int MemoryUtils::write(lua_State *L, char t, void *data, int totalIndex) {
     }
     return 0;
 }
+void MemoryUtils::init(char t, void *data, int totalIndex) {
+    uint8_t * addr = static_cast<uint8_t *>(data);
+    addr += totalIndex;
+    switch (t) {
+        case 'f': {
+            *(float*)addr = 0;
+        }
+            break;
+        case 'd':{
+            *(uint32_t *)addr = 0;
+        }break;
+        case 'w':{
+            *(uint16_t *)addr = 0;
+        }break;
+        case 'b':{
+            *addr = 0;
+        }break;
+        default:
+            LOGW("unknown type data to init. %c", t);
+    }
+}
 //-------------- memory allocator -------------------------
 MemoryAllocator::MemoryAllocator():f(nullptr), u8(nullptr), u16(nullptr), u32(nullptr) {
 }

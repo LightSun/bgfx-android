@@ -112,4 +112,23 @@ mat = mem.newMatrix('f', { 1, 2, 3}, { 4, 5, 6});
 print("mat->f", mat)
 mat = mem.newMatrix('b', { 1, 2, 3}, { 4, 5, 6});
 print("mat->b", mat)
+
 --mem.newMatrix('d', 4, 4);
+
+local m3 = mem.new('dwfb', {1,2,3,4}, {5,6,7,8});
+print("any: mem->dwfb", m3)
+assert(#m3 == 8)
+assert(m3[0] == 1)
+assert(m3[1] == 2)
+assert(m3[2] == 3)
+assert(m3[3] == 4)
+assert(m3[4] == 5)
+assert(m3[5] == 6)
+assert(m3[6] == 7)
+assert(m3[7] == 8)
+
+m3[7] = 9
+assert(m3[7] == 9)
+
+m3 = mem.new('dwf', {1,2,3,4,5,6}, {5,6,7,8,9,10});
+print("any: mem->dwf", m3)

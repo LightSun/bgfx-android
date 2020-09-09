@@ -304,18 +304,33 @@ SkAnyMemory::SkAnyMemory(const char *types, int count): SimpleMemory(), _types(t
     SkASSERT(size > 0);
     this->size = size * count;
     data = malloc(this->size);
-}
-void SkAnyMemory::toString(SB::StringBuilder &sb) {
-    size_t len = strlen(_types);
+    //init array
     size_t bytes = 0;
     char t;
     for (int i = 0; i < _tabCount; ++i) {
         for (int j = 0; j < _elementCount; ++j) {
             t = _types[j % len];
+            MemoryUtils::init(t, data, bytes);
+            bytes += MemoryUtils::getUnitSize(t);
+        }
+    }
+}
+void SkAnyMemory::toString(SB::StringBuilder &sb) {
+    size_t len = strlen(_types);
+    size_t bytes = 0;
+    char t;
+    sb << "{";
+    for (int i = 0; i < _tabCount; ++i) {
+        for (int j = 0; j < _elementCount; ++j) {
+            t = _types[j % len];
+            if(i != 0 || j != 0){
+                sb << ",";
+            }
             MemoryUtils::toString(sb, t, data, bytes);
             bytes += MemoryUtils::getUnitSize(t);
         }
     }
+    sb << "}";
 }
 int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
     //table, index
@@ -327,7 +342,7 @@ int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
     int bytes = index / mem->_elementCount * mem->size / mem->_tabCount;
     const auto typesLen = strlen(mem->_types);
     char t;
-    for (int i = 0, len = index % mem->_elementCount; i < len; ++i) {
+    for (int i = 0, len = index % mem->_elementCount + 1; i < len; ++i) {
         t = mem->_types[i % typesLen];
         //for last we read data to lua stack
         if(i == len - 1){
@@ -350,7 +365,7 @@ int SkAnyMemory::write(SkAnyMemory *mem, lua_State *L) {
     int bytes = index / mem->_elementCount * mem->size / mem->_tabCount;
     const auto typesLen = strlen(mem->_types);
     char t;
-    for (int i = 0, len = index % mem->_elementCount; i < len; ++i) {
+    for (int i = 0, len = index % mem->_elementCount + 1; i < len; ++i) {
         t = mem->_types[i % typesLen];
         //for last we read data from lua stack
         if(i == len - 1){
@@ -559,7 +574,7 @@ void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
     ss << "{";
     for (int i = 0; i < count; ++i) {
         array[i]->toString(ss);
-        if(i != count - 1){
+        if (i != count - 1) {
             ss << ",";
         }
     }
