@@ -1,6 +1,7 @@
 //
 // Created by heaven7 on 2020/8/27 0027.
-// currently for memory data. support types are: d(uint32), w(uint16), f(float), b(uint8), s(short), i(int) ,c(char)
+// currently for memory data. support types are: d(uint32), w(uint16), b(uint8),f(float),
+//                                               i(int),  s(short), c(char), F(double)
 //
 
 #ifndef BGFX_STUDY_SKMEMORY_H

@@ -33,6 +33,9 @@ int MemoryUtils::getUnitSize(char t) {
         case 'c': //char
             return 1;
 
+        case 'F': //double
+            return 8;
+
         default:
             return 0;
     }
@@ -73,6 +76,11 @@ void MemoryUtils::toString(SB::StringBuilder &sb, char t, void *data, int totalI
         }
         break;
 
+        case 'F':{
+            sb << *(double *)addr;
+        }
+            break;
+
         default:
             LOGE("wrong type = %c", t);
     }
@@ -103,6 +111,10 @@ int MemoryUtils::read(lua_State *L, char t, void *data, int totalIndex) {
         }break;
         case 'c':{
             *addr = static_cast<char>(lua_tointeger(L, -1));
+        }break;
+
+        case 'F':{
+            *addr = static_cast<double>(lua_tonumber(L, -1));
         }break;
 
         default:
@@ -138,6 +150,9 @@ int MemoryUtils::write(lua_State *L, char t, void *data, int totalIndex) {
         case 'c':{
             lua_pushnumber(L, *(char *)addr);
         }break;
+        case 'F':{
+            lua_pushnumber(L, *(double *)addr);
+        }break;
 
         default:
             luaL_error(L, "unknown type of %c", t);
@@ -172,6 +187,10 @@ void MemoryUtils::init(char t, void *data, int totalIndex) {
         case 'c':{
             *(char*)addr = 0;
         }break;
+        case 'F':{
+            *(double *)addr = 0;
+        }break;
+
         default:
             LOGW("unknown type data to init. %c", t);
     }

@@ -85,6 +85,7 @@ static void printArray(type array[], int len, SB::StringBuilder& ss){ \
     PRINT_ARRAY(short)
     PRINT_ARRAY(int)
     PRINT_ARRAY(char)
+    PRINT_ARRAY(double)
 };
 
 #endif //BGFX_STUDY_PRINTER_H

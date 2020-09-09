@@ -57,6 +57,7 @@ READ(uint32_t)
 READ(short)
 READ(int)
 READ(char)
+READ(double)
 
 #define WRITE(type) \
 void write_##type(SkMemory* mem, int index, type val){ \
@@ -71,6 +72,7 @@ WRITE(uint32_t)
 WRITE(short)
 WRITE(int)
 WRITE(char)
+WRITE(double)
 
 //---------------------------------------------------------------------------------
 SkMemory::SkMemory(const char *type, int len): SimpleMemory(), _dType(type) {
@@ -102,6 +104,10 @@ SkMemory::SkMemory(const char *type, int len): SimpleMemory(), _dType(type) {
         }
         case 'c':{
             ARRAY_INIT(char);
+        }
+
+        case 'F':{
+            ARRAY_INIT(double);
         }
             break;
     }
@@ -142,8 +148,16 @@ SkMemory::SkMemory(lua_State *L, int start, int tableCount, const char *t) : Sim
 
         case 'c':{
             copy_data_i(char);
+        } break;
+
+        case 'F': {
+            copy_data_f(double);
         }
             break;
+
+        default:
+            luaL_error(L, "wrong data type = %c", t[0]);
+            return ;
     }
     lua_pop(L, 1);
 }
@@ -186,6 +200,10 @@ int SkMemory::write(SkMemory* mem, lua_State *L) {
             write_char(mem, index, TO_CHAR(L, -1));
             return 0;
         }
+        case 'F': {
+            write_double(mem, index, TO_DOUBLE(L, -1));
+            return 0;
+        }
         default:
             return luaL_error(L, "wrong data type = %s", mem->_dType);
     }
@@ -225,6 +243,11 @@ int SkMemory::read(SkMemory* mem, lua_State *L) {
             return 1;
         }
 
+        case 'F': {
+            lua_pushnumber(L, read_double(mem, index));
+            return 1;
+        }
+
         default:
             return luaL_error(L, "wrong data type = %s", mem->_dType);
     }
@@ -253,6 +276,10 @@ void SkMemory::toString(SB::StringBuilder& ss) {
         case 'c':
             Printer::printArray((char*)data, size, ss);
             break;
+
+        case 'F':
+            Printer::printArray((double *)data, size, ss);
+            break;
     }
     /* auto i = SkUTF::CountUTF8(result, sr.length());
      LOGD("%s :  utf8 count = %d", result, i);*/
@@ -273,23 +300,7 @@ inline int SkMemory::getTotalBytes(lua_State *L, int tableCount, const char *t){
 }
 
 int SkMemory::getLength() {
-    switch (_dType[0]) {
-        case 'f':
-        case 'd':
-            return size / 4;
-        case 'w':
-            return size / 2;
-        case 'b':
-            return size;
-
-        case 's':
-            return size / 2;
-        case 'i':
-            return size / 4;
-        case 'c':
-            return size;
-    }
-    return 0;
+    return size / MemoryUtils::getUnitSize(_dType[0]);
 }
 //======================= SKAnyMemory ===================================
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){

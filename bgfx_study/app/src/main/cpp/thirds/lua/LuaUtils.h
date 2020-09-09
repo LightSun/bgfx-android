@@ -20,6 +20,7 @@
 #define TO_INT(L, idx) static_cast<int>(lua_tonumber(L, idx))
 #define TO_SHORT(L, idx) static_cast<short>(lua_tonumber(L, idx))
 #define TO_CHAR(L, idx) static_cast<char>(lua_tonumber(L, idx))
+#define TO_DOUBLE(L, idx) static_cast<double>(lua_tonumber(L, idx))
 
 #define LUA_OPT(L, idx, func_idx, defVal) \
 if(lua_type(L, idx) != nullptr){ \
