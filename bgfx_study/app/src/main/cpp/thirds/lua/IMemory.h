@@ -62,7 +62,7 @@ public:
      */
     static void init(char t, void* data, int totalIndex);
 };
-
+//later may delete
 class MemoryAllocator{
 
 public:

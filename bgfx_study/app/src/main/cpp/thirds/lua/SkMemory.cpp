@@ -54,6 +54,9 @@ READ(float)
 READ(uint8_t)
 READ(uint16_t)
 READ(uint32_t)
+READ(short)
+READ(int)
+READ(char)
 
 #define WRITE(type) \
 void write_##type(SkMemory* mem, int index, type val){ \
@@ -65,6 +68,9 @@ WRITE(float)
 WRITE(uint8_t)
 WRITE(uint16_t)
 WRITE(uint32_t)
+WRITE(short)
+WRITE(int)
+WRITE(char)
 
 //---------------------------------------------------------------------------------
 SkMemory::SkMemory(const char *type, int len): SimpleMemory(), _dType(type) {
@@ -86,6 +92,16 @@ SkMemory::SkMemory(const char *type, int len): SimpleMemory(), _dType(type) {
             break;
         case 'b':{
             ARRAY_INIT(uint8_t);
+        }
+
+        case 's':{
+            ARRAY_INIT(short);
+        }
+        case 'i':{
+            ARRAY_INIT(int);
+        }
+        case 'c':{
+            ARRAY_INIT(char);
         }
             break;
     }
@@ -113,6 +129,19 @@ SkMemory::SkMemory(lua_State *L, int start, int tableCount, const char *t) : Sim
             break;
         case 'b':{
             copy_data_i(uint8_t);
+        }
+        break;
+
+        case 's':{
+            copy_data_i(short);
+        } break;
+
+        case 'i':{
+            copy_data_i(int);
+        } break;
+
+        case 'c':{
+            copy_data_i(char);
         }
             break;
     }
@@ -145,6 +174,18 @@ int SkMemory::write(SkMemory* mem, lua_State *L) {
             return 0;
         }
 
+        case 's': {
+            write_short(mem, index, TO_SHORT(L, -1));
+            return 0;
+        }
+        case 'i': {
+            write_int(mem, index, TO_INT(L, -1));
+            return 0;
+        }
+        case 'c': {
+            write_char(mem, index, TO_CHAR(L, -1));
+            return 0;
+        }
         default:
             return luaL_error(L, "wrong data type = %s", mem->_dType);
     }
@@ -171,6 +212,19 @@ int SkMemory::read(SkMemory* mem, lua_State *L) {
             return 1;
         }
 
+        case 's': {
+            lua_pushnumber(L, read_short(mem, index));
+            return 1;
+        }
+        case 'i': {
+            lua_pushnumber(L, read_int(mem, index));
+            return 1;
+        }
+        case 'c': {
+            lua_pushnumber(L, read_char(mem, index));
+            return 1;
+        }
+
         default:
             return luaL_error(L, "wrong data type = %s", mem->_dType);
     }
@@ -188,6 +242,16 @@ void SkMemory::toString(SB::StringBuilder& ss) {
             break;
         case 'b':
             Printer::printArray((uint8_t*)data, size, ss);
+            break;
+
+        case 's':
+            Printer::printArray((short *)data, size, ss);
+            break;
+        case 'i':
+            Printer::printArray((int*)data, size, ss);
+            break;
+        case 'c':
+            Printer::printArray((char*)data, size, ss);
             break;
     }
     /* auto i = SkUTF::CountUTF8(result, sr.length());
@@ -216,6 +280,13 @@ int SkMemory::getLength() {
         case 'w':
             return size / 2;
         case 'b':
+            return size;
+
+        case 's':
+            return size / 2;
+        case 'i':
+            return size / 4;
+        case 'c':
             return size;
     }
     return 0;

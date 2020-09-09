@@ -82,6 +82,9 @@ static void printArray(type array[], int len, SB::StringBuilder& ss){ \
     PRINT_ARRAY(uint32_t)
     PRINT_ARRAY(uint16_t)
     PRINT_ARRAY(uint8_t)
+    PRINT_ARRAY(short)
+    PRINT_ARRAY(int)
+    PRINT_ARRAY(char)
 };
 
 #endif //BGFX_STUDY_PRINTER_H
