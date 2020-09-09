@@ -67,11 +67,19 @@ class SkAnyMemory : public SimpleMemory{
 public:
     /**
      * create a memory by multi table. every table has 'like' 'types' data. for example.
-     * 'dfb' -> every table data can be [1, 2.0, 1] or [1, 2.0, 1, 1, 2.0, 1]
+     * 'dfb' -> every table data can be [1, 2.0, 1] or [1, 2.0, 1, 1, 2.0, 1]... etc
      * @param L the lua stack
      * @param types the types.
      */
     SkAnyMemory(lua_State* L,const char* types);
+
+    /**
+     * create any memory byte types with table index.
+     * @param L the lua stack
+     * @param types the types
+     * @param tableIndex the table index, if -1 means may be multi table
+     */
+    SkAnyMemory(lua_State* L,const char* types, int tableIndex);
     /**
     * create empty a memory with fix count length, every table has fixes 'types' data.
     * @param types the types.
@@ -127,13 +135,22 @@ public:
     inline int getLength() { return count;}
     int getRowCount(){ return count; }
     int getColumnCount();
+    /**
+     * indicate the base memory is 'SkMemory' or not.
+     * @return true if is single type memory
+     */
+    bool isSingleType();
     void toString(SB::StringBuilder& sb);
 
     static int read(SkMemoryMatrix* mem, lua_State* L, void (*Push)(lua_State* L, SkMemory* ptr));
     static int write(SkMemoryMatrix* mem, lua_State* L, SkMemory* (*Pull)(lua_State* L, int idx));
 
+    static int read(SkMemoryMatrix* mem, lua_State* L, void (*Push)(lua_State* L, SkAnyMemory* ptr));
+    static int write(SkMemoryMatrix* mem, lua_State* L, SkAnyMemory* (*Pull)(lua_State* L, int idx));
+
 private:
     SkMemory** array;
+    SkAnyMemory** anyArray;
     int count;
 };
 

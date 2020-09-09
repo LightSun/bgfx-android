@@ -90,6 +90,7 @@ SkMemory::SkMemory(const char *type, int len): SimpleMemory(), _dType(type) {
             break;
     }
 }
+//start from 0
 SkMemory::SkMemory(lua_State *L, int start, int tableCount, const char *t) : SimpleMemory(){
     _dType = t;
     size = getTotalBytes(L, tableCount, t);
@@ -220,34 +221,35 @@ int SkMemory::getLength() {
     return 0;
 }
 //======================= SKAnyMemory ===================================
+SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){
 
-SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(types, lua_gettop(L)){
+}
+SkAnyMemory::SkAnyMemory(lua_State *L, const char *types, int tableIndex){
+    //if assigned table index. means only one table
+    _tabCount = tableIndex >= 1 ? 1 : lua_gettop(L);
+    _types = types;
+
     size_t len = strlen(types);
-    int totalIndex = 0;
     //
-    const size_t tabLen = lua_rawlen(L, 1); //all size must be the same
+    const size_t tabLen = lua_rawlen(L, tableIndex >=1 ? tableIndex : 1); //all size must be the same
     if(tabLen % len != 0){
         luaL_error(L, "wrong length of lua table");
         return ;
     }
     _elementCount = tabLen;
-    //compute one size(bytes) of table.
+    //compute size(bytes) of one table.
     int bytes = 0;
     for (int i = 0; i < tabLen; ++i) {
         bytes += MemoryUtils::getUnitSize(types[i % len]);
     }
-    this->size = bytes * lua_gettop(L);
+    this->size = bytes * _tabCount;
     data = malloc(this->size);
+
     //init data
-    for (int i = 0; i < _tabCount; ++i) {
-        size_t rawlen = lua_rawlen(L, i + 1);
-        if(rawlen != tabLen){
-            luaL_error(L, "table array length not the same");
-            goto fail;
-        }
-        //tabSize += rawlen;
+    int totalIndex = 0;
+    if(tableIndex >= 1){
         for (int idx = 0; ; ++idx) {
-            int type = lua_rawgeti(L, i + 1, idx + 1);
+            int type = lua_rawgeti(L, tableIndex, idx + 1);
             if(type == LUA_TNIL){
                 lua_pop(L, 1);
                 break;
@@ -259,6 +261,28 @@ SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(types, lu
             }
             lua_pop(L, 1);
             totalIndex += MemoryUtils::getUnitSize(t);
+        }
+    } else{
+        for (int i = 0; i < _tabCount; ++i) {
+            size_t rawlen = lua_rawlen(L, i + 1);
+            if(rawlen != tabLen){
+                luaL_error(L, "table array length not the same");
+                goto fail;
+            }
+            for (int idx = 0; ; ++idx) {
+                int type = lua_rawgeti(L, i + 1, idx + 1);
+                if(type == LUA_TNIL){
+                    lua_pop(L, 1);
+                    break;
+                }
+                char t = types[idx % len];
+                if(MemoryUtils::read(L, t, data, totalIndex) < 0){
+                    lua_pop(L, 1);
+                    goto fail;
+                }
+                lua_pop(L, 1);
+                totalIndex += MemoryUtils::getUnitSize(t);
+            }
         }
     }
     return ;
@@ -328,7 +352,7 @@ int SkAnyMemory::write(SkAnyMemory *mem, lua_State *L) {
     char t;
     for (int i = 0, len = index % mem->_elementCount; i < len; ++i) {
         t = mem->_types[i % typesLen];
-        //for last we read data to lua stack
+        //for last we read data from lua stack
         if(i == len - 1){
             if(MemoryUtils::read(L, t, mem->data, bytes) < 0){
                 return 0;
@@ -434,27 +458,53 @@ SkMemoryMatrix::~SkMemoryMatrix() {
 SkMemoryMatrix::SkMemoryMatrix(lua_State *L, const char *type): IMemory(){
     int tableCount = lua_gettop(L);
     count = tableCount;
-    array = new SkMemory*[tableCount];
-    for (int i = 0; i < tableCount; ++i) {
-        array[i] = new SkMemory(L, i, 1, type);
-        //LOGD("array[%d]: \n %s", i, array[i]->toString());//TODO乱码
+    if(strlen(type) == 1){
+        array = new SkMemory*[tableCount];
+        for (int i = 0; i < tableCount; ++i) {
+            array[i] = new SkMemory(L, i, 1, type);
+            //LOGD("array[%d]: \n %s", i, array[i]->toString());
+        }
+        anyArray = nullptr;
+    } else{
+        anyArray = new SkAnyMemory*[tableCount];
+        for (int i = 0; i < tableCount; ++i) {
+            anyArray[i] = new SkAnyMemory(L, type, i + 1);
+            //LOGD("array[%d]: \n %s", i, array[i]->toString());
+        }
+        array = nullptr;
     }
 }
 SkMemoryMatrix::SkMemoryMatrix(const char *type, int rowCount, int columnCount): IMemory() {
     count = rowCount;
-    array = new SkMemory*[rowCount];
-    for (int i = 0; i < rowCount; ++i) {
-        array[i] = new SkMemory(type, columnCount);
+    if(strlen(type) == 1){
+        array = new SkMemory*[rowCount];
+        for (int i = 0; i < rowCount; ++i) {
+            array[i] = new SkMemory(type, columnCount);
+        }
+        anyArray = nullptr;
+    } else{
+        anyArray = new SkAnyMemory*[rowCount];
+        for (int i = 0; i < rowCount; ++i) {
+            anyArray[i] = new SkAnyMemory(type, columnCount);
+        }
+        array = nullptr;
     }
 }
 void SkMemoryMatrix::destroyData() {
     if(array){
         delete[](array);
         array = nullptr;
-        count = 0;
     }
+    if(anyArray){
+        delete[](anyArray);
+        anyArray = nullptr;
+    }
+    count = 0;
 }
 bool SkMemoryMatrix::isValid() {
+    return array != nullptr || anyArray != nullptr;
+}
+bool SkMemoryMatrix::isSingleType() {
     return array != nullptr;
 }
 
@@ -476,8 +526,33 @@ int SkMemoryMatrix::write(SkMemoryMatrix *mem, lua_State *L, SkMemory *(*Pull)(l
     mem->array[index] = Pull(L, 3);
     return 0;
 }
+int SkMemoryMatrix::read(SkMemoryMatrix *mem, lua_State *L,  void (*Push)(lua_State*, SkAnyMemory*)) {
+    //table, index
+    lua_Integer index = lua_tointeger(L, 2);
+    if(index >= mem->count){
+        return luaL_error(L, "index(%d) out of range(%d).", index, mem->count);
+    }
+    Push(L, mem->anyArray[index]);
+    return 1;
+}
+int SkMemoryMatrix::write(SkMemoryMatrix *mem, lua_State *L, SkAnyMemory *(*Pull)(lua_State *, int)){
+    //table, index, val
+    lua_Integer index = lua_tointeger(L, 2);
+    if(index >= mem->count){
+        return luaL_error(L, "index(%d) out of range(%d).", index, mem->count);
+    }
+    mem->anyArray[index] = Pull(L, 3);
+    return 0;
+}
+
 int SkMemoryMatrix::getColumnCount() {
-    return array ?array[0]->getLength() : 0;
+    if(array){
+        return array[0]->getLength();
+    }
+    if(anyArray){
+        return anyArray[0]->getLength();
+    }
+    return 0;
 }
 
 void SkMemoryMatrix::toString(SB::StringBuilder &ss) {

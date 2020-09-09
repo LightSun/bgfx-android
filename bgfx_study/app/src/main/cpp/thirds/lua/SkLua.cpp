@@ -1081,15 +1081,24 @@ type* type##_pull(lua_State* L,int index){ \
 
 PUSH_PTR(SkMemory)
 PULL_PTR(SkMemory)
+PUSH_PTR(SkAnyMemory)
+PULL_PTR(SkAnyMemory)
 
 static int SkMemoryMatrix_index(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
-    return SkMemoryMatrix::read(pMemory, L, SkMemory_push);
+    if(pMemory->isSingleType()){
+        return SkMemoryMatrix::read(pMemory, L, SkMemory_push);
+    }
+    return SkMemoryMatrix::read(pMemory, L, SkAnyMemory_push);
 }
 
 static int SkMemoryMatrix_newindex(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
-    return SkMemoryMatrix::write(pMemory, L, SkMemory_pull);
+    if(pMemory->isSingleType()){
+        return SkMemoryMatrix::write(pMemory, L, SkMemory_pull);
+    } else{
+        return SkMemoryMatrix::write(pMemory, L, SkAnyMemory_pull);
+    }
 }
 
 static int SkMemoryMatrix_gc(lua_State *L) {
