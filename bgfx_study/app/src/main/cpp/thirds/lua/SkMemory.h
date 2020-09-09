@@ -137,6 +137,8 @@ public:
     inline int getLength() { return count;}
     int getRowCount(){ return count; }
     int getColumnCount();
+
+    SkMemoryMatrix* transpose();
     /**
      * indicate the base memory is 'SkMemory' or not.
      * @return true if is single type memory

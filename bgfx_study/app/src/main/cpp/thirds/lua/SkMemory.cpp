@@ -662,3 +662,8 @@ void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
     }
     ss << "}";
 }
+
+SkMemoryMatrix * SkMemoryMatrix::transpose() {
+    //TODO transpose
+    return nullptr;
+}
