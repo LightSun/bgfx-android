@@ -164,6 +164,12 @@ public:
 
     SkMemoryMatrix* transpose();
     /**
+     * convert every memory to target types
+     * @param t  the types
+     * @return the new matrix.
+     */
+    SkMemoryMatrix* convert(const char* t);
+    /**
      * indicate the base memory is 'SkMemory' or not.
      * @return true if is single type memory
      */
@@ -178,12 +184,17 @@ public:
 
 private:
     SkMemoryMatrix(int count);
+    SkMemoryMatrix(int count, bool singleType);
 
     SkMemory** array;
     SkAnyMemory** anyArray;
     int count;
 
     void copyData(SkMemory *pMemory, int columnIndex);
+    /**
+     * destroy all elements by for-each
+     */
+    void destroyAll();
 };
 
 #endif //BGFX_STUDY_SKMEMORY_H

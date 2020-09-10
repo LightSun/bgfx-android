@@ -746,9 +746,16 @@ SkMemoryMatrix::SkMemoryMatrix(const char *type, int rowCount, int columnCount):
         array = nullptr;
     }
 }
-SkMemoryMatrix::SkMemoryMatrix(int count):count(count) {
-    array = new SkMemory*[count];
-    anyArray = nullptr;
+SkMemoryMatrix::SkMemoryMatrix(int count):SkMemoryMatrix(count, true) {
+}
+SkMemoryMatrix::SkMemoryMatrix(int count, bool singleType): count(count) {
+    if(singleType){
+        array = new SkMemory*[count];
+        anyArray = nullptr;
+    } else{
+        anyArray = new SkAnyMemory*[count];
+        array = nullptr;
+    }
 }
 void SkMemoryMatrix::destroyData() {
     if(array){
@@ -847,9 +854,88 @@ SkMemoryMatrix * SkMemoryMatrix::transpose() {
     }
 }
 
+SkMemoryMatrix * SkMemoryMatrix::convert(const char *ts) {
+    if(isSingleType()){
+        if(strlen(ts) == 1){
+            //simple -> simple
+            const auto mat = new SkMemoryMatrix(getRowCount());
+            for (int i = 0; i < getRowCount(); ++i) {
+                auto pMemory = array[i]->convert(ts);
+                if(pMemory == nullptr){
+                    mat->destroyAll();
+                    delete(mat);
+                    return nullptr;
+                }
+                mat->array[i] = (SkMemory*)pMemory;
+            }
+            return mat;
+        }else{
+            //simple -> lazy
+            const auto mat = new SkMemoryMatrix(getRowCount(), false);
+            for (int i = 0; i < getRowCount(); ++i) {
+                auto pMemory = array[i]->convert(ts);
+                if(pMemory == nullptr){
+                    mat->destroyAll();
+                    delete(mat);
+                    return nullptr;
+                }
+                mat->anyArray[i] = (SkAnyMemory*)pMemory;
+            }
+            return mat;
+        }
+    }else{
+        //lazy -> simple
+        if(strlen(ts) == 1){
+            const auto mat = new SkMemoryMatrix(getRowCount());
+            for (int i = 0; i < getRowCount(); ++i) {
+                auto pMemory = anyArray[i]->convert(ts);
+                if(pMemory == nullptr){
+                    mat->destroyAll();
+                    delete(mat);
+                    return nullptr;
+                }
+                mat->array[i] = (SkMemory*)pMemory;
+            }
+            return mat;
+        } else{
+            //lazy -> lazy
+            const auto mat = new SkMemoryMatrix(getRowCount(), false);
+            for (int i = 0; i < getRowCount(); ++i) {
+                auto pMemory = anyArray[i]->convert(ts);
+                if(pMemory == nullptr){
+                    mat->destroyAll();
+                    delete(mat);
+                    return nullptr;
+                }
+                mat->anyArray[i] = (SkAnyMemory*)pMemory;
+            }
+            return mat;
+        }
+    }
+}
+
 void SkMemoryMatrix::copyData(SkMemory *pMemory, int columnIndex) {
     //make every column to a new row
     for (int i = 0; i < count; ++i) {
         array[i]->writeTo(pMemory, i, columnIndex);
+    }
+}
+void SkMemoryMatrix::destroyAll() {
+    if(isSingleType()){
+        for (int i = 0; i < getRowCount(); ++i) {
+            auto pMemory = array[i];
+            if(pMemory != nullptr){
+                delete pMemory;
+            }
+        }
+        array = nullptr;
+    } else{
+        for (int i = 0; i < getRowCount(); ++i) {
+            auto pMemory = anyArray[i];
+            if(pMemory != nullptr){
+                delete pMemory;
+            }
+        }
+        anyArray = nullptr;
     }
 }

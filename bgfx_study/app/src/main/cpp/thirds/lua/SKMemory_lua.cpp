@@ -249,10 +249,22 @@ static int SkMemoryMatrix_transpose(lua_State *L) {
     LuaUtils::push_ptr(L, pMatrix);
     return 1;
 }
+static int SkMemoryMatrix_convert(lua_State *L) {
+    //mat, types
+    auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
+    auto types = luaL_checkstring(L, 2);
+    auto pMatrix = mat->convert(types);
+    if(pMatrix == nullptr){
+        return luaL_error(L, "this matrix can't convert to types = '%s'", types);
+    }
+    LuaUtils::push_ptr(L, pMatrix);
+    return 1;
+}
 static int SkMemoryMatrix_shouldWrapResult(lua_State *L) {
     const char *func = luaL_checkstring(L, 1);
     const char* names[] = {
-            "transpose"
+            "transpose",
+            "convert",
     };
     int len = sizeof(names)/sizeof(names[0]);
     for (int i = 0; i < len; ++i) {
@@ -265,6 +277,7 @@ static int SkMemoryMatrix_shouldWrapResult(lua_State *L) {
 }
 
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
+        {"convert",        SkMemoryMatrix_convert},
         {"transpose",      SkMemoryMatrix_transpose},
         {"isValid",        SkMemoryMatrix_isValid},
         {"getColumnCount", SkMemoryMatrix_columnCount},
