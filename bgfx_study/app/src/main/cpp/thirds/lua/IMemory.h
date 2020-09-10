@@ -14,7 +14,6 @@ namespace SB{
 }
 class IMemory;
 class SimpleMemory;
-class SkMemory;
 
 //push string and then release
 #define MEM_PUSH_TO_STRING(L, ptr) \
@@ -69,7 +68,10 @@ public:
      * @param dstType
      * @param index
      */
-    static void cast(void *srcData, const char srcType, void *dstData, const char dstType, int index);
+    static void convert(void *srcData, const char srcType, void *dstData, const char dstType, int index);
+
+    static void convert(void *srcData, char srcType, size_t srcBytes,
+            void *dstData, const char dstType, size_t dstBytes);
 };
 //later may delete
 class MemoryAllocator{
@@ -127,9 +129,9 @@ public:
     /**
      * convert memory type to target type
      * @param t the type of memory
-     * @return a new memory of target type.
+     * @return a new memory of target type. may be SkMemory/SkAnyMemory
      */
-    SkMemory* convert(const char* t){return nullptr;}
+    IMemory* convert(const char* t){return nullptr;}
 
 public:
     void *data;

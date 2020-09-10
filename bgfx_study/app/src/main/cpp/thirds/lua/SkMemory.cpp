@@ -343,7 +343,7 @@ void SkMemory::writeTo(SkMemory *dstMem, int dstIndex, int srcIndex) {
             break;
     }
 }
-SkMemory* SkMemory::convert(const char* ts) {
+IMemory* SkMemory::convert(const char* ts) {
     if(strlen(ts) == 1){
         if(_dType[0] == ts[0]) return this;
         auto pMemory = new SkMemory();
@@ -351,10 +351,17 @@ SkMemory* SkMemory::convert(const char* ts) {
         pMemory->size = MemoryUtils::getUnitSize(ts[0]) * getLength();
         pMemory->data = malloc(pMemory->size);
         for (int i = 0, length = getLength(); i < length; ++i) {
-            MemoryUtils::cast(data, _dType[0] ,pMemory->data, ts[0], i);
+            MemoryUtils::convert(data, _dType[0] ,pMemory->data, ts[0], i);
         }
         return pMemory;
     }else{
+        //error mismatch
+        if(getLength() % strlen(ts) != 0){
+            return nullptr;
+        }
+        size_t tabCount = getLength() / strlen(ts);
+        auto pMemory = new SkAnyMemory(ts, tabCount);
+
         return nullptr;//TODO later support
     }
 }
@@ -432,7 +439,10 @@ SkAnyMemory::SkAnyMemory(lua_State *L, const char *types, int tableIndex){
       _elementCount = 0;
       _tabCount = 0;
 }
-SkAnyMemory::SkAnyMemory(const char *types, int count): SimpleMemory(), _types(types), _tabCount(count) {
+SkAnyMemory::SkAnyMemory(const char *types, int count): SkAnyMemory(types, count, true){
+
+}
+SkAnyMemory::SkAnyMemory(const char *types, int count, bool init): SimpleMemory(), _types(types), _tabCount(count){
     size_t len = strlen(types);
     _elementCount = len;
 
@@ -444,13 +454,15 @@ SkAnyMemory::SkAnyMemory(const char *types, int count): SimpleMemory(), _types(t
     this->size = size * count;
     data = malloc(this->size);
     //init array
-    size_t bytes = 0;
-    char t;
-    for (int i = 0; i < _tabCount; ++i) {
-        for (int j = 0; j < _elementCount; ++j) {
-            t = _types[j % len];
-            MemoryUtils::init(t, data, bytes);
-            bytes += MemoryUtils::getUnitSize(t);
+    if(init){
+        size_t bytes = 0;
+        char t;
+        for (int i = 0; i < _tabCount; ++i) {
+            for (int j = 0; j < _elementCount; ++j) {
+                t = _types[j % len];
+                MemoryUtils::init(t, data, bytes);
+                bytes += MemoryUtils::getUnitSize(t);
+            }
         }
     }
 }
@@ -470,6 +482,33 @@ void SkAnyMemory::toString(SB::StringBuilder &sb) {
         }
     }
     sb << "}";
+}
+IMemory* SkAnyMemory::convert(const char *type) {
+    if(strlen(type) == 1){
+        const int dstUnitSize = MemoryUtils::getUnitSize(type[0]);
+        auto pMemory = new SkMemory();
+        pMemory->_dType = type;
+        pMemory->size = dstUnitSize * getLength();
+        pMemory->data = malloc(pMemory->size);
+        //convert data
+
+        size_t len = strlen(_types);
+        char t;
+        size_t srcBytes = 0;
+        int dstIndex = 0;
+        for (int i = 0; i < _tabCount; ++i) {
+            for (int j = 0; j < _elementCount; ++j) {
+                t = _types[j % len];
+                MemoryUtils::convert(data, t, srcBytes, pMemory->data, type[0], dstIndex * dstUnitSize);
+                srcBytes += MemoryUtils::getUnitSize(t);
+                dstIndex ++;
+            }
+        }
+        return pMemory;
+    } else{
+        //TODO latter support
+        return nullptr;
+    }
 }
 int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
     //table, index
@@ -573,6 +612,25 @@ void SkMemoryFFFUI::toString(SB::StringBuilder &ss) {
 }
 int SkMemoryFFFUI::getLength() {
     return size / 4;
+}
+IMemory* SkMemoryFFFUI::convert(const char *type) {
+    if(strlen(type) == 1){
+        const int dstUnitSize = MemoryUtils::getUnitSize(type[0]);
+        auto pMemory = new SkMemory();
+        pMemory->_dType = type;
+        pMemory->size = dstUnitSize * getLength();
+        pMemory->data = malloc(pMemory->size);
+
+        //convert data
+        const char* types = "fffd";
+        for (int i = 0, len = getLength(); i < len; ++i) {
+            MemoryUtils::convert(data, types[i % 4], i * 4, pMemory->data, type[0], i * dstUnitSize);
+        }
+        return pMemory;
+    } else{
+        //TODO latter support
+        return nullptr;
+    }
 }
 
 int SkMemoryFFFUI::read(SkMemoryFFFUI *mem, lua_State *L) {

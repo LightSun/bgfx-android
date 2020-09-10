@@ -66,7 +66,7 @@ public:
      */
     void writeTo(SkMemory *dstMem, int dstIndex, int srcIndex);
 
-    SkMemory* convert(const char* t);
+    IMemory* convert(const char* t);
 public:
     const char * _dType;
 private:
@@ -101,7 +101,17 @@ public:
     */
     SkAnyMemory(const char* types, int count);
 
+    /**
+     *
+     * @param types
+     * @param count
+     * @param init true to init data
+     */
+    SkAnyMemory(const char* types, int count, bool init);
+
     void toString(SB::StringBuilder& sb);
+
+    IMemory* convert(const char* t);
 
     int getLength(){return  _tabCount * _elementCount;}
 
@@ -121,6 +131,8 @@ public:
 
     int getLength();
     void toString(SB::StringBuilder& sb);
+
+    IMemory* convert(const char* t);
 
     static int read(SkMemoryFFFUI* mem, lua_State* L);
     static int write(SkMemoryFFFUI* mem, lua_State* L);

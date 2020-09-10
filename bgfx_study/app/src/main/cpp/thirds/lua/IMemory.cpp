@@ -204,7 +204,7 @@ srcArr += index;  \
 dstArr += index; \
 * dstArr = (dst)(*srcArr); }
 
-#define CAST_DATA_DST \
+#define CAST_DATA_DST() \
 switch (dstType){ \
 case 'f': \
 CAST_DATA(float); \
@@ -233,7 +233,7 @@ CAST_DATA(double)\
 break;\
 }
 
-void MemoryUtils::cast(void *srcData, const char srcType, void *dstData, const char dstType, int index) {
+void MemoryUtils::convert(void *srcData, const char srcType, void *dstData, const char dstType, int index) {
     switch (srcType) {
         case 'f': {
             SRC_ARR(float);
@@ -275,6 +275,89 @@ void MemoryUtils::cast(void *srcData, const char srcType, void *dstData, const c
         case 'F': {
             SRC_ARR(double);
             CAST_DATA_DST();
+        }
+            break;
+    }
+}
+
+#define SRC_ADDR(type) type* srcArr = (type*)srcAddr
+#define DST_DATA_ANY() \
+switch (dstType){ \
+case 'f': \
+*(float*)dstAddr = (float)(*srcArr);\
+break; \
+case 'd': \
+*(uint32_t*)dstAddr = (uint32_t)(*srcArr); \
+break; \
+case 'w': \
+*(uint16_t*)dstAddr = (uint16_t)(*srcArr); \
+break; \
+case 'b': \
+*(uint8_t*)dstAddr = (uint8_t)(*srcArr); \
+break; \
+\
+case 'i': \
+*(int*)dstAddr = (int)(*srcArr); \
+break;\
+case 's':\
+*(short*)dstAddr = (short)(*srcArr); \
+break;\
+case 'c':\
+*(char*)dstAddr =  (char)(*srcArr); \
+break;\
+case 'F':\
+*(double*)dstAddr =  (double)(*srcArr); \
+break;\
+}
+
+void MemoryUtils::convert(void *srcData, char srcType, size_t srcBytes,
+        void *dstData, const char dstType, size_t dstBytes) {
+    uint8_t * srcAddr = static_cast<uint8_t *>(srcData);
+    uint8_t * dstAddr = static_cast<uint8_t *>(dstData);
+    srcAddr += srcBytes;
+    dstAddr += dstBytes;
+
+    switch (srcType) {
+        case 'f': {
+            SRC_ADDR(float);
+            DST_DATA_ANY();
+        }
+            break;
+
+        case 'd': {
+            SRC_ADDR(uint32_t);
+            DST_DATA_ANY();
+        }
+            break;
+        case 'w': {
+            SRC_ADDR(uint16_t);
+            DST_DATA_ANY();
+        }
+            break;
+        case 'b': {
+            SRC_ADDR(uint8_t);
+            DST_DATA_ANY();
+        }
+            break;
+
+        case 'i': {
+            SRC_ADDR(int);
+            DST_DATA_ANY();
+        }
+            break;
+        case 's': {
+            SRC_ADDR(short);
+            DST_DATA_ANY();
+        }
+            break;
+        case 'c': {
+            SRC_ADDR(char);
+            DST_DATA_ANY();
+        }
+            break;
+        case 'F': {
+            SRC_ADDR(double);
+            DST_DATA_ANY();
         }
             break;
     }
