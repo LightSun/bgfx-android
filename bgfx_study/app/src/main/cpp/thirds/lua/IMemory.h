@@ -127,11 +127,11 @@ public:
     bool isValid();
 
     /**
-     * convert memory type to target type
-     * @param t the type of memory
+     * convert memory type to target type. note the length must match.
+     * @param ts the types of memory. like 'f', 'fff', 'df'...etc.
      * @return a new memory of target type. may be SkMemory/SkAnyMemory
      */
-    IMemory* convert(const char* t){return nullptr;}
+    IMemory* convert(const char* ts){return nullptr;}
 
 public:
     void *data;

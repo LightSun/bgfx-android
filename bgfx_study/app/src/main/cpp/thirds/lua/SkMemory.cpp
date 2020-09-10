@@ -344,7 +344,8 @@ void SkMemory::writeTo(SkMemory *dstMem, int dstIndex, int srcIndex) {
     }
 }
 IMemory* SkMemory::convert(const char* ts) {
-    if(strlen(ts) == 1){
+    auto dstStrLen = strlen(ts);
+    if(dstStrLen == 1){
         if(_dType[0] == ts[0]) return this;
         auto pMemory = new SkMemory();
         pMemory->_dType = ts;
@@ -356,13 +357,22 @@ IMemory* SkMemory::convert(const char* ts) {
         return pMemory;
     }else{
         //error mismatch
-        if(getLength() % strlen(ts) != 0){
+        if(getLength() % dstStrLen != 0){
             return nullptr;
         }
-        size_t tabCount = getLength() / strlen(ts);
-        auto pMemory = new SkAnyMemory(ts, tabCount);
-
-        return nullptr;//TODO later support
+        size_t tabCount = getLength() / dstStrLen;
+        const auto pMemory = new SkAnyMemory(ts, tabCount, false);
+        //copy data
+        const char srcType = _dType[0];
+        const auto unitSize = MemoryUtils::getUnitSize(srcType);
+        char dstType;
+        size_t  dstBytes = 0;
+        for (int i = 0, length = getLength(); i < length; ++i) {
+            dstType = ts[i % dstStrLen];
+            MemoryUtils::convert(data, srcType, i * unitSize, pMemory->data, dstType, dstBytes);
+            dstBytes += MemoryUtils::getUnitSize(dstType);
+        }
+        return pMemory;
     }
 }
 
@@ -483,11 +493,12 @@ void SkAnyMemory::toString(SB::StringBuilder &sb) {
     }
     sb << "}";
 }
-IMemory* SkAnyMemory::convert(const char *type) {
-    if(strlen(type) == 1){
-        const int dstUnitSize = MemoryUtils::getUnitSize(type[0]);
+IMemory* SkAnyMemory::convert(const char *ts) {
+    const int dstStrLen = strlen(ts);
+    if(dstStrLen == 1){
+        const int dstUnitSize = MemoryUtils::getUnitSize(ts[0]);
         auto pMemory = new SkMemory();
-        pMemory->_dType = type;
+        pMemory->_dType = ts;
         pMemory->size = dstUnitSize * getLength();
         pMemory->data = malloc(pMemory->size);
         //convert data
@@ -499,15 +510,32 @@ IMemory* SkAnyMemory::convert(const char *type) {
         for (int i = 0; i < _tabCount; ++i) {
             for (int j = 0; j < _elementCount; ++j) {
                 t = _types[j % len];
-                MemoryUtils::convert(data, t, srcBytes, pMemory->data, type[0], dstIndex * dstUnitSize);
+                MemoryUtils::convert(data, t, srcBytes, pMemory->data, ts[0], dstIndex * dstUnitSize);
                 srcBytes += MemoryUtils::getUnitSize(t);
                 dstIndex ++;
             }
         }
         return pMemory;
     } else{
-        //TODO latter support
-        return nullptr;
+        //error mismatch
+        if(getLength() % dstStrLen != 0){
+            return nullptr;
+        }
+        size_t tabCount = getLength() / dstStrLen;
+        const auto pMemory = new SkAnyMemory(ts, tabCount, false);
+        //copy data
+        const size_t srcStrLen = strlen(_types);
+        char srcType, dstType;
+        size_t  dstBytes = 0;
+        size_t  srcBytes = 0;
+        for (int i = 0, length = getLength(); i < length; ++i) {
+            dstType = ts[i % dstStrLen];
+            srcType = _types[i % srcStrLen];
+            MemoryUtils::convert(data, srcType, srcBytes, pMemory->data, dstType, dstBytes);
+            srcBytes += MemoryUtils::getUnitSize(srcType);
+            dstBytes += MemoryUtils::getUnitSize(dstType);
+        }
+        return pMemory;
     }
 }
 int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
@@ -613,23 +641,39 @@ void SkMemoryFFFUI::toString(SB::StringBuilder &ss) {
 int SkMemoryFFFUI::getLength() {
     return size / 4;
 }
-IMemory* SkMemoryFFFUI::convert(const char *type) {
-    if(strlen(type) == 1){
-        const int dstUnitSize = MemoryUtils::getUnitSize(type[0]);
+IMemory* SkMemoryFFFUI::convert(const char *ts) {
+    const int dstStrLen = strlen(ts);
+    if(dstStrLen == 1){
+        const int dstUnitSize = MemoryUtils::getUnitSize(ts[0]);
         auto pMemory = new SkMemory();
-        pMemory->_dType = type;
+        pMemory->_dType = ts;
         pMemory->size = dstUnitSize * getLength();
         pMemory->data = malloc(pMemory->size);
 
         //convert data
         const char* types = "fffd";
         for (int i = 0, len = getLength(); i < len; ++i) {
-            MemoryUtils::convert(data, types[i % 4], i * 4, pMemory->data, type[0], i * dstUnitSize);
+            MemoryUtils::convert(data, types[i % 4], i * 4, pMemory->data, ts[0], i * dstUnitSize);
         }
         return pMemory;
     } else{
-        //TODO latter support
-        return nullptr;
+        if(getLength() % dstStrLen != 0){
+            return nullptr;
+        }
+        size_t tabCount = getLength() / dstStrLen;
+        const auto pMemory = new SkAnyMemory(ts, tabCount, false);
+        //copy data
+        const char* srcTypes = "fffd";
+        char srcType;
+        char dstType;
+        size_t dstBytes = 0;
+        for (int i = 0, length = getLength(); i < length; ++i) {
+            dstType = ts[i % dstStrLen];
+            srcType = srcTypes[i % 4];
+            MemoryUtils::convert(data, srcType, i * 4, pMemory->data, dstType, dstBytes);
+            dstBytes += MemoryUtils::getUnitSize(dstType);
+        }
+        return pMemory;
     }
 }
 
