@@ -138,6 +138,53 @@ public:
     static void setarray_scalar(lua_State *L, int index, SkScalar value) {
         setarray_number(L, index, SkScalarToLua(value));
     }
+
+    //wrap method for lua get and set. see 'ud_wrap.lua'
+    static int forward_call(lua_State *L) { //a.call(a, k, v)
+        const char *key = lua_tostring(L, -2);
+        // before is {a, k, v};
+        lua_pushvalue(L, 2); //{a, k, v, k}
+        lua_gettable(L, 1); // {a, k, v, method}
+        lua_pushvalue(L, 1); // {a, k, v, method, a}
+        lua_pushvalue(L, 3); // {a, k, v, method, a, v}
+        //LOGD("---------  ---------");
+        //LOGD("before call... %s", key);
+        //luaB_dumpStack(L);
+        int result = lua_pcall(L, 2, 1, 0); //two arguments, 1 result,
+        //LOGD("after call...");
+        //luaB_dumpStack(L);
+        //LOGD("---------  ---------");
+        if (result == LUA_OK) {
+            lua_pushvalue(L, -1);
+            return 1;
+        }
+        return 0;
+    }
+
+// {a, k, ...} => a.k(a, ...)
+    static int forward_func_call(lua_State *L) {
+        //a.call  (a, tostring(s), ...):  {a, k, ...} .
+        //need: {a, func, a, ...}
+        auto n = lua_gettop(L);
+        auto key = lua_tostring(L, 2);
+        lua_pushvalue(L, 2); //{a, k, ..., k}
+        lua_remove(L, 2);   // {a, ..., k}
+        lua_gettable(L, 1); // {a, ..., func}
+        lua_insert(L, 2);   // {a, func, ...}
+        lua_pushvalue(L, 1); // {a, func, ... , a}
+        lua_insert(L, 3); // {a, func, a, ...}
+
+        //LOGD("------- before func_call... %s", key);
+        //luaB_dumpStack(L);
+        int result = lua_pcall(L, n - 1, 1, 0);
+        //LOGD("------- after func_call... %d", result); // 0 is ok
+        //luaB_dumpStack(L);
+        if (result == LUA_OK) {
+            lua_pushvalue(L, -1);
+            return 1;
+        }
+        return 0;
+    }
 };
 
 #endif //BGFX_STUDY_LUAUTILS_H
