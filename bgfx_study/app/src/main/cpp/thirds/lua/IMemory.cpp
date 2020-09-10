@@ -195,6 +195,91 @@ void MemoryUtils::init(char t, void *data, int totalIndex) {
             LOGW("unknown type data to init. %c", t);
     }
 }
+
+#define SRC_ARR(type) type *srcArr = static_cast<type *>(srcData)
+#define CAST_DATA(dst) \
+{ \
+dst *dstArr = static_cast<dst *>(dstData); \
+srcArr += index;  \
+dstArr += index; \
+* dstArr = (dst)(*srcArr); }
+
+#define CAST_DATA_DST \
+switch (dstType){ \
+case 'f': \
+CAST_DATA(float); \
+break; \
+case 'd': \
+CAST_DATA(uint32_t) \
+break; \
+case 'w': \
+CAST_DATA(uint16_t) \
+break; \
+case 'b': \
+CAST_DATA(uint8_t) \
+break; \
+\
+case 'i': \
+CAST_DATA(int)\
+break;\
+case 's':\
+CAST_DATA(short)\
+break;\
+case 'c':\
+CAST_DATA(char)\
+break;\
+case 'F':\
+CAST_DATA(double)\
+break;\
+}
+
+void MemoryUtils::cast(void *srcData, const char srcType, void *dstData, const char dstType, int index) {
+    switch (srcType) {
+        case 'f': {
+            SRC_ARR(float);
+            CAST_DATA_DST();
+        }
+            break;
+
+        case 'd': {
+            SRC_ARR(uint32_t);
+            CAST_DATA_DST();
+        }
+            break;
+        case 'w': {
+            SRC_ARR(uint16_t);
+            CAST_DATA_DST();
+        }
+            break;
+        case 'b': {
+            SRC_ARR(uint8_t);
+            CAST_DATA_DST();
+        }
+            break;
+
+        case 'i': {
+            SRC_ARR(int);
+            CAST_DATA_DST();
+        }
+            break;
+        case 's': {
+            SRC_ARR(short);
+            CAST_DATA_DST();
+        }
+            break;
+        case 'c': {
+            SRC_ARR(char);
+            CAST_DATA_DST();
+        }
+            break;
+        case 'F': {
+            SRC_ARR(double);
+            CAST_DATA_DST();
+        }
+            break;
+    }
+}
+
 //-------------- memory allocator -------------------------
 MemoryAllocator::MemoryAllocator():f(nullptr), u8(nullptr), u16(nullptr), u32(nullptr) {
 }

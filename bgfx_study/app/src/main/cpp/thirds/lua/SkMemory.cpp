@@ -343,6 +343,21 @@ void SkMemory::writeTo(SkMemory *dstMem, int dstIndex, int srcIndex) {
             break;
     }
 }
+SkMemory* SkMemory::convert(const char* ts) {
+    if(strlen(ts) == 1){
+        if(_dType[0] == ts[0]) return this;
+        auto pMemory = new SkMemory();
+        pMemory->_dType = ts;
+        pMemory->size = MemoryUtils::getUnitSize(ts[0]) * getLength();
+        pMemory->data = malloc(pMemory->size);
+        for (int i = 0, length = getLength(); i < length; ++i) {
+            MemoryUtils::cast(data, _dType[0] ,pMemory->data, ts[0], i);
+        }
+        return pMemory;
+    }else{
+        return nullptr;//TODO later support
+    }
+}
 
 //======================= SKAnyMemory ===================================
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){
@@ -730,7 +745,8 @@ SkMemoryMatrix * SkMemoryMatrix::transpose() {
     }
 }
 
-void SkMemoryMatrix::copyData(SkMemory *pMemory, int columnIndex){
+void SkMemoryMatrix::copyData(SkMemory *pMemory, int columnIndex) {
+    //make every column to a new row
     for (int i = 0; i < count; ++i) {
         array[i]->writeTo(pMemory, i, columnIndex);
     }

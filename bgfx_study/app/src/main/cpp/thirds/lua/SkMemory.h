@@ -66,6 +66,7 @@ public:
      */
     void writeTo(SkMemory *dstMem, int dstIndex, int srcIndex);
 
+    SkMemory* convert(const char* t);
 public:
     const char * _dType;
 private:
