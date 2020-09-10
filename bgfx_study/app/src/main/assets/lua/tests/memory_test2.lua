@@ -7,8 +7,14 @@
 local mem = require("memory")
 
 --- test transpose
-local mat = mem.newMatrix('d', { 1, 2, 3}, { 4, 5, 6}, {7,8,9});
-print("mat->transpose before", mat)
+local mat = mem.newMatrix('d', { 1, 2, 3, 4}, { 5, 6, 7, 8}, {9, 10 , 11, 12});
+print("mat->transpose before", mat);
+print("mat.len", #mat)
+print(mat[0][0]);
+mat[0][0] = 100;
+print(mat[0][0]);
 -- 触发了 --index
-mat = mat.transpose(mat);
+mat = mat.transpose();
 print("mat->transpose", mat)
+print(mat.isValid())
+print("mat.len", #mat)

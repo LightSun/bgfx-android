@@ -6,6 +6,7 @@
 
 local m = {};
 local mem = require("hmem_lua");
+local ud_wrap = require("ud_wrap");
 
 --- create single type memory. type: can be 'd', 'w', 'b', 'f'.
 --- 'd' is u-int32
@@ -28,7 +29,7 @@ end
 --- create memory matrix .
 --- @param ...: can be (tables) or (rowCount, columnCount)
 function m.newMatrix(type, ...)
-    return mem.newMatrix(type, ...);
+    return ud_wrap.wrapMemory(mem.newMatrix(type, ...));
 end
 
 return m;

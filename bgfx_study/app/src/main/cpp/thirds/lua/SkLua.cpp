@@ -1139,17 +1139,34 @@ static int SkMemoryMatrix_transpose(lua_State *L) {
     LuaUtils::push_ptr(L, pMatrix);
     return 1;
 }
+static int SkMemoryMatrix_shouldWrapResult(lua_State *L) {
+    const char *func = luaL_checkstring(L, 1);
+    const char* names[] = {
+           "transpose"
+    };
+    int len = sizeof(names)/sizeof(names[0]);
+    for (int i = 0; i < len; ++i) {
+        if(strcmp(names[i], func) == 0){
+            lua_pushboolean(L, 1);
+            return 1;
+        }
+    }
+    return 0;
+}
 
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
         {"transpose",      SkMemoryMatrix_transpose},
         {"isValid",        SkMemoryMatrix_isValid},
         {"getColumnCount", SkMemoryMatrix_columnCount},
         {"getRowCount",    SkMemoryMatrix_len},
-        {"__len",          SkMemoryMatrix_len},
-        {"__tostring",     SkMemoryMatrix_tostring},
-        {"__newindex",     SkMemoryMatrix_newindex},
-        {"__index",        SkMemoryMatrix_index},
+        {"_len",           SkMemoryMatrix_len},
+        {"_tostring",      SkMemoryMatrix_tostring},
+        {"_newindex",      SkMemoryMatrix_newindex},
+        {"_index",         SkMemoryMatrix_index},
+
         {"__gc",           SkMemoryMatrix_gc},
+        {"call",           forward_func_call},
+        {"shouldWrapResult", SkMemoryMatrix_shouldWrapResult},
         {NULL, NULL},
 };
 

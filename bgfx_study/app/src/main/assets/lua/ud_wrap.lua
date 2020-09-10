@@ -98,4 +98,41 @@ function m.wrapCall(u, recursive)
     end
 end
 
+function m.wrapMemory(u)
+    -- for userdata all method-call will trigger '__index' so we use this to wrap.
+    if(type(u) == 'userdata') then
+        local self = {};
+        local meta = {
+            __index = function(t, k, ...)
+                if(type(k) == 'number') then
+                    return u._index(u, k, ...);
+                else
+                    local func = function(...)
+                        local result = u.call(u, k, ...)
+                        if(u.shouldWrapResult(k)) then
+                            return m.wrapMemory(result);
+                        else
+                            return result;
+                        end
+                    end
+                    return func;
+                end
+            end,
+            __newindex = function(t, index, val)
+                return u._newindex(u, index, val);
+            end,
+            __len = function(t)
+                return u._len(u);
+            end,
+            __tostring = function(t)
+                return "wrapMemory: "..u._tostring(u);
+            end
+        };
+        setmetatable(self, meta)
+        return self;
+    else
+        return u;
+    end
+end
+
 return m;
