@@ -8,7 +8,7 @@ local m = {};
 local mem = require("hmem_lua");
 local ud_wrap = require("ud_wrap");
 
---- create single type memory. type: can be 'd', 'w', 'b', 'f'.
+--- create memory. type: can be 'd', 'w', 'b', 'f'.
 --- 'd' is u-int32
 --- 'w' is u-int16
 --- 'b' is u-int8
@@ -16,14 +16,14 @@ local ud_wrap = require("ud_wrap");
 --- ...: means multi array. or just a int for the length of memory.
 --- params: (type, table...) or (type, len)
 function m.new(type, ...)
-    return mem.new(type, ...);
+    return ud_wrap.wrapMemory(mem.new(type, ...));
 end
 
 --- create fix type memory: 'float-float-float-uint32'
 --- ...: means multi table of 'fffui'.
 function m.newFFFUI(...)
     -- lua 'table.unpack()' as parameter must be the final parameter.or else the lua stack only contains first parameter.
-    return mem.newFFFUI(...);
+    return ud_wrap.wrapMemory(mem.newFFFUI(...));
 end
 
 --- create memory matrix .

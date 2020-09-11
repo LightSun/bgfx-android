@@ -67,6 +67,7 @@ public:
     void writeTo(SkMemory *dstMem, int dstIndex, int srcIndex);
 
     IMemory* convert(const char* t);
+    int foreach(lua_State* L);
 public:
     const char * _dType;
 private:
@@ -112,6 +113,7 @@ public:
     void toString(SB::StringBuilder& sb);
 
     IMemory* convert(const char* t);
+    int foreach(lua_State* L);
 
     int getLength(){return  _tabCount * _elementCount;}
 
@@ -133,6 +135,7 @@ public:
     void toString(SB::StringBuilder& sb);
 
     IMemory* convert(const char* t);
+    int foreach(lua_State* L);
 
     static int read(SkMemoryFFFUI* mem, lua_State* L);
     static int write(SkMemoryFFFUI* mem, lua_State* L);

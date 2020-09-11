@@ -133,6 +133,8 @@ public:
      */
     IMemory* convert(const char* ts){return nullptr;}
 
+    int foreach(lua_State* L){ return 0;}
+
 public:
     void *data;
     size_t size;
