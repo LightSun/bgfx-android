@@ -25,9 +25,6 @@ end
 --- @param vec3_up: vector3 for at. null means default is {0, 1,0}
 --- @param handness: null means default is 'Left'.
 function m.mtxLookAt(mem_f, vec3_eye, vec3_at, vec3_up, handness)
-    if(mem_f._unwrap) then
-        mem_f = mem_f._unwrap();
-    end
     return bx1.mtxLookAt(mem_f, vec3_eye, vec3_at, vec3_up, handness);
 end
 
@@ -42,9 +39,6 @@ end
 --- @param homogeneousNdc: bool
 --- @param handness: 'Left' or 'Right'. default is 'Left'
 function m.mtxProj9(mem_f, _ut, _dt, _lt, _rt, _near, _far, homogeneousNdc, handness)
-    if(mem_f._unwrap) then
-        mem_f = mem_f._unwrap();
-    end
     if(not handness) then
         handness = 'Left';
     end
@@ -53,9 +47,6 @@ end
 
 function m.mtxProj7(mem_f, _fovy, _aspect,  _near, _far, homogeneousNdc, handness)
     --float* _result, float _fovy, float _aspect, float _near, float _far, bool _homogeneousNdc, Handness::Enum _handness = Handness::Left
-    if(mem_f._unwrap) then
-        mem_f = mem_f._unwrap();
-    end
     if(not handness) then
         handness = 'Left';
     end
@@ -64,9 +55,6 @@ end
 ---
 function m.mtxProj6(mem_f, mem_fov, _near, _far, homogeneousNdc, handness)
     -- float* _result, const float _fov[4], float _near, float _far, bool _homogeneousNdc, Handness::Enum _handness = Handness::Left
-    if(mem_f._unwrap) then
-        mem_f = mem_f._unwrap();
-    end
     if(not handness) then
         handness = 'Left';
     end
@@ -75,9 +63,6 @@ end
 --- mtxProj : compat mtxProj6, mtxProj7, mtxProj9
 --- @param mem_f:  float memory userdata.
 function m.mtxProj(mem_f, ...)
-    if(mem_f._unwrap) then
-        mem_f = mem_f._unwrap();
-    end
     return bx1.mtxProj(mem_f, ...);
 end
 
@@ -86,9 +71,6 @@ end
 --- @param _ax: float
 --- @param _ay: float
 function m.mtxRotateXY(mem_f, _ax, _ay)
-    if(mem_f._unwrap) then
-        mem_f = mem_f._unwrap();
-    end
     return bx1.mtxRotateXY(mem_f, _ax, _ay);
 end
 
