@@ -11,7 +11,7 @@
 namespace SB {
     static const std::map<unsigned char, const char *> _DEF_FORMATS = {
             {T_BOOL,        "%d"},
-            {T_CHAR,        "%c"},
+            {T_CHAR,        "%d"},
             {T_U_CHAR,      "%d"},
             {T_U_INT,       "%u"},
             {T_INT,         "%d"},

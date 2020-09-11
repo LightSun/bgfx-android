@@ -67,22 +67,6 @@ public:
     static void convert(void *srcData, char srcType, size_t srcBytes,
             void *dstData, const char dstType, size_t dstBytes);
 };
-//later may delete
-class MemoryAllocator{
-
-public:
-    MemoryAllocator();
-    ~MemoryAllocator();
-
-    void* require(char type);
-    void releaseAll();
-
-private:
-    float* f;
-    uint8_t * u8;
-    uint16_t * u16;
-    uint32_t * u32;
-};
 
 class IMemory{
 

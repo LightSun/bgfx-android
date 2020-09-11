@@ -104,17 +104,17 @@ int MemoryUtils::read(lua_State *L, char t, void *data, int totalIndex) {
         }break;
 
         case 's':{
-            *addr = static_cast<short>(lua_tointeger(L, -1));
+            *(short*)addr = static_cast<short>(lua_tointeger(L, -1));
         }break;
         case 'i':{
-            *addr = static_cast<int >(lua_tointeger(L, -1));
+            *(int*)addr = static_cast<int >(lua_tointeger(L, -1));
         }break;
         case 'c':{
-            *addr = static_cast<char>(lua_tointeger(L, -1));
+            *(char*)addr = static_cast<char>(lua_tointeger(L, -1));
         }break;
 
         case 'F':{
-            *addr = static_cast<double>(lua_tonumber(L, -1));
+            *(double*)addr = static_cast<double>(lua_tonumber(L, -1));
         }break;
 
         default:
@@ -363,46 +363,6 @@ void MemoryUtils::convert(void *srcData, char srcType, size_t srcBytes,
     }
 }
 
-//-------------- memory allocator -------------------------
-MemoryAllocator::MemoryAllocator():f(nullptr), u8(nullptr), u16(nullptr), u32(nullptr) {
-}
-MemoryAllocator::~MemoryAllocator() {
-    releaseAll();
-}
-void MemoryAllocator::releaseAll() {
-    FREE_POINTER(f)
-    FREE_POINTER(u8)
-    FREE_POINTER(u16)
-    FREE_POINTER(u32)
-}
-void* MemoryAllocator::require(char type) {
-    switch (type) {
-        case 'f':
-            if(!f){
-                f = static_cast<float *>(malloc(sizeof(float)));
-            }
-            return f;
-        case 'd':
-            if(!u32){
-                u32 = static_cast<uint32_t *>(malloc(sizeof(uint32_t)));
-            }
-            return u32;
-        case 'w':
-            if(!u16){
-                u16 = static_cast<uint16_t *>(malloc(sizeof(uint16_t)));
-            }
-            return u16;
-        case 'b':
-            if(!u8){
-                u8 = static_cast<uint8_t *>(malloc(sizeof(uint8_t)));
-            }
-            return u8;
-
-        default:
-            LOGW("unknown type : %c ", type);
-            return nullptr;
-    }
-}
 //---------------------------------------
 IMemory::IMemory():_ref(1) {
 
