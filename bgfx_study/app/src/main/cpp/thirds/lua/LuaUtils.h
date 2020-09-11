@@ -59,6 +59,29 @@ template <typename T> const char* get_mtname();
 
 #define CHECK_SETFIELD(key) do if (key) lua_setfield(fL, -2, key); while (0)
 
+#define DEF__INDEX(type, func_num)        \
+static int type##_index(lua_State *L) { \
+    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
+    if(lua_type(L, 2) == LUA_TNUMBER){ \
+        return func_num(L, pMemory); \
+    } else{ \
+        const auto mn = luaL_checkstring(L, 2);\
+        for (int i = 0; ; ++i) {\
+            auto method = s##type##_Methods[i];\
+            if(method.name == nullptr){\
+                break;\
+            }\
+            if(strcmp(method.name, mn) == 0){\
+                lua_pushvalue(L, 1);\
+                lua_pushcclosure(L, method.func, 1);\
+                return 1;\
+            }\
+        }\
+        lua_pushnil(L);\
+        return 1;\
+    }\
+}
+
 class LuaUtils{
 
 public:

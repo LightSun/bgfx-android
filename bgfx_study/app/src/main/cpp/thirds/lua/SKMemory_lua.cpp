@@ -6,18 +6,6 @@
 #include "SkMemory.h"
 #include "bgfx_wrapper.h"
 
-static int _shouldWrapResult(lua_State *L, const char *names[]) {
-    const char *func = luaL_checkstring(L, 1);
-    int len = sizeof(names) / sizeof(names[0]);
-    for (int i = 0; i < len; ++i) {
-        if (strcmp(names[i], func) == 0) {
-            lua_pushboolean(L, 1);
-            return 1;
-        }
-    }
-    return 0;
-}
-
 static int mem_new(lua_State *L) {
     //(type, table...) or (type, len )
     const char *type = lua_tostring(L, 1);
