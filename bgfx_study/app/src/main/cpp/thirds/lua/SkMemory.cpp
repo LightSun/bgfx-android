@@ -824,10 +824,22 @@ SkMemoryMatrix::SkMemoryMatrix(int count, bool singleType): IMemory(), count(cou
 }
 void SkMemoryMatrix::destroyData() {
     if(array){
+        for (int i = 0; i < count; ++i) {
+            SkMemory *pMemory = array[i];
+            if(pMemory != nullptr){
+                delete pMemory;
+            }
+        }
         delete[](array);
         array = nullptr;
     }
     if(anyArray){
+        for (int i = 0; i < count; ++i) {
+            SkAnyMemory *pMemory = anyArray[i];
+            if(pMemory != nullptr){
+                delete pMemory;
+            }
+        }
         delete[](anyArray);
         anyArray = nullptr;
     }
@@ -933,7 +945,6 @@ SkMemoryMatrix * SkMemoryMatrix::convert(const char *ts) {
             for (int i = 0; i < getRowCount(); ++i) {
                 auto pMemory = array[i]->convert(ts);
                 if(pMemory == nullptr){
-                    mat->destroyAll();
                     delete(mat);
                     return nullptr;
                 }
@@ -946,7 +957,6 @@ SkMemoryMatrix * SkMemoryMatrix::convert(const char *ts) {
             for (int i = 0; i < getRowCount(); ++i) {
                 auto pMemory = array[i]->convert(ts);
                 if(pMemory == nullptr){
-                    mat->destroyAll();
                     delete(mat);
                     return nullptr;
                 }
@@ -961,7 +971,6 @@ SkMemoryMatrix * SkMemoryMatrix::convert(const char *ts) {
             for (int i = 0; i < getRowCount(); ++i) {
                 auto pMemory = anyArray[i]->convert(ts);
                 if(pMemory == nullptr){
-                    mat->destroyAll();
                     delete(mat);
                     return nullptr;
                 }
@@ -974,7 +983,6 @@ SkMemoryMatrix * SkMemoryMatrix::convert(const char *ts) {
             for (int i = 0; i < getRowCount(); ++i) {
                 auto pMemory = anyArray[i]->convert(ts);
                 if(pMemory == nullptr){
-                    mat->destroyAll();
                     delete(mat);
                     return nullptr;
                 }
@@ -989,24 +997,5 @@ void SkMemoryMatrix::copyData(SkMemory *pMemory, int columnIndex) {
     //make every column to a new row
     for (int i = 0; i < count; ++i) {
         array[i]->writeTo(pMemory, i, columnIndex);
-    }
-}
-void SkMemoryMatrix::destroyAll() {
-    if(isSingleType()){
-        for (int i = 0; i < getRowCount(); ++i) {
-            auto pMemory = array[i];
-            if(pMemory != nullptr){
-                delete pMemory;
-            }
-        }
-        array = nullptr;
-    } else{
-        for (int i = 0; i < getRowCount(); ++i) {
-            auto pMemory = anyArray[i];
-            if(pMemory != nullptr){
-                delete pMemory;
-            }
-        }
-        anyArray = nullptr;
     }
 }

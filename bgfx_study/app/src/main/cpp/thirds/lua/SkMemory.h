@@ -192,12 +192,8 @@ private:
     SkMemory** array;
     SkAnyMemory** anyArray;
     int count;
-
+    //only used for single type
     void copyData(SkMemory *pMemory, int columnIndex);
-    /**
-     * destroy all elements by for-each
-     */
-    void destroyAll();
 };
 
 #endif //BGFX_STUDY_SKMEMORY_H
