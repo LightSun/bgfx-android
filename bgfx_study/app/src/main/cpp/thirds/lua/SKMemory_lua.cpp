@@ -370,7 +370,7 @@ static int SkMemoryMatrix_shouldWrapResult(lua_State *L) {
     };
     return _shouldWrapResult(L, names);
 }
-
+//TODO 使用ud_wrap 包装memory 之后。 矩阵内索引的问题，需要处理。
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
         {"convert",          SkMemoryMatrix_convert},
         {"transpose",        SkMemoryMatrix_transpose},
