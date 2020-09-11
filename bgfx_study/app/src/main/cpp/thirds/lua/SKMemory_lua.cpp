@@ -233,7 +233,7 @@ const static luaL_Reg gSkAnyMemory_Methods[] = {
         {"foreach",          SkAnyMemory_foreach},
         {"isValid",          SkAnyMemory_isValid},
         {"_len",             SkAnyMemory_len},
-        {"_tostring",        SkAnyMemory_tostring},
+        {"__tostring",        SkAnyMemory_tostring},
         {"_newindex",        SkAnyMemory_newindex},
         {"_index",           SkAnyMemory_index},
 
@@ -247,7 +247,7 @@ const static luaL_Reg gSkMemory_Methods[] = {
         {"foreach",          SkMemory_foreach},
         {"isValid",          SkMemory_isValid},
         {"_len",             SkMemory_len},
-        {"_tostring",        SkMemory_tostring},
+        {"__tostring",        SkMemory_tostring},
         {"_newindex",        SkMemory_newindex},
         {"_index",           SkMemory_index},
 
@@ -261,7 +261,7 @@ const static luaL_Reg gSkMemoryFFFUI_Methods[] = {
         {"foreach",          SkMemoryFFFUI_foreach},
         {"isValid",          SkMemoryFFFUI_isValid},
         {"_len",             SkMemoryFFFUI_len},
-        {"_tostring",        SkMemoryFFFUI_tostring},
+        {"__tostring",        SkMemoryFFFUI_tostring},
         {"_newindex",        SkMemoryFFFUI_newindex},
         {"_index",           SkMemoryFFFUI_index},
 
@@ -378,7 +378,7 @@ const static luaL_Reg gSkMemoryMatrix_Methods[] = {
         {"getColumnCount",   SkMemoryMatrix_columnCount},
         {"getRowCount",      SkMemoryMatrix_len},
         {"_len",             SkMemoryMatrix_len},
-        {"_tostring",        SkMemoryMatrix_tostring},
+        {"__tostring",        SkMemoryMatrix_tostring},
         {"_newindex",        SkMemoryMatrix_newindex},
         {"_index",           SkMemoryMatrix_index},
 

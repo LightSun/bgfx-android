@@ -102,6 +102,9 @@ function m.wrapMemory(u)
     -- for userdata all method-call will trigger '__index' so we use this to wrap.
     if(type(u) == 'userdata') then
         local self = {};
+        function self._unwrap()
+            return u;
+        end
         local meta = {
             __index = function(t, k, ...)
                 if(type(k) == 'number') then
@@ -125,7 +128,7 @@ function m.wrapMemory(u)
                 return u._len(u);
             end,
             __tostring = function(t)
-                return "wrapMemory: "..u._tostring(u);
+                return "wrapMemory: "..u.__tostring(u);
             end
         };
         setmetatable(self, meta)

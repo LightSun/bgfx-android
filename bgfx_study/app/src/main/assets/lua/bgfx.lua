@@ -114,6 +114,9 @@ end
 ---
 ---@return userdata of Memory
 function m.makeRef(ud_mem)
+    if(ud_mem._unwrap) then
+        ud_mem = ud_mem._unwrap();
+    end
     return bgfx_lua.makeRef(ud_mem);
 end
 --- create vertex buffer
@@ -166,6 +169,12 @@ end
 --- @param mem_1: memory userdata. often is float type
 --- @param mem_2: memory userdata. often is float type
 function m.setViewTransform(viewId, mem_1, mem_2)
+    if(mem_1._unwrap) then
+        mem_1 = mem_1._unwrap();
+    end
+    if(mem_2._unwrap) then
+        mem_2 = mem_2._unwrap();
+    end
     return bgfx_lua.setViewTransform(viewId, mem_1, mem_2);
 end
 
@@ -173,6 +182,9 @@ end
 --- @param mem_or_cache: memory userdata or matrix cache(uint32)
 --- @param _num: Number of matrices in array. default is 1
 function m.setTransform(mem_or_cache, _num)
+    if(mem_or_cache._unwrap) then
+        mem_or_cache = mem_or_cache._unwrap();
+    end
     if(not _num) then
         _num = 1;
     end
