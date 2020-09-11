@@ -8,6 +8,7 @@
 #include "SkRefCnt.h"
 #include "SkScalar.h"
 #include "lua.hpp"
+#include "global.h"
 
 #define lua2bool(L, idx) lua_toboolean(L, idx) == 1
 #define SkScalarToLua(x)    SkScalarToDouble(x)
@@ -19,7 +20,7 @@
 #define TO_FLOAT(L, idx) static_cast<float>(lua_tonumber(L, idx))
 #define TO_INT(L, idx) static_cast<int>(lua_tonumber(L, idx))
 #define TO_SHORT(L, idx) static_cast<short>(lua_tonumber(L, idx))
-#define TO_CHAR(L, idx) static_cast<char>(lua_tonumber(L, idx))
+#define TO_CHAR(L, idx) static_cast<s_char>(lua_tonumber(L, idx))
 #define TO_DOUBLE(L, idx) static_cast<double>(lua_tonumber(L, idx))
 
 #define LUA_OPT(L, idx, func_idx, defVal) \

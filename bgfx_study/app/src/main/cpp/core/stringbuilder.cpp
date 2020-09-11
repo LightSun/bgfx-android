@@ -172,6 +172,7 @@ StringBuilder& StringBuilder::append(type _val){ \
     APPEND(T_BOOL, bool)
 
     APPEND(T_CHAR, char)
+    APPEND(T_CHAR, signed char)
 
     APPEND(T_U_CHAR, unsigned char)
 
@@ -216,6 +217,7 @@ StringBuilder& StringBuilder::operator<<(type _val) { \
     OP(T_BOOL, bool)
 
     OP(T_CHAR, char)
+    OP(T_CHAR, signed char)
 
     OP(T_U_CHAR, unsigned char)
 

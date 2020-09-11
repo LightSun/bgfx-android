@@ -6,6 +6,7 @@
 #define BGFX_STUDY_PRINTER_H
 
 #include "stringbuilder.h"
+#include "global.h"
 //#include <sstream>
 
 class Printer{
@@ -85,6 +86,7 @@ static void printArray(type array[], int len, SB::StringBuilder& ss){ \
     PRINT_ARRAY(short)
     PRINT_ARRAY(int)
     PRINT_ARRAY(char)
+    PRINT_ARRAY(signed char)
     PRINT_ARRAY(double)
 };
 

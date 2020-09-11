@@ -9,6 +9,7 @@
 
 #define SkASSERT(cond) static_cast<void>(0)
 #define SkDebugf(fmt, ...)  bx::debugPrintf(fmt, __VA_ARGS__)
+#define s_char signed char
 
 
 #define FREE_POINTER(q) if(q){ \
@@ -18,17 +19,6 @@
 #define DESTROY_POINTER(q) if(q){ \
     delete q;  \
     q = nullptr; \
-}
-
-#define DESTROY_POINTER_FUNC(q, func_re) if(q){ \
-    func_re(q); \
-    delete q;  \
-    q = nullptr; \
-}
-
-#define UN_REF_POINTER(p, func) if(p){ \
-    func(p); \
-    p = nullptr; \
 }
 
 //SIMPLE_DEMO only used simple

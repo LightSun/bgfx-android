@@ -56,8 +56,17 @@ READ(uint16_t)
 READ(uint32_t)
 READ(short)
 READ(int)
-READ(char)
+//READ(char)
 READ(double)
+
+#define READ_char() \
+s_char read_char(SkMemory* mem, int index){ \
+auto addr = static_cast<s_char*>(mem->data); \
+addr += index; \
+return *addr; \
+}
+READ_char();
+
 
 #define WRITE(type) \
 void write_##type(SkMemory* mem, int index, type val){ \
@@ -71,8 +80,17 @@ WRITE(uint16_t)
 WRITE(uint32_t)
 WRITE(short)
 WRITE(int)
-WRITE(char)
+//WRITE(char)
 WRITE(double)
+
+#define WRITE_char() \
+void write_char(SkMemory *mem, int index, s_char val) { \
+    auto addr = static_cast<s_char *>(mem->data); \
+    addr += index; \
+    *addr = val; \
+}
+WRITE_char()
+
 
 #define COPY_SINGLE_DATA(type) \
 { auto pData = (type *) (dstMem->data); \
@@ -113,7 +131,7 @@ SkMemory::SkMemory(const char *type, int len): SimpleMemory(), _dType(type) {
             ARRAY_INIT(int);
         }
         case 'c':{
-            ARRAY_INIT(char);
+            ARRAY_INIT(s_char);
         }
 
         case 'F':{
@@ -157,7 +175,7 @@ SkMemory::SkMemory(lua_State *L, int start, int tableCount, const char *t) : Sim
         } break;
 
         case 'c':{
-            copy_data_i(char);
+            copy_data_i(s_char);
         } break;
 
         case 'F': {
@@ -284,7 +302,7 @@ void SkMemory::toString(SB::StringBuilder& ss) {
             Printer::printArray((int*)data, size, ss);
             break;
         case 'c':
-            Printer::printArray((char*)data, size, ss);
+            Printer::printArray((s_char*)data, size, ss);
             break;
 
         case 'F':
@@ -335,7 +353,7 @@ void SkMemory::writeTo(SkMemory *dstMem, int dstIndex, int srcIndex) {
         COPY_SINGLE_DATA(int)
             break;
         case 'c':
-        COPY_SINGLE_DATA(char)
+        COPY_SINGLE_DATA(s_char)
             break;
 
         case 'F':

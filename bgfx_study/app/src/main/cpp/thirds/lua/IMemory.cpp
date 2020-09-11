@@ -40,43 +40,56 @@ int MemoryUtils::getUnitSize(char t) {
             return 0;
     }
 }
+#define UN_SIGNED_ADDR(data, offset) \
+uint8_t * addr = static_cast<uint8_t *>(data);\
+addr += totalIndex;
+#define SIGNED_ADDR(data, offset) \
+signed char * addr = static_cast<signed char *>(data);\
+addr += totalIndex;
+
 void MemoryUtils::toString(SB::StringBuilder &sb, char t, void *data, int totalIndex) {
-    uint8_t * addr = static_cast<uint8_t *>(data);
-    addr += totalIndex;
     switch (t) {
         case 'f': {
+            SIGNED_ADDR(data, totalIndex)
             sb << *(float*)addr;
         }break;
 
         case 'd':{
+            UN_SIGNED_ADDR(data, totalIndex)
             sb << *(uint32_t *)addr;
         }
         break;
 
         case 'w':{
+            UN_SIGNED_ADDR(data, totalIndex)
             sb << *(uint16_t *)addr;
         }
         break;
 
         case 'b':{
+            UN_SIGNED_ADDR(data, totalIndex)
             sb << *(uint8_t *)addr;
         }
         break;
 
         case 's':{
+            SIGNED_ADDR(data, totalIndex)
             sb << *(short *)addr;
         }
         break;
         case 'i':{
+            SIGNED_ADDR(data, totalIndex)
             sb << *(int *)addr;
         }
         break;
         case 'c':{
-            sb << *(char *)addr;
+            SIGNED_ADDR(data, totalIndex)
+            sb << *(signed char *)addr;
         }
         break;
 
         case 'F':{
+            SIGNED_ADDR(data, totalIndex)
             sb << *(double *)addr;
         }
             break;
@@ -86,34 +99,40 @@ void MemoryUtils::toString(SB::StringBuilder &sb, char t, void *data, int totalI
     }
 }
 int MemoryUtils::read(lua_State *L, char t, void *data, int totalIndex) {
-    uint8_t * addr = static_cast<uint8_t *>(data);
-    addr += totalIndex;
     switch (t) {
         case 'f': {
+            SIGNED_ADDR(data, totalIndex)
             *(float*)addr =static_cast<float>(lua_tonumber(L, -1));
         }
             break;
         case 'd':{
+            UN_SIGNED_ADDR(data, totalIndex)
             *(uint32_t*)addr = static_cast<uint32_t >(lua_tointeger(L, -1));
         }break;
         case 'w':{
+            UN_SIGNED_ADDR(data, totalIndex)
             *(uint16_t*)addr = static_cast<uint16_t >(lua_tointeger(L, -1));
         }break;
         case 'b':{
+            UN_SIGNED_ADDR(data, totalIndex)
             *addr = static_cast<uint8_t >(lua_tointeger(L, -1));
         }break;
 
         case 's':{
+            SIGNED_ADDR(data, totalIndex)
             *(short*)addr = static_cast<short>(lua_tointeger(L, -1));
         }break;
         case 'i':{
+            SIGNED_ADDR(data, totalIndex)
             *(int*)addr = static_cast<int >(lua_tointeger(L, -1));
         }break;
         case 'c':{
-            *(char*)addr = static_cast<char>(lua_tointeger(L, -1));
+            SIGNED_ADDR(data, totalIndex)
+            *(signed char*)addr = static_cast<signed char>(lua_tointeger(L, -1));
         }break;
 
         case 'F':{
+            SIGNED_ADDR(data, totalIndex)
             *(double*)addr = static_cast<double>(lua_tonumber(L, -1));
         }break;
 
@@ -124,33 +143,39 @@ int MemoryUtils::read(lua_State *L, char t, void *data, int totalIndex) {
     return 0;
 }
 int MemoryUtils::write(lua_State *L, char t, void *data, int totalIndex) {
-    uint8_t * addr = static_cast<uint8_t *>(data);
-    addr += totalIndex;
     switch (t) {
         case 'f': {
+            SIGNED_ADDR(data, totalIndex)
             lua_pushnumber(L, *(float*)addr);
         }
             break;
         case 'd':{
+            UN_SIGNED_ADDR(data, totalIndex)
             lua_pushnumber(L, *(uint32_t *)addr);
         }break;
         case 'w':{
+            UN_SIGNED_ADDR(data, totalIndex)
             lua_pushnumber(L, *(uint16_t *)addr);
         }break;
         case 'b':{
+            UN_SIGNED_ADDR(data, totalIndex)
             lua_pushnumber(L, *addr);
         }break;
 
         case 's':{
+            SIGNED_ADDR(data, totalIndex)
             lua_pushnumber(L, *(short *)addr);
         }break;
         case 'i':{
+            SIGNED_ADDR(data, totalIndex)
             lua_pushnumber(L, *(int *)addr);
         }break;
         case 'c':{
-            lua_pushnumber(L, *(char *)addr);
+            SIGNED_ADDR(data, totalIndex)
+            lua_pushnumber(L, *(signed char *)addr);
         }break;
         case 'F':{
+            SIGNED_ADDR(data, totalIndex)
             lua_pushnumber(L, *(double *)addr);
         }break;
 
@@ -161,33 +186,39 @@ int MemoryUtils::write(lua_State *L, char t, void *data, int totalIndex) {
     return 0;
 }
 void MemoryUtils::init(char t, void *data, int totalIndex) {
-    uint8_t * addr = static_cast<uint8_t *>(data);
-    addr += totalIndex;
     switch (t) {
         case 'f': {
+            SIGNED_ADDR(data, totalIndex)
             *(float*)addr = 0;
         }
             break;
         case 'd':{
+            UN_SIGNED_ADDR(data, totalIndex)
             *(uint32_t *)addr = 0;
         }break;
         case 'w':{
+            UN_SIGNED_ADDR(data, totalIndex)
             *(uint16_t *)addr = 0;
         }break;
         case 'b':{
+            UN_SIGNED_ADDR(data, totalIndex)
             *addr = 0;
         }break;
 
         case 's':{
+            SIGNED_ADDR(data, totalIndex)
             *(short *)addr = 0;
         }break;
         case 'i':{
+            SIGNED_ADDR(data, totalIndex)
             *(int *)addr = 0;
         }break;
         case 'c':{
-            *(char*)addr = 0;
+            SIGNED_ADDR(data, totalIndex)
+            *(signed char*)addr = 0;
         }break;
         case 'F':{
+            SIGNED_ADDR(data, totalIndex)
             *(double *)addr = 0;
         }break;
 
@@ -226,7 +257,7 @@ case 's':\
 CAST_DATA(short)\
 break;\
 case 'c':\
-CAST_DATA(char)\
+CAST_DATA(signed char)\
 break;\
 case 'F':\
 CAST_DATA(double)\
@@ -268,7 +299,7 @@ void MemoryUtils::convert(void *srcData, const char srcType, void *dstData, cons
         }
             break;
         case 'c': {
-            SRC_ARR(char);
+            SRC_ARR(signed char);
             CAST_DATA_DST();
         }
             break;
@@ -303,7 +334,7 @@ case 's':\
 *(short*)dstAddr = (short)(*srcArr); \
 break;\
 case 'c':\
-*(char*)dstAddr =  (char)(*srcArr); \
+*(signed char*)dstAddr =  (signed char)(*srcArr); \
 break;\
 case 'F':\
 *(double*)dstAddr =  (double)(*srcArr); \
@@ -351,7 +382,7 @@ void MemoryUtils::convert(void *srcData, char srcType, size_t srcBytes,
         }
             break;
         case 'c': {
-            SRC_ADDR(char);
+            SRC_ADDR(signed char);
             DST_DATA_ANY();
         }
             break;

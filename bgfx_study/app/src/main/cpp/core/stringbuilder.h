@@ -55,6 +55,7 @@ public:
     StringBuilder& append(bool _val);
     StringBuilder& append(int _val);
     StringBuilder& append(char _val);
+    StringBuilder& append(signed char _val);
     StringBuilder& append(unsigned char _val);
     StringBuilder& append(unsigned int _val);
     StringBuilder& append(long _val);
@@ -83,6 +84,7 @@ public:
     StringBuilder& operator << (bool _val);
     StringBuilder& operator << (int _val);
     StringBuilder& operator << (char _val);
+    StringBuilder& operator << (signed char _val);
     StringBuilder& operator << (unsigned char _val);
     StringBuilder& operator << (unsigned int _val);
     StringBuilder& operator << (long _val);
