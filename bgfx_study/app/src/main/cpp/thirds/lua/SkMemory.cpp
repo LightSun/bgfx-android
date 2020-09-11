@@ -399,7 +399,7 @@ int SkMemory::foreach(lua_State* L){
     const int unitSize = MemoryUtils::getUnitSize(srcType);
     for (int i = 0, length = getLength(); i < length; ++i) {
         lua_pushvalue(L, -1);
-        lua_pushnumber(L, i);
+        lua_pushinteger(L, i);
         MemoryUtils::write(L, srcType, data, i * unitSize);
         if(lua_pcall(L, 2, 0, 0) != LUA_OK){
             return luaL_error(L, "call SkMemory.foreach(...) failed.");
@@ -576,8 +576,8 @@ int SkAnyMemory::foreach(lua_State *L) {
     size_t  srcBytes = 0;
     for (int i = 0, length = getLength(); i < length; ++i) {
         srcType = _types[i % srcStrLen];
-        lua_pushvalue(L, -1);//push func
-        lua_pushvalue(L, i); // push index
+        lua_pushvalue(L, -1); //push func
+        lua_pushinteger(L, i); // push index
         MemoryUtils::write(L, srcType, data, srcBytes);
         if(lua_pcall(L, 2, 0, 0) != LUA_OK){
             return luaL_error(L, "call SkAnyMemory.foreach(...) failed.");
@@ -731,8 +731,8 @@ int SkMemoryFFFUI::foreach(lua_State *L) {
     size_t srcBytes = 0;
     for (int i = 0, length = getLength(); i < length; ++i) {
         srcType = _types[i % srcStrLen];
-        lua_pushvalue(L, -1);//push func
-        lua_pushvalue(L, i); // push index
+        lua_pushvalue(L, -1);  //push func
+        lua_pushinteger(L, i); // push index
         MemoryUtils::write(L, srcType, data, srcBytes);
         if(lua_pcall(L, 2, 0, 0) != LUA_OK){
             return luaL_error(L, "call SkMemory.foreach(...) failed.");
