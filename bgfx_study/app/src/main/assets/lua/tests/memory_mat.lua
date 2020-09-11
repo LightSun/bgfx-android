@@ -8,10 +8,10 @@ local mem = require("memory")
 
 --- test transpose
 local mat = mem.newMatrix('d', { 1, 2, 3, 4}, { 5, 6, 7, 8}, {9, 10 , 11, 12});
---print("mat->transpose before", mat);
---print("mat.len", #mat)
+print("mat->transpose before", mat);
+print("mat.len", #mat)
 print(mat[0][0]);
---[[
+
 mat[0][0] = 100;
 print(mat[0][0]);
 
@@ -27,4 +27,5 @@ local mat2 = mat.convert('w');
 print("mat->convert", mat2)
 
 mat = mat.convert('dFf');
-print("mat->convert", mat)]]
+print("mat->convert", mat);
+assert(mat.a == nil) -- no a member. expect

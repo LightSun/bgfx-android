@@ -101,7 +101,7 @@ extern "C" int luaopen_hmem_lua(lua_State *L) {
 //---------------------- Memory --------------------------
 #define memory_isValid(type)  \
 static int type##_isValid(lua_State* L){ \
-    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
+    auto pMemory = LuaUtils::get_ref<type>(L, lua_upvalueindex(1)); \
     lua_pushboolean(L, pMemory->_ref > 0); \
     return 1; \
 }
@@ -129,12 +129,6 @@ static int type##_tostring(lua_State *L) {\
     return 1;\
 }
 
-#define memory_index(type) \
-static int type##_index(lua_State *L) { \
-    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
-    return type::read(pMemory, L); \
-}
-
 #define memory_newindex(type) \
 static int type##_newindex(lua_State *L) { \
     auto pMemory = LuaUtils::get_ref<type>(L, 1); \
@@ -143,22 +137,14 @@ static int type##_newindex(lua_State *L) { \
 
 #define memory_foreach(type) \
 static int type##_foreach(lua_State *L) {\
-    auto pMemory = LuaUtils::get_ref<type>(L, 1);\
+    auto pMemory = LuaUtils::get_ref<type>(L, lua_upvalueindex(1));\
     return pMemory->foreach(L);\
-}
-
-#define memory_shouldWrap(type) \
-static int type##_shouldWrapResult(lua_State *L) {\
-    const char* names[] = { \
-            "convert", \
-    }; \
-    return _shouldWrapResult(L, names); \
 }
 
 #define memory_convert(type) \
 static int type##_convert(lua_State *L) { \
-    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
-    const char* types = luaL_checkstring(L, 2);\
+    auto pMemory = LuaUtils::get_ref<type>(L, lua_upvalueindex(1)); \
+    const char* types = luaL_checkstring(L, -1);\
     auto mem = pMemory->convert(types); \
     if(mem == nullptr){ \
         return luaL_error(L, "convert failed for types = '%s'", types); \
@@ -200,12 +186,6 @@ memory_tostring(SkMemoryFFFUI)
 
 memory_tostring(SkAnyMemory)
 
-memory_index(SkMemory)
-
-memory_index(SkMemoryFFFUI)
-
-memory_index(SkAnyMemory)
-
 memory_newindex(SkMemory)
 
 memory_newindex(SkMemoryFFFUI)
@@ -218,56 +198,70 @@ memory_foreach(SkMemoryFFFUI)
 
 memory_foreach(SkAnyMemory)
 
-memory_shouldWrap(SkMemory)
-
-memory_shouldWrap(SkMemoryFFFUI)
-
-memory_shouldWrap(SkAnyMemory)
-
 memory_convert(SkMemory)
 memory_convert(SkMemoryFFFUI)
 memory_convert(SkAnyMemory)
 
-const static luaL_Reg gSkAnyMemory_Methods[] = {
-        {"convert",          SkAnyMemory_convert},
-        {"foreach",          SkAnyMemory_foreach},
-        {"isValid",          SkAnyMemory_isValid},
-        {"_len",             SkAnyMemory_len},
-        {"__tostring",        SkAnyMemory_tostring},
-        {"_newindex",        SkAnyMemory_newindex},
-        {"_index",           SkAnyMemory_index},
+#define DEF_V_METHODS(type) \
+static const luaL_Reg s##type##_Methods[] = { \
+        {"convert",          type##_convert}, \
+        {"foreach",          type##_foreach},\
+        {"isValid",          type##_isValid}, \
+        {nullptr,            nullptr}, \
+};
+DEF_V_METHODS(SkMemory)
+DEF_V_METHODS(SkMemoryFFFUI)
+DEF_V_METHODS(SkAnyMemory)
 
-        {"call",             LuaUtils::forward_func_call},
-        {"shouldWrapResult", SkAnyMemory_shouldWrapResult},
+#define memory_index(type) \
+static int type##_index(lua_State *L) { \
+    auto pMemory = LuaUtils::get_ref<type>(L, 1); \
+    if(lua_type(L, 2) == LUA_TNUMBER){ \
+        return type::read(pMemory, L); \
+    } else{ \
+        auto str = luaL_checkstring(L, 2); \
+        auto methods = s##type##_Methods; \
+        for (int i = 0; ; ++i) { \
+            if(methods[i].name == nullptr){ \
+                break; \
+            } \
+            if(strcmp(methods[i].name, str) == 0){ \
+                lua_pushvalue(L, 1); \
+                lua_pushcclosure(L, methods[i].func, 1); \
+                return 1; \
+            } \
+        } \
+        lua_pushnil(L); \
+        return 1; \
+    } \
+}
+
+memory_index(SkMemory)
+memory_index(SkMemoryFFFUI)
+memory_index(SkAnyMemory)
+
+const static luaL_Reg gSkAnyMemory_Methods[] = {
+        {"__len",             SkAnyMemory_len},
+        {"__tostring",        SkAnyMemory_tostring},
+        {"__newindex",        SkAnyMemory_newindex},
+        {"__index",           SkAnyMemory_index},
         {"__gc",             SkAnyMemory_gc},
         {NULL, NULL},
 };
 const static luaL_Reg gSkMemory_Methods[] = {
-        {"convert",          SkMemory_convert},
-        {"foreach",          SkMemory_foreach},
-        {"isValid",          SkMemory_isValid},
-        {"_len",             SkMemory_len},
+        {"__len",             SkMemory_len},
         {"__tostring",        SkMemory_tostring},
-        {"_newindex",        SkMemory_newindex},
-        {"_index",           SkMemory_index},
-
-        {"call",             LuaUtils::forward_func_call},
-        {"shouldWrapResult", SkMemory_shouldWrapResult},
+        {"__newindex",        SkMemory_newindex},
+        {"__index",           SkMemory_index},
         {"__gc",             SkMemory_gc},
         {NULL, NULL},
 };
 const static luaL_Reg gSkMemoryFFFUI_Methods[] = {
-        {"convert",          SkMemoryFFFUI_convert},
-        {"foreach",          SkMemoryFFFUI_foreach},
-        {"isValid",          SkMemoryFFFUI_isValid},
-        {"_len",             SkMemoryFFFUI_len},
+        {"__len",             SkMemoryFFFUI_len},
         {"__tostring",        SkMemoryFFFUI_tostring},
-        {"_newindex",        SkMemoryFFFUI_newindex},
-        {"_index",           SkMemoryFFFUI_index},
-
-        {"call",             LuaUtils::forward_func_call},
-        {"shouldWrapResult", SkMemoryFFFUI_shouldWrapResult},
-        {"__gc",             SkMemoryFFFUI_gc},
+        {"__newindex",        SkMemoryFFFUI_newindex},
+        {"__index",           SkMemoryFFFUI_index},
+        {"__gc",              SkMemoryFFFUI_gc},
         {NULL, NULL},
 };
 #define PUSH_PTR(type) \
@@ -286,34 +280,10 @@ PULL_PTR(SkMemory)
 PUSH_PTR(SkAnyMemory)
 
 PULL_PTR(SkAnyMemory)
-
-static int SkMemoryMatrix_index(lua_State *L) {
-    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
-    if (pMemory->isSingleType()) {
-        return SkMemoryMatrix::read(pMemory, L, SkMemory_push);
-    }
-    return SkMemoryMatrix::read(pMemory, L, SkAnyMemory_push);
-}
-
-static int SkMemoryMatrix_newindex(lua_State *L) {
-    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
-    if (pMemory->isSingleType()) {
-        return SkMemoryMatrix::write(pMemory, L, SkMemory_pull);
-    } else {
-        return SkMemoryMatrix::write(pMemory, L, SkAnyMemory_pull);
-    }
-}
-
 static int SkMemoryMatrix_gc(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     delete pMemory;
     return 0;
-}
-
-static int SkMemoryMatrix_isValid(lua_State *L) {
-    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
-    lua_pushboolean(L, pMemory->isValid() ? 1 : 0);
-    return 1;
 }
 
 static int SkMemoryMatrix_len(lua_State *L) {
@@ -321,13 +291,6 @@ static int SkMemoryMatrix_len(lua_State *L) {
     lua_pushinteger(L, pMemory->getRowCount());
     return 1;
 }
-
-static int SkMemoryMatrix_columnCount(lua_State *L) {
-    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
-    lua_pushinteger(L, pMemory->getColumnCount());
-    return 1;
-}
-
 //push string and then release
 #define MEM_PUSH_TO_STRING(L, ptr) \
 const char* str = ((IMemory*)ptr)->toString(); \
@@ -340,8 +303,20 @@ static int SkMemoryMatrix_tostring(lua_State *L) {
     return 1;
 }
 
+static int SkMemoryMatrix_isValid(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    lua_pushboolean(L, pMemory->isValid() ? 1 : 0);
+    return 1;
+}
+
+static int SkMemoryMatrix_columnCount(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    lua_pushinteger(L, pMemory->getColumnCount());
+    return 1;
+}
+
 static int SkMemoryMatrix_transpose(lua_State *L) {
-    auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
+    auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
     auto pMatrix = mat->transpose();
     if (pMatrix == nullptr) {
         return luaL_error(L,
@@ -353,8 +328,8 @@ static int SkMemoryMatrix_transpose(lua_State *L) {
 
 static int SkMemoryMatrix_convert(lua_State *L) {
     //mat, types
-    auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
-    auto types = luaL_checkstring(L, 2);
+    auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    auto types = luaL_checkstring(L, -1);
     auto pMatrix = mat->convert(types);
     if (pMatrix == nullptr) {
         return luaL_error(L, "this matrix can't convert to types = '%s'", types);
@@ -363,28 +338,61 @@ static int SkMemoryMatrix_convert(lua_State *L) {
     return 1;
 }
 
-static int SkMemoryMatrix_shouldWrapResult(lua_State *L) {
-    const char *names[] = {
-            "transpose",
-            "convert",
-    };
-    return _shouldWrapResult(L, names);
+static int SkMemoryMatrix_getRowCount(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    lua_pushinteger(L, pMemory->getRowCount());
+    return 1;
 }
-//TODO 使用ud_wrap 包装memory 之后。 矩阵内索引的问题，需要处理。
-const static luaL_Reg gSkMemoryMatrix_Methods[] = {
+
+const static luaL_Reg sSkMemoryMatrix_Methods[] = {
         {"convert",          SkMemoryMatrix_convert},
         {"transpose",        SkMemoryMatrix_transpose},
         {"isValid",          SkMemoryMatrix_isValid},
         {"getColumnCount",   SkMemoryMatrix_columnCount},
-        {"getRowCount",      SkMemoryMatrix_len},
-        {"_len",             SkMemoryMatrix_len},
-        {"__tostring",        SkMemoryMatrix_tostring},
-        {"_newindex",        SkMemoryMatrix_newindex},
-        {"_index",           SkMemoryMatrix_index},
+        {"getRowCount",      SkMemoryMatrix_getRowCount},
+        {NULL, NULL},
+};
 
-        {"call",             LuaUtils::forward_func_call},
-        {"shouldWrapResult", SkMemoryMatrix_shouldWrapResult},
-        {"__gc",             SkMemoryMatrix_gc},
+static int SkMemoryMatrix_index(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
+    if(lua_type(L, 2) == LUA_TNUMBER){
+        if (pMemory->isSingleType()) {
+            return SkMemoryMatrix::read(pMemory, L, SkMemory_push);
+        }
+        return SkMemoryMatrix::read(pMemory, L, SkAnyMemory_push);
+    } else{
+        const auto mn = luaL_checkstring(L, 2);
+        for (int i = 0; ; ++i) {
+            auto method = sSkMemoryMatrix_Methods[i];
+            if(method.name == nullptr){
+                break;
+            }
+            if(strcmp(method.name, mn) == 0){
+                lua_pushvalue(L, 1);
+                lua_pushcclosure(L, method.func, 1);
+                return 1;
+            }
+        }
+        lua_pushnil(L);
+        return 1;
+    }
+}
+
+static int SkMemoryMatrix_newindex(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
+    if (pMemory->isSingleType()) {
+        return SkMemoryMatrix::write(pMemory, L, SkMemory_pull);
+    } else {
+        return SkMemoryMatrix::write(pMemory, L, SkAnyMemory_pull);
+    }
+}
+
+const static luaL_Reg gSkMemoryMatrix_Methods[] = {
+        {"__len",             SkMemoryMatrix_len},
+        {"__tostring",        SkMemoryMatrix_tostring},
+        {"__newindex",        SkMemoryMatrix_newindex},
+        {"__index",           SkMemoryMatrix_index},
+        {"__gc",              SkMemoryMatrix_gc},
         {NULL, NULL},
 };
 
