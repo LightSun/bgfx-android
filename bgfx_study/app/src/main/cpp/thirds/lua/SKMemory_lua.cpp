@@ -328,6 +328,12 @@ static int SkMemoryMatrix_columnCount(lua_State *L) {
     return 1;
 }
 
+//push string and then release
+#define MEM_PUSH_TO_STRING(L, ptr) \
+const char* str = ((IMemory*)ptr)->toString(); \
+lua_pushstring(L, str);\
+free((void*)str);
+
 static int SkMemoryMatrix_tostring(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     MEM_PUSH_TO_STRING(L, pMemory);

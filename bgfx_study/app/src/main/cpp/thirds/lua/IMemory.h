@@ -15,12 +15,6 @@ namespace SB{
 class IMemory;
 class SimpleMemory;
 
-//push string and then release
-#define MEM_PUSH_TO_STRING(L, ptr) \
-const char* str = ((IMemory*)ptr)->toString(); \
-lua_pushstring(L, str);\
-free((void*)str);
-
 class MemoryUtils{
 public:
     static int getUnitSize(char type);

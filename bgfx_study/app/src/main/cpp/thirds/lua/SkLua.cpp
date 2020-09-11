@@ -241,6 +241,9 @@ static void release_Memory(void *_ptr, void *_userData) {
 static int bgfx_makeRef(lua_State *L) {
     SimpleMemory *memory = LuaUtils::to_ref<SkMemory>(L, 1);
     if (memory == nullptr) {
+        memory = LuaUtils::to_ref<SkAnyMemory>(L, 1);
+    }
+    if (memory == nullptr) {
         memory = LuaUtils::to_ref<SkMemoryFFFUI>(L, 1);
     }
     if (memory == nullptr) {
