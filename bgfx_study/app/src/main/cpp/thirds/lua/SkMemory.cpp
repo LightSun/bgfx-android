@@ -825,7 +825,13 @@ int SkMemoryMatrix::getColumnCount() {
 void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
     ss << "{";
     for (int i = 0; i < count; ++i) {
-        array[i]->toString(ss);
+        if(array){
+            array[i]->toString(ss);
+        } else if(anyArray){
+            anyArray[i]->toString(ss);
+        } else{
+            LOGE("wrong state of SkMemoryMatrix. called by toString");
+        }
         if (i != count - 1) {
             ss << ",";
         }

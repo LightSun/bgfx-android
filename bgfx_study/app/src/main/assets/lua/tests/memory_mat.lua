@@ -13,8 +13,17 @@ print("mat.len", #mat)
 print(mat[0][0]);
 mat[0][0] = 100;
 print(mat[0][0]);
--- 触发了 --index
+
+print("--- start test mat.transpose() ---------")
 mat = mat.transpose();
 print("mat->transpose", mat)
 print(mat.isValid())
 print("mat.len", #mat)
+
+print("------ start test mat.convert() -------- ")
+mat = mem.newMatrix('f', {1.1, 2.2, 3.3}, {1, 2.5, 8});
+local mat2 = mat.convert('w');
+print("mat->convert", mat2)
+
+mat = mat.convert('dFf');
+print("mat->convert", mat)
