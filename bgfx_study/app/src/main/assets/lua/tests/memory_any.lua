@@ -1,7 +1,7 @@
 ---
 --- this demo shows how to use memory data:  new/foreach/convert/isValid
---- Created by Administrator.
---- DateTime: 2020/9/11 0011 下午 3:13
+--- memory support types:   f,     d,      w,    b,    i,     s,       c,         F
+---                      float, uint32, uint16, uint8, int, short,  signed char, double
 ---
 local mem = require("memory")
 local me;

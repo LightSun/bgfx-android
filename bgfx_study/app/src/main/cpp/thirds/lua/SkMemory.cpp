@@ -813,7 +813,7 @@ SkMemoryMatrix::SkMemoryMatrix(const char *type, int rowCount, int columnCount):
 }
 SkMemoryMatrix::SkMemoryMatrix(int count):SkMemoryMatrix(count, true) {
 }
-SkMemoryMatrix::SkMemoryMatrix(int count, bool singleType): count(count) {
+SkMemoryMatrix::SkMemoryMatrix(int count, bool singleType): IMemory(), count(count) {
     if(singleType){
         array = new SkMemory*[count];
         anyArray = nullptr;
