@@ -11,7 +11,7 @@ extern "C" int luaopen_hmem_lua(lua_State *L);
 
 class SkMemoryLua{
 public:
-    static void registerMemories(lua_State *L);
+    static void registers(lua_State *L);
 };
 
 #endif //BGFX_STUDY_SKMEMORY_LUA_H

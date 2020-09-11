@@ -297,7 +297,7 @@ DEF_MTNAME(SkMemory)
 DEF_MTNAME(SkMemoryFFFUI)
 DEF_MTNAME(SkAnyMemory)
 DEF_MTNAME(SkMemoryMatrix)
-void SkMemoryLua::registerMemories(lua_State *L) {
+void SkMemoryLua::registers(lua_State *L) {
     REG_CLASS(L, SkMemory);
     REG_CLASS(L, SkMemoryFFFUI);
     REG_CLASS(L, SkAnyMemory);
