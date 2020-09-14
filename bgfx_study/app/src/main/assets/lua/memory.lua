@@ -6,7 +6,6 @@
 
 local m = {};
 local mem = require("hmem_lua");
-local ud_wrap = require("ud_wrap");
 
 --- create memory. type: can be 'd', 'w', 'b', 'f'.
 --- 'd' is u-int32

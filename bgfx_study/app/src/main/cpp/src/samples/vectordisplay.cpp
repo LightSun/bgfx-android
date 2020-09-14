@@ -344,6 +344,7 @@ void VectorDisplay::endDraw()
 	Line* lines = (Line*)alloca(nlines * sizeof(Line) );
 
 	float t = effectiveThickness();
+	//首尾是否是同一个点
 	int first_last_same = true
 		&& bx::abs(m_pendingPoints[0].x - m_pendingPoints[m_pendingPoints.size() - 1].x) < 0.1
 		&& bx::abs(m_pendingPoints[0].y - m_pendingPoints[m_pendingPoints.size() - 1].y) < 0.1
@@ -382,12 +383,14 @@ void VectorDisplay::endDraw()
 	// compute adjustments for connected line segments
 	for (size_t i = 0; i < nlines; i++)
 	{
+		//line是当前， pline是lines中 反向对称的line. 即 假设nlines有8个. 如果line是0, pline是7
 		Line* line = &lines[i], * pline = &lines[(nlines + i - 1) % nlines];
 
 		if (line->has_prev)
 		{
 			float pa2a = normalizef(pline->a - line->a);
 			float a2pa = normalizef(line->a - pline->a);
+			//最大的short
 			float maxshorten = bx::min(line->len, pline->len) / 2.0f;
 
 			if (bx::min(a2pa, pa2a) <= (bx::kPi / 2.0f + FLT_EPSILON) )
@@ -713,7 +716,7 @@ void VectorDisplay::drawLines(Line* _lines, int _numberLines)
 		}
 	}
 }
-
+//设置衰减的step
 bool VectorDisplay::setDecaySteps(int _steps)
 {
 	if (_steps < 0

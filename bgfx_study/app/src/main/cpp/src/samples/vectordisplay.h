@@ -119,7 +119,7 @@ protected:
 
 	struct Line
 	{
-		float x0, y0, x1, y1;                     // nominal points
+		float x0, y0, x1, y1;                     // nominal points: current point with next
 		float a;                                  // angle
 		float sin_a, cos_a;                       // precomputed trig
 
@@ -186,7 +186,9 @@ protected:
 
 	float m_initialDecay;
 
+	/** 密度/厚度 */
 	float m_thickness;
+	/** 是否启用厚度 密度 */
 	bool m_customThicknessEnabled;
 
 	float m_brightness;
