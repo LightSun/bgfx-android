@@ -14,9 +14,27 @@ class SkMemory;
 class SkMemoryFFFUI;
 class SkAnyMemory;
 class SkMemoryMatrix;
+
+//python 矩阵运算.
+//https://www.cnblogs.com/llxxs/p/11228119.html
+//https://blog.csdn.net/weixin_43069755/article/details/88209967
+
 namespace SB{
     class StringBuilder;
 }
+
+class UpValueUtils{
+public:
+    union UpValue{
+        signed long long value;
+        double number;
+        SkMemoryMatrix* mat;
+        SkMemory* mem;
+        SkMemoryFFFUI* mem_fffui;
+        SkAnyMemory* mem_any;
+    };
+    static void putUpvalues(lua_State* L, UpValue* values);
+};
 
 class SkMemory : public SimpleMemory{
 
@@ -67,7 +85,11 @@ public:
     void writeTo(SkMemory *dstMem, int dstIndex, int srcIndex);
 
     IMemory* convert(const char* t);
+    //for each with function call
     int foreach(lua_State* L);
+
+    //for each with up value
+    int SkMemory::foreach(lua_State *L, void* upvalue, int (*Traveller)(lua_State *));
 public:
     const char * _dType;
 private:
@@ -151,11 +173,11 @@ public:
     SkMemoryMatrix(lua_State* L, const char* type);
     /**
      * create empty memory matrix.
-     * @param type the type
+     * @param types the types
      * @param rowCount the row count
      * @param columnCount the column count
      */
-    SkMemoryMatrix(const char* type, int rowCount, int columnCount);
+    SkMemoryMatrix(const char* types, int rowCount, int columnCount);
 
     void destroyData();
 
@@ -164,6 +186,8 @@ public:
     inline int getLength() { return count;}
     int getRowCount(){ return count; }
     int getColumnCount();
+
+    const char* getTypes();
 
     SkMemoryMatrix* transpose();
     /**
@@ -178,6 +202,16 @@ public:
      */
     bool isSingleType();
     void toString(SB::StringBuilder& sb);
+    //(rowIndex, columnIndex, val)
+    /**
+     * travel the matrix with a upvalue(as lightuser-data)
+     * @param L the lua state
+     * @param mainUpValue the main up value
+     * @param extras the extra up values
+     * @param Traveller the traveller
+     * @return the result state
+     */
+    int foreach(lua_State* L,void* mainUpValue , UpValueUtils::UpValue* extras, int (*Traveller(lua_State* L)));
 
     static int read(SkMemoryMatrix* mem, lua_State* L, void (*Push)(lua_State* L, SkMemory* ptr));
     static int write(SkMemoryMatrix* mem, lua_State* L, SkMemory* (*Pull)(lua_State* L, int idx));

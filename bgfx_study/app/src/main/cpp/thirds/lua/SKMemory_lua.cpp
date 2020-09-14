@@ -332,6 +332,15 @@ static int SkMemoryMatrix_getRowCount(lua_State *L) {
     return 1;
 }
 
+
+static int SkMemoryMatrix_mul(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, -1);
+    SkMemoryMatrix* mat = new SkMemoryMatrix(pMemory->getTypes(), pMemory->getRowCount(), pMemory->getColumnCount());
+   //TODO pMemory->foreach(L, mat, )
+
+    return 0;
+}
+
 const static luaL_Reg sSkMemoryMatrix_Methods[] = {
         {"convert",          SkMemoryMatrix_convert},
         {"transpose",        SkMemoryMatrix_transpose},

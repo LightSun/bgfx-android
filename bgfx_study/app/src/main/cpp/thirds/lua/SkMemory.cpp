@@ -99,6 +99,13 @@ pData += dstIndex; \
 srcData += srcIndex; \
 *pData = *srcData; }
 
+//----------------------- up values -----------------------
+void UpValueUtils::putUpvalues(lua_State *L, UpValueUtils::UpValue *values) {
+    const int c = sizeof(values) / sizeof(values[0]);
+    for (int i = 0; i < c; ++i) {
+        //TODO lua_pushlightuserdata();
+    }
+}
 //---------------------------------------------------------------------------------
 SkMemory::SkMemory(){
 
@@ -403,6 +410,20 @@ int SkMemory::foreach(lua_State* L){
         MemoryUtils::write(L, srcType, data, i * unitSize);
         if(lua_pcall(L, 2, 0, 0) != LUA_OK){
             return luaL_error(L, "call SkMemory.foreach(...) failed.");
+        }
+    }
+    return 0;
+}
+int SkMemory::foreach(lua_State *L, void* upvalue, int (*Traveller)(lua_State *)) {
+    const char srcType = _dType[0];
+    const int unitSize = MemoryUtils::getUnitSize(srcType);
+    for (int i = 0, length = getLength(); i < length; ++i) {
+        lua_pushlightuserdata(L, upvalue);
+        lua_pushcclosure(L, Traveller, 1);
+        lua_pushinteger(L, i);
+        MemoryUtils::write(L, srcType, data, i * unitSize);
+        if (lua_pcall(L, 2, 1, 0) != LUA_OK) {
+            return luaL_error(L, "call SkMemory.travel(...) failed.");
         }
     }
     return 0;
@@ -915,7 +936,47 @@ void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
     }
     ss << "}";
 }
+int SkMemoryMatrix::foreach(lua_State* L, void* upvaulue, UpValueUtils::UpValue* extras, int (*Traveller)(lua_State* L)) {
+    const int extraCount = extras != nullptr ? sizeof(extras)/ sizeof(extras[0]) : 0;
 
+    lua_pushlightuserdata(L, upvaulue);
+    UpValueUtils::putUpvalues(L, extras);
+    lua_pushcclosure(L, Traveller, 1 + extraCount);
+
+    if(isSingleType()){
+        SkMemory *pMemory;
+        char srcType;
+        int unitSize;
+        for (int i = 0; i < getRowCount(); ++i) {
+            pMemory = array[i];
+            srcType = pMemory->_dType[0];
+            unitSize = MemoryUtils::getUnitSize(srcType);
+
+            lua_pushinteger(L, i);
+            for (int j = 0, length = getLength(); j < length; ++j) {
+                lua_pushvalue(L, -2); //func
+                lua_pushvalue(L, -2); //row index
+                lua_pushinteger(L, i);//column index
+                MemoryUtils::write(L, srcType, pMemory->data, j * unitSize);
+                if(lua_pcall(L, 3, 1, 0) != LUA_OK){
+                    lua_pushvalue(L, -1);
+                    return 1;
+                }
+            }
+            lua_pop(L, 1);
+        }
+    } else{
+        //TODO
+    }
+    lua_pop(L, 1);
+    return 0;
+}
+const char* SkMemoryMatrix::getTypes() {
+    if(isSingleType()){
+        return array[0]->_dType;
+    }
+    return anyArray[0]->_types;
+}
 SkMemoryMatrix * SkMemoryMatrix::transpose() {
     if(isSingleType()){
         auto mat = new SkMemoryMatrix(getColumnCount());
