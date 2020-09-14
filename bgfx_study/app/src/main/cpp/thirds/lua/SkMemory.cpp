@@ -8,7 +8,6 @@
 #include "common.h"
 #include "LuaUtils.h"
 
-
 #define copy_data_f(dType) \
 dType * addr = static_cast<dType *>(data); \
 for (int i = start; i < start + tableCount; ++i) { \
@@ -99,13 +98,6 @@ pData += dstIndex; \
 srcData += srcIndex; \
 *pData = *srcData; }
 
-//----------------------- up values -----------------------
-void UpValueUtils::putUpvalues(lua_State *L, UpValueUtils::UpValue *values) {
-    const int c = sizeof(values) / sizeof(values[0]);
-    for (int i = 0; i < c; ++i) {
-        //TODO lua_pushlightuserdata();
-    }
-}
 //---------------------------------------------------------------------------------
 SkMemory::SkMemory(){
 
@@ -414,21 +406,6 @@ int SkMemory::foreach(lua_State* L){
     }
     return 0;
 }
-int SkMemory::foreach(lua_State *L, void* upvalue, int (*Traveller)(lua_State *)) {
-    const char srcType = _dType[0];
-    const int unitSize = MemoryUtils::getUnitSize(srcType);
-    for (int i = 0, length = getLength(); i < length; ++i) {
-        lua_pushlightuserdata(L, upvalue);
-        lua_pushcclosure(L, Traveller, 1);
-        lua_pushinteger(L, i);
-        MemoryUtils::write(L, srcType, data, i * unitSize);
-        if (lua_pcall(L, 2, 1, 0) != LUA_OK) {
-            return luaL_error(L, "call SkMemory.travel(...) failed.");
-        }
-    }
-    return 0;
-}
-
 //======================= SKAnyMemory ===================================
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){
 
@@ -797,6 +774,9 @@ int SkMemoryFFFUI::write(SkMemoryFFFUI *mem, lua_State *L) {
 SkMemoryMatrix::~SkMemoryMatrix() {
     destroyData();
 }
+SkMemoryMatrix::SkMemoryMatrix():IMemory(){
+
+}
 SkMemoryMatrix::SkMemoryMatrix(lua_State *L, const char *type): IMemory(){
     int tableCount = lua_gettop(L);
     count = tableCount;
@@ -936,37 +916,68 @@ void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
     }
     ss << "}";
 }
-int SkMemoryMatrix::foreach(lua_State* L, void* upvaulue, UpValueUtils::UpValue* extras, int (*Traveller)(lua_State* L)) {
-    const int extraCount = extras != nullptr ? sizeof(extras)/ sizeof(extras[0]) : 0;
-
-    lua_pushlightuserdata(L, upvaulue);
-    UpValueUtils::putUpvalues(L, extras);
-    lua_pushcclosure(L, Traveller, 1 + extraCount);
-
+int SkMemoryMatrix::foreach(lua_State* L) {
+    //upvalues... func
     if(isSingleType()){
         SkMemory *pMemory;
         char srcType;
         int unitSize;
+        size_t totalBytes = 0;
         for (int i = 0; i < getRowCount(); ++i) {
             pMemory = array[i];
             srcType = pMemory->_dType[0];
             unitSize = MemoryUtils::getUnitSize(srcType);
 
             lua_pushinteger(L, i);
-            for (int j = 0, length = getLength(); j < length; ++j) {
-                lua_pushvalue(L, -2); //func
-                lua_pushvalue(L, -2); //row index
-                lua_pushinteger(L, i);//column index
+            for (int j = 0, length = pMemory->getLength(); j < length; ++j) {
+                //func, rowIndex, columnIndex, type, total_bytes, val
+                lua_pushvalue(L, -2);         // func
+                lua_pushvalue(L, -2);         // row index
+                lua_pushinteger(L, i);            // column index
+                lua_pushinteger(L, srcType);      // type
+                lua_pushinteger(L, totalBytes);   // total bytes
                 MemoryUtils::write(L, srcType, pMemory->data, j * unitSize);
-                if(lua_pcall(L, 3, 1, 0) != LUA_OK){
+                //func, holder, val
+                if(lua_pcall(L, 5, 1, 0) != LUA_OK){
                     lua_pushvalue(L, -1);
                     return 1;
                 }
             }
+            totalBytes += pMemory->getLength() * unitSize;
             lua_pop(L, 1);
         }
     } else{
-        //TODO
+        SkAnyMemory *pMemory;
+        char srcType;
+        int len_type;
+        size_t totalBytes = 0;
+        //cur bytes for internal
+        size_t curBytes;
+        for (int i = 0; i < getRowCount(); ++i) {
+            pMemory = anyArray[i];
+            len_type = strlen(pMemory->_types);
+            curBytes = 0;
+
+            lua_pushinteger(L, i);
+            for (int j = 0, length = pMemory->getLength(); j < length; ++j) {
+                srcType = pMemory->_types[j % len_type];
+
+                //func, rowIndex, columnIndex, type, total_bytes, val
+                lua_pushvalue(L, -2);          //func
+                lua_pushvalue(L, -2);          // row index
+                lua_pushinteger(L, i);             // column index
+                lua_pushinteger(L, srcType);       // type
+                lua_pushinteger(L, totalBytes);    // total bytes
+                MemoryUtils::write(L, srcType, pMemory->data, curBytes);
+                if(lua_pcall(L, 5, 0, 0) != LUA_OK){
+                    lua_pushvalue(L, -1);
+                    return 1;
+                }
+                totalBytes += MemoryUtils::getUnitSize(srcType);
+                curBytes +=  MemoryUtils::getUnitSize(srcType);
+            }
+            lua_pop(L, 1);
+        }
     }
     lua_pop(L, 1);
     return 0;

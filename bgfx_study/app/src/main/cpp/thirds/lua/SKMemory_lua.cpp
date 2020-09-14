@@ -5,6 +5,9 @@
 #include "SkMemory_lua.h"
 #include "SkMemory.h"
 #include "bgfx_wrapper.h"
+#include "SkCalculator.h"
+
+//----------------------------------------------------------------
 
 static int mem_new(lua_State *L) {
     //(type, table...) or (type, len )
@@ -332,13 +335,25 @@ static int SkMemoryMatrix_getRowCount(lua_State *L) {
     return 1;
 }
 
-
 static int SkMemoryMatrix_mul(lua_State *L) {
+    //mat, val
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, -1);
-    SkMemoryMatrix* mat = new SkMemoryMatrix(pMemory->getTypes(), pMemory->getRowCount(), pMemory->getColumnCount());
-   //TODO pMemory->foreach(L, mat, )
-
-    return 0;
+    switch(lua_type(L, 2)){
+        case LUA_TNUMBER: {
+            return SkCalculator::mul(L, pMemory, lua_tonumber(L, 2));
+        }
+        default:{
+            SkMemory* skm = LuaUtils::to_ref<SkMemory>(L, 2);
+            if(skm != nullptr){
+                return SkCalculator::mul(L, pMemory, skm);
+            }
+            SkMemoryMatrix* mat = LuaUtils::get_ref<SkMemoryMatrix>(L, 2);
+            if(mat == nullptr){
+                return luaL_error(L, "wrong data type. only support number, array, mat");
+            }
+            return SkCalculator::mul(L, pMemory, mat);
+        }
+    }
 }
 
 const static luaL_Reg sSkMemoryMatrix_Methods[] = {
@@ -385,6 +400,7 @@ static int SkMemoryMatrix_newindex(lua_State *L) {
 }
 
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
+        {"__mul",             SkMemoryMatrix_mul},
         {"__len",             SkMemoryMatrix_len},
         {"__tostring",        SkMemoryMatrix_tostring},
         {"__newindex",        SkMemoryMatrix_newindex},

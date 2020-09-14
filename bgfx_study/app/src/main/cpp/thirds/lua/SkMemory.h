@@ -23,19 +23,6 @@ namespace SB{
     class StringBuilder;
 }
 
-class UpValueUtils{
-public:
-    union UpValue{
-        signed long long value;
-        double number;
-        SkMemoryMatrix* mat;
-        SkMemory* mem;
-        SkMemoryFFFUI* mem_fffui;
-        SkAnyMemory* mem_any;
-    };
-    static void putUpvalues(lua_State* L, UpValue* values);
-};
-
 class SkMemory : public SimpleMemory{
 
 public:
@@ -88,8 +75,6 @@ public:
     //for each with function call
     int foreach(lua_State* L);
 
-    //for each with up value
-    int SkMemory::foreach(lua_State *L, void* upvalue, int (*Traveller)(lua_State *));
 public:
     const char * _dType;
 private:
@@ -165,6 +150,8 @@ public:
 class SkMemoryMatrix: public IMemory{
 public:
     ~SkMemoryMatrix();
+    /** create a empty mat for latter use*/
+    SkMemoryMatrix();
     /**
      * create memory matrix from multi table values which is from lua_state
      * @param L lua stack
@@ -188,6 +175,11 @@ public:
     int getColumnCount();
 
     const char* getTypes();
+    //may be a special array
+    bool isArray(){ return _isArray;}
+    void setIsArray(bool isArr){
+        this->_isArray = isArr;
+    }
 
     SkMemoryMatrix* transpose();
     /**
@@ -202,16 +194,12 @@ public:
      */
     bool isSingleType();
     void toString(SB::StringBuilder& sb);
-    //(rowIndex, columnIndex, val)
     /**
-     * travel the matrix with a upvalue(as lightuser-data)
+     * travel the matrix with function.
      * @param L the lua state
-     * @param mainUpValue the main up value
-     * @param extras the extra up values
-     * @param Traveller the traveller
      * @return the result state
      */
-    int foreach(lua_State* L,void* mainUpValue , UpValueUtils::UpValue* extras, int (*Traveller(lua_State* L)));
+    int foreach(lua_State* L);
 
     static int read(SkMemoryMatrix* mem, lua_State* L, void (*Push)(lua_State* L, SkMemory* ptr));
     static int write(SkMemoryMatrix* mem, lua_State* L, SkMemory* (*Pull)(lua_State* L, int idx));
@@ -223,11 +211,14 @@ private:
     SkMemoryMatrix(int count);
     SkMemoryMatrix(int count, bool singleType);
 
-    SkMemory** array;
-    SkAnyMemory** anyArray;
+    unsigned char _isArray; // false for mat. true for special array
     int count;
     //only used for single type
     void copyData(SkMemory *pMemory, int columnIndex);
+
+public:
+    SkMemory** array;
+    SkAnyMemory** anyArray;
 };
 
 #endif //BGFX_STUDY_SKMEMORY_H
