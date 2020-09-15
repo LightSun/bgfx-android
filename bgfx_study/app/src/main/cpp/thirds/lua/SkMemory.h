@@ -11,18 +11,20 @@
 #include "IMemory.h"
 
 class SkMemory;
+
 class SkAnyMemory;
+
 class SkMemoryMatrix;
 
 //python 矩阵运算.
 //https://www.cnblogs.com/llxxs/p/11228119.html
 //https://blog.csdn.net/weixin_43069755/article/details/88209967
 
-namespace SB{
+namespace SB {
     class StringBuilder;
 }
 
-class SkMemory : public SimpleMemory{
+class SkMemory : public SimpleMemory {
 
 public:
 
@@ -32,16 +34,18 @@ public:
      * @param tableCount
      * @param minUnitSize
      */
-    SkMemory(lua_State* L, int tableCount, const char* type);
+    SkMemory(lua_State *L, int tableCount, const char *type);
+
     /**
      * create memory with default data.
      * @param type the data type
      * @param len the array length
      */
-    SkMemory(const char* type, int len);
+    SkMemory(const char *type, int len);
 
     //startIndex: table start index, from 0 means lua stack from 1
-    SkMemory(lua_State* L, int startIndex, int tableCount, const char* type);
+    SkMemory(lua_State *L, int startIndex, int tableCount, const char *type);
+
     //
     SkMemory();
 
@@ -49,16 +53,18 @@ public:
     //------ index start from 0 --------
 
     bool isFloat();
-    void toString(SB::StringBuilder& sb);
+
+    void toString(SB::StringBuilder &sb);
 
     /**
      * read data from memory to lua stack
      */
-    static int read(SkMemory* mem, lua_State* L);
+    static int read(SkMemory *mem, lua_State *L);
+
     /**
     * write data from lua stack to memory
     */
-    static int write(SkMemory* mem, lua_State* L);
+    static int write(SkMemory *mem, lua_State *L);
 
     int getLength();
 
@@ -70,16 +76,17 @@ public:
      */
     void writeTo(SkMemory *dstMem, int dstIndex, int srcIndex);
 
-    int convert(lua_State* L, const char* t);
+    int convert(lua_State *L, const char *t);
+
     //for each with function call
-    int foreach(lua_State* L);
+    int foreach(lua_State *L);
 
     void _mul(double val);
 
-    SkMemory* copy();
+    SkMemory *copy();
 
 public:
-    const char * _dType;
+    const char *_dType;
 private:
     static int getTotalBytes(lua_State *L, int tableCount, const char *t);
 };
@@ -87,7 +94,7 @@ private:
 /**
  * any types memory. a continuously space. this can contains multi table.
  */
-class SkAnyMemory : public SimpleMemory{
+class SkAnyMemory : public SimpleMemory {
 
 public:
     /**
@@ -96,7 +103,7 @@ public:
      * @param L the lua stack
      * @param types the types.
      */
-    SkAnyMemory(lua_State* L,const char* types);
+    SkAnyMemory(lua_State *L, const char *types);
 
     /**
      * create any memory byte types with table index.
@@ -104,44 +111,51 @@ public:
      * @param types the types
      * @param tableIndex the table index, if -1 means may be multi table
      */
-    SkAnyMemory(lua_State* L,const char* types, int tableIndex);
+    SkAnyMemory(lua_State *L, const char *types, int tableIndex);
+
     /**
     * create empty a memory with fix count length, every table has fixes 'types' data.
     * @param types the types.
     * @param count the table count.
     */
-    SkAnyMemory(const char* types, int count);
+    SkAnyMemory(const char *types, int count);
 
     /**
      * @param types
      * @param count
      * @param init true to init data
      */
-    SkAnyMemory(const char* types, int count, bool init);
+    SkAnyMemory(const char *types, int count, bool init);
 
-    void toString(SB::StringBuilder& sb);
-    SkAnyMemory* copy();
+    void toString(SB::StringBuilder &sb);
 
-    int convert(lua_State* L, const char* t);
-    int foreach(lua_State* L);
+    SkAnyMemory *copy();
+
+    int convert(lua_State *L, const char *t);
+
+    int foreach(lua_State *L);
 
     void _mul(double val);
 
-    int getLength(){return  _tabCount * _elementCount;}
+    int getLength() { return _tabCount * _elementCount; }
 
-    static int read(SkAnyMemory* mem, lua_State* L);
-    static int write(SkAnyMemory* mem, lua_State* L);
+    static int read(SkAnyMemory *mem, lua_State *L);
+
+    static int write(SkAnyMemory *mem, lua_State *L);
 
 public:
-    const char* _types;
+    const char *_types;
     uint16_t _tabCount;      //table count.
     uint16_t _elementCount;  //element count of every table
 };
-class SkMemoryMatrix: public IMemory{
+
+class SkMemoryMatrix : public IMemory {
 public:
     ~SkMemoryMatrix();
+
     /** create a empty mat for latter use*/
     SkMemoryMatrix();
+
     /** internal use */
     SkMemoryMatrix(int count, bool singleType);
 
@@ -150,88 +164,83 @@ public:
      * @param L lua stack
      * @param type
      */
-    SkMemoryMatrix(lua_State* L, const char* type);
+    SkMemoryMatrix(lua_State *L, const char *type);
+
     /**
      * create empty memory matrix.
      * @param types the types
      * @param rowCount the row count
      * @param columnCount the column count
      */
-    SkMemoryMatrix(const char* types, int rowCount, int columnCount);
+    SkMemoryMatrix(const char *types, int rowCount, int columnCount);
 
     void destroyData();
 
-    bool isValid() ;
+    bool isValid();
 
-    inline int getLength() { return count;}
-    int getRowCount(){ return count; }
+    inline int getLength() { return count; }
+
+    int getRowCount() { return count; }
+
     int getColumnCount();
 
-    const char* getTypes();
+    const char *getTypes();
+
     /**
     * indicate the base memory is 'SkMemory' or not.
     * @return true if is single type memory
     */
     bool isSingleType();
-    void toString(SB::StringBuilder& sb);
 
-    SkMemoryMatrix* copy();
-    SkMemoryMatrix* transpose();
+    void toString(SB::StringBuilder &sb);
+
+    SkMemoryMatrix *copy();
+
+    SkMemoryMatrix *transpose();
+
     /**
      * convert every memory to target types
      * @param t  the types
      * @return the new matrix.
      */
-    int convert(lua_State* L, const char* t);
+    int convert(lua_State *L, const char *t);
+
     /**
      * travel the matrix with function.
      * @param L the lua state
      * @return the result state
      */
-    int foreach(lua_State* L);
+    int foreach(lua_State *L);
+
     /**
      * tiled the mat to normal memory.
      * @param L the lua stack
      * @return the result state of lua
      */
-    int tiled(lua_State* L);
+    int tiled(lua_State *L);
 
-    static int read(SkMemoryMatrix* mem, lua_State* L, void (*Push)(lua_State* L, SkMemory* ptr));
-    static int write(SkMemoryMatrix* mem, lua_State* L, SkMemory* (*Pull)(lua_State* L, int idx));
+    static int read(SkMemoryMatrix *mem, lua_State *L, void (*Push)(lua_State *L, SkMemory *ptr));
 
-    static int read(SkMemoryMatrix* mem, lua_State* L, void (*Push)(lua_State* L, SkAnyMemory* ptr));
-    static int write(SkMemoryMatrix* mem, lua_State* L, SkAnyMemory* (*Pull)(lua_State* L, int idx));
+    static int write(SkMemoryMatrix *mem, lua_State *L, SkMemory *(*Pull)(lua_State *L, int idx));
+
+    static int
+    read(SkMemoryMatrix *mem, lua_State *L, void (*Push)(lua_State *L, SkAnyMemory *ptr));
+
+    static int
+    write(SkMemoryMatrix *mem, lua_State *L, SkAnyMemory *(*Pull)(lua_State *L, int idx));
 
 private:
     SkMemoryMatrix(int count);
 
     //unsigned char _isArray; // false for mat. true for special array
     int count;
+
     //only used for single type
     void copyData(SkMemory *pMemory, int columnIndex);
 
 public:
-    SkMemory** array;
-    SkAnyMemory** anyArray;
-};
-
-/**
- * any memory object can convert to an array
- */
-class SkMemoryArray: public IMemory{
-
-public:
-     void destroyData();
-     bool isValid();
-
-     int getLength();
-     void toString(SB::StringBuilder& sb);
-
-public:
-    int count;
-    SkMemory** array;
-    SkAnyMemory** anyArray;
-    SkMemoryArray** arrArray;
+    SkMemory **array;
+    SkAnyMemory **anyArray;
 };
 
 #endif //BGFX_STUDY_SKMEMORY_H
