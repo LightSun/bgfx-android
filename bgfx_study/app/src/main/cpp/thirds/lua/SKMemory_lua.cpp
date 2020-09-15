@@ -51,14 +51,6 @@ static int mem_new(lua_State *L) {
     return 1;
 }
 
-static int mem_newFFFUI(lua_State *L) {
-    //(table...)
-    int tableCount = lua_gettop(L);
-    SkMemoryFFFUI *pMemory = new SkMemoryFFFUI(L, tableCount);
-    LuaUtils::push_ptr(L, pMemory);
-    return 1;
-}
-
 static int mem_newMatrix(lua_State *L) {
     auto t = lua_tostring(L, 1);
     int luaType = lua_type(L, 2);
@@ -79,7 +71,6 @@ static int mem_newMatrix(lua_State *L) {
 
 static const luaL_Reg mem_funcs[] = {
         {"new",       mem_new},
-        {"newFFFUI",  mem_newFFFUI},
         {"newMatrix", mem_newMatrix},
         {nullptr,     nullptr}
 };
@@ -141,42 +132,29 @@ static int type##_convert(lua_State *L) { \
 
 memory_isValid(SkMemory)
 
-memory_isValid(SkMemoryFFFUI)
-
 memory_isValid(SkAnyMemory)
 
 memory_gc(SkMemory)
-
-memory_gc(SkMemoryFFFUI)
 
 memory_gc(SkAnyMemory)
 
 memory_len(SkMemory)
 
-memory_len(SkMemoryFFFUI)
-
 memory_len(SkAnyMemory)
 
 memory_tostring(SkMemory)
-
-memory_tostring(SkMemoryFFFUI)
 
 memory_tostring(SkAnyMemory)
 
 memory_newindex(SkMemory)
 
-memory_newindex(SkMemoryFFFUI)
-
 memory_newindex(SkAnyMemory)
 
 memory_foreach(SkMemory)
 
-memory_foreach(SkMemoryFFFUI)
-
 memory_foreach(SkAnyMemory)
 
 memory_convert(SkMemory)
-memory_convert(SkMemoryFFFUI)
 memory_convert(SkAnyMemory)
 
 #define DEF_V_METHODS(type) \
@@ -187,7 +165,6 @@ static const luaL_Reg s##type##_Methods[] = { \
         {nullptr,            nullptr}, \
 };
 DEF_V_METHODS(SkMemory)
-DEF_V_METHODS(SkMemoryFFFUI)
 DEF_V_METHODS(SkAnyMemory)
 
 #define memory_index(type) \
@@ -214,7 +191,6 @@ static int type##_index(lua_State *L) { \
 }
 
 memory_index(SkMemory)
-memory_index(SkMemoryFFFUI)
 memory_index(SkAnyMemory)
 
 const static luaL_Reg gSkAnyMemory_Methods[] = {
@@ -231,14 +207,6 @@ const static luaL_Reg gSkMemory_Methods[] = {
         {"__newindex",        SkMemory_newindex},
         {"__index",           SkMemory_index},
         {"__gc",             SkMemory_gc},
-        {NULL, NULL},
-};
-const static luaL_Reg gSkMemoryFFFUI_Methods[] = {
-        {"__len",             SkMemoryFFFUI_len},
-        {"__tostring",        SkMemoryFFFUI_tostring},
-        {"__newindex",        SkMemoryFFFUI_newindex},
-        {"__index",           SkMemoryFFFUI_index},
-        {"__gc",              SkMemoryFFFUI_gc},
         {NULL, NULL},
 };
 #define PUSH_PTR(type) \
@@ -392,15 +360,12 @@ const static luaL_Reg gSkMemoryMatrix_Methods[] = {
 
 DEF_MTNAME(SkMemory)
 
-DEF_MTNAME(SkMemoryFFFUI)
-
 DEF_MTNAME(SkAnyMemory)
 
 DEF_MTNAME(SkMemoryMatrix)
 
 void SkMemoryLua::registers(lua_State *L) {
     REG_CLASS(L, SkMemory);
-    REG_CLASS(L, SkMemoryFFFUI);
     REG_CLASS(L, SkAnyMemory);
     REG_CLASS(L, SkMemoryMatrix);
 }

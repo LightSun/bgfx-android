@@ -244,9 +244,6 @@ static int bgfx_makeRef(lua_State *L) {
         memory = LuaUtils::to_ref<SkAnyMemory>(L, 1);
     }
     if (memory == nullptr) {
-        memory = LuaUtils::to_ref<SkMemoryFFFUI>(L, 1);
-    }
-    if (memory == nullptr) {
         return luaL_error(L, "bgfx_makeRef failed. %s", lua_tostring(L, 1));
     }
     CHECK_MEMORY_VALID(L, memory)

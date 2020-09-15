@@ -11,7 +11,6 @@
 #include "IMemory.h"
 
 class SkMemory;
-class SkMemoryFFFUI;
 class SkAnyMemory;
 class SkMemoryMatrix;
 
@@ -137,21 +136,6 @@ public:
     const char* _types;
     uint16_t _tabCount;      //table count.
     uint16_t _elementCount;  //element count of every table
-};
-
-//float,float,float, uint32_t
-class SkMemoryFFFUI : public SimpleMemory{
-public:
-    SkMemoryFFFUI(lua_State* L, int tableCount);
-
-    int getLength();
-    void toString(SB::StringBuilder& sb);
-
-    int convert(lua_State* L, const char* t);
-    int foreach(lua_State* L);
-
-    static int read(SkMemoryFFFUI* mem, lua_State* L);
-    static int write(SkMemoryFFFUI* mem, lua_State* L);
 };
 class SkMemoryMatrix: public IMemory{
 public:
