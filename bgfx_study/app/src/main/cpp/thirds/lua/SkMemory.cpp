@@ -902,6 +902,38 @@ int SkMemoryMatrix::foreach(lua_State* L) {
     lua_pop(L, 1);
     return 0;
 }
+int SkMemoryMatrix::tiled(lua_State *L) {
+    const auto types = getTypes();
+    if(isSingleType()){
+        const auto size = MemoryUtils::getUnitSize(types[0]);
+        const auto rowC = getRowCount();
+
+        auto mem = new SkMemory();
+        mem->_dType = types;
+        mem->size = getRowCount() * getColumnCount() * size;
+        mem->data = malloc(mem->size);
+
+        auto addr = static_cast<unsigned char *>(mem->data);
+        for (int i = 0; i < rowC; ++i) {
+            memcpy((void*)addr, array[i]->data, array[i]->size);
+            addr += array[i]->size;
+        }
+        LuaUtils::push_ptr(L, mem);
+        return 1;
+    } else{
+        auto tabCount = anyArray[0]->_tabCount;
+        const auto rowC = getRowCount();
+        auto mem = new SkAnyMemory(types, tabCount * rowC, false);
+
+        auto addr = static_cast<unsigned char *>(mem->data);
+        for (int i = 0; i < rowC; ++i) {
+            memcpy((void*)addr, anyArray[i]->data, anyArray[i]->size);
+            addr += anyArray[i]->size;
+        }
+        LuaUtils::push_ptr(L, mem);
+        return 1;
+    }
+}
 const char* SkMemoryMatrix::getTypes() {
     if(isSingleType()){
         return array[0]->_dType;

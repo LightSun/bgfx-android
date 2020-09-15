@@ -76,6 +76,8 @@ public:
      */
     static void multiple(void *srcData, const char type, size_t totalIndex, double val);
     static void multiple(void *srcData, const char type, size_t totalIndex, lua_Integer val);
+
+    static bool isSigned(const char type);
 };
 
 class IMemory{

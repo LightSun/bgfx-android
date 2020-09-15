@@ -21,8 +21,6 @@ int SkCalculator::mul(lua_State *L, SkMemoryMatrix *src, double val) {
             pMemory->_mul(val);
             mat->array[i] = pMemory;
         }
-        LuaUtils::push_ptr(L, mat);
-        return 1;
     } else{
         SkAnyMemory * pMemory;
         for (int i = 0; i < src->getRowCount(); ++i) {

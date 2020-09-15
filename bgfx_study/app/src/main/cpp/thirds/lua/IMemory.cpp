@@ -40,6 +40,26 @@ int MemoryUtils::getUnitSize(char t) {
             return 0;
     }
 }
+
+bool MemoryUtils::isSigned(const char t) {
+    switch (t) {
+        case 'd': //unsigned int
+        case 'w': //unsigned short
+        case 'b': //unsigned char
+            return false;
+
+        case 'f':
+        case 's': //short
+        case 'i': //int
+        case 'c': //char
+        case 'F': //double
+            return true;
+
+        default:
+            return true;
+    }
+}
+
 #define UN_SIGNED_ADDR(data, offset) \
 uint8_t * addr = static_cast<uint8_t *>(data);\
 addr += offset;

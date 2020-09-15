@@ -168,11 +168,12 @@ public:
     int getColumnCount();
 
     const char* getTypes();
-    //may be a special array
-    /*bool isArray(){ return _isArray;}
-    void setIsArray(bool isArr){
-        this->_isArray = isArr;
-    }*/
+    /**
+    * indicate the base memory is 'SkMemory' or not.
+    * @return true if is single type memory
+    */
+    bool isSingleType();
+    void toString(SB::StringBuilder& sb);
 
     SkMemoryMatrix* copy();
     SkMemoryMatrix* transpose();
@@ -183,17 +184,17 @@ public:
      */
     int convert(lua_State* L, const char* t);
     /**
-     * indicate the base memory is 'SkMemory' or not.
-     * @return true if is single type memory
-     */
-    bool isSingleType();
-    void toString(SB::StringBuilder& sb);
-    /**
      * travel the matrix with function.
      * @param L the lua state
      * @return the result state
      */
     int foreach(lua_State* L);
+    /**
+     * tiled the mat to normal memory.
+     * @param L the lua stack
+     * @return the result state of lua
+     */
+    int tiled(lua_State* L);
 
     static int read(SkMemoryMatrix* mem, lua_State* L, void (*Push)(lua_State* L, SkMemory* ptr));
     static int write(SkMemoryMatrix* mem, lua_State* L, SkMemory* (*Pull)(lua_State* L, int idx));
@@ -212,6 +213,25 @@ private:
 public:
     SkMemory** array;
     SkAnyMemory** anyArray;
+};
+
+/**
+ * any memory object can convert to an array
+ */
+class SkMemoryArray: public IMemory{
+
+public:
+     void destroyData();
+     bool isValid();
+
+     int getLength();
+     void toString(SB::StringBuilder& sb);
+
+public:
+    int count;
+    SkMemory** array;
+    SkAnyMemory** anyArray;
+    SkMemoryArray** arrArray;
 };
 
 #endif //BGFX_STUDY_SKMEMORY_H
