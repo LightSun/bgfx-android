@@ -71,9 +71,13 @@ public:
      */
     void writeTo(SkMemory *dstMem, int dstIndex, int srcIndex);
 
-    IMemory* convert(const char* t);
+    int convert(lua_State* L, const char* t);
     //for each with function call
     int foreach(lua_State* L);
+
+    void _mul(double val);
+
+    SkMemory* copy();
 
 public:
     const char * _dType;
@@ -110,7 +114,6 @@ public:
     SkAnyMemory(const char* types, int count);
 
     /**
-     *
      * @param types
      * @param count
      * @param init true to init data
@@ -118,9 +121,12 @@ public:
     SkAnyMemory(const char* types, int count, bool init);
 
     void toString(SB::StringBuilder& sb);
+    SkAnyMemory* copy();
 
-    IMemory* convert(const char* t);
+    int convert(lua_State* L, const char* t);
     int foreach(lua_State* L);
+
+    void _mul(double val);
 
     int getLength(){return  _tabCount * _elementCount;}
 
@@ -141,7 +147,7 @@ public:
     int getLength();
     void toString(SB::StringBuilder& sb);
 
-    IMemory* convert(const char* t);
+    int convert(lua_State* L, const char* t);
     int foreach(lua_State* L);
 
     static int read(SkMemoryFFFUI* mem, lua_State* L);
@@ -152,6 +158,9 @@ public:
     ~SkMemoryMatrix();
     /** create a empty mat for latter use*/
     SkMemoryMatrix();
+    /** internal use */
+    SkMemoryMatrix(int count, bool singleType);
+
     /**
      * create memory matrix from multi table values which is from lua_state
      * @param L lua stack
@@ -176,18 +185,19 @@ public:
 
     const char* getTypes();
     //may be a special array
-    bool isArray(){ return _isArray;}
+    /*bool isArray(){ return _isArray;}
     void setIsArray(bool isArr){
         this->_isArray = isArr;
-    }
+    }*/
 
+    SkMemoryMatrix* copy();
     SkMemoryMatrix* transpose();
     /**
      * convert every memory to target types
      * @param t  the types
      * @return the new matrix.
      */
-    SkMemoryMatrix* convert(const char* t);
+    int convert(lua_State* L, const char* t);
     /**
      * indicate the base memory is 'SkMemory' or not.
      * @return true if is single type memory
@@ -209,9 +219,8 @@ public:
 
 private:
     SkMemoryMatrix(int count);
-    SkMemoryMatrix(int count, bool singleType);
 
-    unsigned char _isArray; // false for mat. true for special array
+    //unsigned char _isArray; // false for mat. true for special array
     int count;
     //only used for single type
     void copyData(SkMemory *pMemory, int columnIndex);

@@ -17,7 +17,7 @@ android {
         externalNativeBuild {
             //-DSK_API
             cmake {
-                //编译标志问题导致 'undefined reference to XXX'
+                //编译标志问题导致 'undefined reference to XXX' -fno-rtti
                 //copy from bgfx
                 cppFlags "-std=c++14 -fno-exceptions -O0 -Wall -Wextra -ffast-math -fomit-frame-pointer -g -fno-rtti -fPIC -no-canonical-prefixes" +
                         " -Wa,--noexecstack -fstack-protector-strong -ffunction-sections -Wunused-value -Wundef -Wl,-z,relro -Wl,-z,now"+

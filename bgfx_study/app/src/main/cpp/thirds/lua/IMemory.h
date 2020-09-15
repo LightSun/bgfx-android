@@ -66,6 +66,16 @@ public:
 
     static void convert(void *srcData, char srcType, size_t srcBytes,
             void *dstData, const char dstType, size_t dstBytes);
+
+    /**
+     * multi the single data from one to another.
+     * @param srcData the src data
+     * @param dstType the type
+     * @param bytesIndex the index as bytes
+     * @param val the value
+     */
+    static void multiple(void *srcData, const char type, size_t bytesIndex, double val);
+    static void multiple(void *srcData, const char type, size_t bytesIndex, lua_Integer val);
 };
 
 class IMemory{
@@ -106,10 +116,12 @@ public:
 
     /**
      * convert memory type to target type. note the length must match.
-     * @param ts the types of memory. like 'f', 'fff', 'df'...etc.
+     * put a new memory of target type. may be SkMemory/SkAnyMemory.
+     * @param L: the lua stack
+     * @param ts: the types of memory. like 'f', 'fff', 'df'...etc.
      * @return a new memory of target type. may be SkMemory/SkAnyMemory
      */
-    IMemory* convert(const char* ts){return nullptr;}
+    int convert(lua_State* L, const char* ts){ return 0; }
 
     int foreach(lua_State* L){ return 0;}
 

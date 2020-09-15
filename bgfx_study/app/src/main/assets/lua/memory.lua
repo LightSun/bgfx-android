@@ -22,7 +22,7 @@ end
 --- ...: means multi table of 'fffui'.
 function m.newFFFUI(...)
     -- lua 'table.unpack()' as parameter must be the final parameter.or else the lua stack only contains first parameter.
-    return mem.newFFFUI(...);
+    return mem.new('fffd',...);
 end
 
 --- create memory matrix .

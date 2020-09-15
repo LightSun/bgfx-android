@@ -136,21 +136,7 @@ static int type##_foreach(lua_State *L) {\
 static int type##_convert(lua_State *L) { \
     auto pMemory = LuaUtils::get_ref<type>(L, lua_upvalueindex(1)); \
     const char* types = luaL_checkstring(L, -1);\
-    auto mem = pMemory->convert(types); \
-    if(mem == nullptr){ \
-        return luaL_error(L, "convert failed for types = '%s'", types); \
-    } \
-    SkMemory* skm = (SkMemory*)mem; \
-    if(skm != nullptr){ \
-        LuaUtils::push_ptr(L, skm); \
-        return 1; \
-    } \
-    SkAnyMemory* skam = (SkAnyMemory*)mem; \
-    if(skam != nullptr){ \
-        LuaUtils::push_ptr(L, skam); \
-        return 1; \
-    } \
-    return luaL_error(L, "can't reach here");\
+    return pMemory->convert(L, types); \
 }
 
 memory_isValid(SkMemory)
@@ -321,12 +307,7 @@ static int SkMemoryMatrix_convert(lua_State *L) {
     //mat, types
     auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
     auto types = luaL_checkstring(L, -1);
-    auto pMatrix = mat->convert(types);
-    if (pMatrix == nullptr) {
-        return luaL_error(L, "this matrix can't convert to types = '%s'", types);
-    }
-    LuaUtils::push_ptr(L, pMatrix);
-    return 1;
+    return mat->convert(L , types);
 }
 
 static int SkMemoryMatrix_getRowCount(lua_State *L) {

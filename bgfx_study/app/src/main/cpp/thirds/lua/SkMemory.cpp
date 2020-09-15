@@ -360,10 +360,22 @@ void SkMemory::writeTo(SkMemory *dstMem, int dstIndex, int srcIndex) {
             break;
     }
 }
-IMemory* SkMemory::convert(const char* ts) {
+int SkMemory::convert(lua_State* L, const char* ts) {
     auto dstStrLen = strlen(ts);
     if(dstStrLen == 1){
-        if(_dType[0] == ts[0]) return this;
+        if(_dType[0] == ts[0]){
+            SkMemory *pSkMemory = LuaUtils::to_ref<SkMemory>(L, 1);
+            if(pSkMemory != nullptr){
+                lua_pushvalue(L, 1);
+                return 1;
+            }
+            pSkMemory = LuaUtils::to_ref<SkMemory>(L, lua_upvalueindex(1));
+            if(pSkMemory != nullptr){
+                lua_pushvalue(L, 1);
+                return 1;
+            }
+            return luaL_error(L, "wrong state for 'SkMemory::convert'");
+        }
         auto pMemory = new SkMemory();
         pMemory->_dType = ts;
         pMemory->size = MemoryUtils::getUnitSize(ts[0]) * getLength();
@@ -371,11 +383,12 @@ IMemory* SkMemory::convert(const char* ts) {
         for (int i = 0, length = getLength(); i < length; ++i) {
             MemoryUtils::convert(data, _dType[0] ,pMemory->data, ts[0], i);
         }
-        return pMemory;
+        LuaUtils::push_ptr(L, pMemory);
+        return 1;
     }else{
         //error mismatch
         if(getLength() % dstStrLen != 0){
-            return nullptr;
+            return luaL_error(L, "length mismatch");
         }
         size_t tabCount = getLength() / dstStrLen;
         const auto pMemory = new SkAnyMemory(ts, tabCount, false);
@@ -389,7 +402,8 @@ IMemory* SkMemory::convert(const char* ts) {
             MemoryUtils::convert(data, srcType, i * unitSize, pMemory->data, dstType, dstBytes);
             dstBytes += MemoryUtils::getUnitSize(dstType);
         }
-        return pMemory;
+        LuaUtils::push_ptr(L, pMemory);
+        return 1;
     }
 }
 int SkMemory::foreach(lua_State* L){
@@ -406,6 +420,28 @@ int SkMemory::foreach(lua_State* L){
     }
     return 0;
 }
+SkMemory* SkMemory::copy() {
+    auto pMemory = new SkMemory();
+    pMemory->_dType = _dType;
+    pMemory->size = size;
+    pMemory->data = malloc(size);
+    memcpy(pMemory->data, data, size);
+    return pMemory;
+}
+void SkMemory::_mul(double val) {
+    const char type = _dType[0];
+    int unitSize = MemoryUtils::getUnitSize(type);
+    
+    const bool isInt = floor(val) == val;
+    for (int j = 0; j < getLength(); ++j) {
+        if (isInt) {
+            MemoryUtils::multiple(data, type, j * unitSize, (lua_Integer) val);
+        } else {
+            MemoryUtils::multiple(data, type, j * unitSize, val);
+        }
+    }
+}
+
 //======================= SKAnyMemory ===================================
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){
 
@@ -523,7 +559,13 @@ void SkAnyMemory::toString(SB::StringBuilder &sb) {
     }
     sb << "}";
 }
-IMemory* SkAnyMemory::convert(const char *ts) {
+SkAnyMemory* SkAnyMemory::copy() {
+    SkAnyMemory *pMemory = new SkAnyMemory(_types, _tabCount, false);
+    memcpy(pMemory->data, data, size);
+    return pMemory;
+}
+
+int SkAnyMemory::convert(lua_State* L, const char *ts) {
     const int dstStrLen = strlen(ts);
     if(dstStrLen == 1){
         const int dstUnitSize = MemoryUtils::getUnitSize(ts[0]);
@@ -545,11 +587,12 @@ IMemory* SkAnyMemory::convert(const char *ts) {
                 dstIndex ++;
             }
         }
-        return pMemory;
+        LuaUtils::push_ptr(L, pMemory);
+        return 1;
     } else{
         //error mismatch
         if(getLength() % dstStrLen != 0){
-            return nullptr;
+            return luaL_error(L, "length mismatch");
         }
         size_t tabCount = getLength() / dstStrLen;
         const auto pMemory = new SkAnyMemory(ts, tabCount, false);
@@ -565,7 +608,8 @@ IMemory* SkAnyMemory::convert(const char *ts) {
             srcBytes += MemoryUtils::getUnitSize(srcType);
             dstBytes += MemoryUtils::getUnitSize(dstType);
         }
-        return pMemory;
+        LuaUtils::push_ptr(L, pMemory);
+        return 1;
     }
 }
 int SkAnyMemory::foreach(lua_State *L) {
@@ -584,6 +628,22 @@ int SkAnyMemory::foreach(lua_State *L) {
     }
     return 0;
 }
+void SkAnyMemory::_mul(double val) {
+    const bool isInt = floor(val) == val;
+    const size_t srcStrLen = strlen(_types);
+    char srcType;
+    size_t  srcBytes = 0;
+    for (int i = 0, length = getLength(); i < length; ++i) {
+        srcType = _types[i % srcStrLen];
+        if(isInt){
+            MemoryUtils::multiple(data, srcType, srcBytes, (lua_Integer)val);
+        } else{
+            MemoryUtils::multiple(data, srcType, srcBytes, val);
+        }
+        srcBytes += MemoryUtils::getUnitSize(srcType);
+    }
+}
+
 int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
     //table, index
     auto index = lua_tointeger(L, -1);
@@ -687,7 +747,7 @@ void SkMemoryFFFUI::toString(SB::StringBuilder &ss) {
 int SkMemoryFFFUI::getLength() {
     return size / 4;
 }
-IMemory* SkMemoryFFFUI::convert(const char *ts) {
+int SkMemoryFFFUI::convert(lua_State* L,const char *ts) {
     const int dstStrLen = strlen(ts);
     if(dstStrLen == 1){
         const int dstUnitSize = MemoryUtils::getUnitSize(ts[0]);
@@ -701,10 +761,11 @@ IMemory* SkMemoryFFFUI::convert(const char *ts) {
         for (int i = 0, len = getLength(); i < len; ++i) {
             MemoryUtils::convert(data, types[i % 4], i * 4, pMemory->data, ts[0], i * dstUnitSize);
         }
-        return pMemory;
+        LuaUtils::push_ptr(L, pMemory);
+        return 1;
     } else{
         if(getLength() % dstStrLen != 0){
-            return nullptr;
+            return luaL_error(L, "length mismatch");
         }
         size_t tabCount = getLength() / dstStrLen;
         const auto pMemory = new SkAnyMemory(ts, tabCount, false);
@@ -719,7 +780,8 @@ IMemory* SkMemoryFFFUI::convert(const char *ts) {
             MemoryUtils::convert(data, srcType, i * 4, pMemory->data, dstType, dstBytes);
             dstBytes += MemoryUtils::getUnitSize(dstType);
         }
-        return pMemory;
+        LuaUtils::push_ptr(L, pMemory);
+        return 1;
     }
 }
 int SkMemoryFFFUI::foreach(lua_State *L) {
@@ -988,6 +1050,19 @@ const char* SkMemoryMatrix::getTypes() {
     }
     return anyArray[0]->_types;
 }
+SkMemoryMatrix* SkMemoryMatrix::copy() {
+    auto mat = new SkMemoryMatrix(getRowCount());
+    if(isSingleType()){
+        for (int i = 0; i < mat->count; ++i) {
+            mat->array[i] = array[i]->copy();
+        }
+    } else{
+        for (int i = 0; i < mat->count; ++i) {
+            mat->anyArray[i] = anyArray[i]->copy();
+        }
+    }
+    return mat;
+}
 SkMemoryMatrix * SkMemoryMatrix::transpose() {
     if(isSingleType()){
         auto mat = new SkMemoryMatrix(getColumnCount());
@@ -1009,58 +1084,62 @@ SkMemoryMatrix * SkMemoryMatrix::transpose() {
     }
 }
 
-SkMemoryMatrix * SkMemoryMatrix::convert(const char *ts) {
+int SkMemoryMatrix::convert(lua_State* L,const char *ts) {
     if(isSingleType()){
         if(strlen(ts) == 1){
             //simple -> simple
             const auto mat = new SkMemoryMatrix(getRowCount());
             for (int i = 0; i < getRowCount(); ++i) {
-                auto pMemory = array[i]->convert(ts);
-                if(pMemory == nullptr){
+                if(array[i]->convert(L, ts) == 0){
+                    //error
                     delete(mat);
-                    return nullptr;
+                    return 0;
                 }
-                mat->array[i] = (SkMemory*)pMemory;
+                mat->array[i] = LuaUtils::get_ref<SkMemory>(L, -1);
             }
-            return mat;
+            LuaUtils::push_ptr(L, mat);
+            return 1;
         }else{
             //simple -> lazy
             const auto mat = new SkMemoryMatrix(getRowCount(), false);
             for (int i = 0; i < getRowCount(); ++i) {
-                auto pMemory = array[i]->convert(ts);
-                if(pMemory == nullptr){
+                if(array[i]->convert(L, ts) == 0){
+                    //error
                     delete(mat);
-                    return nullptr;
+                    return 0;
                 }
-                mat->anyArray[i] = (SkAnyMemory*)pMemory;
+                mat->anyArray[i] = LuaUtils::get_ref<SkAnyMemory>(L, -1);
             }
-            return mat;
+            LuaUtils::push_ptr(L, mat);
+            return 1;
         }
     }else{
         //lazy -> simple
         if(strlen(ts) == 1){
             const auto mat = new SkMemoryMatrix(getRowCount());
             for (int i = 0; i < getRowCount(); ++i) {
-                auto pMemory = anyArray[i]->convert(ts);
-                if(pMemory == nullptr){
+                if(anyArray[i]->convert(L, ts) == 0){
+                    //error
                     delete(mat);
-                    return nullptr;
+                    return 0;
                 }
-                mat->array[i] = (SkMemory*)pMemory;
+                mat->array[i] = LuaUtils::get_ref<SkMemory>(L, -1);
             }
-            return mat;
+            LuaUtils::push_ptr(L, mat);
+            return 1;
         } else{
             //lazy -> lazy
             const auto mat = new SkMemoryMatrix(getRowCount(), false);
             for (int i = 0; i < getRowCount(); ++i) {
-                auto pMemory = anyArray[i]->convert(ts);
-                if(pMemory == nullptr){
+                if(anyArray[i]->convert(L, ts) == 0){
+                    //error
                     delete(mat);
-                    return nullptr;
+                    return 0;
                 }
-                mat->anyArray[i] = (SkAnyMemory*)pMemory;
+                mat->anyArray[i] = LuaUtils::get_ref<SkAnyMemory>(L, -1);
             }
-            return mat;
+            LuaUtils::push_ptr(L, mat);
+            return 1;
         }
     }
 }
