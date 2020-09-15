@@ -42,10 +42,10 @@ int MemoryUtils::getUnitSize(char t) {
 }
 #define UN_SIGNED_ADDR(data, offset) \
 uint8_t * addr = static_cast<uint8_t *>(data);\
-addr += totalIndex;
+addr += offset;
 #define SIGNED_ADDR(data, offset) \
 signed char * addr = static_cast<signed char *>(data);\
-addr += totalIndex;
+addr += offset;
 
 void MemoryUtils::toString(SB::StringBuilder &sb, char t, void *data, int totalIndex) {
     switch (t) {
@@ -389,6 +389,104 @@ void MemoryUtils::convert(void *srcData, char srcType, size_t srcBytes,
         case 'F': {
             SRC_ADDR(double);
             DST_DATA_ANY();
+        }
+            break;
+    }
+}
+
+#define OP(type, val, _op) \
+type* arr = (type*)addr; \
+*arr = static_cast<type>((*arr) _op val);
+
+void MemoryUtils::multiple(void *srcData, const char type, size_t totalIndex, double val) {
+    switch (type){
+        case 'f': {
+            SIGNED_ADDR(srcData, totalIndex);
+            OP(float, val, *);
+        }
+            break;
+        case 'd':{
+            UN_SIGNED_ADDR(srcData, totalIndex);
+            OP(uint32_t , val, *);
+        }
+            break;
+
+        case 'w':{
+            UN_SIGNED_ADDR(srcData, totalIndex);
+            OP(uint16_t, val, *);
+        }
+            break;
+        case 'b':{
+            UN_SIGNED_ADDR(srcData, totalIndex);
+            OP(uint8_t, val, *);
+        }
+            break;
+
+        case 'i':{
+            SIGNED_ADDR(srcData, totalIndex);
+            OP(int, val, *);
+        }
+            break;
+        case 's':{
+            SIGNED_ADDR(srcData, totalIndex);
+            OP(short, val, *);
+        }
+            break;
+        case 'c':{
+            SIGNED_ADDR(srcData, totalIndex);
+            OP(s_char, val, *);
+        }
+            break;
+        case 'F':{
+            SIGNED_ADDR(srcData, totalIndex);
+            OP(double, val, *);
+        }
+            break;
+    }
+}
+
+void MemoryUtils::multiple(void *srcData, const char type, size_t totalIndex, lua_Integer val) {
+    switch (type){
+        case 'f': {
+            SIGNED_ADDR(srcData, totalIndex);
+            OP(float, val, *);
+        }
+            break;
+        case 'd':{
+            UN_SIGNED_ADDR(srcData, totalIndex);
+            OP(uint32_t , val, *);
+        }
+            break;
+
+        case 'w':{
+            UN_SIGNED_ADDR(srcData, totalIndex);
+            OP(uint16_t, val, *);
+        }
+            break;
+        case 'b':{
+            UN_SIGNED_ADDR(srcData, totalIndex);
+            OP(uint8_t, val, *);
+        }
+            break;
+
+        case 'i':{
+            SIGNED_ADDR(srcData, totalIndex);
+            OP(int, val, *);
+        }
+            break;
+        case 's':{
+            SIGNED_ADDR(srcData, totalIndex);
+            OP(short, val, *);
+        }
+            break;
+        case 'c':{
+            SIGNED_ADDR(srcData, totalIndex);
+            OP(s_char, val, *);
+        }
+            break;
+        case 'F':{
+            SIGNED_ADDR(srcData, totalIndex);
+            OP(double, val, *);
         }
             break;
     }

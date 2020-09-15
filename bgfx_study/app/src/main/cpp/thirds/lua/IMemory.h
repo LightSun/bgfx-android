@@ -71,11 +71,11 @@ public:
      * multi the single data from one to another.
      * @param srcData the src data
      * @param dstType the type
-     * @param bytesIndex the index as bytes
+     * @param totalIndex the total index as bytes
      * @param val the value
      */
-    static void multiple(void *srcData, const char type, size_t bytesIndex, double val);
-    static void multiple(void *srcData, const char type, size_t bytesIndex, lua_Integer val);
+    static void multiple(void *srcData, const char type, size_t totalIndex, double val);
+    static void multiple(void *srcData, const char type, size_t totalIndex, lua_Integer val);
 };
 
 class IMemory{
