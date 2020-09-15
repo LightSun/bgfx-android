@@ -64,6 +64,9 @@ bool SkMemoryArray::isValid() {
 #define ARR_TOSTRING(arr) \
 for( int i = 0; i < count ; i ++){ \
     arr[i]->toString(sb); \
+    if(i != count - 1){ \
+        sb << ", \n"; \
+    } \
 }
 void SkMemoryArray::toString(SB::StringBuilder &sb) {
     sb << "[";
