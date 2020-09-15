@@ -430,7 +430,7 @@ SkMemory* SkMemory::copy() {
 }
 void SkMemory::_mul(double val) {
     const char type = _dType[0];
-    int unitSize = MemoryUtils::getUnitSize(type);
+    const int unitSize = MemoryUtils::getUnitSize(type);
     
     const bool isInt = floor(val) == val;
     for (int j = 0; j < getLength(); ++j) {

@@ -129,6 +129,18 @@ static int type##_convert(lua_State *L) { \
     const char* types = luaL_checkstring(L, -1);\
     return pMemory->convert(L, types); \
 }
+#define memory_copy(type) \
+static int type##_copy(lua_State *L) { \
+    auto pMemory = LuaUtils::get_ref<type>(L, lua_upvalueindex(1)); \
+    auto sr = pMemory->copy(); \
+    if(sr != NULL){ \
+        LuaUtils::push_ptr(L, sr); \
+        return 1; \
+    } \
+    return 0; \
+}
+memory_copy(SkMemory)
+memory_copy(SkAnyMemory)
 
 memory_isValid(SkMemory)
 
@@ -159,6 +171,7 @@ memory_convert(SkAnyMemory)
 
 #define DEF_V_METHODS(type) \
 static const luaL_Reg s##type##_Methods[] = { \
+        {"copy",             type##_copy}, \
         {"convert",          type##_convert}, \
         {"foreach",          type##_foreach},\
         {"isValid",          type##_isValid}, \
@@ -304,8 +317,9 @@ static int SkMemoryMatrix_mul(lua_State *L) {
         }
     }
 }
-
+memory_copy(SkMemoryMatrix)
 const static luaL_Reg sSkMemoryMatrix_Methods[] = {
+        {"copy",             SkMemoryMatrix_copy},
         {"convert",          SkMemoryMatrix_convert},
         {"transpose",        SkMemoryMatrix_transpose},
         {"isValid",          SkMemoryMatrix_isValid},

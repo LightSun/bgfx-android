@@ -13,25 +13,26 @@ int SkCalculator::mul(lua_State *L, SkMemoryMatrix *src, SkMemory *m2) {
 }
 
 int SkCalculator::mul(lua_State *L, SkMemoryMatrix *src, double val) {
+    const auto mat = new SkMemoryMatrix(src->getRowCount(), src->isSingleType());
     if (src->isSingleType()) {
-        SkMemoryMatrix *mat = new SkMemoryMatrix(src->getTypes(), src->getRowCount(),
-                                                 src->getColumnCount());
         SkMemory* pMemory;
         for (int i = 0; i < src->getRowCount(); ++i) {
-            pMemory = src->array[i];
-          //TODO  mat->array[i] = pMemory->_mul(val);
+            pMemory = src->array[i]->copy();
+            pMemory->_mul(val);
+            mat->array[i] = pMemory;
         }
         LuaUtils::push_ptr(L, mat);
         return 1;
     } else{
-        const auto mat = new SkMemoryMatrix(src->getRowCount(), false);
         SkAnyMemory * pMemory;
         for (int i = 0; i < src->getRowCount(); ++i) {
-            pMemory = src->anyArray[i];
-           // mat->anyArray[i] = pMemory->_mul(val);
+            pMemory = src->anyArray[i]->copy();
+            pMemory->_mul(val);
+            mat->anyArray[i] = pMemory;
         }
     }
-    return 0;
+    LuaUtils::push_ptr(L, mat);
+    return 1;
 }
 
 int SkCalculator::mul(lua_State *L, SkMemoryMatrix *src, SkAnyMemory *m2) {
