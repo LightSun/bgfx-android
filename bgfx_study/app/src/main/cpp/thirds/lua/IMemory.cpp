@@ -522,6 +522,12 @@ int IMemory::ref() {
 int IMemory::unRef() {
     return _ref.fetch_add(-1);
 }
+void IMemory::unRefAndDestroy() {
+    if(unRef() == 0){
+        destroyData();
+        delete this;
+    }
+}
 
 //-------------------------------------
 SimpleMemory::SimpleMemory():IMemory() {
@@ -540,3 +546,5 @@ void SimpleMemory::destroyData() {
 bool SimpleMemory::isValid() {
     return data != nullptr;
 }
+
+SkMemoryHolder::SkMemoryHolder(int type, void *ptr) : type(type), ptr(ptr) {}

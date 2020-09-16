@@ -15,6 +15,26 @@ namespace SB{
 class IMemory;
 class SimpleMemory;
 
+class SkMemoryHolder{
+public:
+    int type;
+    void* ptr;
+
+    SkMemoryHolder(int type, void *ptr);
+};
+
+#define DESTROY_POINTER_ARRAY(array) \
+if(array){ \
+for (int i = 0; i < count; ++i) { \
+auto ptr = array[i]; \
+if(ptr != NULL){ \
+    ptr->unRefAndDestroy(); \
+} \
+} \
+delete[](array); \
+array = nullptr; \
+}
+
 class MemoryUtils{
 public:
     static int getUnitSize(char type);
@@ -99,6 +119,8 @@ public:
      * @return the chars
      */
     const char* toString();
+
+    void unRefAndDestroy();
 
 public:
     std::atomic_int _ref;

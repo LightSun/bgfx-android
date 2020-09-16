@@ -90,10 +90,7 @@ static int type##_isValid(lua_State* L){ \
 #define memory_gc(type) \
 static int type##_gc(lua_State* L){ \
     auto pMemory = LuaUtils::get_ref<type>(L, 1); \
-    if(pMemory->unRef() == 0){ \
-        pMemory->destroyData(); \
-        delete pMemory;  \
-    }\
+    pMemory->unRefAndDestroy();\
     return 0;\
 }
 #define memory_len(type)  \
@@ -238,11 +235,6 @@ PULL_PTR(SkMemory)
 PUSH_PTR(SkAnyMemory)
 
 PULL_PTR(SkAnyMemory)
-static int SkMemoryMatrix_gc(lua_State *L) {
-    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
-    delete pMemory;
-    return 0;
-}
 
 static int SkMemoryMatrix_len(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
@@ -361,7 +353,7 @@ static int SkMemoryMatrix_newindex(lua_State *L) {
         return SkMemoryMatrix::write(pMemory, L, SkAnyMemory_pull);
     }
 }
-
+memory_gc(SkMemoryMatrix)
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
         {"__mul",             SkMemoryMatrix_mul},
         {"__len",             SkMemoryMatrix_len},

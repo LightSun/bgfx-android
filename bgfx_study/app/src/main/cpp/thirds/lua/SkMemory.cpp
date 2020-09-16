@@ -99,7 +99,7 @@ srcData += srcIndex; \
 *pData = *srcData; }
 
 //---------------------------------------------------------------------------------
-SkMemory::SkMemory(){
+SkMemory::SkMemory(): SimpleMemory(){
 
 }
 SkMemory::SkMemory(const char *type, int len): SimpleMemory(), _dType(type) {
@@ -446,7 +446,7 @@ void SkMemory::_mul(double val) {
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){
 
 }
-SkAnyMemory::SkAnyMemory(lua_State *L, const char *types, int tableIndex){
+SkAnyMemory::SkAnyMemory(lua_State *L, const char *types, int tableIndex) : SimpleMemory(){
     //if assigned table index. means only one table
     _tabCount = tableIndex >= 1 ? 1 : lua_gettop(L);
     _types = types;
@@ -744,26 +744,8 @@ SkMemoryMatrix::SkMemoryMatrix(int count, bool singleType): IMemory(), count(cou
     }
 }
 void SkMemoryMatrix::destroyData() {
-    if(array){
-        for (int i = 0; i < count; ++i) {
-            SkMemory *pMemory = array[i];
-            if(pMemory != nullptr){
-                delete pMemory;
-            }
-        }
-        delete[](array);
-        array = nullptr;
-    }
-    if(anyArray){
-        for (int i = 0; i < count; ++i) {
-            SkAnyMemory *pMemory = anyArray[i];
-            if(pMemory != nullptr){
-                delete pMemory;
-            }
-        }
-        delete[](anyArray);
-        anyArray = nullptr;
-    }
+    DESTROY_POINTER_ARRAY(array);
+    DESTROY_POINTER_ARRAY(anyArray);
     count = 0;
 }
 bool SkMemoryMatrix::isValid() {
@@ -982,7 +964,7 @@ int SkMemoryMatrix::convert(lua_State* L,const char *ts) {
             for (int i = 0; i < getRowCount(); ++i) {
                 if(array[i]->convert(L, ts) == 0){
                     //error
-                    delete(mat);
+                    mat->unRefAndDestroy();
                     return 0;
                 }
                 mat->array[i] = LuaUtils::get_ref<SkMemory>(L, -1);
@@ -995,7 +977,7 @@ int SkMemoryMatrix::convert(lua_State* L,const char *ts) {
             for (int i = 0; i < getRowCount(); ++i) {
                 if(array[i]->convert(L, ts) == 0){
                     //error
-                    delete(mat);
+                    mat->unRefAndDestroy();
                     return 0;
                 }
                 mat->anyArray[i] = LuaUtils::get_ref<SkAnyMemory>(L, -1);
@@ -1010,7 +992,7 @@ int SkMemoryMatrix::convert(lua_State* L,const char *ts) {
             for (int i = 0; i < getRowCount(); ++i) {
                 if(anyArray[i]->convert(L, ts) == 0){
                     //error
-                    delete(mat);
+                    mat->unRefAndDestroy();
                     return 0;
                 }
                 mat->array[i] = LuaUtils::get_ref<SkMemory>(L, -1);
@@ -1023,7 +1005,7 @@ int SkMemoryMatrix::convert(lua_State* L,const char *ts) {
             for (int i = 0; i < getRowCount(); ++i) {
                 if(anyArray[i]->convert(L, ts) == 0){
                     //error
-                    delete(mat);
+                    mat->unRefAndDestroy();
                     return 0;
                 }
                 mat->anyArray[i] = LuaUtils::get_ref<SkAnyMemory>(L, -1);

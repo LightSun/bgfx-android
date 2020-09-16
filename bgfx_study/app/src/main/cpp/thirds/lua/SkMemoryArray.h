@@ -6,6 +6,9 @@
 #define BGFX_STUDY_SKMEMORYARRAY_H
 
 #include "SkMemory.h"
+#include "lua.hpp"
+
+class SkMemoryArray;
 
 /**
  * any memory object can convert to an array
@@ -20,7 +23,6 @@ public:
     const static char TYPE_MEM_ARRAY = 3;
     const static char TYPE_MEM_MAT   = 4;
 
-    SkMemoryArray();
     SkMemoryArray(char type, int count);
 
     ~SkMemoryArray();
@@ -34,6 +36,14 @@ public:
 
     void toString(SB::StringBuilder &sb);
 
+    SkMemoryArray* copy();
+   // SkMemoryArray* dot(double val);
+   // SkMemoryArray* dot(lua_Integer val);
+
+    const SkMemoryHolder& operator[](int index);
+
+    void assignElement(int index, void* val, bool copy);
+    bool assignElement(int index, SkMemoryArray* src, bool copy);
 public:
     char type;
     int count;

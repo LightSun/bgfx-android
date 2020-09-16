@@ -21,18 +21,6 @@
     q = nullptr; \
 }
 
-#define DESTROY_POINTER_ARRAY(array) \
-if(array){ \
-for (int i = 0; i < count; ++i) { \
-auto pMemory = array[i]; \
-if(pMemory != nullptr){ \
-delete pMemory; \
-} \
-} \
-delete[](array); \
-array = nullptr; \
-}
-
 //SIMPLE_DEMO only used simple
 #ifdef ANDROID
     #ifdef SIMPLE_DEMO
