@@ -37,13 +37,20 @@ public:
     void toString(SB::StringBuilder &sb);
 
     SkMemoryArray* copy();
-   // SkMemoryArray* dot(double val);
-   // SkMemoryArray* dot(lua_Integer val);
+    SkMemoryArray* _mul(double val);
 
     const SkMemoryHolder& operator[](int index);
 
     void assignElement(int index, void* val, bool copy);
     bool assignElement(int index, SkMemoryArray* src, bool copy);
+
+    /**
+     * operate element with target index and val by multiple
+     * @param index the index of element
+     * @param val the val to multiple
+     * @return true if operate success
+     */
+    bool opElement__mul(int index, double val);
 public:
     char type;
     int count;

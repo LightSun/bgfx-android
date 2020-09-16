@@ -81,7 +81,7 @@ public:
     //for each with function call
     int foreach(lua_State *L);
 
-    void _mul(double val);
+    SkMemory* _mul(double val);
 
     SkMemory *copy();
 
@@ -135,7 +135,7 @@ public:
 
     int foreach(lua_State *L);
 
-    void _mul(double val);
+    SkAnyMemory* _mul(double val);
 
     int getLength() { return _tabCount * _elementCount; }
 
@@ -194,6 +194,7 @@ public:
 
     void toString(SB::StringBuilder &sb);
 
+    SkMemoryMatrix* _mul(double val);
     SkMemoryMatrix *copy();
 
     SkMemoryMatrix *transpose();

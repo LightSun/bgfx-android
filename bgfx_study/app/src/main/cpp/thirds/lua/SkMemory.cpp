@@ -428,18 +428,20 @@ SkMemory* SkMemory::copy() {
     memcpy(pMemory->data, data, size);
     return pMemory;
 }
-void SkMemory::_mul(double val) {
+SkMemory* SkMemory::_mul(double val) {
+    SkMemory *pMemory = copy();
     const char type = _dType[0];
     const int unitSize = MemoryUtils::getUnitSize(type);
     
     const bool isInt = floor(val) == val;
     for (int j = 0; j < getLength(); ++j) {
         if (isInt) {
-            MemoryUtils::multiple(data, type, j * unitSize, (lua_Integer) val);
+            MemoryUtils::multiple(pMemory->data, type, j * unitSize, (lua_Integer) val);
         } else {
-            MemoryUtils::multiple(data, type, j * unitSize, val);
+            MemoryUtils::multiple(pMemory->data, type, j * unitSize, val);
         }
     }
+    return pMemory;
 }
 
 //======================= SKAnyMemory ===================================
@@ -628,7 +630,8 @@ int SkAnyMemory::foreach(lua_State *L) {
     }
     return 0;
 }
-void SkAnyMemory::_mul(double val) {
+SkAnyMemory* SkAnyMemory::_mul(double val) {
+    SkAnyMemory *pMemory = copy();
     const bool isInt = floor(val) == val;
     const size_t srcStrLen = strlen(_types);
     char srcType;
@@ -636,12 +639,13 @@ void SkAnyMemory::_mul(double val) {
     for (int i = 0, length = getLength(); i < length; ++i) {
         srcType = _types[i % srcStrLen];
         if(isInt){
-            MemoryUtils::multiple(data, srcType, srcBytes, (lua_Integer)val);
+            MemoryUtils::multiple(pMemory->data, srcType, srcBytes, (lua_Integer)val);
         } else{
-            MemoryUtils::multiple(data, srcType, srcBytes, val);
+            MemoryUtils::multiple(pMemory->data, srcType, srcBytes, val);
         }
         srcBytes += MemoryUtils::getUnitSize(srcType);
     }
+    return pMemory;
 }
 
 int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
@@ -922,6 +926,22 @@ const char* SkMemoryMatrix::getTypes() {
     }
     return anyArray[0]->_types;
 }
+#define MAT_OP(op, pType) \
+SkMemoryMatrix* SkMemoryMatrix::_mul(pType val) { \
+    auto mat = new SkMemoryMatrix(getRowCount()); \
+    if(isSingleType()){ \
+        for (int i = 0; i < mat->count; ++i) { \
+            mat->array[i] = array[i]->_mul(val); \
+        } \
+    } else{ \
+        for (int i = 0; i < mat->count; ++i) { \
+            mat->anyArray[i] = anyArray[i]->_mul(val); \
+        } \
+    } \
+    return mat; \
+}
+MAT_OP(_mul, double)
+
 SkMemoryMatrix* SkMemoryMatrix::copy() {
     auto mat = new SkMemoryMatrix(getRowCount());
     if(isSingleType()){

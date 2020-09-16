@@ -86,6 +86,16 @@ for( int i = 0; i < count ; i ++){ \
     }
     sb << "]";
 }
+SkMemoryArray* SkMemoryArray::_mul(double val) {
+    auto ska = new SkMemoryArray(type, count);
+    for (int i = 0; i < count; ++i) {
+        if(!ska->opElement__mul(i, val)){
+            ska->unRefAndDestroy();
+            return nullptr;
+        }
+    }
+    return ska;
+}
 const SkMemoryHolder& SkMemoryArray::operator[](int index) {
     switch (type){
         case TYPE_MEM:
@@ -159,5 +169,33 @@ bool SkMemoryArray::assignElement(int i, SkMemoryArray *src, bool copy) {
             break;
         default:
             LOGE("wrong type = %d", type);
+            return false;
     }
+    return true;
 }
+#define OP_IF(name, op) \
+name[i] = name[i]->op(val);
+
+#define opElement(valType, op) \
+bool SkMemoryArray::opElement_##op(int i, valType val) { \
+    switch (type){ \
+        case TYPE_MEM: \
+            OP_IF(array,op) \
+            break; \
+        case TYPE_MEM_ANY: \
+            OP_IF(anyArray, op) \
+            break; \
+        case TYPE_MEM_ARRAY: \
+            OP_IF(arrArray, op) \
+            break; \
+        case TYPE_MEM_MAT: \
+            OP_IF(matArray, op) \
+            break; \
+        default: \
+            LOGE("wrong type = %d", type); \
+            return false; \
+    } \
+    return true; \
+}
+
+opElement(double, _mul);
