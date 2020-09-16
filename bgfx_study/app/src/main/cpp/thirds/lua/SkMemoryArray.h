@@ -41,6 +41,7 @@ public:
 
     const SkMemoryHolder& operator[](int index);
 
+    //arr[i] = xxx
     void assignElement(int index, void* val, bool copy);
     bool assignElement(int index, SkMemoryArray* src, bool copy);
 

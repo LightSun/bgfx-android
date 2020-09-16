@@ -512,6 +512,63 @@ void MemoryUtils::multiple(void *srcData, const char type, size_t totalIndex, lu
     }
 }
 
+const char MemoryUtils::computeType(const char type, const char type1) {
+    if(type == type1){
+        return type;
+    }
+    const bool isFloat_t = type == 'f' || type == 'F';
+    const bool isFloat_t1 = type1 == 'f' || type1 == 'F';
+
+    if(getUnitSize(type) > getUnitSize(type1)){
+        if(isSigned(type)) return type;
+        else{
+            if(isSigned(type1)) return upgradeType(type, isFloat_t1);
+            else{
+                return type;
+            }
+        }
+    } else if(getUnitSize(type) == getUnitSize(type1)){
+        if(isSigned(type)){
+            if(isSigned(type1)){
+                return type;
+            } else{
+                return upgradeType(type1, isFloat_t);
+            }
+        } else{
+            if(isSigned(type1)){
+                return upgradeType(type, isFloat_t1);
+            } else{
+                return type;
+            }
+        }
+    } else{
+        if(isSigned(type1)) return type1;
+        else{
+            if(isSigned(type)) return upgradeType(type1, isFloat_t);
+            else{
+                return type1;
+            }
+        }
+    }
+}
+//type is unsigned
+const char MemoryUtils::upgradeType(const char type, const bool hasFloat) {
+    switch (type){
+        case 'd':
+            return 'F';
+
+        case 'w':{
+            return hasFloat ? 'f' : 'i';
+        }
+        case 'b':{
+            return hasFloat ? 'f' : 's';
+        }
+    }
+    LOGE("can't reach here for MemoryUtils::upgradeType()");
+    //can't reach here
+    return 'i';
+}
+
 //---------------------------------------
 IMemory::IMemory():_ref(1) {
 

@@ -97,7 +97,22 @@ public:
     static void multiple(void *srcData, const char type, size_t totalIndex, double val);
     static void multiple(void *srcData, const char type, size_t totalIndex, lua_Integer val);
 
+    static void multiple(void *srcData,const char srcType, size_t srcBytes,
+            void* dstData, const char dstType, size_t dstBytes,
+            void *outData, size_t outBytes);
+
     static bool isSigned(const char type);
+
+    /** compute a collect type */
+    static const char computeType(const char type, const char type1);
+    //result must be a signed type.
+    /**
+     * upgrade unsigned type to a signed type
+     * @param type the unsigned type
+     * @param hasFloat has float or not
+     * @return the upgrade type
+     */
+    static const char upgradeType(const char type, const bool hasFloat);
 };
 
 class IMemory{

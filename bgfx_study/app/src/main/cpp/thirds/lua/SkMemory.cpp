@@ -443,6 +443,29 @@ SkMemory* SkMemory::_mul(double val) {
     }
     return pMemory;
 }
+SkMemory* SkMemory::dot(SkMemory *val) {
+    if(getLength() != val->getLength()){
+        return nullptr;
+    }
+    const char srcType = _dType[0];
+    const char dstType = val->_dType[0];
+    const int srcUnitSize = MemoryUtils::getUnitSize(srcType);
+    const int dstUnitSize = MemoryUtils::getUnitSize(dstType);
+    //const char outType = MemoryUtils::computeType(srcType, dstType);
+
+    auto pMemory = new SkMemory();
+    pMemory->_dType = _dType;
+    pMemory->size = srcUnitSize * getLength();
+    pMemory->data = malloc(pMemory->size);
+
+    size_t srcBytes;
+    for (int j = 0; j < getLength(); ++j) {
+        srcBytes = j * srcUnitSize;
+        MemoryUtils::multiple(data, srcType, srcBytes,
+                val->data, dstType, j * dstUnitSize, pMemory->data, srcBytes);
+    }
+    return pMemory;
+}
 
 //======================= SKAnyMemory ===================================
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){

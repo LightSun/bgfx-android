@@ -82,6 +82,7 @@ public:
     int foreach(lua_State *L);
 
     SkMemory* _mul(double val);
+    SkMemory* dot(SkMemory* val);
 
     SkMemory *copy();
 
@@ -148,7 +149,7 @@ public:
     uint16_t _tabCount;      //table count.
     uint16_t _elementCount;  //element count of every table
 };
-
+//2
 class SkMemoryMatrix : public IMemory {
 public:
     ~SkMemoryMatrix();
