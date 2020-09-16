@@ -188,6 +188,14 @@ SkMemory::SkMemory(lua_State *L, int start, int tableCount, const char *t) : Sim
     }
     lua_pop(L, 1);
 }
+void SkMemory::destroyData(){
+    SimpleMemory::destroyData();
+    if(_needFreePtr && _dType != nullptr){
+        free((void*)_dType);
+        _dType = nullptr;
+        _needFreePtr = 0;
+    }
+}
 SkMemory::SkMemory(lua_State *L, int tableCount, const char *t) : SkMemory(L, 0, tableCount, t){
 }
 
@@ -449,20 +457,47 @@ SkMemory* SkMemory::dot(SkMemory *val) {
     }
     const char srcType = _dType[0];
     const char dstType = val->_dType[0];
+    const char outType = MemoryUtils::computeType(srcType, dstType);
     const int srcUnitSize = MemoryUtils::getUnitSize(srcType);
     const int dstUnitSize = MemoryUtils::getUnitSize(dstType);
-    const char outType = MemoryUtils::computeType(srcType, dstType);
+    const int outUnitSize = MemoryUtils::getUnitSize(outType);
+    //malloc
+    char* ts = (char*)malloc(2);
+    ts[0] = outType;
+    ts[1] = '\0';
+    auto pMemory = new SkMemory();
+    pMemory->_needFreePtr = 1; //mark need free
+    pMemory->_dType = ts;
+    pMemory->size = outUnitSize * getLength();
+    pMemory->data = malloc(pMemory->size);
+
+    for (int j = 0; j < getLength(); ++j) {
+        MemoryUtils::multiple(data, srcType, j * srcUnitSize,
+                val->data, dstType, j * dstUnitSize,
+                pMemory->data, outType, j* outUnitSize);
+    }
+    return pMemory;
+}
+SkMemory * SkMemory::dot(SkAnyMemory *val) {
+    if(getLength() != val->getLength()){
+        return nullptr;
+    }
+    const char srcType = _dType[0];
+    const int srcUnitSize = MemoryUtils::getUnitSize(srcType);
 
     auto pMemory = new SkMemory();
     pMemory->_dType = _dType;
     pMemory->size = srcUnitSize * getLength();
     pMemory->data = malloc(pMemory->size);
 
-    size_t srcBytes;
+    const auto len_type = strlen(val->_types);
+    char dstType;
+    size_t dstBytes = 0;
     for (int j = 0; j < getLength(); ++j) {
-        srcBytes = j * srcUnitSize;
-        MemoryUtils::multiple(data, srcType, srcBytes,
-                val->data, dstType, j * dstUnitSize, pMemory->data, srcBytes);
+        dstType = val->_types[j % len_type];
+        MemoryUtils::multiple(data, srcType, j * srcUnitSize,
+                              val->data, dstType, dstBytes,
+                              pMemory->data, srcType, j* srcUnitSize);
     }
     return pMemory;
 }

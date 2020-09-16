@@ -67,6 +67,43 @@ addr += offset;
 signed char * addr = static_cast<signed char *>(data);\
 addr += offset;
 
+double MemoryUtils::getValue(void *data, const char t, size_t bytesIndex) {
+#define GET_VAL_SIGN(type, data,offset) {\
+signed char * addr = static_cast<signed char *>(data);\
+addr += offset; \
+return *(type *)addr;}
+
+#define GET_VAL_UNSIGN(type, data,offset) \
+{ \
+    unsigned char *addr = static_cast<unsigned char *>(data);\
+addr += offset; \
+return  *(type *) addr;}
+
+    switch (t) {
+        case 'd':
+            GET_VAL_UNSIGN(uint32_t, data, bytesIndex)
+        case 'w':
+            GET_VAL_UNSIGN(uint16_t, data, bytesIndex)
+        case 'b':
+            GET_VAL_UNSIGN(uint8_t, data, bytesIndex)
+
+        case 'f':
+            GET_VAL_SIGN(float, data, bytesIndex)
+
+        case 's': //short
+            GET_VAL_SIGN(short, data, bytesIndex)
+        case 'i': //int
+            GET_VAL_SIGN(int, data, bytesIndex)
+        case 'c': //char
+            GET_VAL_SIGN(char, data, bytesIndex)
+        case 'F': //double
+            GET_VAL_SIGN(double, data, bytesIndex)
+        default:
+            LOGE("wrong type = %d", t);
+            return 0;
+    }
+}
+
 void MemoryUtils::toString(SB::StringBuilder &sb, char t, void *data, int totalIndex) {
     switch (t) {
         case 'f': {
@@ -512,6 +549,54 @@ void MemoryUtils::multiple(void *srcData, const char type, size_t totalIndex, lu
     }
 }
 
+#define OP_TO_DATA(type, sn ,op) \
+{  \
+auto v1 = getValue(srcData, srcType, srcBytes); \
+auto v2 = getValue(dstData, dstType, dstBytes); \
+if(sn){ \
+auto addr = static_cast<signed char*>(outData); \
+addr += outBytes; \
+*(type*)addr = (type)(v1 op v2); \
+}else{ \
+auto addr = static_cast<unsigned char*>(outData); \
+addr += outBytes; \
+*(type*)addr = (type)(v1 op v2); \
+} \
+}
+
+#define OP_SRC_DST_OUT(name, op) \
+void MemoryUtils::name(void *srcData, const char srcType, size_t srcBytes, \
+        void *dstData, const char dstType, size_t dstBytes, \
+        void *outData, const char outType, size_t outBytes) { \
+    switch (outType){ \
+        case 'f': \
+            OP_TO_DATA(float, true, op) \
+            break; \
+        case 'd': \
+            OP_TO_DATA(uint32_t , false, op) \
+            break; \
+        case 'w': \
+            OP_TO_DATA(uint16_t, false, op) \
+            break; \
+        case 'b': \
+            OP_TO_DATA(uint8_t, false, op) \
+            break; \
+        case 'i': \
+            OP_TO_DATA(int, true, op) \
+            break; \
+        case 's': \
+            OP_TO_DATA(short, true, op) \
+            break; \
+        case 'c': \
+            OP_TO_DATA(s_char, true, op) \
+            break; \
+        case 'F': \
+            OP_TO_DATA(double , true, op) \
+            break;\
+    } \
+}
+OP_SRC_DST_OUT(multiple, *)
+
 const char MemoryUtils::computeType(const char type, const char type1) {
     if(type == type1){
         return type;
@@ -604,4 +689,4 @@ bool SimpleMemory::isValid() {
     return data != nullptr;
 }
 
-SkMemoryHolder::SkMemoryHolder(int type, void *ptr) : type(type), ptr(ptr) {}
+SkMemoryHolder::SkMemoryHolder(char type, void *ptr) : type(type), ptr(ptr) {}

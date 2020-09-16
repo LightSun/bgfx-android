@@ -17,10 +17,10 @@ class SimpleMemory;
 
 class SkMemoryHolder{
 public:
-    int type;
+    char type;
     void* ptr;
 
-    SkMemoryHolder(int type, void *ptr);
+    SkMemoryHolder(char type, void *ptr);
 };
 
 #define DESTROY_POINTER_ARRAY(array) \
@@ -87,6 +87,7 @@ public:
     static void convert(void *srcData, char srcType, size_t srcBytes,
             void *dstData, const char dstType, size_t dstBytes);
 
+    static double getValue(void *data, const char type, size_t bytesIndex);
     /**
      * multi the single data from one to another.
      * @param srcData the src data
@@ -99,7 +100,7 @@ public:
 
     static void multiple(void *srcData,const char srcType, size_t srcBytes,
             void* dstData, const char dstType, size_t dstBytes,
-            void *outData, size_t outBytes);
+            void *outData, const char outType, size_t outBytes);
 
     static bool isSigned(const char type);
 

@@ -49,13 +49,12 @@ public:
     //
     SkMemory();
 
-
-    //------ index start from 0 --------
+    void destroyData();
 
     bool isFloat();
 
     void toString(SB::StringBuilder &sb);
-
+//------ index start from 0 --------
     /**
      * read data from memory to lua stack
      */
@@ -83,12 +82,14 @@ public:
 
     SkMemory* _mul(double val);
     SkMemory* dot(SkMemory* val);
+    SkMemory* dot(SkAnyMemory* val);
 
     SkMemory *copy();
 
 public:
     const char *_dType;
 private:
+    char _needFreePtr = 0;
     static int getTotalBytes(lua_State *L, int tableCount, const char *t);
 };
 
