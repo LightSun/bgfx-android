@@ -103,7 +103,7 @@ public:
 
     static bool isSigned(const char type);
 
-    /** compute a collect type */
+    /** compute a correct type */
     static const char computeType(const char type, const char type1);
     //result must be a signed type.
     /**

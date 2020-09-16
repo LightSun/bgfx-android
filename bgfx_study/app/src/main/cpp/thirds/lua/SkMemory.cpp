@@ -451,7 +451,7 @@ SkMemory* SkMemory::dot(SkMemory *val) {
     const char dstType = val->_dType[0];
     const int srcUnitSize = MemoryUtils::getUnitSize(srcType);
     const int dstUnitSize = MemoryUtils::getUnitSize(dstType);
-    //const char outType = MemoryUtils::computeType(srcType, dstType);
+    const char outType = MemoryUtils::computeType(srcType, dstType);
 
     auto pMemory = new SkMemory();
     pMemory->_dType = _dType;
