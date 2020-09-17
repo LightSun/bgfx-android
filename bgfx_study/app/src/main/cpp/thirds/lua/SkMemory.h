@@ -93,7 +93,7 @@ public:
     static SkMemory* create(char type, int count);
 
 public:
-    const char *_dType;
+    const char *_types;
 private:
     char _needFreePtr = 0;
     static int getTotalBytes(lua_State *L, int tableCount, const char *t);
@@ -207,6 +207,10 @@ public:
     void toString(SB::StringBuilder &sb);
 
     SkMemoryMatrix* _mul(double val);
+    SkMemoryMatrix* _mul(SkMemory* val);
+    SkMemoryMatrix* _mul(SkAnyMemory* val);
+    SkMemoryMatrix* _mul(SkMemoryMatrix* val);
+
     SkMemoryMatrix *copy();
 
     SkMemoryMatrix *transpose();
