@@ -602,6 +602,13 @@ double MemoryUtils::multiple(void *srcData, const char type, size_t totalIndex, 
     return getValue(srcData, type, totalIndex) * getValue(dstData, dstType, dstBytes);
 }
 
+const char MemoryUtils::computeType(const char *ts) {
+    char type = ts[0];
+    for (int i = 1, len = strlen(ts); i < len; ++i) {
+        type = MemoryUtils::computeType(type, ts[i]);
+    }
+    return type;
+}
 const char MemoryUtils::computeType(const char type, const char type1) {
     if(type == type1){
         return type;

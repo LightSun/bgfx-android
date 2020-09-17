@@ -44,6 +44,8 @@ public:
      */
     SkMemory(const char *type, int len);
 
+    SkMemory(const char *type, int len, bool init);
+
     //startIndex: table start index, from 0 means lua stack from 1
     SkMemory(lua_State *L, int startIndex, int tableCount, const char *type);
 

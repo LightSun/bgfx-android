@@ -109,6 +109,7 @@ public:
 
     /** compute a correct type which can compat the two types. */
     static const char computeType(const char type, const char type1);
+    static const char computeType(const char* types);
     //result must be a signed type.
     /**
      * upgrade unsigned type to a signed type
@@ -136,7 +137,7 @@ public:
      * @param val
      * @return
      */
-    static int write(void *data, const char t, size_t bytesIndex, double val);
+    static void write(void *data, const char t, size_t bytesIndex, double val);
 };
 
 class IMemory{
