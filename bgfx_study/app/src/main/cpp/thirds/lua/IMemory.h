@@ -98,13 +98,16 @@ public:
     static void multiple(void *srcData, const char type, size_t totalIndex, double val);
     static void multiple(void *srcData, const char type, size_t totalIndex, lua_Integer val);
 
+    static double multiple(void *srcData, const char type, size_t totalIndex,
+            void* dstData, const char dstType, size_t dstBytes);
+
     static void multiple(void *srcData,const char srcType, size_t srcBytes,
             void* dstData, const char dstType, size_t dstBytes,
             void *outData, const char outType, size_t outBytes);
 
     static bool isSigned(const char type);
 
-    /** compute a correct type */
+    /** compute a correct type which can compat the two types. */
     static const char computeType(const char type, const char type1);
     //result must be a signed type.
     /**
@@ -114,6 +117,26 @@ public:
      * @return the upgrade type
      */
     static const char upgradeType(const char type, const bool hasFloat);
+
+    /** Multiply the corresponding data, and then accumulate/pile
+     * @param data1
+     * @param type1
+     * @param data2
+     * @param type2
+     * @param count
+     * @return
+     */
+    static double pile(void *data1, const char type1, void *data2, const char type2, const int count);
+
+    /**
+     * wtite a value to target data with bytes index
+     * @param data
+     * @param t
+     * @param bytesIndex
+     * @param val
+     * @return
+     */
+    static int write(void *data, const char t, size_t bytesIndex, double val);
 };
 
 class IMemory{

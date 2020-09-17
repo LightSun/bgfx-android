@@ -49,9 +49,9 @@ public:
      * operate element with target index and val by multiple
      * @param index the index of element
      * @param val the val to multiple
-     * @return true if operate success
+     * @return the out memory array . may be null , if failed
      */
-    bool opElement__mul(int index, double val);
+    bool opElement__mul(int index, SkMemoryArray* out ,double val);
 public:
     char type;
     int count;

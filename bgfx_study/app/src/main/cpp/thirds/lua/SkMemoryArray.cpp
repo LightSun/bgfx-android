@@ -89,7 +89,7 @@ for( int i = 0; i < count ; i ++){ \
 SkMemoryArray* SkMemoryArray::_mul(double val) {
     auto ska = new SkMemoryArray(type, count);
     for (int i = 0; i < count; ++i) {
-        if(!ska->opElement__mul(i, val)){
+        if(!opElement__mul(i, ska, val)){
             ska->unRefAndDestroy();
             return nullptr;
         }
@@ -174,10 +174,10 @@ bool SkMemoryArray::assignElement(int i, SkMemoryArray *src, bool copy) {
     return true;
 }
 #define OP_IF(name, op) \
-name[i] = name[i]->op(val);
+out->name[i] = name[i]->op(val);
 
 #define opElement(valType, op) \
-bool SkMemoryArray::opElement_##op(int i, valType val) { \
+bool SkMemoryArray::opElement_##op(int i, SkMemoryArray* out, valType val) { \
     switch (type){ \
         case TYPE_MEM: \
             OP_IF(array,op) \

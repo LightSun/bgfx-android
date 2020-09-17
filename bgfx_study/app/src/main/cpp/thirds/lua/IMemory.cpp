@@ -597,6 +597,11 @@ void MemoryUtils::name(void *srcData, const char srcType, size_t srcBytes, \
 }
 OP_SRC_DST_OUT(multiple, *)
 
+double MemoryUtils::multiple(void *srcData, const char type, size_t totalIndex, void *dstData,
+                             const char dstType, size_t dstBytes) {
+    return getValue(srcData, type, totalIndex) * getValue(dstData, dstType, dstBytes);
+}
+
 const char MemoryUtils::computeType(const char type, const char type1) {
     if(type == type1){
         return type;
@@ -652,6 +657,64 @@ const char MemoryUtils::upgradeType(const char type, const bool hasFloat) {
     LOGE("can't reach here for MemoryUtils::upgradeType()");
     //can't reach here
     return 'i';
+}
+
+double MemoryUtils::pile(void *data1, const char type1, void *data2, const char type2, const int count) {
+    const int size1 = getUnitSize(type1);
+    const int size2 = getUnitSize(type2);
+    double out = 0;
+    for (int i = 0; i < count; ++i) {
+        out += getValue(data1, type1, i * size1) * getValue(data2, type2, i * size2);
+    }
+    return out;
+}
+int MemoryUtils::write(void *data, const char t, size_t bytesIndex, double val) {
+#define ASSIGN(type)  *(type*)addr = (type)val
+
+    switch (t){
+        case 'f': {
+            SIGNED_ADDR(data, bytesIndex);
+            ASSIGN(float);
+        }
+            break;
+        case 'd':{
+            UN_SIGNED_ADDR(data, bytesIndex);
+            ASSIGN(uint32_t);
+        }
+            break;
+
+        case 'w':{
+            UN_SIGNED_ADDR(data, bytesIndex);
+            ASSIGN(uint16_t);
+        }
+            break;
+        case 'b':{
+            UN_SIGNED_ADDR(data, bytesIndex);
+            ASSIGN(uint8_t);
+        }
+            break;
+
+        case 'i':{
+            SIGNED_ADDR(data, bytesIndex);
+            ASSIGN(int);
+        }
+            break;
+        case 's':{
+            SIGNED_ADDR(data, bytesIndex);
+            ASSIGN(short);
+        }
+            break;
+        case 'c':{
+            SIGNED_ADDR(data, bytesIndex);
+            ASSIGN(s_char);
+        }
+            break;
+        case 'F':{
+            SIGNED_ADDR(data, bytesIndex);
+            ASSIGN(double);
+        }
+            break;
+    }
 }
 
 //---------------------------------------

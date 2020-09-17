@@ -28,6 +28,7 @@ class SkMemory : public SimpleMemory {
 
 public:
 
+    ~SkMemory();
     /**
      * one memory contains can multi table.
      * @param L
@@ -81,10 +82,15 @@ public:
     int foreach(lua_State *L);
 
     SkMemory* _mul(double val);
-    SkMemory* dot(SkMemory* val);
-    SkMemory* dot(SkAnyMemory* val);
+    SkMemory* _mul(SkMemory* val);
+    SkMemory* _mul(SkAnyMemory* val);
+
+    SkMemory* dot(SkMemoryMatrix* val);
 
     SkMemory *copy();
+
+    static SkMemory* create(const char* type, int count);
+    static SkMemory* create(char type, int count);
 
 public:
     const char *_dType;
@@ -138,6 +144,10 @@ public:
     int foreach(lua_State *L);
 
     SkAnyMemory* _mul(double val);
+    SkAnyMemory* _mul(SkMemory* val);
+    SkAnyMemory* _mul(SkAnyMemory* val);
+
+    SkMemory* dot(SkMemoryMatrix* val);
 
     int getLength() { return _tabCount * _elementCount; }
 
