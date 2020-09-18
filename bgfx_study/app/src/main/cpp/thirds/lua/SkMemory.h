@@ -138,6 +138,7 @@ public:
     SkAnyMemory(const char *types, int count, bool init);
 
     void toString(SB::StringBuilder &sb);
+    //----------------------------------------------
 
     SkAnyMemory *copy();
 
@@ -217,8 +218,10 @@ public:
     SkMemory* collectColumn(int columnIndex, SkMemory* out);
 
     SkMemoryMatrix* _mul(double val);
+    //current mat must be one column.
     SkMemoryMatrix* _mul(SkMemory* val);
     SkMemoryMatrix* _mul(SkAnyMemory* val);
+
     SkMemoryMatrix* _mul(SkMemoryMatrix* val);
 
     SkMemoryMatrix *copy();

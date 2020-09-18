@@ -35,6 +35,7 @@ public:
     char getType(){ return type;}
 
     void toString(SB::StringBuilder &sb);
+    //--------------------------------------------
 
     SkMemoryArray* copy();
     SkMemoryArray* _mul(double val);
