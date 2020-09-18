@@ -18,10 +18,8 @@ class SkMemoryArray: public IMemory {
 public:
     //element types
     const static char TYPE_NONE      = 0;
-    const static char TYPE_MEM       = 1;
-    const static char TYPE_MEM_ANY   = 2;
-    const static char TYPE_MEM_ARRAY = 3;
-    const static char TYPE_MEM_MAT   = 4;
+    const static char TYPE_MEM_ARRAY = 1;
+    const static char TYPE_MEM_MAT   = 2;
 
     SkMemoryArray(char type, int count);
 
@@ -56,8 +54,6 @@ public:
 public:
     char type;
     int count;
-    SkMemory **array;
-    SkAnyMemory **anyArray;
     SkMemoryArray **arrArray;
     SkMemoryMatrix **matArray;
 };

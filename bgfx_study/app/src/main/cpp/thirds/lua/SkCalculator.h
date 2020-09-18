@@ -11,13 +11,24 @@ class IMemory;
 class SkMemory;
 class SkAnyMemory;
 class SkMemoryMatrix;
+class SkMemoryArray;
 
 class SkCalculator{
 public:
-    static int mul(lua_State*L, SkMemoryMatrix* src, SkMemory* m2);    //SkMemoryMatrix array
-    static int mul(lua_State*L, SkMemoryMatrix* src, SkAnyMemory* m2); //SkMemoryMatrix array
-    static int mul(lua_State*L, SkMemoryMatrix* src, SkMemoryMatrix* m2); //SkMemoryMatrix
-    static int mul(lua_State*L, SkMemoryMatrix* src, double val); //SkMemoryMatrix
+    class Data{
+    public:
+        void * data;
+        int length;
+        char type;
+    };
+    class Callback{
+    public:
+        virtual Data* _mul(SkMemory* m1, SkMemory* m2) = 0;
+        virtual Data* _mul(SkAnyMemory* m1, SkAnyMemory* m2) = 0;
+        virtual Data* _mul(SkMemory* m1, SkAnyMemory* m2) = 0;
+        virtual Data* _mul(SkAnyMemory* m1, SkMemory* m2) = 0;
+    };
+    int mul(SkMemoryArray* arr, SkMemory* m2, Callback* cb);
 };
 
 #endif //BGFX_STUDY_SKCALCULATOR_H

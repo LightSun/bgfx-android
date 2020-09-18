@@ -10,12 +10,6 @@
 
 SkMemoryArray::SkMemoryArray(char type, int count):IMemory(), type(type), count(count) {
     switch (type){
-        case TYPE_MEM:
-            array = new SkMemory*[count];
-            break;
-        case TYPE_MEM_ANY:
-            anyArray = new SkAnyMemory*[count];
-            break;
         case TYPE_MEM_ARRAY:
             arrArray = new SkMemoryArray*[count];
             break;
@@ -33,12 +27,6 @@ SkMemoryArray::~SkMemoryArray() {
 
 void SkMemoryArray::destroyData() {
     switch (type){
-        case TYPE_MEM:
-            DESTROY_POINTER_ARRAY(array)
-            break;
-        case TYPE_MEM_ANY:
-            DESTROY_POINTER_ARRAY(anyArray)
-            break;
         case TYPE_MEM_ARRAY:
             DESTROY_POINTER_ARRAY(arrArray)
             break;
@@ -71,12 +59,6 @@ for( int i = 0; i < count ; i ++){ \
 }
     sb << "[";
     switch (type){
-        case TYPE_MEM:
-            ARR_TOSTRING(array)
-            break;
-        case TYPE_MEM_ANY:
-            ARR_TOSTRING(anyArray)
-            break;
         case TYPE_MEM_ARRAY:
             ARR_TOSTRING(arrArray)
             break;
@@ -98,10 +80,6 @@ SkMemoryArray* SkMemoryArray::_mul(double val) {
 }
 const SkMemoryHolder& SkMemoryArray::operator[](int index) {
     switch (type){
-        case TYPE_MEM:
-            return SkMemoryHolder(type, array[index]);
-        case TYPE_MEM_ANY:
-            return SkMemoryHolder(type, anyArray[index]);
         case TYPE_MEM_ARRAY:
             return SkMemoryHolder(type, arrArray[index]);
         case TYPE_MEM_MAT:
@@ -124,12 +102,6 @@ if (copy) {\
 }
 
     switch (type){
-        case TYPE_MEM:
-            ASSIGN(array, SkMemory, copy)
-            break;
-        case TYPE_MEM_ANY:
-            ASSIGN(anyArray, SkAnyMemory, copy)
-            break;
         case TYPE_MEM_ARRAY:
             ASSIGN(arrArray, SkMemoryArray, copy)
             break;
@@ -155,12 +127,6 @@ bool SkMemoryArray::assignElement(int i, SkMemoryArray *src, bool copy) {
         return false;
     }
     switch (type){
-        case TYPE_MEM:
-            COPY_IF(array, copy)
-            break;
-        case TYPE_MEM_ANY:
-            COPY_IF(anyArray, copy)
-            break;
         case TYPE_MEM_ARRAY:
             COPY_IF(arrArray, copy)
             break;
@@ -179,12 +145,6 @@ out->name[i] = name[i]->op(val);
 #define opElement(valType, op) \
 bool SkMemoryArray::opElement_##op(int i, SkMemoryArray* out, valType val) { \
     switch (type){ \
-        case TYPE_MEM: \
-            OP_IF(array,op) \
-            break; \
-        case TYPE_MEM_ANY: \
-            OP_IF(anyArray, op) \
-            break; \
         case TYPE_MEM_ARRAY: \
             OP_IF(arrArray, op) \
             break; \

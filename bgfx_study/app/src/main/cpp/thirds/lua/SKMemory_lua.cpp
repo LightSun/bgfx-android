@@ -291,21 +291,33 @@ static int SkMemoryMatrix_getRowCount(lua_State *L) {
 
 static int SkMemoryMatrix_mul(lua_State *L) {
     //mat, val
-    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, -1);
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
     switch(lua_type(L, 2)){
         case LUA_TNUMBER: {
-            return SkCalculator::mul(L, pMemory, lua_tonumber(L, 2));
+            auto pMatrix = pMemory->_mul(lua_tonumber(L, 2));
+            LuaUtils::push_ptr(L, pMatrix);
+            return 1;
         }
         default:{
             SkMemory* skm = LuaUtils::to_ref<SkMemory>(L, 2);
             if(skm != nullptr){
-                return SkCalculator::mul(L, pMemory, skm);
+                auto pMatrix = pMemory->_mul(skm);
+                if(pMatrix == nullptr){
+                    return luaL_error(L, "for mat multiple simple array. matrix.column must be 1.");
+                }
+                LuaUtils::push_ptr(L, pMatrix);
+                return 1;
             }
-            SkMemoryMatrix* mat = LuaUtils::get_ref<SkMemoryMatrix>(L, 2);
-            if(mat == nullptr){
-                return luaL_error(L, "wrong data type. only support number, array, mat");
+            SkMemoryMatrix* mat = LuaUtils::to_ref<SkMemoryMatrix>(L, 2);
+            if(mat != nullptr){
+                auto pMatrix = pMemory->_mul(mat);
+                if(pMatrix == nullptr){
+                    return luaL_error(L, "for mat multiple mat. mat1.columnCount must equals mat2.rowCount.");
+                }
+                LuaUtils::push_ptr(L, pMatrix);
+                return 1;
             }
-            return SkCalculator::mul(L, pMemory, mat);
+            return luaL_error(L, "wrong data type of index 2");
         }
     }
 }
