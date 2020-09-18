@@ -208,6 +208,14 @@ public:
 
     void toString(SB::StringBuilder &sb);
 
+    /**
+     * collection a column data to a row
+     * @param columnIndex the column index
+     * @param out the out memory. can be null
+     * @return the out memory
+     */
+    SkMemory* collectColumn(int columnIndex, SkMemory* out);
+
     SkMemoryMatrix* _mul(double val);
     SkMemoryMatrix* _mul(SkMemory* val);
     SkMemoryMatrix* _mul(SkAnyMemory* val);
@@ -254,7 +262,7 @@ private:
     //unsigned char _isArray; // false for mat. true for special array
     int count;
 
-    //only used for single type
+    /** collect column data to array. */
     void copyData(SkMemory *pMemory, int columnIndex);
 
 public:

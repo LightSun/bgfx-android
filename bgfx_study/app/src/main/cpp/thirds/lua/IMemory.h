@@ -138,6 +138,9 @@ public:
      * @return
      */
     static void write(void *data, const char t, size_t bytesIndex, double val);
+
+    /** compute the total bytes index. by types */
+    static const int computeBytesIndex(const char *types, int index);
 };
 
 class IMemory{

@@ -1082,6 +1082,18 @@ const char* SkMemoryMatrix::getTypes() {
     }
     return anyArray[0]->_types;
 }
+SkMemory* SkMemoryMatrix::collectColumn(int columnIndex, SkMemory *out) {
+    if(columnIndex >= getColumnCount()){
+        return nullptr;
+    }
+    if(out == nullptr){
+        const char *types = getTypes();
+        out = SkMemory::create(types[columnIndex % strlen(types)], getRowCount());
+    }
+    copyData(out, columnIndex);
+    return out;
+}
+
 #define MAT_OP(op, pType) \
 SkMemoryMatrix* SkMemoryMatrix::_mul(pType val) { \
     auto mat = new SkMemoryMatrix(getRowCount()); \
@@ -1098,6 +1110,98 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(pType val) { \
 }
 MAT_OP(_mul, double)
 
+SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemory *val) {
+    if(getColumnCount() != 1){
+        return nullptr;
+    }
+    const int len_val = val->getLength();
+    const char outType = MemoryUtils::computeType(val->_types[0], getTypes()[0]);
+    const int outUnitSize = MemoryUtils::getUnitSize(outType);
+    
+    SkMemoryMatrix* mat = new SkMemoryMatrix();
+    mat->count = count;
+    mat->array = new SkMemory*[count];
+    mat->anyArray = nullptr;
+    
+    const char dstType = val->_types[0];
+    const int dstUnitSize = MemoryUtils::getUnitSize(dstType);
+    const bool singleType = isSingleType();
+    
+    SkMemory* cur_mem;
+    SkMemory* out_mem;
+    SkAnyMemory * cur_mem_any;
+    double value;
+
+#define WRITE_OUT_MEM(mem) \
+    for (int j = 0; j < len_val; ++j) { \
+        value = MemoryUtils::multiple(mem->data, mem->_types[0], 0,\
+                                      val->data, dstType , j * dstUnitSize); \
+        MemoryUtils::write(out_mem->data, outType, j * outUnitSize,value); \
+    }
+
+    for (int i = 0, c = getRowCount(); i < c; ++i) {
+        mat->array[i] = out_mem = SkMemory::create(outType, len_val);
+        //only have one column
+        if(singleType){
+            cur_mem = array[i];
+            //row i * column j(0 - outColumnCount)
+            WRITE_OUT_MEM(cur_mem);
+        }else{
+            cur_mem_any = anyArray[i];
+            WRITE_OUT_MEM(cur_mem_any);
+        }
+    }
+    return mat;
+}
+SkMemoryMatrix* SkMemoryMatrix::_mul(SkAnyMemory *val) {
+    if(getColumnCount() != 1){
+        return nullptr;
+    }
+    const int len_val = val->getLength();
+    const char outType = MemoryUtils::computeType(MemoryUtils::computeType(val->_types), getTypes()[0]);
+    const int outUnitSize = MemoryUtils::getUnitSize(outType);
+
+    const char *dstTypes = val->_types;
+    const size_t dstTypeLen = strlen(val->_types);
+
+    const bool singleType = isSingleType();
+    SkMemoryMatrix* mat = new SkMemoryMatrix();
+    mat->count = count;
+    mat->array = new SkMemory*[count];
+    mat->anyArray = nullptr;
+
+    SkMemory* cur_mem;
+    SkMemory* out_mem;
+    SkAnyMemory * cur_mem_any;
+    double value;
+
+    char dstType;
+    size_t dstBytesIndex = 0;
+
+#define WRITE_OUT_MEM_ANY(mem) \
+    for (int j = 0; j < len_val; ++j) { \
+        dstType = dstTypes[j % dstTypeLen]; \
+        value = MemoryUtils::multiple(mem->data, mem->_types[0], 0, \
+                                      val->data, dstType , dstBytesIndex); \
+        MemoryUtils::write(out_mem->data, outType, j * outUnitSize, value); \
+        dstBytesIndex += MemoryUtils::getUnitSize(dstType); \
+    }
+
+    for (int i = 0, c = getRowCount(); i < c; ++i) {
+        mat->array[i] = out_mem = SkMemory::create(outType, len_val);
+        //only have one column
+        if(singleType){
+            cur_mem = array[i];
+            //row i * column j(0 - outColumnCount)
+            WRITE_OUT_MEM_ANY(cur_mem);
+        } else{
+            cur_mem_any = anyArray[i];
+            //row i * column j(0 - outColumnCount)
+            WRITE_OUT_MEM_ANY(cur_mem_any);
+        }
+    }
+}
+
 SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemoryMatrix *val) {
     //mis match for mat multiple
     if(getColumnCount() != val->getRowCount()){
@@ -1108,7 +1212,7 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemoryMatrix *val) {
     const char outType = MemoryUtils::computeType(MemoryUtils::computeType(ts1),
                                                   MemoryUtils::computeType(ts2));
     const int outUnitSize = MemoryUtils::getUnitSize(outType);
-    const int outRowCount = getRowCount();
+    const int outColumnCount = val->getColumnCount();
 
     SkMemoryMatrix* mat = new SkMemoryMatrix();
     mat->count = count;
@@ -1127,42 +1231,47 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemoryMatrix *val) {
             SkMemory* out_mem;
             size_t dst_bytesIndex;
             for (int i = 0, ic = getRowCount(); i < ic; ++i) {
-                mat->array[i] = out_mem = SkMemory::create(outType, outRowCount);
-                value = 0;
+                mat->array[i] = out_mem = SkMemory::create(outType, outColumnCount);
                 SkMemory *pMemory = array[i];
-
-                dst_bytesIndex = i * dst_unitSize;
-                for (int j = 0, cc = pMemory->getLength(); j < cc; ++j) {
-                    value += MemoryUtils::multiple(pMemory->data, cur_type, j * cur_unitSize,
-                                                   val->array[j]->data, dst_type, dst_bytesIndex);
+                //(0, 0) *(0, 0) + (0, 1) * (1, 0) + (0, 2) * (2, 0)
+                for (int k = 0; k < outColumnCount; ++k) {
+                    value = 0;
+                    dst_bytesIndex = k * dst_unitSize;;
+                    for (int j = 0, cc = pMemory->getLength(); j < cc; ++j) {
+                        value += MemoryUtils::multiple(pMemory->data, cur_type, j * cur_unitSize,
+                                                       val->array[k]->data, dst_type, dst_bytesIndex);
+                    }
+                    MemoryUtils::write(out_mem->data, outType,  k *outUnitSize, value);
                 }
-                MemoryUtils::write(out_mem->data, outType,  i *outUnitSize, value);
             }
         } else{
             double value;
-            SkMemory* mem;
+            SkMemory* out_mem;
 
-            size_t bytesIndex = 0;
+            size_t bytesIndex;
             char dst_type = 0;
             SkAnyMemory *dst_mem;
             SkMemory *cur_mem;
             for (int i = 0, ic = getRowCount(); i < ic; ++i) {
-                mat->array[i] = mem = SkMemory::create(outType, outRowCount);
-                value = 0;
+                mat->array[i] = out_mem = SkMemory::create(outType, outColumnCount);
                 cur_mem = array[i];
 
-                for (int j = 0, cc = cur_mem->getLength(); j < cc; ++j) {
-                    dst_mem = val->anyArray[j];
-                    const char *dst_types = dst_mem->_types;
-                    //type by index i
-                    dst_type = dst_types[i % strlen(dst_types)];
-                    value += MemoryUtils::multiple(cur_mem->data, cur_type, j * cur_unitSize,
-                                                   dst_mem->data, dst_type, bytesIndex);
+                bytesIndex = 0;
+                //(0, 0) *(0, 0) + (0, 1) * (1, 0) + (0, 2) * (2, 0)
+                for (int k = 0; k < outColumnCount; ++k) {
+                    value = 0;
+                    for (int j = 0, cc = cur_mem->getLength(); j < cc; ++j) {
+                        dst_mem = val->anyArray[k];
+                        const char *dst_types = dst_mem->_types;
+                        //type by index i
+                        dst_type = dst_types[i % strlen(dst_types)];
+                        value += MemoryUtils::multiple(cur_mem->data, cur_type, j * cur_unitSize,
+                                                       dst_mem->data, dst_type, bytesIndex);
+                    }
+                    SkASSERT(dst_type != 0);
+                    bytesIndex += MemoryUtils::getUnitSize(dst_type);
+                    MemoryUtils::write(out_mem->data, outType,  k *outUnitSize, value);
                 }
-                SkASSERT(dst_type != 0);
-                bytesIndex += MemoryUtils::getUnitSize(dst_type);
-
-                MemoryUtils::write(mem->data, outType,  i *outUnitSize, value);
             }
         }
     } else{
@@ -1182,30 +1291,33 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemoryMatrix *val) {
             SkAnyMemory * cur_mem;
 
             char dst_Type = 0;
-            size_t dst_bytesIndex = 0;
+            size_t dst_bytesIndex;
             SkMemory * dst_mem;
 
             for (int i = 0, c = getRowCount(); i < c; ++i) {
-                mat->array[i] = outMem = SkMemory::create(outType, outRowCount);
-                value = 0;
+                mat->array[i] = outMem = SkMemory::create(outType, outColumnCount);
 
                 cur_mem = anyArray[i];
                 const char *cur_types = cur_mem->_types;
                 cur_type_len = strlen(cur_types);
-                cur_bytesIndex = 0;
 
-                dst_bytesIndex = i * dst_unitSize;
-                for (int j = 0, cc = cur_mem->getLength(); j < cc; ++j) {
-                    cur_type = cur_types[j % cur_type_len];
+                //(0, 0) *(0, 0) + (0, 1) * (1, 0) + (0, 2) * (2, 0)
+                for (int k = 0; k < outColumnCount; ++k) {
+                    value = 0;
+                    dst_bytesIndex = k * dst_unitSize;
+                    cur_bytesIndex = 0;
+                    for (int j = 0, cc = cur_mem->getLength(); j < cc; ++j) {
+                        cur_type = cur_types[j % cur_type_len];
 
-                    dst_mem = val->array[j];
-                    value += MemoryUtils::multiple(cur_mem->data, cur_type, cur_bytesIndex,
-                                                   dst_mem->data, dst_Type,  dst_bytesIndex);
+                        dst_mem = val->array[j];
+                        value += MemoryUtils::multiple(cur_mem->data, cur_type, cur_bytesIndex,
+                                                       dst_mem->data, dst_Type,  dst_bytesIndex);
 
-                    cur_bytesIndex += MemoryUtils::getUnitSize(cur_type);
+                        cur_bytesIndex += MemoryUtils::getUnitSize(cur_type);
+                    }
+                    SkASSERT(dst_Type != 0);
+                    MemoryUtils::write(outMem->data, outType,  k *outUnitSize, value);
                 }
-                SkASSERT(dst_Type != 0);
-                MemoryUtils::write(outMem->data, outType,  i *outUnitSize, value);
             }
         } else{
             double value;
@@ -1221,30 +1333,35 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemoryMatrix *val) {
             SkAnyMemory * dst_mem;
 
             for (int i = 0, c = getRowCount(); i < c; ++i) {
-                mat->array[i] = outMem = SkMemory::create(outType, outRowCount);
-                value = 0;
-
+                mat->array[i] = outMem = SkMemory::create(outType, outColumnCount);
                 cur_mem = anyArray[i];
+
                 const char *cur_types = cur_mem->_types;
                 cur_type_len = strlen(cur_types);
-                cur_bytesIndex = 0;
 
-                for (int j = 0, cc = cur_mem->getLength(); j < cc; ++j) {
-                    cur_type = cur_types[j % cur_type_len];
+                dst_bytesIndex = 0;
+                //(0, 0) *(0, 0) + (0, 1) * (1, 0) + (0, 2) * (2, 0)
+                for (int k = 0; k < outColumnCount; ++k) {
+                    value = 0;
+                    cur_bytesIndex = 0;
 
-                    dst_mem = val->anyArray[j];
-                    const char *dst_types = dst_mem->_types;
-                    //type by index i
-                    dst_Type = dst_types[i % strlen(dst_types)];
-                    value += MemoryUtils::multiple(cur_mem->data, cur_type, cur_bytesIndex,
-                                                   dst_mem->data, dst_Type, dst_bytesIndex);
+                    for (int j = 0, cc = cur_mem->getLength(); j < cc; ++j) {
+                        cur_type = cur_types[j % cur_type_len];
 
-                    cur_bytesIndex += MemoryUtils::getUnitSize(cur_type);
+                        dst_mem = val->anyArray[j];
+                        const char *dst_types = dst_mem->_types;
+                        //type by index i
+                        dst_Type = dst_types[i % strlen(dst_types)];
+                        value += MemoryUtils::multiple(cur_mem->data, cur_type, cur_bytesIndex,
+                                                       dst_mem->data, dst_Type, dst_bytesIndex);
+
+                        cur_bytesIndex += MemoryUtils::getUnitSize(cur_type);
+                    }
+                    SkASSERT(dst_Type != 0);
+                    dst_bytesIndex += MemoryUtils::getUnitSize(dst_Type);
+
+                    MemoryUtils::write(outMem->data, outType,  k *outUnitSize, value);
                 }
-                SkASSERT(dst_Type != 0);
-                dst_bytesIndex += MemoryUtils::getUnitSize(dst_Type);
-
-                MemoryUtils::write(outMem->data, outType,  i *outUnitSize, value);
             }
         }
     }
@@ -1265,21 +1382,28 @@ SkMemoryMatrix* SkMemoryMatrix::copy() {
     return mat;
 }
 SkMemoryMatrix * SkMemoryMatrix::transpose() {
-    if(isSingleType()){
-        auto mat = new SkMemoryMatrix(getColumnCount());
-        const char* t = array[0]->_types;
-        const int rowCount = getRowCount();
+    const int columnCount = getColumnCount();
+    const int rowCount = getRowCount();
+    auto mat = new SkMemoryMatrix(columnCount);
 
-        for (int i = 0; i < mat->count; ++i) {
+    if(isSingleType()){
+        const char* t = array[0]->_types;
+
+        for (int i = 0; i < columnCount; ++i) {
             auto pMemory = SkMemory::create(t, rowCount);
             copyData(pMemory, i);
             mat->array[i] = pMemory;
         }
-        return mat;
     } else{
-        //for type of SkAnyMemory doesn't support transpose.
-        return nullptr;
+        char outType = MemoryUtils::computeType(anyArray[0]->_types);
+
+        for (int i = 0; i < columnCount; ++i) {
+            auto pMemory = SkMemory::create(outType, rowCount);
+            copyData(pMemory, i);
+            mat->array[i] = pMemory;
+        }
     }
+    return mat;
 }
 
 int SkMemoryMatrix::convert(lua_State* L,const char *ts) {
@@ -1341,10 +1465,25 @@ int SkMemoryMatrix::convert(lua_State* L,const char *ts) {
         }
     }
 }
-
+//collect column data to array.
 void SkMemoryMatrix::copyData(SkMemory *pMemory, int columnIndex) {
     //make every column to a new row
-    for (int i = 0; i < count; ++i) {
-        array[i]->writeTo(pMemory, i, columnIndex);
+    if(isSingleType()){
+        for (int i = 0; i < count; ++i) {
+            array[i]->writeTo(pMemory, i, columnIndex);
+        }
+    } else{
+        const char dstType = pMemory->_types[0];
+        const int dstUnitSize = MemoryUtils::getUnitSize(dstType);
+        //all column
+        const char *types = anyArray[0]->_types;
+        const char type = types[columnIndex % strlen(types)];
+        const int bytesIndex = MemoryUtils::computeBytesIndex(types, columnIndex);
+
+        double val;
+        for (int i = 0; i < count; ++i) {
+            val = MemoryUtils::getValue(anyArray[i]->data, type, bytesIndex);
+            MemoryUtils::write(pMemory->data, pMemory->_types[0], i * dstUnitSize, val);
+        }
     }
 }

@@ -675,7 +675,7 @@ double MemoryUtils::pile(void *data1, const char type1, void *data2, const char 
     }
     return out;
 }
-int MemoryUtils::write(void *data, const char t, size_t bytesIndex, double val) {
+void MemoryUtils::write(void *data, const char t, size_t bytesIndex, double val) {
 #define ASSIGN(type)  *(type*)addr = (type)val
 
     switch (t){
@@ -722,6 +722,15 @@ int MemoryUtils::write(void *data, const char t, size_t bytesIndex, double val) 
         }
             break;
     }
+}
+
+const int MemoryUtils::computeBytesIndex(const char *types, int index) {
+    int bytesIndex = 0;
+    const size_t len = strlen(types);
+    for (int i = 0; i < index; ++i) {
+        bytesIndex += MemoryUtils::getUnitSize(types[i % len]);
+    }
+    return bytesIndex;
 }
 
 //---------------------------------------
