@@ -87,6 +87,10 @@ public:
     SkMemory* _mul(SkMemory* val);
     SkMemory* _mul(SkAnyMemory* val);
 
+    inline SkMemory* _mul(SkMemoryMatrix* val){
+        return dot(val);
+    }
+
     SkMemory* dot(SkMemoryMatrix* val);
 
     SkMemory *copy();
@@ -149,6 +153,10 @@ public:
     SkAnyMemory* _mul(double val);
     SkAnyMemory* _mul(SkMemory* val);
     SkAnyMemory* _mul(SkAnyMemory* val);
+
+    inline SkMemory* _mul(SkMemoryMatrix* val){
+        return dot(val);
+    }
 
     SkMemory* dot(SkMemoryMatrix* val);
 

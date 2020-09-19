@@ -203,7 +203,54 @@ static int type##_index(lua_State *L) { \
 memory_index(SkMemory)
 memory_index(SkAnyMemory)
 
+//mat, val
+#define memory_mul(type, type_str) \
+static int type##_mul(lua_State *L) { \
+    auto pMemory = LuaUtils::get_ref<type>(L, 1);\
+    switch(lua_type(L, 2)){ \
+        case LUA_TNUMBER: { \
+            auto pMatrix = pMemory->_mul(lua_tonumber(L, 2)); \
+            LuaUtils::push_ptr(L, pMatrix); \
+            return 1; \
+        } \
+        default:{ \
+            auto skm = LuaUtils::to_ref<SkMemory>(L, 2); \
+            if(skm != nullptr){ \
+                auto pMatrix = pMemory->_mul(skm); \
+                if(pMatrix == nullptr){ \
+                    return luaL_error(L, "for %s multiple simple-array(SkMemory). matrix.column must be 1.",  type_str); \
+                } \
+                LuaUtils::push_ptr(L, pMatrix); \
+                return 1; \
+            } \
+            auto skam = LuaUtils::to_ref<SkAnyMemory>(L, 2); \
+            if(skam != nullptr){  \
+                auto pMatrix = pMemory->_mul(skam); \
+                if(pMatrix == nullptr){ \
+                    return luaL_error(L, "for %s multiple array(SkAnyMemory). matrix.column must be 1.", type_str); \
+                } \
+                LuaUtils::push_ptr(L, pMatrix);\
+                return 1; \
+            } \
+            auto mat = LuaUtils::to_ref<SkMemoryMatrix>(L, 2); \
+            if(mat != nullptr){\
+                auto pMatrix = pMemory->_mul(mat);\
+                if(pMatrix == nullptr){\
+                    return luaL_error(L, "for %s multiple mat. mat1.columnCount must equals mat2.rowCount.", type_str);\
+                }\
+                LuaUtils::push_ptr(L, pMatrix);\
+                return 1; \
+            }   \
+            return luaL_error(L, "wrong data type of index 2"); \
+        } \
+    } \
+}
+memory_mul(SkMemoryMatrix, "mat")
+memory_mul(SkMemory, "simple-array")
+memory_mul(SkAnyMemory, "aray")
+
 const static luaL_Reg gSkAnyMemory_Methods[] = {
+        {"__mul",             SkAnyMemory_mul},
         {"__len",             SkAnyMemory_len},
         {"__tostring",        SkAnyMemory_tostring},
         {"__newindex",        SkAnyMemory_newindex},
@@ -212,6 +259,7 @@ const static luaL_Reg gSkAnyMemory_Methods[] = {
         {NULL, NULL},
 };
 const static luaL_Reg gSkMemory_Methods[] = {
+        {"__mul",             SkMemory_mul},
         {"__len",             SkMemory_len},
         {"__tostring",        SkMemory_tostring},
         {"__newindex",        SkMemory_newindex},
@@ -287,39 +335,6 @@ static int SkMemoryMatrix_getRowCount(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
     lua_pushinteger(L, pMemory->getRowCount());
     return 1;
-}
-
-static int SkMemoryMatrix_mul(lua_State *L) {
-    //mat, val
-    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
-    switch(lua_type(L, 2)){
-        case LUA_TNUMBER: {
-            auto pMatrix = pMemory->_mul(lua_tonumber(L, 2));
-            LuaUtils::push_ptr(L, pMatrix);
-            return 1;
-        }
-        default:{
-            SkMemory* skm = LuaUtils::to_ref<SkMemory>(L, 2);
-            if(skm != nullptr){
-                auto pMatrix = pMemory->_mul(skm);
-                if(pMatrix == nullptr){
-                    return luaL_error(L, "for mat multiple simple array. matrix.column must be 1.");
-                }
-                LuaUtils::push_ptr(L, pMatrix);
-                return 1;
-            }
-            SkMemoryMatrix* mat = LuaUtils::to_ref<SkMemoryMatrix>(L, 2);
-            if(mat != nullptr){
-                auto pMatrix = pMemory->_mul(mat);
-                if(pMatrix == nullptr){
-                    return luaL_error(L, "for mat multiple mat. mat1.columnCount must equals mat2.rowCount.");
-                }
-                LuaUtils::push_ptr(L, pMatrix);
-                return 1;
-            }
-            return luaL_error(L, "wrong data type of index 2");
-        }
-    }
 }
 memory_copy(SkMemoryMatrix)
 const static luaL_Reg sSkMemoryMatrix_Methods[] = {

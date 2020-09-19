@@ -481,8 +481,11 @@ SkMemory * SkMemory::_mul(SkAnyMemory *val) {
     }
     const char srcType = _types[0];
     const int srcUnitSize = MemoryUtils::getUnitSize(srcType);
+    //compute result type
+    const auto outType = MemoryUtils::computeType(MemoryUtils::computeType(val->_types), _types[0]);
+    const int outUnitSize = MemoryUtils::getUnitSize(outType);
 
-    auto pMemory = SkMemory::create(_types, getLength());
+    auto out_mem = SkMemory::create(outType, getLength());
 
     const auto len_type = strlen(val->_types);
     char dstType;
@@ -491,9 +494,9 @@ SkMemory * SkMemory::_mul(SkAnyMemory *val) {
         dstType = val->_types[j % len_type];
         MemoryUtils::multiple(data, srcType, j * srcUnitSize,
                               val->data, dstType, dstBytes,
-                              pMemory->data, srcType, j* srcUnitSize);
+                              out_mem->data, outType, j * outUnitSize);
     }
-    return pMemory;
+    return out_mem;
 }
 SkMemory* SkMemory::dot(SkMemoryMatrix *val) {
     //点积累加 eg: len = 2, mat = (3, 2)
@@ -502,37 +505,40 @@ SkMemory* SkMemory::dot(SkMemoryMatrix *val) {
     }
     const int count = getLength();
     const char srcType = _types[0];
-    const int unitSize = MemoryUtils::getUnitSize(srcType);
-    auto pMemory = SkMemory::create(_types, val->getRowCount());
+    const int srcUnitSize = MemoryUtils::getUnitSize(srcType);
+
+    const char outType = MemoryUtils::computeType(srcType, MemoryUtils::computeType(val->getTypes()));
+    const int outUnitSize = MemoryUtils::getUnitSize(outType);
+    auto out_mem = SkMemory::create(outType, val->getRowCount());
 
     if(val->isSingleType()){
         SkMemory *m1;
         for (int i = 0, rc = val->getRowCount(); i < rc; ++i) {
             m1 = val->array[i];
             double value = MemoryUtils::pile(data, srcType, m1->data, m1->_types[0], count);
-            MemoryUtils::write(pMemory->data, srcType, i * unitSize, value);
+            MemoryUtils::write(out_mem->data, outType, i * outUnitSize, value);
         }
     } else{
         SkAnyMemory *m1;
         double total;
-        size_t mi_bytesIndex;
-        size_t mi_type_len;
+        size_t val_bytesIndex;
+        size_t val_type_len;
 
         for (int i = 0, rc = val->getRowCount(); i < rc; ++i) {
             m1 = val->anyArray[i];
             total = 0;
             const char* types = m1->_types;
-            mi_type_len = strlen(types);
-            mi_bytesIndex = 0;
+            val_type_len = strlen(types);
+            val_bytesIndex = 0;
             for (int j = 0; j < count; ++j) {
-                char type = types[j % mi_type_len];
-                total += MemoryUtils::multiple(m1->data, type, mi_bytesIndex, data, srcType, j * unitSize);
-                mi_bytesIndex += MemoryUtils::getUnitSize(type);
+                char type = types[j % val_type_len];
+                total += MemoryUtils::multiple(m1->data, type, val_bytesIndex, data, srcType, j * srcUnitSize);
+                val_bytesIndex += MemoryUtils::getUnitSize(type);
             }
-            MemoryUtils::write(pMemory->data, srcType, i * unitSize, total);
+            MemoryUtils::write(out_mem->data, outType, i * outUnitSize, total);
         }
     }
-    return pMemory;
+    return out_mem;
 }
 SkMemory* SkMemory::create(const char *type, int count) {
    auto pMemory = new SkMemory();
@@ -751,6 +757,9 @@ SkAnyMemory* SkAnyMemory::_mul(double val) {
     return pMemory;
 }
 SkAnyMemory* SkAnyMemory::_mul(SkMemory *val) {
+    if(getLength() != val->getLength()){
+        return nullptr;
+    }
     SkAnyMemory* out = new SkAnyMemory(_types, getLength(), false);
     const char val_type = val->_types[0];
     const int val_unit_size = MemoryUtils::getUnitSize(val_type);
@@ -768,6 +777,9 @@ SkAnyMemory* SkAnyMemory::_mul(SkMemory *val) {
     return out;
 }
 SkAnyMemory* SkAnyMemory::_mul(SkAnyMemory *val) {
+    if(getLength() != val->getLength()){
+        return nullptr;
+    }
     SkAnyMemory* out = new SkAnyMemory(_types, getLength(), false);
     const auto cur_type_len = strlen(_types);
     char curType;

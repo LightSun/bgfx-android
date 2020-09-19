@@ -23,12 +23,11 @@ public:
     };
     class Callback{
     public:
-        virtual Data* _mul(SkMemory* m1, SkMemory* m2) = 0;
-        virtual Data* _mul(SkAnyMemory* m1, SkAnyMemory* m2) = 0;
-        virtual Data* _mul(SkMemory* m1, SkAnyMemory* m2) = 0;
-        virtual Data* _mul(SkAnyMemory* m1, SkMemory* m2) = 0;
+        virtual Data* _mul(SkMemoryArray* m1, SkMemory* m2) = 0;
+        virtual Data* _mul(SkMemoryArray* m1, SkAnyMemory* m2) = 0;
+        virtual Data* _mul(SkMemoryArray* m1, SkMemoryArray* m2) = 0;
     };
-    int mul(SkMemoryArray* arr, SkMemory* m2, Callback* cb);
+   // int mul(SkMemoryArray* arr, SkMemory* m2, Callback* cb);
 };
 
 #endif //BGFX_STUDY_SKCALCULATOR_H
