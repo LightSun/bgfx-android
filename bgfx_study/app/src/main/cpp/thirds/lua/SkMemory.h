@@ -57,6 +57,8 @@ public:
     bool isFloat();
 
     void toString(SB::StringBuilder &sb);
+
+    const char *getTypes(){ return _types;}
 //------ index start from 0 --------
     /**
      * read data from memory to lua stack
@@ -142,6 +144,8 @@ public:
     SkAnyMemory(const char *types, int count, bool init);
 
     void toString(SB::StringBuilder &sb);
+
+    const char *getTypes(){ return _types;}
     //----------------------------------------------
 
     SkAnyMemory *copy();
@@ -207,6 +211,7 @@ public:
 
     int getColumnCount();
 
+    /** get the row types */
     const char *getTypes();
 
     /**

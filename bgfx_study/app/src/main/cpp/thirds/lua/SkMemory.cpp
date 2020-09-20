@@ -295,32 +295,33 @@ int SkMemory::read(SkMemory* mem, lua_State *L) {
     }
 }
 void SkMemory::toString(SB::StringBuilder& ss) {
+    auto len = getLength();
     switch (_types[0]) {
         case 'f':
-            Printer::printArray((float*)data, size / 4, ss);
+            Printer::printArray((float*)data, len, ss);
             break;
         case 'd':
-            Printer::printArray((uint32_t*)data, size / 4, ss );
+            Printer::printArray((uint32_t*)data, len, ss );
             break;
         case 'w':
-            Printer::printArray((uint16_t*)data, size / 2, ss);
+            Printer::printArray((uint16_t*)data, len, ss);
             break;
         case 'b':
-            Printer::printArray((uint8_t*)data, size, ss);
+            Printer::printArray((uint8_t*)data, len, ss);
             break;
 
         case 's':
-            Printer::printArray((short *)data, size, ss);
+            Printer::printArray((short *)data, len, ss);
             break;
         case 'i':
-            Printer::printArray((int*)data, size, ss);
+            Printer::printArray((int*)data, len, ss);
             break;
         case 'c':
-            Printer::printArray((s_char*)data, size, ss);
+            Printer::printArray((s_char*)data, len, ss);
             break;
 
         case 'F':
-            Printer::printArray((double *)data, size, ss);
+            Printer::printArray((double *)data, len, ss);
             break;
     }
     /* auto i = SkUTF::CountUTF8(result, sr.length());
@@ -469,9 +470,10 @@ SkMemory* SkMemory::_mul(SkMemory *val) {
     SkMemory *pMemory = SkMemory::create(outType, getLength());
 
     for (int j = 0; j < getLength(); ++j) {
-        MemoryUtils::multiple(data, srcType, j * srcUnitSize,
-                val->data, dstType, j * dstUnitSize,
-                pMemory->data, outType, j* outUnitSize);
+        auto srcVal = MemoryUtils::getValue(data, srcType, j * srcUnitSize);
+        auto dstVal = MemoryUtils::getValue(val->data, dstType, j * dstUnitSize);
+
+        MemoryUtils::write(pMemory->data, outType, j* outUnitSize, srcVal * dstVal);
     }
     return pMemory;
 }
@@ -492,9 +494,11 @@ SkMemory * SkMemory::_mul(SkAnyMemory *val) {
     size_t dstBytes = 0;
     for (int j = 0; j < getLength(); ++j) {
         dstType = val->_types[j % len_type];
-        MemoryUtils::multiple(data, srcType, j * srcUnitSize,
-                              val->data, dstType, dstBytes,
-                              out_mem->data, outType, j * outUnitSize);
+
+        auto srcVal = MemoryUtils::getValue(data, srcType, j * srcUnitSize);
+        auto dstVal = MemoryUtils::getValue(val->data, dstType, dstBytes);
+        MemoryUtils::write(out_mem->data, outType, j* outUnitSize, srcVal * dstVal);
+        dstBytes += MemoryUtils::getUnitSize(dstType);
     }
     return out_mem;
 }

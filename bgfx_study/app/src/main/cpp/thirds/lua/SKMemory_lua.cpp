@@ -6,6 +6,7 @@
 #include "SkMemory.h"
 #include "bgfx_wrapper.h"
 #include "SkCalculator.h"
+#include "log.h"
 
 //----------------------------------------------------------------
 
@@ -136,6 +137,13 @@ static int type##_copy(lua_State *L) { \
     } \
     return 0; \
 }
+#define memory_GET_TYPES(mem) \
+static int mem##_getTypes(lua_State *L) { \
+auto pMemory = LuaUtils::get_ref<mem>(L, lua_upvalueindex(1)); \
+lua_pushstring(L, pMemory->getTypes()); \
+return 1; \
+}
+
 memory_copy(SkMemory)
 memory_copy(SkAnyMemory)
 
@@ -166,8 +174,13 @@ memory_foreach(SkAnyMemory)
 memory_convert(SkMemory)
 memory_convert(SkAnyMemory)
 
+memory_GET_TYPES(SkMemory)
+memory_GET_TYPES(SkAnyMemory)
+memory_GET_TYPES(SkMemoryMatrix)
+
 #define DEF_V_METHODS(type) \
 static const luaL_Reg s##type##_Methods[] = { \
+        {"getTypes",         type##_getTypes}, \
         {"copy",             type##_copy}, \
         {"convert",          type##_convert}, \
         {"foreach",          type##_foreach},\
@@ -216,6 +229,7 @@ static int type##_mul(lua_State *L) { \
         default:{ \
             auto skm = LuaUtils::to_ref<SkMemory>(L, 2); \
             if(skm != nullptr){ \
+                LOGD("multile SkMemory"); \
                 auto pMatrix = pMemory->_mul(skm); \
                 if(pMatrix == nullptr){ \
                     return luaL_error(L, "for %s multiple simple-array(SkMemory). matrix.column must be 1.",  type_str); \
@@ -225,6 +239,7 @@ static int type##_mul(lua_State *L) { \
             } \
             auto skam = LuaUtils::to_ref<SkAnyMemory>(L, 2); \
             if(skam != nullptr){  \
+                LOGD("multile SkAnyMemory"); \
                 auto pMatrix = pMemory->_mul(skam); \
                 if(pMatrix == nullptr){ \
                     return luaL_error(L, "for %s multiple array(SkAnyMemory). matrix.column must be 1.", type_str); \
@@ -234,6 +249,7 @@ static int type##_mul(lua_State *L) { \
             } \
             auto mat = LuaUtils::to_ref<SkMemoryMatrix>(L, 2); \
             if(mat != nullptr){\
+                  LOGD("multile SkMemoryMatrix"); \
                 auto pMatrix = pMemory->_mul(mat);\
                 if(pMatrix == nullptr){\
                     return luaL_error(L, "for %s multiple mat. mat1.columnCount must equals mat2.rowCount.", type_str);\
@@ -247,7 +263,7 @@ static int type##_mul(lua_State *L) { \
 }
 memory_mul(SkMemoryMatrix, "mat")
 memory_mul(SkMemory, "simple-array")
-memory_mul(SkAnyMemory, "aray")
+memory_mul(SkAnyMemory, "array")
 
 const static luaL_Reg gSkAnyMemory_Methods[] = {
         {"__mul",             SkAnyMemory_mul},
@@ -338,6 +354,7 @@ static int SkMemoryMatrix_getRowCount(lua_State *L) {
 }
 memory_copy(SkMemoryMatrix)
 const static luaL_Reg sSkMemoryMatrix_Methods[] = {
+        {"getTypes",         SkMemoryMatrix_getTypes},
         {"copy",             SkMemoryMatrix_copy},
         {"convert",          SkMemoryMatrix_convert},
         {"transpose",        SkMemoryMatrix_transpose},
