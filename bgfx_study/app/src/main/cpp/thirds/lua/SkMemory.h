@@ -89,9 +89,13 @@ public:
     SkMemory* _mul(SkMemory* val);
     SkMemory* _mul(SkAnyMemory* val);
 
-    inline SkMemory* _mul(SkMemoryMatrix* val){
-        return dot(val);
-    }
+    /**
+     * multiple the matrix like 'dot-mat' or not. for dotMatrix this behaviour just like numpy.
+     * @param val the mat
+     * @param dotMat true if multi like dot-mat.
+     * @return the result memory
+     */
+    SkMemory* _mul(SkMemoryMatrix* val, bool dotMat = true);
 
     SkMemory* dot(SkMemoryMatrix* val);
 
@@ -158,9 +162,7 @@ public:
     SkAnyMemory* _mul(SkMemory* val);
     SkAnyMemory* _mul(SkAnyMemory* val);
 
-    inline SkMemory* _mul(SkMemoryMatrix* val){
-        return dot(val);
-    }
+    SkMemory* _mul(SkMemoryMatrix* val, bool dotMat = true);
 
     SkMemory* dot(SkMemoryMatrix* val);
 
