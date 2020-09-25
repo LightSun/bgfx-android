@@ -818,19 +818,19 @@ SkAnyMemory* SkAnyMemory::_mul(SkMemory *val) {
     if(getLength() != val->getLength()){
         return nullptr;
     }
-    SkAnyMemory* out = new SkAnyMemory(_types, getLength(), false);
+    SkAnyMemory* out = new SkAnyMemory(_types, _tabCount, false);
     const char val_type = val->_types[0];
     const int val_unit_size = MemoryUtils::getUnitSize(val_type);
 
     const auto len_type = strlen(_types);
-    char dstType;
-    size_t dstBytes = 0;
+    char srcType;
+    size_t srcBytes = 0;
     for (int j = 0; j < getLength(); ++j) {
-        dstType = _types[j % len_type];
-        MemoryUtils::multiple(data, dstType, dstBytes,
+        srcType = _types[j % len_type];
+        MemoryUtils::multiple(data, srcType, srcBytes,
                               val->data, val_type, j * val_unit_size,
-                              out->data, dstType, dstBytes);
-        dstBytes += MemoryUtils::getUnitSize(dstType);
+                              out->data, srcType, srcBytes);
+        srcBytes += MemoryUtils::getUnitSize(srcType);
     }
     return out;
 }
@@ -838,7 +838,7 @@ SkAnyMemory* SkAnyMemory::_mul(SkAnyMemory *val) {
     if(getLength() != val->getLength()){
         return nullptr;
     }
-    SkAnyMemory* out = new SkAnyMemory(_types, getLength(), false);
+    SkAnyMemory* out = new SkAnyMemory(_types, _tabCount, false);
     const auto cur_type_len = strlen(_types);
     char curType;
     size_t curBytes = 0;
@@ -957,7 +957,7 @@ SkMemory* SkAnyMemory::dot(SkMemoryMatrix *val) {
             value = 0;
             srcBytes = 0;
             //make a skm multiple a row of mat
-            for (int j = 0; j < srcLen; ++i) {
+            for (int j = 0; j < srcLen; ++j) {
                 srcType = _types[j % src_type_len];
                 srcVal = MemoryUtils::getValue(data, srcType, srcBytes);
                 dstVal = MemoryUtils::getValue(dstMem->data, dstType, j * dstUnitSize);
@@ -979,7 +979,7 @@ SkMemory* SkAnyMemory::dot(SkMemoryMatrix *val) {
             srcBytes = 0;
             dstBytes = 0;
             //make a skm multiple a row of mat
-            for (int j = 0; j < srcLen; ++i) {
+            for (int j = 0; j < srcLen; ++j) {
                 srcType = _types[j % src_type_len];
                 dstType = dstTypes[j % dstType_Len];
 

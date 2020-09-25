@@ -138,14 +138,14 @@ public:
     * @param types the types.
     * @param count the table count.
     */
-    SkAnyMemory(const char *types, int count);
+    SkAnyMemory(const char *types, int tabCount);
 
     /**
      * @param types
-     * @param count
+     * @param count the table count
      * @param init true to init data
      */
-    SkAnyMemory(const char *types, int count, bool init);
+    SkAnyMemory(const char *types, int tabCount, bool init);
 
     void toString(SB::StringBuilder &sb);
 
