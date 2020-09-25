@@ -28,10 +28,10 @@ SkMemoryArray::~SkMemoryArray() {
 void SkMemoryArray::destroyData() {
     switch (type){
         case TYPE_MEM_ARRAY:
-            DESTROY_POINTER_ARRAY(arrArray)
+            DESTROY_MEM_POINTER_ARRAY(arrArray)
             break;
         case TYPE_MEM_MAT:
-            DESTROY_POINTER_ARRAY(matArray)
+            DESTROY_MEM_POINTER_ARRAY(matArray)
             break;
     }
     type = TYPE_NONE;

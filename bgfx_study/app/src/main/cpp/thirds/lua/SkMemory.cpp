@@ -560,6 +560,7 @@ SkMemory* SkMemory::dot(SkMemoryMatrix *val) {
     if(getLength() != val->getColumnCount()){
         return nullptr;//un support
     }
+    //SkMemory (dot) SkMemoryMatrix = multi : one
     const int count = getLength();
     const char srcType = _types[0];
     const int srcUnitSize = MemoryUtils::getUnitSize(srcType);
@@ -862,6 +863,9 @@ SkMemory* SkAnyMemory::_mul(SkMemoryMatrix *val, bool dotMat) {
     if(dotMat){
         return dot(val);
     }
+    if(getLength() != val->getLength()){
+        return nullptr;
+    }
     const int columnCount = val->getColumnCount();
     const int srcCount = getLength();
     const size_t srcType_len = strlen(getTypes());
@@ -923,23 +927,72 @@ SkMemory* SkAnyMemory::_mul(SkMemoryMatrix *val, bool dotMat) {
     return out_mem;
 }
 SkMemory* SkAnyMemory::dot(SkMemoryMatrix *val) {
-    //choose a best type for dot
-    char targetType = MemoryUtils::computeType(_types);
-    auto pMemory = SkMemory::create(targetType, getLength());
-    const int dstUnitSize = MemoryUtils::getUnitSize(targetType);
-    //convert data
-    size_t tlen = strlen(_types);
-    char t;
-    size_t srcBytes = 0;
-    for (int i = 0, len = getLength(); i < len; ++i) {
-        t = _types[i % tlen];
-        MemoryUtils::convert(data, t, srcBytes, pMemory->data, targetType, i * dstUnitSize);
-        srcBytes += MemoryUtils::getUnitSize(t);
+    if(getLength() != val->getColumnCount()){
+        return nullptr;//un support
     }
-    //dot
-    SkMemory *outMem = pMemory->dot(val);
-    pMemory->unRefAndDestroy();
-    return outMem;
+    //src info
+    const int srcLen = getLength();
+    size_t src_type_len = strlen(_types);
+    size_t srcBytes;
+    char srcType;
+
+    //choose a best type for dot
+    const char outType = MemoryUtils::computeType(MemoryUtils::computeType(_types),
+            MemoryUtils::computeType(val->getTypes()));
+    const int outUnitSize = MemoryUtils::getUnitSize(outType);
+    auto pMemory = SkMemory::create(outType, val->getRowCount());
+
+    double value;
+    double srcVal;
+    double dstVal;
+
+    if(val->isSingleType()){
+        //dst info
+        SkMemory *dstMem;
+        const char dstType = val->array[0]->_types[0];
+        const size_t dstUnitSize = MemoryUtils::getUnitSize(dstType);
+
+        for (int i = 0, rc = val->getRowCount(); i < rc; ++i) {
+            dstMem = val->array[i];
+            value = 0;
+            srcBytes = 0;
+            //make a skm multiple a row of mat
+            for (int j = 0; j < srcLen; ++i) {
+                srcType = _types[j % src_type_len];
+                srcVal = MemoryUtils::getValue(data, srcType, srcBytes);
+                dstVal = MemoryUtils::getValue(dstMem->data, dstType, j * dstUnitSize);
+                value += srcVal * dstVal;
+                srcBytes += MemoryUtils::getUnitSize(srcType);
+            }
+            MemoryUtils::write(pMemory->data, outType, i * outUnitSize, value);
+        }
+    } else{
+        SkAnyMemory *dstMem;
+        const char* dstTypes = val->anyArray[0]->_types;
+        size_t dstType_Len = strlen(dstTypes);
+        char dstType;
+        size_t dstBytes;
+
+        for (int i = 0, rc = val->getRowCount(); i < rc; ++i) {
+            dstMem = val->anyArray[i];
+            value = 0;
+            srcBytes = 0;
+            dstBytes = 0;
+            //make a skm multiple a row of mat
+            for (int j = 0; j < srcLen; ++i) {
+                srcType = _types[j % src_type_len];
+                dstType = dstTypes[j % dstType_Len];
+
+                srcVal = MemoryUtils::getValue(data, srcType, srcBytes);
+                dstVal = MemoryUtils::getValue(dstMem->data, dstType, dstBytes);
+                value += srcVal * dstVal;
+                srcBytes += MemoryUtils::getUnitSize(srcType);
+                dstBytes += MemoryUtils::getUnitSize(dstType);
+            }
+            MemoryUtils::write(pMemory->data, outType, i * outUnitSize, value);
+        }
+    }
+    return pMemory;
 }
 
 int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
@@ -1042,8 +1095,8 @@ SkMemoryMatrix::SkMemoryMatrix(int count, bool singleType): IMemory(), count(cou
     }
 }
 void SkMemoryMatrix::destroyData() {
-    DESTROY_POINTER_ARRAY(array);
-    DESTROY_POINTER_ARRAY(anyArray);
+    DESTROY_MEM_POINTER_ARRAY(array);
+    DESTROY_MEM_POINTER_ARRAY(anyArray);
     count = 0;
 }
 bool SkMemoryMatrix::isValid() {

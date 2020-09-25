@@ -23,7 +23,7 @@ public:
     SkMemoryHolder(char type, void *ptr);
 };
 
-#define DESTROY_POINTER_ARRAY(array) \
+#define DESTROY_MEM_POINTER_ARRAY(array) \
 if(array){ \
 for (int i = 0; i < count; ++i) { \
 auto ptr = array[i]; \
