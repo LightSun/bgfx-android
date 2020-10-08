@@ -7,6 +7,7 @@
 #include "SkMemory.h"
 #include "common.h"
 #include "LuaUtils.h"
+#include "MatUtils.h"
 
 #define copy_data_f(dType) \
 dType * addr = static_cast<dType *>(data); \
@@ -1590,6 +1591,32 @@ SkMemoryMatrix * SkMemoryMatrix::transpose() {
         }
     }
     return mat;
+}
+int SkMemoryMatrix::inverse(lua_State* L) {
+    if(getRowCount() != getColumnCount()){
+        return 0; // doesn't support
+    }
+    auto in = convert(L, "F");
+    if(!in){
+        return 0;
+    }
+    const char rt = 'F';
+    auto unitSize = MemoryUtils::getUnitSize(rt);
+
+    auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, -1);
+    auto func_set = [&](int id1, int id2, double val){
+        MemoryUtils::write(mat->array[id1]->data, rt, id2 * unitSize, val);
+    };
+    auto func_get = [&](int id1, int id2){
+        return MemoryUtils::getValue(mat->array[id1]->data, rt, id2 * unitSize);
+    };
+    auto result = MatUtils::inverse(getRowCount(), func_set, func_get);
+    if(result){
+        return 1;
+    }
+    lua_pop(L, 1);
+    mat->unRefAndDestroy();
+    return 0;
 }
 
 int SkMemoryMatrix::convert(lua_State* L,const char *ts) {

@@ -244,6 +244,12 @@ public:
     SkMemoryMatrix *transpose();
 
     /**
+     * inverse the matrix
+     * @param L the lua state
+     * @return 1 if success, 0 otherwise.
+     */
+    int inverse(lua_State *L);
+    /**
      * convert every memory to target types
      * @param t  the types
      * @return the new matrix.

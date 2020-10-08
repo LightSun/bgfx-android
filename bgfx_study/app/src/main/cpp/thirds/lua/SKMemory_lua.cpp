@@ -352,6 +352,11 @@ static int SkMemoryMatrix_getRowCount(lua_State *L) {
     lua_pushinteger(L, pMemory->getRowCount());
     return 1;
 }
+static int SkMemoryMatrix_inverse(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    return pMemory->inverse(L);
+}
+
 memory_copy(SkMemoryMatrix)
 const static luaL_Reg sSkMemoryMatrix_Methods[] = {
         {"getTypes",         SkMemoryMatrix_getTypes},
@@ -361,17 +366,20 @@ const static luaL_Reg sSkMemoryMatrix_Methods[] = {
         {"isValid",          SkMemoryMatrix_isValid},
         {"getColumnCount",   SkMemoryMatrix_columnCount},
         {"getRowCount",      SkMemoryMatrix_getRowCount},
+        {"inverse",          SkMemoryMatrix_inverse},
         {NULL, NULL},
 };
 
 static int SkMemoryMatrix_index(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, 1);
+    //id index
     if(lua_type(L, 2) == LUA_TNUMBER){
         if (pMemory->isSingleType()) {
             return SkMemoryMatrix::read(pMemory, L, SkMemory_push);
         }
         return SkMemoryMatrix::read(pMemory, L, SkAnyMemory_push);
     } else{
+        //method
         const auto mn = luaL_checkstring(L, 2);
         for (int i = 0; ; ++i) {
             auto method = sSkMemoryMatrix_Methods[i];
