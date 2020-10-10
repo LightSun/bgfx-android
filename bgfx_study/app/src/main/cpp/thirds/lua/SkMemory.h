@@ -109,6 +109,7 @@ public:
     /** kick out the index value from memory data.*/
     SkMemory *kickOut(size_t index);
 
+    //TODO bool equals(SkMemory* o);
 public:
     const char *_types;
 private:
@@ -177,6 +178,7 @@ public:
 
     double get(size_t index, bool* success);
     SkMemory *kickOut(size_t index);
+    //TODO bool equals(SkAnyMemory* o); //__eq
 
     static int read(SkAnyMemory *mem, lua_State *L);
 

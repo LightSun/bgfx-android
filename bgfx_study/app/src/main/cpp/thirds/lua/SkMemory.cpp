@@ -632,13 +632,16 @@ SkMemory *SkMemory::kickOut(size_t index) {
         return nullptr;
     }
     SkMemory *pMemory = SkMemory::create(_types, getLength()-1);
+    unsigned char* outAddr = static_cast<unsigned char *>(pMemory->data);
+
     const int unitSize = MemoryUtils::getUnitSize(_types[0]);
     unsigned char* da = static_cast<unsigned char *>(data);
     if(index > 0){
-        memcpy(pMemory->data, (void*)da, unitSize * index);
+        memcpy(outAddr, (void*)da, unitSize * index);
+        outAddr += unitSize * index;
     }
     da += unitSize * (index + 1);
-    memcpy(pMemory->data, (void*)da, (pMemory->getLength() - index) * unitSize);
+    memcpy(outAddr, (void*)da, (pMemory->getLength() - index) * unitSize);
     return pMemory;
 }
 
