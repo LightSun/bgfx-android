@@ -140,7 +140,7 @@ public:
     static void write(void *data, const char t, size_t bytesIndex, double val);
 
     /** compute the total bytes index. by types */
-    static const int computeBytesIndex(const char *types, int index);
+    static const size_t computeBytesIndex(const char *types, size_t index);
 };
 
 class IMemory{

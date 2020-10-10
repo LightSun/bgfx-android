@@ -101,8 +101,13 @@ public:
 
     SkMemory *copy();
 
+    SkMemory *extract(size_t start, size_t end1);
+
     static SkMemory* create(const char* type, int count);
     static SkMemory* create(char type, int count);
+
+    /** kick out the index value from memory data.*/
+    SkMemory *kickOut(size_t index);
 
 public:
     const char *_types;
@@ -166,7 +171,12 @@ public:
 
     SkMemory* dot(SkMemoryMatrix* val);
 
+    SkMemory *extract(size_t start, size_t end1);
+
     int getLength() { return _tabCount * _elementCount; }
+
+    double get(size_t index, bool* success);
+    SkMemory *kickOut(size_t index);
 
     static int read(SkAnyMemory *mem, lua_State *L);
 
@@ -213,6 +223,8 @@ public:
 
     int getColumnCount();
 
+    inline bool isSquareMatrix(){ return getRowCount() == getColumnCount();}
+
     /** get the row types */
     const char *getTypes();
 
@@ -243,6 +255,20 @@ public:
 
     SkMemoryMatrix *transpose();
 
+    double determinant();                                                //行列式的值
+    double remainderValue(size_t rowIndex, size_t columnIndex);          //代数余子式值
+    SkMemoryMatrix* remainderMat(size_t rowIndex, size_t columnIndex);   //余子式矩阵
+    SkMemoryMatrix* algebraicRemainderMat();     //代数余子式矩阵.
+    SkMemoryMatrix* adjointMat();                //Adjoint matrix 伴随矩阵
+    /**
+     * extract sub matrix
+     * @param rowStart  the row start index .include
+     * @param rowEnd  the row end index .exclude
+     * @param columnStart the column start index .include
+     * @param columnEnd  the column end index .exclude
+     * @return result mat
+     */
+    SkMemoryMatrix* extractMat(size_t rowStart, size_t rowEnd, size_t columnStart, size_t columnEnd);
     /**
      * inverse the matrix
      * @param L the lua state
@@ -288,7 +314,8 @@ private:
 
     /** collect column data to array. */
     void copyData(SkMemory *pMemory, int columnIndex);
-
+    /** swap value . currently only used for single type */
+    void swapValue(int rowIndex1, int colIndex1, int rowIndex2, int colIndex2);
 public:
     SkMemory **array;
     SkAnyMemory **anyArray;

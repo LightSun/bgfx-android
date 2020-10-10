@@ -144,31 +144,38 @@ lua_pushstring(L, pMemory->getTypes()); \
 return 1; \
 }
 
+#define memory_extract(mem) \
+static int mem##_extract(lua_State *L) { \
+auto pMemory = LuaUtils::get_ref<mem>(L, lua_upvalueindex(1)); \
+SkMemory *outMem; \
+if(lua_gettop(L) == 1){ \
+    outMem = pMemory->extract(lua_tointeger(L, -1), pMemory->getLength());\
+}else{\
+    outMem = pMemory->extract(lua_tointeger(L, -2), lua_tointeger(L, -1));\
+}\
+LuaUtils::push_ptr(L, outMem);\
+return 1; \
+}
+
 memory_copy(SkMemory)
 memory_copy(SkAnyMemory)
 
 memory_isValid(SkMemory)
-
 memory_isValid(SkAnyMemory)
 
 memory_gc(SkMemory)
-
 memory_gc(SkAnyMemory)
 
 memory_len(SkMemory)
-
 memory_len(SkAnyMemory)
 
 memory_tostring(SkMemory)
-
 memory_tostring(SkAnyMemory)
 
 memory_newindex(SkMemory)
-
 memory_newindex(SkAnyMemory)
 
 memory_foreach(SkMemory)
-
 memory_foreach(SkAnyMemory)
 
 memory_convert(SkMemory)
@@ -178,6 +185,9 @@ memory_GET_TYPES(SkMemory)
 memory_GET_TYPES(SkAnyMemory)
 memory_GET_TYPES(SkMemoryMatrix)
 
+memory_extract(SkMemory);
+memory_extract(SkAnyMemory);
+
 #define DEF_V_METHODS(type) \
 static const luaL_Reg s##type##_Methods[] = { \
         {"getTypes",         type##_getTypes}, \
@@ -185,6 +195,7 @@ static const luaL_Reg s##type##_Methods[] = { \
         {"convert",          type##_convert}, \
         {"foreach",          type##_foreach},\
         {"isValid",          type##_isValid}, \
+        {"extract",          type##_extract}, \
         {nullptr,            nullptr}, \
 };
 DEF_V_METHODS(SkMemory)
