@@ -628,6 +628,9 @@ SkMemory *SkMemory::extract(size_t start, size_t end1) {
 }
 
 SkMemory *SkMemory::kickOut(size_t index) {
+    if(index >= getLength()){
+        return nullptr;
+    }
     SkMemory *pMemory = SkMemory::create(_types, getLength()-1);
     const int unitSize = MemoryUtils::getUnitSize(_types[0]);
     unsigned char* da = static_cast<unsigned char *>(data);
@@ -1117,6 +1120,9 @@ SkMemory *SkAnyMemory::extract(size_t start, size_t end1) {
 }
 
 SkMemory *SkAnyMemory::kickOut(size_t index) {
+    if(index >= getLength()){
+        return nullptr;
+    }
     SkMemory *outMem = SkMemory::create(MemoryUtils::computeType(_types), getLength() - 1);
     const char outType = outMem->getTypes()[0];
     const int out_unitSize = MemoryUtils::getUnitSize(outType);

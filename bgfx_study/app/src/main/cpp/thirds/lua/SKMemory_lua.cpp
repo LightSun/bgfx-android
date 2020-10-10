@@ -153,6 +153,20 @@ if(lua_gettop(L) == 1){ \
 }else{\
     outMem = pMemory->extract(lua_tointeger(L, -2), lua_tointeger(L, -1));\
 }\
+if(outMem == NULL){ \
+    return 0; \
+} \
+LuaUtils::push_ptr(L, outMem);\
+return 1; \
+}
+
+#define memory_kickOut(mem) \
+static int mem##_kickOut(lua_State *L) { \
+auto pMemory = LuaUtils::get_ref<mem>(L, lua_upvalueindex(1)); \
+SkMemory *outMem = pMemory->kickOut(lua_tointeger(L, -1)); \
+if(outMem == NULL){ \
+    return 0; \
+} \
 LuaUtils::push_ptr(L, outMem);\
 return 1; \
 }
@@ -185,8 +199,11 @@ memory_GET_TYPES(SkMemory)
 memory_GET_TYPES(SkAnyMemory)
 memory_GET_TYPES(SkMemoryMatrix)
 
-memory_extract(SkMemory);
-memory_extract(SkAnyMemory);
+memory_extract(SkMemory)
+memory_extract(SkAnyMemory)
+
+memory_kickOut(SkMemory)
+memory_kickOut(SkAnyMemory)
 
 #define DEF_V_METHODS(type) \
 static const luaL_Reg s##type##_Methods[] = { \
@@ -196,6 +213,7 @@ static const luaL_Reg s##type##_Methods[] = { \
         {"foreach",          type##_foreach},\
         {"isValid",          type##_isValid}, \
         {"extract",          type##_extract}, \
+        {"kickOut",          type##_kickOut}, \
         {nullptr,            nullptr}, \
 };
 DEF_V_METHODS(SkMemory)
@@ -368,6 +386,51 @@ static int SkMemoryMatrix_inverse(lua_State *L) {
     return pMemory->inverse(L);
 }
 
+static int SkMemoryMatrix_determinant(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    if(pMemory->isSquareMatrix()){
+        lua_pushnumber(L, pMemory->determinant());
+        return 1;
+    }
+    return 0;
+}
+static int SkMemoryMatrix_remainderValue(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    if(pMemory->isSquareMatrix()){
+        auto val = pMemory->remainderValue(lua_tointeger(L, -2), lua_tointeger(L, -1));
+        lua_pushnumber(L, val);
+        return 1;
+    }
+    return 0;
+}
+static int SkMemoryMatrix_remainderMat(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    auto val = pMemory->remainderMat(lua_tointeger(L, -2), lua_tointeger(L, -1));
+    if(val != NULL){
+        LuaUtils::push_ptr(L, val);
+        return 1;
+    }
+    return 0;
+}
+static int SkMemoryMatrix_algebraicRemainderMat(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    auto val = pMemory->algebraicRemainderMat();
+    if(val != NULL){
+        LuaUtils::push_ptr(L, val);
+        return 1;
+    }
+    return 0;
+}
+static int SkMemoryMatrix_adjointMat(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    auto val = pMemory->adjointMat();
+    if(val != NULL){
+        LuaUtils::push_ptr(L, val);
+        return 1;
+    }
+    return 0;
+}
+
 memory_copy(SkMemoryMatrix)
 const static luaL_Reg sSkMemoryMatrix_Methods[] = {
         {"getTypes",         SkMemoryMatrix_getTypes},
@@ -378,6 +441,12 @@ const static luaL_Reg sSkMemoryMatrix_Methods[] = {
         {"getColumnCount",   SkMemoryMatrix_columnCount},
         {"getRowCount",      SkMemoryMatrix_getRowCount},
         {"inverse",          SkMemoryMatrix_inverse},
+
+        {"determinant",       SkMemoryMatrix_determinant},
+        {"remainderValue",    SkMemoryMatrix_remainderValue},
+        {"remainderMat",      SkMemoryMatrix_remainderMat},
+        {"algRemainderMat",   SkMemoryMatrix_algebraicRemainderMat},
+        {"adjointMat",        SkMemoryMatrix_adjointMat},
         {NULL, NULL},
 };
 
