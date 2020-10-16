@@ -109,7 +109,7 @@ public:
     /** kick out the index value from memory data.*/
     SkMemory *kickOut(size_t index);
 
-    //TODO bool equals(SkMemory* o);
+    bool equals(SkMemory* o);
 public:
     const char *_types;
 private:
@@ -178,7 +178,8 @@ public:
 
     double get(size_t index, bool* success);
     SkMemory *kickOut(size_t index);
-    //TODO bool equals(SkAnyMemory* o); //__eq
+
+    bool equals(SkAnyMemory* o);
 
     static int read(SkAnyMemory *mem, lua_State *L);
 
@@ -297,6 +298,8 @@ public:
      * @return the result state of lua
      */
     int tiled(lua_State *L);
+
+    bool equals(SkMemoryMatrix* o);
 
     static int read(SkMemoryMatrix *mem, lua_State *L, void (*Push)(lua_State *L, SkMemory *ptr));
 

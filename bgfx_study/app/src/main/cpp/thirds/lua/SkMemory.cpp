@@ -644,6 +644,23 @@ SkMemory *SkMemory::kickOut(size_t index) {
     memcpy(outAddr, (void*)da, (pMemory->getLength() - index) * unitSize);
     return pMemory;
 }
+bool SkMemory::equals(SkMemory *o) {
+    if(o == nullptr || getTypes()[0] != o->getTypes()[0]){
+        return false;
+    }
+    if(getLength() != o->getLength()){
+        return false;
+    }
+    const int c = getLength();
+    const char type = _types[0];
+    const int unitSize = MemoryUtils::getUnitSize(type);
+    for (int i = 0; i < c; ++i) {
+        if(MemoryUtils::getValue(data, type, unitSize * i) != MemoryUtils::getValue(o->data, type, unitSize * i)){
+            return false;
+        }
+    }
+    return true;
+}
 
 //======================= SKAnyMemory ===================================
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){
@@ -1046,6 +1063,26 @@ double SkAnyMemory::get(size_t index, bool* success) {
     }
     return -1;
 }
+
+bool SkAnyMemory::equals(SkAnyMemory *o) {
+    if(o == NULL || strcmp(getTypes(), o->getTypes()) != 0){
+        return false;
+    }
+    if(getLength() != o->getLength()){
+        return false;
+    }
+    const size_t len_type = strlen(getTypes());
+    char type;
+    size_t bytes = 0;
+    for (int i = 0, c = getLength(); i < c; ++i) {
+        type = getTypes()[i % len_type];
+        if(MemoryUtils::getValue(data, type, bytes) != MemoryUtils::getValue(o->data, type, bytes)){
+            return false;
+        }
+        bytes += MemoryUtils::getUnitSize(type);
+    }
+    return true;
+}
 //read data to lua stack
 int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
     //table, index
@@ -1218,6 +1255,25 @@ bool SkMemoryMatrix::isSingleType() {
     return array != nullptr;
 }
 
+bool SkMemoryMatrix::equals(SkMemoryMatrix *o) {
+    if(o == nullptr || getRowCount() != o->getRowCount() || getColumnCount() != o->getColumnCount()){
+        return false;
+    }
+    if(isSingleType()){
+        for (int i = 0; i < count; ++i) {
+            if(!array[i]->equals(o->array[i])){
+                return false;
+            }
+        }
+    } else{
+        for (int i = 0; i < count; ++i) {
+            if(!anyArray[i]->equals(o->anyArray[i])){
+                return false;
+            }
+        }
+    }
+    return true;
+}
 int SkMemoryMatrix::read(SkMemoryMatrix *mem, lua_State *L,  void (*Push)(lua_State*, SkMemory*)) {
     //table, index
     lua_Integer index = lua_tointeger(L, 2);
