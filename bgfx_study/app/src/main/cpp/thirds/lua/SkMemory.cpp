@@ -1136,6 +1136,7 @@ int SkAnyMemory::write(SkAnyMemory *mem, lua_State *L) {
         }
         bytes += MemoryUtils::getUnitSize(t);
     }
+    return 0;
 }
 
 SkMemory *SkAnyMemory::extract(size_t start, size_t end1) {

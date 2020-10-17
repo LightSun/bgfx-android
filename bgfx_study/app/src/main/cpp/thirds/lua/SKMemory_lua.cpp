@@ -171,6 +171,16 @@ LuaUtils::push_ptr(L, outMem);\
 return 1; \
 }
 
+#define memory_eq(mem) \
+static int mem##_eq(lua_State *L) { \
+auto mem1 = LuaUtils::get_ref<mem>(L, 1); \
+auto mem2 = LuaUtils::get_ref<mem>(L, 2); \
+return mem1 !=NULL ? mem1->equals(mem2) :(mem2 == NULL);\
+}
+memory_eq(SkMemory)
+memory_eq(SkAnyMemory)
+memory_eq(SkMemoryMatrix)
+
 memory_copy(SkMemory)
 memory_copy(SkAnyMemory)
 
@@ -296,6 +306,7 @@ memory_mul(SkAnyMemory, "array")
 
 const static luaL_Reg gSkAnyMemory_Methods[] = {
         {"__mul",             SkAnyMemory_mul},
+        {"__eq",              SkAnyMemory_eq},
         {"__len",             SkAnyMemory_len},
         {"__tostring",        SkAnyMemory_tostring},
         {"__newindex",        SkAnyMemory_newindex},
@@ -305,6 +316,7 @@ const static luaL_Reg gSkAnyMemory_Methods[] = {
 };
 const static luaL_Reg gSkMemory_Methods[] = {
         {"__mul",             SkMemory_mul},
+        {"__eq",              SkMemory_eq},
         {"__len",             SkMemory_len},
         {"__tostring",        SkMemory_tostring},
         {"__newindex",        SkMemory_newindex},
@@ -488,6 +500,7 @@ static int SkMemoryMatrix_newindex(lua_State *L) {
 memory_gc(SkMemoryMatrix)
 const static luaL_Reg gSkMemoryMatrix_Methods[] = {
         {"__mul",             SkMemoryMatrix_mul},
+        {"__eq",              SkMemoryMatrix_eq},
         {"__len",             SkMemoryMatrix_len},
         {"__tostring",        SkMemoryMatrix_tostring},
         {"__newindex",        SkMemoryMatrix_newindex},
