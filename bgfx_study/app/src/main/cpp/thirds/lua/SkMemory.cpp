@@ -1554,6 +1554,7 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkAnyMemory *val) {
             WRITE_OUT_MEM_ANY(cur_mem_any);
         }
     }
+    return mat;
 }
 
 SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemoryMatrix *val) {
