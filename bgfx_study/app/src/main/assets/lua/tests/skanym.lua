@@ -7,6 +7,10 @@ local mem = require("memory")
 local m, r;
 m = mem.new('iii', {1, 2, 3}, {-4, -5, -6})
 
+print("---------- test AnyMemory-> equals ----------")
+assert(m == mem.new('iii', {1, 2, 3}, {-4, -5, -6}))
+assert(not (m == mem.new('i', {1, 2, 3}, {-4, -5, -6})))
+
 print("------- start test AnyMemory -> extract ------ ")
 r = m.extract(2, 5);
 print("extract", r)

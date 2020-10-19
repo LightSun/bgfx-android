@@ -6,6 +6,9 @@
 local mem = require("memory")
 local m, r;
 m = mem.new('i', {1, 2, 3}, {-4, -5, -6})
+print("---------- test equals ----------")
+assert(m == mem.new('i', {1, 2, 3}, {-4, -5, -6}))
+assert(not (m == mem.new('s', {1, 2, 3}, {-4, -5, -6})))
 
 print("------- start test SkMemory -> extract ------ ")
 r = m.extract(2, 5);

@@ -29,3 +29,5 @@ print("mat->convert", mat2)
 mat = mat.convert('dFf');
 print("mat->convert", mat);
 assert(mat.a == nil) -- no a member. expect
+
+--print("------ start test mat.convert() -------- ")

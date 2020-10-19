@@ -126,12 +126,25 @@ public:
         luaL_getmetatable(L, get_mtname<T>());
         lua_setmetatable(L, -2);
     }
-
+    /**
+     * cast the index of data to target type. if can't return throw lua error.
+     * @tparam T the expect type of data
+     * @param L the lua stack
+     * @param index the index if ud
+     * @return the pointer of data
+     */
     template<typename T>
     static T *get_ref(lua_State *L, int index) {
         return *(T **) luaL_checkudata(L, index, get_mtname<T>());
     }
 
+    /**
+     * cast the index of data to target type. if can't return null not throw error.
+     * @tparam T the expect type of data
+     * @param L the lua stack
+     * @param index the index if ud
+     * @return the pointer of data
+     */
     template<typename T>
     static T *to_ref(lua_State *L, int index) {
         void *d = luaL_testudata(L, index, get_mtname<T>());

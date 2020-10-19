@@ -173,9 +173,11 @@ return 1; \
 
 #define memory_eq(mem) \
 static int mem##_eq(lua_State *L) { \
-auto mem1 = LuaUtils::get_ref<mem>(L, 1); \
-auto mem2 = LuaUtils::get_ref<mem>(L, 2); \
-return mem1 !=NULL ? mem1->equals(mem2) :(mem2 == NULL);\
+auto mem1 = LuaUtils::to_ref<mem>(L, 1); \
+auto mem2 = LuaUtils::to_ref<mem>(L, 2); \
+auto eq = mem1 !=NULL ? mem1->equals(mem2) :(mem2 == NULL);\
+lua_pushboolean(L, eq);\
+return 1;\
 }
 memory_eq(SkMemory)
 memory_eq(SkAnyMemory)
