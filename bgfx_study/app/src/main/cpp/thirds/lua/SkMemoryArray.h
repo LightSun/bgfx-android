@@ -38,7 +38,7 @@ public:
     SkMemoryArray* copy();
     SkMemoryArray* _mul(double val);
 
-    const SkMemoryHolder& operator[](int index);
+    void* operator[](int index);
 
     //arr[i] = xxx
     void assignElement(int index, void* val, bool copy);

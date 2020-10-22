@@ -78,15 +78,15 @@ SkMemoryArray* SkMemoryArray::_mul(double val) {
     }
     return ska;
 }
-const SkMemoryHolder& SkMemoryArray::operator[](int index) {
+void* SkMemoryArray::operator[](int index) {
     switch (type){
         case TYPE_MEM_ARRAY:
-            return SkMemoryHolder(type, arrArray[index]);
+            return arrArray[index];
         case TYPE_MEM_MAT:
-            return SkMemoryHolder(type, matArray[index]);
+            return matArray[index];
         default:
             LOGE("wrong type = %d", type);
-            return SkMemoryHolder(type, nullptr);
+            return nullptr;
     }
 }
 void SkMemoryArray::assignElement(int i, void* ptr, bool copy) {
