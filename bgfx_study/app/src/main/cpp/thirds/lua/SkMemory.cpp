@@ -1323,7 +1323,7 @@ int SkMemoryMatrix::getColumnCount() {
 }
 
 void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
-    ss << "{";
+    ss << "[";
     for (int i = 0; i < count; ++i) {
         if(array){
             array[i]->toString(ss);
@@ -1336,7 +1336,7 @@ void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
             ss << ",";
         }
     }
-    ss << "}";
+    ss << "]";
 }
 int SkMemoryMatrix::foreach(lua_State* L) {
     //upvalues... func
@@ -1779,8 +1779,8 @@ double SkMemoryMatrix::determinant() {
             int unitSize = MemoryUtils::getUnitSize(type);
             double val1 = MemoryUtils::getValue(array[0]->data, type, 0) *
                           MemoryUtils::getValue(array[1]->data, type, unitSize);
-            double val2 = MemoryUtils::getValue(array[1]->data, type, unitSize) *
-                          MemoryUtils::getValue(array[0]->data, type, 0);
+            double val2 = MemoryUtils::getValue(array[0]->data, type, unitSize) *
+                          MemoryUtils::getValue(array[1]->data, type, 0);
             return val1 - val2;
         } else{
             char t1 = array[0]->getTypes()[1];
@@ -1789,8 +1789,8 @@ double SkMemoryMatrix::determinant() {
 
             double val1 = MemoryUtils::getValue(anyArray[0]->data, t1, 0) *
                           MemoryUtils::getValue(anyArray[1]->data, t2, unitSize);
-            double val2 = MemoryUtils::getValue(anyArray[1]->data, t2, unitSize) *
-                          MemoryUtils::getValue(anyArray[0]->data, t1, 0);
+            double val2 = MemoryUtils::getValue(anyArray[0]->data, t2, unitSize) *
+                          MemoryUtils::getValue(anyArray[1]->data, t1, 0);
             return val1 - val2;
         }
     } else{
@@ -1816,6 +1816,9 @@ double SkMemoryMatrix::remainderValue(size_t rowIndex, size_t columnIndex) {
     SkMemoryMatrix *mat = remainderMat(rowIndex, columnIndex);
     double val = mat->determinant() * curVal;
     mat->unRefAndDestroy();
+    if(val == 0){
+        return 0;
+    }
     return (rowIndex + columnIndex ) % 2 == 0 ? val : -val;
 }
 SkMemoryMatrix* SkMemoryMatrix::remainderMat(size_t rowIndex, size_t columnIndex) {

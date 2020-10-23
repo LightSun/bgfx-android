@@ -56,9 +56,9 @@ public class LuaUnitTestsAc extends AppCompatActivity {
         items.add(new BgfxLuaActivity.Item("lua/tests/memory_mat.lua", "test memory mat"));
         items.add(new BgfxLuaActivity.Item("lua/tests/memory_any.lua", "test memory any"));
         items.add(new BgfxLuaActivity.Item("lua/tests/memory_mul.lua", "test memory mul"));
-        items.add(new BgfxLuaActivity.Item("lua/tests/mat.lua", "test memory mat"));
-        items.add(new BgfxLuaActivity.Item("lua/tests/skm.lua", "test sk memory"));
-        items.add(new BgfxLuaActivity.Item("lua/tests/skanym.lua", "test skany memory"));
+        items.add(new BgfxLuaActivity.Item("lua/tests/mat.lua", "test mat"));
+        items.add(new BgfxLuaActivity.Item("lua/tests/skm.lua", "test sk mem"));
+        items.add(new BgfxLuaActivity.Item("lua/tests/skanym.lua", "test skany mem"));
         return items;
     }
     public void runTest(BgfxLuaActivity.Item item){

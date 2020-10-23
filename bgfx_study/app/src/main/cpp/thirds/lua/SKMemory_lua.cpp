@@ -5,7 +5,6 @@
 #include "SkMemory_lua.h"
 #include "SkMemory.h"
 #include "bgfx_wrapper.h"
-#include "SkCalculator.h"
 #include "log.h"
 
 //----------------------------------------------------------------
