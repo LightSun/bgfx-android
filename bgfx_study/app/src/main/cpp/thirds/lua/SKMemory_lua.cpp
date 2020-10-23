@@ -443,6 +443,37 @@ static int SkMemoryMatrix_adjointMat(lua_State *L) {
     }
     return 0;
 }
+static int SkMemoryMatrix_extractMat(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    int c = lua_gettop(L);
+    SkMemoryMatrix * result = nullptr;
+    switch(c){
+        case 4:
+            result = pMemory->extractMat(lua_tointeger(L,-4), lua_tointeger(L,-3),
+                                         lua_tointeger(L,-2), lua_tointeger(L,-1));
+            break;
+        case 3:
+            result = pMemory->extractMat(lua_tointeger(L,-3), lua_tointeger(L,-2),
+                                         lua_tointeger(L,-1), pMemory->getColumnCount());
+            break;
+        case 2:
+            result = pMemory->extractMat(lua_tointeger(L,-2), pMemory->getRowCount(),
+                                         lua_tointeger(L,-1), pMemory->getColumnCount());
+            break;
+        case 1:
+            result = pMemory->extractMat(lua_tointeger(L,-1), pMemory->getRowCount(),
+                                         0, pMemory->getColumnCount());
+            break;
+        default:
+            return luaL_error(L, "wrong arguments for 'SkMemoryMatrix->extractMat(...)'");
+
+    }
+    if(result != NULL){
+        LuaUtils::push_ptr(L, result);
+        return 1;
+    }
+    return 0;
+}
 
 memory_copy(SkMemoryMatrix)
 const static luaL_Reg sSkMemoryMatrix_Methods[] = {
@@ -453,6 +484,7 @@ const static luaL_Reg sSkMemoryMatrix_Methods[] = {
         {"isValid",          SkMemoryMatrix_isValid},
         {"getColumnCount",   SkMemoryMatrix_columnCount},
         {"getRowCount",      SkMemoryMatrix_getRowCount},
+        {"extractMat",       SkMemoryMatrix_extractMat},
         {"inverse",          SkMemoryMatrix_inverse},
 
         {"determinant",       SkMemoryMatrix_determinant},
