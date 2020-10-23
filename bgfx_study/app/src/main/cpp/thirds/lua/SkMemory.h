@@ -9,6 +9,7 @@
 
 #include "lua.hpp"
 #include "IMemory.h"
+#define DEF_RESHAPE_TYPE 'f'
 
 class SkMemory;
 
@@ -110,6 +111,21 @@ public:
     SkMemory *kickOut(size_t index);
 
     bool equals(SkMemory* o);
+
+    SkMemory* reshape(int count, char t = DEF_RESHAPE_TYPE, double defVal = 0);
+    /**
+     * relative to reshape. just add default value first then add current data.
+     * @param count the result count
+     * @param t the result type
+     * @param defVal the default value
+     * @return the result memory
+     */
+    SkMemory* reshapeBefore(int count, char t = DEF_RESHAPE_TYPE, double defVal = 0);
+
+    SkMemory *concat(SkMemory *pMemory, int resultCount, char resultType = DEF_RESHAPE_TYPE, double defVal = 0);
+
+    SkMemory *concat(SkAnyMemory *pMemory, int resultCount, char resultType = DEF_RESHAPE_TYPE, double defVal = 0);
+
 public:
     const char *_types;
 private:
@@ -173,6 +189,12 @@ public:
     SkMemory* dot(SkMemoryMatrix* val);
 
     SkMemory *extract(size_t start, size_t end1);
+
+    SkMemory *reshape(int count, char t = DEF_RESHAPE_TYPE, double defVal = 0);
+    SkMemory *reshapeBefore(int count, char t = DEF_RESHAPE_TYPE, double defVal = 0);
+
+    SkMemory *concat(SkMemory *pMemory, int resultCount, char type = DEF_RESHAPE_TYPE, double defVal = 0);
+    SkMemory *concat(SkAnyMemory *pMemory, int resultCount, char type = DEF_RESHAPE_TYPE, double defVal = 0);
 
     int getLength() { return _tabCount * _elementCount; }
 
@@ -240,12 +262,12 @@ public:
     void toString(SB::StringBuilder &sb);
 
     /**
-     * collection a column data to a row
+     * extract a column data to a row as SkMemory
      * @param columnIndex the column index
      * @param out the out memory. can be null
      * @return the out memory
      */
-    SkMemory* collectColumn(int columnIndex, SkMemory* out);
+    SkMemory* extractColumn(int columnIndex, SkMemory* out);
 
     SkMemoryMatrix* _mul(double val);
     //current mat must be one column.
@@ -272,6 +294,18 @@ public:
      * @return result mat
      */
     SkMemoryMatrix* extractMat(size_t rowStart, size_t rowEnd, size_t columnStart, size_t columnEnd);
+
+    /**
+     * reshape a mat to another.
+     * @param rowCount the expect row count
+     * @param colCount the expect column count
+     * @param defVal the default value default is 0
+     * @param type the expect type ,default is float
+     * @return the result mat.
+     */
+    SkMemoryMatrix* reshape(int rowCount, int colCount, char type = DEF_RESHAPE_TYPE, double defVal = 0);
+
+    SkMemoryMatrix* concat(SkMemoryMatrix* oth, bool vertical = true, double defVal = 0);
     /**
      * inverse the matrix
      * @param L the lua state

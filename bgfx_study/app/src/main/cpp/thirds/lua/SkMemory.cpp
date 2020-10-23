@@ -666,6 +666,99 @@ bool SkMemory::equals(SkMemory *o) {
     return true;
 }
 
+SkMemory* SkMemory::reshape(int count, char t, double defVal) {
+    const auto srcType = getTypes()[0];
+    const auto srcUnitSize = MemoryUtils::getUnitSize(srcType);
+
+    auto pMemory = SkMemory::create(t, count);
+    const auto unitSize = MemoryUtils::getUnitSize(t);
+    const auto curSize = getLength();
+    double val;
+    for (int i = 0; i < count; ++i) {
+        if(i >= curSize){
+            val = defVal;
+        } else{
+            val = MemoryUtils::getValue(data, srcType, srcUnitSize * i);
+        }
+        MemoryUtils::write(pMemory->data, t, i * unitSize, val);
+    }
+    return pMemory;
+}
+SkMemory* SkMemory::reshapeBefore(int count, char t, double defVal) {
+    const auto srcType = getTypes()[0];
+    const auto srcUnitSize = MemoryUtils::getUnitSize(srcType);
+
+    auto outMem = SkMemory::create(t, count);
+    const auto outUnitSize = MemoryUtils::getUnitSize(t);
+    const auto curSize = getLength();
+
+    double val;
+    const int beforeCount = count - curSize > 0 ? count - curSize : 0;
+    for (int i = 0; i < count; ++i) {
+        if(i < beforeCount || i >= beforeCount + curSize){
+            val = defVal;
+        } else{
+            val = MemoryUtils::getValue(data, srcType, srcUnitSize * (i - beforeCount));
+        }
+        MemoryUtils::write(outMem->data, t, i * outUnitSize, val);
+    }
+    return outMem;
+}
+
+SkMemory *SkMemory::concat(SkMemory *oth, int resultCount, char resultType, double defVal) {
+    const auto srcType = getTypes()[0];
+    const auto srcUnitSize = MemoryUtils::getUnitSize(srcType);
+    auto srcSize = getLength();
+
+    auto outMem = SkMemory::create(resultType, resultCount);
+    const auto out_unitSize = MemoryUtils::getUnitSize(resultType);
+
+    const auto othType = oth->getTypes()[0];
+    const auto othUnitSize = MemoryUtils::getUnitSize(othType);
+    auto othSize = oth->getLength();
+    double val;
+    for (int i = 0; i < resultCount; ++i) {
+        if(i < srcSize){
+            val = MemoryUtils::getValue(data, srcType, i * srcUnitSize);
+        } else if(i < srcSize + othSize){
+            val = MemoryUtils::getValue(oth->data, othType, (i - srcSize) * othUnitSize);
+        } else{
+            val = defVal;
+        }
+        MemoryUtils::write(outMem->data, resultType, out_unitSize * i, val);
+    }
+    return outMem;
+}
+SkMemory *SkMemory::concat(SkAnyMemory *oth, int resultCount, char resultType, double defVal) {
+    //src info
+    const auto srcType = getTypes()[0];
+    const auto srcUnitSize = MemoryUtils::getUnitSize(srcType);
+    auto srcSize = getLength();
+    //out info
+    auto outMem = SkMemory::create(resultType, resultCount);
+    const auto out_unitSize = MemoryUtils::getUnitSize(resultType);
+    //other info
+    const auto len_othTypes = strlen(oth->getTypes());
+    auto othSize = oth->getLength();
+    char othType;
+    size_t othBytes = 0;
+
+    double val;
+    for (int i = 0; i < resultCount; ++i) {
+        if(i < srcSize){
+            val = MemoryUtils::getValue(data, srcType, i * srcUnitSize);
+        } else if(i < srcSize + othSize){
+            othType = oth->getTypes()[(i- srcSize) % len_othTypes];
+            val = MemoryUtils::getValue(oth->data, othType, othBytes);
+            othBytes += MemoryUtils::getUnitSize(othType);
+        } else{
+            val = defVal;
+        }
+        MemoryUtils::write(outMem->data, resultType, out_unitSize * i, val);
+    }
+    return outMem;
+}
+
 //======================= SKAnyMemory ===================================
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){
 
@@ -1196,6 +1289,114 @@ SkMemory *SkAnyMemory::kickOut(size_t index) {
     return outMem;
 }
 
+SkMemory *SkAnyMemory::reshape(int count, char t, double defVal) {
+    const auto srcTypes = getTypes();
+    auto len_srcTypes = strlen(srcTypes);
+    const auto srcLen = getLength();
+
+    auto outMem = SkMemory::create(t, count);
+    const auto out_unitSize = MemoryUtils::getUnitSize(t);
+    double val;
+    char srcType;
+    size_t srcBytes = 0;
+    for (int i = 0; i < count; ++i) {
+        if(i >= srcLen){
+            MemoryUtils::write(outMem->data, t, i * out_unitSize, defVal);
+        } else{
+            srcType = srcTypes[i % len_srcTypes];
+            val = MemoryUtils::getValue(data, srcType, srcBytes);
+            MemoryUtils::write(outMem->data, t, i * out_unitSize, val);
+            srcBytes += MemoryUtils::getUnitSize(srcType);
+        }
+    }
+    return outMem;
+}
+SkMemory* SkAnyMemory::reshapeBefore(int count, char t, double defVal) {
+    const size_t len_srcTypes = strlen(getTypes());
+    char srcType;
+    size_t srcBytes = 0;
+
+    auto outMem = SkMemory::create(t, count);
+    const auto outUnitSize = MemoryUtils::getUnitSize(t);
+    const auto curSize = getLength();
+
+    double val;
+    const int beforeCount = count - curSize > 0 ? count - curSize : 0;
+    for (int i = 0; i < count; ++i) {
+        if(i < beforeCount || i >= beforeCount + curSize){
+            val = defVal;
+        } else{
+            srcType = getTypes()[(i - beforeCount) % len_srcTypes];
+            val = MemoryUtils::getValue(data, srcType, srcBytes);
+            srcBytes += MemoryUtils::getUnitSize(srcType);
+        }
+        MemoryUtils::write(outMem->data, t, i * outUnitSize, val);
+    }
+    return outMem;
+}
+
+SkMemory *SkAnyMemory::concat(SkMemory *oth, int resultCount, char resultType, double defVal) {
+    //src info
+    const auto len_srcTypes = strlen(getTypes());
+    auto srcSize = getLength();
+    char srcType;
+    size_t srcBytes = 0;
+    //out info
+    auto outMem = SkMemory::create(resultType, resultCount);
+    const auto out_unitSize = MemoryUtils::getUnitSize(resultType);
+    //other info
+    auto othSize = oth->getLength();
+    char othType = oth->getTypes()[0];
+    auto othUnitSize = MemoryUtils::getUnitSize(othType);
+
+    double val;
+    for (int i = 0; i < resultCount; ++i) {
+        if(i < srcSize){
+            srcType = getTypes()[i % len_srcTypes];
+            val = MemoryUtils::getValue(data, srcType, srcBytes);
+            srcBytes += MemoryUtils::getUnitSize(srcType);
+        } else if(i < srcSize + othSize){
+            val = MemoryUtils::getValue(oth->data, othType, (i - srcSize) * othUnitSize);
+        } else{
+            val = defVal;
+        }
+        MemoryUtils::write(outMem->data, resultType, out_unitSize * i, val);
+    }
+    return outMem;
+}
+SkMemory* SkAnyMemory::concat(SkAnyMemory *oth, int resultCount, char resultType, double defVal) {
+    //src info
+    const auto len_srcTypes = strlen(getTypes());
+    auto srcSize = getLength();
+    char srcType;
+    size_t srcBytes = 0;
+    //out info
+    auto outMem = SkMemory::create(resultType, resultCount);
+    const auto out_unitSize = MemoryUtils::getUnitSize(resultType);
+    //other info
+    const auto len_othTypes = strlen(oth->getTypes());
+    auto othSize = oth->getLength();
+    char othType;
+    size_t othBytes = 0;
+
+    double val;
+    for (int i = 0; i < resultCount; ++i) {
+        if(i < srcSize){
+            srcType = getTypes()[i % len_srcTypes];
+            val = MemoryUtils::getValue(data, srcType, srcBytes);
+            srcBytes += MemoryUtils::getUnitSize(srcType);
+        } else if(i < srcSize + othSize){
+            othType = oth->getTypes()[(i- srcSize) % len_othTypes];
+            val = MemoryUtils::getValue(oth->data, othType, othBytes);
+            othBytes += MemoryUtils::getUnitSize(othType);
+        } else{
+            val = defVal;
+        }
+        MemoryUtils::write(outMem->data, resultType, out_unitSize * i, val);
+    }
+    return outMem;
+}
+
 //--------------------- Sk memory matrix --------------------
 SkMemoryMatrix::~SkMemoryMatrix() {
     destroyData();
@@ -1442,7 +1643,7 @@ const char* SkMemoryMatrix::getTypes() {
     }
     return anyArray[0]->_types;
 }
-SkMemory* SkMemoryMatrix::collectColumn(int columnIndex, SkMemory *out) {
+SkMemory* SkMemoryMatrix::extractColumn(int columnIndex, SkMemory *out) {
     if(columnIndex >= getColumnCount()){
         return nullptr;
     }
@@ -1897,6 +2098,107 @@ SkMemoryMatrix* SkMemoryMatrix::extractMat(size_t rowStart, size_t rowEnd, size_
     } else{
         for (size_t i = rowStart; i < rowEnd; ++i) {
             mat->array[i- rowStart] = anyArray[i]->extract(columnStart, columnEnd);
+        }
+    }
+    return mat;
+}
+SkMemoryMatrix* SkMemoryMatrix::reshape(int rowCount, int colCount, char type, double defVal) {
+    auto mat = new SkMemoryMatrix(rowCount);
+    for (int i = 0; i < rowCount; ++i) {
+        if(isSingleType()){
+            mat->array[i] = array[i]->reshape(colCount, type, defVal);
+        } else{
+            mat->array[i] = anyArray[i]->reshape(colCount, type, defVal);
+        }
+    }
+    return mat;
+}
+//-------------------------- start internal ------------------------
+static inline SkMemory *
+concatMat(SkMemoryMatrix *mat1, SkMemoryMatrix *mat2, int row, int colCount, char type, double defVal) {
+    if(mat1->isSingleType()){
+        if(mat2->isSingleType()){
+            return mat1->array[row]->concat(mat2->array[row], colCount, type, defVal);
+        } else{
+            return mat1->array[row]->concat(mat2->anyArray[row], colCount, type, defVal);
+        }
+    } else{
+        if(mat2->isSingleType()){
+            return mat1->anyArray[row]->concat(mat2->array[row], colCount, type, defVal);
+        } else{
+            return mat1->anyArray[row]->concat(mat2->anyArray[row], colCount, type, defVal);
+        }
+    }
+}
+static inline SkMemory *
+concatVal(SkMemoryMatrix *mat1, double defVal, int row, int colCount, char type) {
+    if(mat1->isSingleType()){
+        return mat1->array[row]->reshape(colCount, type, defVal);
+    } else{
+        return mat1->anyArray[row]->reshape(colCount, type, defVal);
+    }
+}
+static inline SkMemory *
+concatVal2(double defVal, SkMemoryMatrix *mat1, int row, int colCount, char type) {
+    if(mat1->isSingleType()){
+        return mat1->array[row]->reshapeBefore(colCount, type, defVal);
+    } else{
+        return mat1->anyArray[row]->reshapeBefore(colCount, type, defVal);
+    }
+}
+//-------------------------- end internal ------------------------
+
+SkMemoryMatrix* SkMemoryMatrix::concat(SkMemoryMatrix *oth, bool vertical, double defVal){
+    if(oth == NULL){
+        return NULL;
+    }
+    const bool src_simple = isSingleType();
+    const bool oth_simple = oth->isSingleType();
+    auto outType = MemoryUtils::computeType(MemoryUtils::computeType(getTypes()),
+                                            MemoryUtils::computeType(oth->getTypes()));
+    const int curRc = getRowCount();
+    const int othRc = oth->getRowCount();
+    const int maxRc = curRc >= othRc ? curRc : othRc;
+
+    SkMemoryMatrix* mat;
+    if(vertical){
+        mat = new SkMemoryMatrix(getRowCount() + oth->getRowCount());
+        for (int i = 0; i < mat->getRowCount(); ++i) {
+            if(i < curRc){
+                if(src_simple){
+                    mat->array[i] = array[i]->reshape(maxRc, outType, defVal);
+                } else{
+                    mat->array[i] = anyArray[i]->reshape(maxRc, outType, defVal);
+                }
+            } else{
+                if(oth_simple){
+                    mat->array[i] = oth->array[i - curRc]->reshape(maxRc, outType, defVal);
+                } else{
+                    mat->array[i] = oth->anyArray[i - curRc]->reshape(maxRc, outType, defVal);
+                }
+            }
+        }
+    } else{
+        const int resultCC = getColumnCount() + oth->getColumnCount();
+
+        mat = new SkMemoryMatrix(maxRc);
+        for (int i = 0; i < mat->getRowCount(); ++i) {
+            if(curRc > i){
+                if(othRc > i){
+                    mat->array[i] = concatMat(this, oth, i, resultCC, outType, defVal);
+                } else{
+                    mat->array[i] = concatVal(this, defVal, i, resultCC, outType);
+                }
+            } else{
+                //cur out of range.
+                if(othRc > i){
+                    mat->array[i] = concatVal2(defVal, oth, i, resultCC, outType);
+                } else{
+                    //never return here
+                    mat->unRefAndDestroy();
+                    return nullptr;
+                }
+            }
         }
     }
     return mat;

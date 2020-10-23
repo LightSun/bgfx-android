@@ -443,6 +443,15 @@ static int SkMemoryMatrix_adjointMat(lua_State *L) {
     }
     return 0;
 }
+static int SkMemoryMatrix_extractCol(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    auto outMem = pMemory->extractColumn(lua_tointeger(L, -1), NULL);
+    if(outMem != nullptr){
+        LuaUtils::push_ptr(L, outMem);
+        return 1;
+    }
+    return 0;
+}
 static int SkMemoryMatrix_extractMat(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
     int c = lua_gettop(L);
@@ -474,6 +483,70 @@ static int SkMemoryMatrix_extractMat(lua_State *L) {
     }
     return 0;
 }
+static int SkMemoryMatrix_reshape(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    int c = lua_gettop(L);
+    SkMemoryMatrix* result;
+    switch (c){
+        case 4: {
+            auto str = lua_tostring(L, -2);
+            result = pMemory->reshape(lua_tointeger(L, -4), lua_tointeger(L, -3),
+                                      str[0], lua_tonumber(L, -1));
+        }
+            break;
+        case 3:{
+            if(lua_type(L, -1) == LUA_TSTRING){
+                auto str = lua_tostring(L, -1);
+                result = pMemory->reshape(lua_tointeger(L, -3), lua_tointeger(L, -2),
+                                          str[0]);
+            } else if(lua_type(L, -1) == LUA_TNUMBER){
+                result = pMemory->reshape(lua_tointeger(L, -3), lua_tointeger(L, -2), DEF_RESHAPE_TYPE,
+                                          lua_tonumber(L, -1));
+            } else{
+                return luaL_error(L, "wrong arguments for mat.reshape. expect is (int, int, string, number)");
+            }
+        }
+            break;
+        default:
+            return luaL_error(L, "wrong arguments for mat.reshape. expect is (int, int, string, number)");
+    }
+    if(result != NULL){
+        LuaUtils::push_ptr(L, result);
+        return 1;
+    }
+    return 0;
+}
+static int SkMemoryMatrix_concat(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    int c = lua_gettop(L);
+    SkMemoryMatrix* result;
+    switch (c){
+        case 3:{
+            result = pMemory->concat(LuaUtils::get_ref<SkMemoryMatrix>(L, -3),
+                    lua_toboolean(L, -2) != 0, lua_tonumber(L, -1));
+        }break;
+
+        case 2:{
+            if(lua_type(L, -1) == LUA_TBOOLEAN){
+                result = pMemory->concat(LuaUtils::get_ref<SkMemoryMatrix>(L, -2), lua_toboolean(L, -1) != 0);
+            } else{
+                result = pMemory->concat(LuaUtils::get_ref<SkMemoryMatrix>(L, -2), true, lua_tonumber(L, -1));
+            }
+        }break;
+
+        case 1:{
+            result = pMemory->concat(LuaUtils::get_ref<SkMemoryMatrix>(L, -1));
+        }break;
+
+        default:
+            return luaL_error(L, "wrong arguments for mat.concat. expect is (int, int, string, number)");
+    }
+    if(result != NULL){
+        LuaUtils::push_ptr(L, result);
+        return 1;
+    }
+    return 0;
+}
 
 memory_copy(SkMemoryMatrix)
 const static luaL_Reg sSkMemoryMatrix_Methods[] = {
@@ -485,7 +558,10 @@ const static luaL_Reg sSkMemoryMatrix_Methods[] = {
         {"getColumnCount",   SkMemoryMatrix_columnCount},
         {"getRowCount",      SkMemoryMatrix_getRowCount},
         {"extractMat",       SkMemoryMatrix_extractMat},
+        {"extractCol",       SkMemoryMatrix_extractCol},
         {"inverse",          SkMemoryMatrix_inverse},
+        {"reshape",          SkMemoryMatrix_reshape},
+        {"concat",           SkMemoryMatrix_concat},
 
         {"determinant",       SkMemoryMatrix_determinant},
         {"remainderValue",    SkMemoryMatrix_remainderValue},
