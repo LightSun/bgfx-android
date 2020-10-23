@@ -71,7 +71,7 @@ static int mem_newMatrix(lua_State *L) {
 
 static const luaL_Reg mem_funcs[] = {
         {"new",       mem_new},
-        {"newMatrix", mem_newMatrix},
+        {"newMat",    mem_newMatrix},
         {nullptr,     nullptr}
 };
 extern "C" int luaopen_hmem_lua(lua_State *L) {

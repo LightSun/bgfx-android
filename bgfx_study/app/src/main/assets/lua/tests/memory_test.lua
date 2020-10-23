@@ -91,7 +91,7 @@ m2 = mem.new('f',  { 1, 2, 3}, { 4, 5, 6});
 print("f: "..tostring(m2))
 
 
-local mat = mem.newMatrix('d', { 1, 2, 3}, { 4, 5, 6});
+local mat = mem.newMat('d', { 1, 2, 3}, { 4, 5, 6});
 assert(#mat == 2)
 assert(#(mat[0]) == 3)
 assert(#(mat[1]) == 3)
@@ -104,13 +104,13 @@ assert(mat[1][0] == 4)
 assert(mat[1][1] == 5)
 assert(mat[1][2] == 6)
 
-mat = mem.newMatrix('d', { 1, 2, 3}, { 4, 5, 6});
+mat = mem.newMat('d', { 1, 2, 3}, { 4, 5, 6});
 print("mat->d", mat)
-mat = mem.newMatrix('w', { 1, 2, 3}, { 4, 5, 6});
+mat = mem.newMat('w', { 1, 2, 3}, { 4, 5, 6});
 print("mat->w", mat)
-mat = mem.newMatrix('f', { 1, 2, 3}, { 4, 5, 6});
+mat = mem.newMat('f', { 1, 2, 3}, { 4, 5, 6});
 print("mat->f", mat)
-mat = mem.newMatrix('b', { 1, 2, 3}, { 4, 5, 6});
+mat = mem.newMat('b', { 1, 2, 3}, { 4, 5, 6});
 print("mat->b", mat)
 
 --mem.newMatrix('d', 4, 4);

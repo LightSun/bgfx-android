@@ -27,8 +27,8 @@ end
 
 --- create memory matrix .
 --- @param ...: can be (tables) or (rowCount, columnCount)
-function m.newMatrix(type, ...)
-    return mem.newMatrix(type, ...);
+function m.newMat(type, ...)
+    return mem.newMat(type, ...);
 end
 
 return m;

@@ -15,7 +15,7 @@ print("SkM_mul: skam", c.getTypes(), #c, c)
 
 
 m = mem.new('f', {1, 2, 3})
-mat = mem.newMatrix('dfb', {10, 20, 30}, {40, 50, 60})
+mat = mem.newMat('dfb', { 10, 20, 30}, { 40, 50, 60})
 c = m * mat;
 print("SkM_mul: mat", c.getTypes(), #c, c)
 
@@ -30,12 +30,12 @@ print("SkAM_mul: skm", c.getTypes(), c)
 c = m * mem.new("dfb", {2, 3, 5})
 print("SkAM_mul: skam", c.getTypes(), #c, c)
 
-mat = mem.newMatrix('dfb', {10, 20, 30}, {40, 50, 60})
+mat = mem.newMat('dfb', { 10, 20, 30}, { 40, 50, 60})
 c = m * mat;
 print("SkAM_mul: mat", c.getTypes(), #c, c)
 
 print('--------- TEST SkMatrix -------')
-m = mem.newMatrix('d', {1, 2, 3}, {4, 5, 6})
+m = mem.newMat('d', { 1, 2, 3}, { 4, 5, 6})
 c = m * 2.0;
 print("SkMAT_mul: number", c.getTypes(), c)
 
