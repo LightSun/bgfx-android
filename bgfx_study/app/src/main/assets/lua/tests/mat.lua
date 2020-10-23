@@ -28,6 +28,8 @@ assert(tostring(mat.remainderMat(2, 2))== '[[1,2],[-1,-3]]')
 --代数余子式 矩阵
 mat = mem.newMatrix("i", {1, 2}, {-1, -3})
 print("algRemainderMat", mat.algRemainderMat()) --algebraicRemainderMat
+assert(tostring(mat.algRemainderMat()) == '[[-3,2],[2,-3]]')
 
 --伴随矩阵
 print("adjointMat", mat.adjointMat())
+assert(tostring(mat.adjointMat()) == '[[-3,2],[2,-3]]')
