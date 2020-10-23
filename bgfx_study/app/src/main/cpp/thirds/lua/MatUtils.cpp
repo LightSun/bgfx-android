@@ -8,6 +8,16 @@
 
 #include "MatUtils.h"
 
+static inline uint64_t DoubleToBaised(double x)
+{
+    uint64_t mask = 1ULL << 63;
+    uint64_t u = *((uint64_t*)&x);
+    if(u&mask) u = ~u+1;
+    else u |= mask;
+    return u;
+}
+
+
 // three methods: https://blog.csdn.net/u010551600/article/details/81504909
 // this is from https://blog.csdn.net/luofl1992/article/details/7792632
 int MatUtils::inverse(int n, const std::function<void(int, int, double)>& func_set,
@@ -97,4 +107,12 @@ int MatUtils::inverse(int n, const std::function<void(int, int, double)>& func_s
     free(is);
     free(js);
     return 1;
+}
+//from google unit-test
+bool MatUtils::doubleEqual(double x1, double x2) {
+    uint64_t u1 = DoubleToBaised(x1);
+    uint64_t u2 = DoubleToBaised(x2);
+    int ulp = 4;
+    if(u1>u2) return (u1-u2)<ulp;
+    else return (u2-u1)<ulp;
 }

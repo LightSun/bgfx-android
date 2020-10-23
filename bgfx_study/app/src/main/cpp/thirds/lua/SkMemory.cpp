@@ -654,8 +654,12 @@ bool SkMemory::equals(SkMemory *o) {
     const int c = getLength();
     const char type = _types[0];
     const int unitSize = MemoryUtils::getUnitSize(type);
+    double v1, v2;
     for (int i = 0; i < c; ++i) {
-        if(MemoryUtils::getValue(data, type, unitSize * i) != MemoryUtils::getValue(o->data, type, unitSize * i)){
+        v1 = MemoryUtils::getValue(data, type, unitSize * i);
+        v2 = MemoryUtils::getValue(o->data, type, unitSize * i);
+        //compare double or float need fabs/fabsf
+        if(!MatUtils::doubleEqual(v1, v2)){
             return false;
         }
     }
@@ -1076,7 +1080,8 @@ bool SkAnyMemory::equals(SkAnyMemory *o) {
     size_t bytes = 0;
     for (int i = 0, c = getLength(); i < c; ++i) {
         type = getTypes()[i % len_type];
-        if(MemoryUtils::getValue(data, type, bytes) != MemoryUtils::getValue(o->data, type, bytes)){
+        if(!MatUtils::doubleEqual(MemoryUtils::getValue(data, type, bytes),
+                MemoryUtils::getValue(o->data, type, bytes))){
             return false;
         }
         bytes += MemoryUtils::getUnitSize(type);
@@ -1808,7 +1813,8 @@ double SkMemoryMatrix::remainderValue(size_t rowIndex, size_t columnIndex) {
     double curVal;
     if(isSingleType()){
         char type = array[rowIndex]->getTypes()[0];
-        curVal = MemoryUtils::getValue(array[rowIndex]->data, type, type * columnIndex);
+        curVal = MemoryUtils::getValue(array[rowIndex]->data, type,
+                MemoryUtils::getUnitSize(type) * columnIndex);
     } else{
         curVal = anyArray[rowIndex]->get(columnIndex, nullptr);
     }

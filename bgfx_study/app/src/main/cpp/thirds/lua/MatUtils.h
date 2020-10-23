@@ -19,6 +19,8 @@ public:
      * @return 1 if success. 0 for failed(if can't inverse).
      */
     static int inverse(int n, const std::function<void(int,int,double)>& func_set,const std::function<double(int,int)>& func_get);
+
+    static bool doubleEqual(double x1, double x2);
 };
 
 
