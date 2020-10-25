@@ -24,10 +24,6 @@ static int mem_new(lua_State *L) {
         } else {
             //multi types
             SkAnyMemory *pMemory = new SkAnyMemory(type, len);
-            if (!pMemory->isValid()) {
-                delete pMemory;
-                return 0;
-            }
             LuaUtils::push_ptr(L, pMemory);
         }
     } else if (secondType == LUA_TTABLE) {
@@ -39,10 +35,6 @@ static int mem_new(lua_State *L) {
             LuaUtils::push_ptr(L, pMemory);
         } else {
             SkAnyMemory *pMemory = new SkAnyMemory(L, type);
-            if (!pMemory->isValid()) {
-                delete pMemory;
-                return 0;
-            }
             LuaUtils::push_ptr(L, pMemory);
         }
     } else {
