@@ -9,7 +9,7 @@
 
 #include "lua.hpp"
 #include "IMemory.h"
-#define DEF_RESHAPE_TYPE 'f'
+#define DEF_RESHAPE_TYPE 'f'  //default reshape type
 
 class SkMemory;
 
@@ -112,7 +112,17 @@ public:
 
     bool equals(SkMemory* o);
 
+    /**
+     * reshape the memory data.
+     * @param count the expect count of element
+     * @param t the data type to result memory
+     * @param defVal the default value if not enough
+     * @return the result memory
+     */
     SkMemory* reshape(int count, char t = DEF_RESHAPE_TYPE, double defVal = 0);
+
+
+   //SkMemoryMatrix* reshapeMat(const SkMemory* oth, char t = DEF_RESHAPE_TYPE, double defVal = 0);
     /**
      * relative to reshape. just add default value first then add current data.
      * @param count the result count
@@ -122,21 +132,53 @@ public:
      */
     SkMemory* reshapeBefore(int count, char t = DEF_RESHAPE_TYPE, double defVal = 0);
 
+    /**
+     * concat the memory
+     * @param pMemory the target memory to concat/merge
+     * @param resultCount the result element count
+     * @param resultType the result data type of memory
+     * @param defVal the default value if not enough
+     * @return the result memory
+     */
     SkMemory *concat(SkMemory *pMemory, int resultCount, char resultType = DEF_RESHAPE_TYPE, double defVal = 0);
-
+    /**
+      * concat the memory
+      * @param pMemory the target memory to concat/merge
+      * @param resultCount the result element count
+      * @param resultType the result data type of memory
+      * @param defVal the default value if not enough
+      * @return the result memory
+      */
     SkMemory *concat(SkAnyMemory *pMemory, int resultCount, char resultType = DEF_RESHAPE_TYPE, double defVal = 0);
 
+    SkMemory *flip(bool copy = true);
+
+    SkMemoryMatrix* diag(int k = 0, double defVal = 0);
+
+    bool setValue(int index, double val);
+    bool getValue(int index, double* result);
 public:
     const char *_types;
 private:
     char _needFreePtr = 0;
     static int getTotalBytes(lua_State *L, int tableCount, const char *t);
+
+    void swapValue(int index1, int index2);
 };
 
 /**
  * any types memory. a continuously space. this can contains multi table.
  */
 class SkAnyMemory : public SimpleMemory {
+
+public:
+    const char *_types;
+    uint16_t _tabCount;      //table count.
+    uint16_t _elementCount;  //element count of every table
+
+    static int read(SkAnyMemory *mem, lua_State *L);
+
+    static int write(SkAnyMemory *mem, lua_State *L);
 
 public:
     /**
@@ -196,6 +238,9 @@ public:
     SkMemory *concat(SkMemory *pMemory, int resultCount, char type = DEF_RESHAPE_TYPE, double defVal = 0);
     SkMemory *concat(SkAnyMemory *pMemory, int resultCount, char type = DEF_RESHAPE_TYPE, double defVal = 0);
 
+    SkMemory *flip();
+    SkMemoryMatrix* diag(int k = 0, double defVal = 0);
+
     int getLength() { return _tabCount * _elementCount; }
 
     double get(size_t index, bool* success);
@@ -203,17 +248,39 @@ public:
 
     bool equals(SkAnyMemory* o);
 
-    static int read(SkAnyMemory *mem, lua_State *L);
-
-    static int write(SkAnyMemory *mem, lua_State *L);
-
-public:
-    const char *_types;
-    uint16_t _tabCount;      //table count.
-    uint16_t _elementCount;  //element count of every table
+    bool setValue(int index, double val);
+    bool getValue(int index, double* result);
 };
 //2
 class SkMemoryMatrix : public IMemory {
+
+private:
+    SkMemoryMatrix(int count);
+
+    //unsigned char _isArray; // false for mat. true for special array
+    int count;
+
+    /** collect column data to array. */
+    void copyData(SkMemory *pMemory, int columnIndex);
+
+    void swapValue(int rowIndex1, int colIndex1, int rowIndex2, int colIndex2);
+
+    //Upper triangular matrix / Lower triangular matrix
+    SkMemoryMatrix* _triul(bool up,int k = 0, double defVal = 0);
+public:
+    SkMemory **array;
+    SkAnyMemory **anyArray;
+
+    static int read(SkMemoryMatrix *mem, lua_State *L, void (*Push)(lua_State *L, SkMemory *ptr));
+
+    static int write(SkMemoryMatrix *mem, lua_State *L, SkMemory *(*Pull)(lua_State *L, int idx));
+
+    static int
+    read(SkMemoryMatrix *mem, lua_State *L, void (*Push)(lua_State *L, SkAnyMemory *ptr));
+
+    static int
+    write(SkMemoryMatrix *mem, lua_State *L, SkAnyMemory *(*Pull)(lua_State *L, int idx));
+
 public:
     ~SkMemoryMatrix();
 
@@ -261,14 +328,6 @@ public:
 
     void toString(SB::StringBuilder &sb);
 
-    /**
-     * extract a column data to a row as SkMemory
-     * @param columnIndex the column index
-     * @param out the out memory. can be null
-     * @return the out memory
-     */
-    SkMemory* extractColumn(int columnIndex, SkMemory* out);
-
     SkMemoryMatrix* _mul(double val);
     //current mat must be one column.
     SkMemoryMatrix* _mul(SkMemory* val);
@@ -285,6 +344,13 @@ public:
     SkMemoryMatrix* remainderMat(size_t rowIndex, size_t columnIndex);   //余子式矩阵
     SkMemoryMatrix* algebraicRemainderMat();     //代数余子式矩阵.
     SkMemoryMatrix* adjointMat();                //Adjoint matrix 伴随矩阵
+    /**
+    * extract a column data to a row as SkMemory
+    * @param columnIndex the column index
+    * @param out the out memory. can be null
+    * @return the out memory
+    */
+    SkMemory* extractColumn(int columnIndex, SkMemory* out);
     /**
      * extract sub matrix
      * @param rowStart  the row start index .include
@@ -305,7 +371,32 @@ public:
      */
     SkMemoryMatrix* reshape(int rowCount, int colCount, char type = DEF_RESHAPE_TYPE, double defVal = 0);
 
+    /**
+     * concat target mat by vertical or horizontal. And current mat is the left top.
+     * @param oth the target mat to merge
+     * @param vertical vertical or horizontal
+     * @param defVal default value . if element not enough
+     * @return the result mat
+     */
     SkMemoryMatrix* concat(SkMemoryMatrix* oth, bool vertical = true, double defVal = 0);
+
+    /**
+     * flip the left right data.
+     * @param changeRawData true if change raw data. if is SkAnyMemory. this will be ignore.
+     * @return the mat
+     */
+    SkMemoryMatrix* fliplr(bool copy = true);
+    /**
+       * flip the up down data.
+       * @return the mat
+       */
+    SkMemoryMatrix* flipud(bool copy = true);
+
+    SkMemory* diag(int k = 0);
+
+    SkMemoryMatrix* triu(int k = 0, double defVal = 0);
+
+    SkMemoryMatrix* tril(int k = 0, double defVal = 0);
     /**
      * inverse the matrix
      * @param L the lua state
@@ -333,31 +424,10 @@ public:
      */
     int tiled(lua_State *L);
 
+    bool getValue(int rowIndex, int colIndex, double* result);
+    bool setValue(int rowIndex, int colIndex, double val);
+
     bool equals(SkMemoryMatrix* o);
-
-    static int read(SkMemoryMatrix *mem, lua_State *L, void (*Push)(lua_State *L, SkMemory *ptr));
-
-    static int write(SkMemoryMatrix *mem, lua_State *L, SkMemory *(*Pull)(lua_State *L, int idx));
-
-    static int
-    read(SkMemoryMatrix *mem, lua_State *L, void (*Push)(lua_State *L, SkAnyMemory *ptr));
-
-    static int
-    write(SkMemoryMatrix *mem, lua_State *L, SkAnyMemory *(*Pull)(lua_State *L, int idx));
-
-private:
-    SkMemoryMatrix(int count);
-
-    //unsigned char _isArray; // false for mat. true for special array
-    int count;
-
-    /** collect column data to array. */
-    void copyData(SkMemory *pMemory, int columnIndex);
-    /** swap value . currently only used for single type */
-    void swapValue(int rowIndex1, int colIndex1, int rowIndex2, int colIndex2);
-public:
-    SkMemory **array;
-    SkAnyMemory **anyArray;
 };
 
 #endif //BGFX_STUDY_SKMEMORY_H

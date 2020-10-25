@@ -8,6 +8,7 @@
 #include "common.h"
 #include "LuaUtils.h"
 #include "MatUtils.h"
+#include "HMath.h"
 
 #define copy_data_f(dType) \
 dType * addr = static_cast<dType *>(data); \
@@ -759,6 +760,87 @@ SkMemory *SkMemory::concat(SkAnyMemory *oth, int resultCount, char resultType, d
     return outMem;
 }
 
+SkMemory *SkMemory::flip(bool copy) {
+    auto size = getLength();
+    if(copy){
+        auto rt = getTypes()[0];
+        auto mem = SkMemory::create(getTypes(), size);
+        auto unitSize = MemoryUtils::getUnitSize(rt);
+        //i , size - i - 1
+        for (int i = 0; i < size; ++i) {
+            MemoryUtils::write(mem->data, rt, unitSize * i,
+                    MemoryUtils::getValue(data, rt, unitSize * (size - i - 1)));
+        }
+        return mem;
+    } else{
+        for (int i = 0,c = getLength()/ 2; i < c; ++i) {
+            this->swapValue(i, size - i - 1);
+        }
+    }
+    return this;
+}
+//将当前的memory 当作斜线的元素数组 组成mat.
+SkMemoryMatrix* SkMemory::diag(int k, double defVal) {
+    auto curC = getLength();
+    int n = getLength() + abs(k);
+
+    const int index = n - 1 + k; //include index
+    if(index > 2*n - 1){
+        return nullptr;
+    }
+    //init mat
+    auto mat = new SkMemoryMatrix(n, true);
+    for (int i = 0; i < n; ++i) {
+        mat->array[i] = SkMemory::create(getTypes(), n);
+    }
+
+    //要改变的数据Index
+    //从左下角。n行0列开始，
+    //colIndex, rowIndex
+    int lt[2] = {0, n - 1 - index};
+    int rb[2] = {n - 1 - index, n - 1};
+    //start set element value
+    HMath::LinearEquation line(lt[0], lt[1], rb[0], rb[1]);
+    double result;
+    double ele;
+    for (int i = 0; i < n; ++i) { //col
+        if(i < curC){
+            getValue(i, &ele);
+        }
+        for (int j = 0; j < n; ++j) { //row
+            result = !line.isIn(i, j) ? defVal : ele;
+            mat->setValue(j, i, result);
+        }
+    }
+    return mat;
+}
+
+void SkMemory::swapValue(int index1, int index2) {
+    auto rt = getTypes()[0];
+    auto unitSize = MemoryUtils::getUnitSize(getTypes()[0]);
+    double val1 = MemoryUtils::getValue(data, rt, unitSize * index1);
+    MemoryUtils::write(data, rt, unitSize * index1,
+            MemoryUtils::getValue(data, rt, unitSize * index2));
+    MemoryUtils::write(data, rt, unitSize * index2, val1);
+}
+
+bool SkMemory::setValue(int index, double val) {
+    if(0 <= index < getLength()){
+        auto unitSize = MemoryUtils::getUnitSize(getTypes()[0]);
+        MemoryUtils::write(data, getTypes()[0], unitSize * index, val);
+        return true;
+    }
+    return false;
+}
+bool SkMemory::getValue(int index, double* result) {
+    if(0 <= index < getLength()){
+        auto unitSize = MemoryUtils::getUnitSize(getTypes()[0]);
+        *result = MemoryUtils::getValue(data, getTypes()[0], unitSize * index);
+        return true;
+    }
+    return false;
+}
+
 //======================= SKAnyMemory ===================================
 SkAnyMemory::SkAnyMemory(lua_State *L, const char *types): SkAnyMemory(L, types, -1){
 
@@ -1181,6 +1263,24 @@ bool SkAnyMemory::equals(SkAnyMemory *o) {
     }
     return true;
 }
+bool SkAnyMemory::setValue(int index, double val) {
+    if(index < 0 || index >= getLength()){
+        return false;
+    }
+    auto types = getTypes();
+    MemoryUtils::write(data, types[index % getLength()],
+            MemoryUtils::computeBytesIndex(types, index), val);
+    return true;
+}
+bool SkAnyMemory::getValue(int index, double *result) {
+    if(index < 0 || index >= getLength()){
+        return false;
+    }
+    auto types = getTypes();
+    *result = MemoryUtils::getValue(data, types[index % getLength()], MemoryUtils::computeBytesIndex(types, index));
+    return true;
+}
+
 //read data to lua stack
 int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
     //table, index
@@ -1395,6 +1495,59 @@ SkMemory* SkAnyMemory::concat(SkAnyMemory *oth, int resultCount, char resultType
         MemoryUtils::write(outMem->data, resultType, out_unitSize * i, val);
     }
     return outMem;
+}
+
+SkMemory *SkAnyMemory::flip() {
+    const auto size = getLength();
+    auto rt = MemoryUtils::computeType(getTypes());
+    auto unitSize = MemoryUtils::getUnitSize(rt);
+    auto pMemory = SkMemory::create(rt, size);
+    
+    char type;
+    double val;
+    for (int i = 0, c = size / 2; i < c; ++i) {
+        type = getTypes()[(size - i - 1) % size];
+        val = MemoryUtils::getValue(data, type, 
+                MemoryUtils::computeBytesIndex(getTypes(), size - i - 1));
+        MemoryUtils::write(pMemory->data, rt, i * unitSize, val);
+    }
+    return pMemory;
+}
+//将当前的memory 当作斜线的元素数组 组成mat.
+SkMemoryMatrix* SkAnyMemory::diag(int k, double defVal) {
+    auto curC = getLength();
+    int n = getLength() + abs(k);
+
+    const int index = n - 1 + k; //include index
+    if(index > 2*n - 1){
+        return nullptr;
+    }
+    //init mat. n *n
+    auto rt = MemoryUtils::computeType(getTypes());
+    auto mat = new SkMemoryMatrix(n, true);
+    for (int i = 0; i < n; ++i) {
+        mat->array[i] = SkMemory::create(rt, n);
+    }
+
+    //要改变的数据Index
+    //从左下角。n行0列开始，
+    //colIndex, rowIndex
+    int lt[2] = {0, n - 1 - index};
+    int rb[2] = {n - 1 - index, n - 1};
+    //start set element value
+    HMath::LinearEquation line(lt[0], lt[1], rb[0], rb[1]);
+    double result;
+    double ele;
+    for (int i = 0; i < n; ++i) { //col
+        if(i < curC){
+            getValue(i, &ele);
+        }
+        for (int j = 0; j < n; ++j) { //row
+            result = !line.isIn(i, j) ? defVal : ele;
+            mat->setValue(j, i, result);
+        }
+    }
+    return mat;
 }
 
 //--------------------- Sk memory matrix --------------------
@@ -1635,6 +1788,21 @@ int SkMemoryMatrix::tiled(lua_State *L) {
         }
         LuaUtils::push_ptr(L, mem);
         return 1;
+    }
+}
+
+bool SkMemoryMatrix::getValue(int rowIndex, int colIndex, double* result) {
+    if(isSingleType()){
+        return array[rowIndex]->getValue(colIndex, result);
+    } else{
+        return anyArray[rowIndex]->getValue(colIndex, result);
+    }
+}
+bool SkMemoryMatrix::setValue(int rowIndex, int colIndex, double val) {
+    if(isSingleType()){
+        return array[rowIndex]->setValue(colIndex, val);
+    } else{
+        return anyArray[rowIndex]->setValue(colIndex, val);
     }
 }
 const char* SkMemoryMatrix::getTypes() {
@@ -2203,6 +2371,140 @@ SkMemoryMatrix* SkMemoryMatrix::concat(SkMemoryMatrix *oth, bool vertical, doubl
     }
     return mat;
 }
+SkMemoryMatrix * SkMemoryMatrix::fliplr(bool copy) {
+    const auto rc = getRowCount();
+    const bool single = isSingleType();
+    if(single && !copy){
+        //single type. data can just swap
+        for (int i = 0; i < rc; ++i) {
+            array[i]->flip(false);
+        }
+        return this;
+    } else {
+        auto mat = new SkMemoryMatrix(rc, true);
+        for (int i = 0; i < rc; ++i) {
+            mat->array[i] = single ? array[i]->flip(copy) : anyArray[i]->flip();
+        }
+        return mat;
+    }
+}
+SkMemoryMatrix * SkMemoryMatrix::flipud(bool copy) {
+    const auto rc = getRowCount();
+    const bool single = isSingleType();
+    if(copy){
+        auto mat = new SkMemoryMatrix(rc, isSingleType());
+        for (int i = 0; i < rc; ++i) {
+            if(single){
+                mat->array[i] = array[rc - i - 1];
+            } else{
+                mat->anyArray[i] = anyArray[rc - i - 1];
+            }
+        }
+        return mat;
+    } else{
+        SkMemory* up;
+        SkAnyMemory* up2;
+        for (int i = 0, c = getRowCount() / 2; i < c; ++i) {
+            if(single){
+                up = array[i];
+                array[i] = array[rc - i - 1];
+                array[rc - i - 1] = up;
+            } else{
+                up2 = anyArray[i];
+                anyArray[i] = anyArray[rc - i - 1];
+                anyArray[rc - i - 1] = up2;
+            }
+        }
+        return this;
+    }
+}
+//取斜线元素组成数组.
+SkMemory* SkMemoryMatrix::diag(int k) {
+    if(!isSquareMatrix()){
+        return nullptr;
+    }
+    auto n = getRowCount();
+    //getLength() - 1: 主对角线 index
+    const int index = n - 1 + k; //include index
+    if(index > 2*n - 1){
+        return nullptr;
+    }
+    //要改变的数据Index
+    //从左下角。n行0列开始，
+    //colIndex, rowIndex
+    int lt[2] = {0, n - 1 - index};
+    int rb[2] = {n - 1 - index, n - 1};
+    //create mem
+    const int count = n - index; //n - 1 - index - 0
+    auto rt = MemoryUtils::computeType(getTypes());
+    auto out_unitSize = MemoryUtils::getUnitSize(rt);
+    auto outMem = SkMemory::create(rt, count);
+    //set data
+    double val;
+    for (int i = 0; i < count; ++i) {
+        getValue(n - 1 - index + i, i, &val);
+        MemoryUtils::write(outMem->data, rt, out_unitSize * i, val);
+    }
+    return outMem;
+}
+SkMemoryMatrix* SkMemoryMatrix::_triul(bool up, int k, double defVal) {
+    if(!isSquareMatrix()){
+        return nullptr;
+    }
+    auto n = getRowCount();
+    //getLength() - 1: 主对角线 index
+    const int index = n - 1 + k; //include index
+    if(index > 2*n - 1){
+        return nullptr;
+    }
+    //要改变的数据Index
+    //从左下角。n行0列开始，
+    //colIndex, rowIndex
+    int lt[2] = {0, n - 1 - index};
+    int rb[2] = {n - 1 - index, n - 1};
+    //init mat
+    auto mat = new SkMemoryMatrix(n, true);
+    auto rt = MemoryUtils::computeType(getTypes());
+    for (int i = 0; i < n; ++i) {
+        mat->array[i] = SkMemory::create(rt, n);
+    }
+    //set value
+    HMath::LinearEquation line(lt[0], lt[1], rb[0], rb[1]);
+    double val;
+    if(up){
+        for (int i = 0; i < n; ++i) { //col
+            for (int j = 0; j < n; ++j) { //row
+                if(line.getLocation(i, j) != -1){
+                    getValue(j, i, &val);
+                } else{
+                    val = defVal;
+                }
+                mat->array[j]->setValue(i, val);
+            }
+        }
+    } else{
+        for (int i = 0; i < n; ++i) { //col
+            for (int j = 0; j < n; ++j) { //row
+                if(line.getLocation(i, j) != 1){
+                    getValue(j, i, &val);
+                } else{
+                    val = defVal;
+                }
+                mat->array[j]->setValue(i, val);
+            }
+        }
+    }
+    return mat;
+}
+//上三角矩阵的抽取, 对角线 从左上到右下
+//抽取矩阵中第k条对角线及其以上的元素。k=0指主对角线，k>0指主对角线以上的第k条对角线，k<0指主对角线以下的第k条对角线。
+SkMemoryMatrix * SkMemoryMatrix::triu(int k, double defVal) {
+    return this->_triul(true, k, defVal);
+}
+SkMemoryMatrix* SkMemoryMatrix::tril(int k, double defVal) {
+    return this->_triul(false, k, defVal);
+}
+
 int SkMemoryMatrix::inverse(lua_State* L) {
     if(getRowCount() != getColumnCount()){
         return 0; // doesn't support
@@ -2313,16 +2615,32 @@ void SkMemoryMatrix::copyData(SkMemory *pMemory, int columnIndex) {
 }
 
 void SkMemoryMatrix::swapValue(int rowIndex1, int colIndex1, int rowIndex2, int colIndex2) {
-    char t = getTypes()[0];
-    //array[rowIndex1]
-    SkMemory *mem1 = array[rowIndex1];
-    SkMemory *mem2 = array[rowIndex2];
-    size_t offset1 = MemoryUtils::getUnitSize(t) * colIndex1;
-    size_t offset2 = MemoryUtils::getUnitSize(t) * colIndex2;
+    if(isSingleType()){
+        char t = getTypes()[0];
+        //array[rowIndex1]
+        SkMemory *mem1 = array[rowIndex1];
+        SkMemory *mem2 = array[rowIndex2];
+        size_t offset1 = MemoryUtils::getUnitSize(t) * colIndex1;
+        size_t offset2 = MemoryUtils::getUnitSize(t) * colIndex2;
 
-    double tmpVal = MemoryUtils::getValue(mem1->data, t, offset1);
-    MemoryUtils::write(mem1->data, t, offset1,
-            MemoryUtils::getValue(mem2->data, t, offset2)
-    );
-    MemoryUtils::write(mem2->data, t, offset2, tmpVal);
+        double tmpVal = MemoryUtils::getValue(mem1->data, t, offset1);
+        MemoryUtils::write(mem1->data, t, offset1,
+                           MemoryUtils::getValue(mem2->data, t, offset2)
+        );
+        MemoryUtils::write(mem2->data, t, offset2, tmpVal);
+    } else{
+        const auto *mem1 = anyArray[rowIndex1];
+        const auto *mem2 = array[rowIndex2];
+        const size_t offset1 = MemoryUtils::computeBytesIndex(getTypes(), colIndex1);
+        const size_t offset2 = MemoryUtils::computeBytesIndex(getTypes(), colIndex2);
+        const size_t len = strlen(getTypes());
+        const char type1 = getTypes()[colIndex1 % len];
+        const char type2 = getTypes()[colIndex2 % len];
+
+        double tmpVal = MemoryUtils::getValue(mem1->data, type1, offset1);
+        MemoryUtils::write(mem1->data, type1, offset1,
+                           MemoryUtils::getValue(mem2->data, type2, offset2)
+        );
+        MemoryUtils::write(mem2->data, type2, offset2, tmpVal);
+    }
 }
