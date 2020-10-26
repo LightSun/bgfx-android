@@ -615,7 +615,6 @@ const char MemoryUtils::computeType(const char type, const char type1) {
     }
     const bool isFloat_t = type == 'f' || type == 'F';
     const bool isFloat_t1 = type1 == 'f' || type1 == 'F';
-    const bool hasFloat = isFloat_t || isFloat_t1;
 
     //isFloat_t ? type : (isFloat_t1 ? upgradeType(type, true) : type): used to return a float-signed type.
     if(getUnitSize(type) > getUnitSize(type1)){
