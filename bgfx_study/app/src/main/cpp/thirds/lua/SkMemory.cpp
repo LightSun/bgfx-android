@@ -666,10 +666,6 @@ SkMemoryMatrix* SkMemory::diag(int k, double defVal) {
     auto curC = getLength();
     int n = getLength() + abs(k);
 
-    const int index = n - 1 + k; //include index
-    if(index > 2*n - 1){
-        return nullptr;
-    }
     //init mat
     auto mat = new SkMemoryMatrix(n, true);
     for (int i = 0; i < n; ++i) {
@@ -679,15 +675,28 @@ SkMemoryMatrix* SkMemory::diag(int k, double defVal) {
     //要改变的数据Index
     //从左下角。n行0列开始，
     //colIndex, rowIndex
-    int lt[2] = {0, n - 1 - index};
-    int rb[2] = {n - 1 - index, n - 1};
+    int lt[2];
+    int rb[2];
+    if(k > 0){
+        lt[0] = k;
+        lt[1] = 0;
+        rb[0] = n - 1;
+        rb[1] = n - 1 - k;
+    } else{
+        lt[0] = 0;
+        lt[1] = -k;
+        rb[0] = n - 1 + k;
+        rb[1] = n - 1;
+    }
     //start set element value
     HMath::LinearEquation line(lt[0], lt[1], rb[0], rb[1]);
     double result;
     double ele;
+    int idx;
     for (int i = 0; i < n; ++i) { //col
-        if(i < curC){
-            getValue(i, &ele);
+        idx= k <= 0 ? i : i - 1;
+        if(idx < curC){
+            getValue(idx, &ele);
         }
         for (int j = 0; j < n; ++j) { //row
             result = !line.isIn(i, j) ? defVal : ele;
@@ -1336,10 +1345,6 @@ SkMemoryMatrix* SkAnyMemory::diag(int k, double defVal) {
     auto curC = getLength();
     int n = getLength() + abs(k);
 
-    const int index = n - 1 + k; //include index
-    if(index > 2*n - 1){
-        return nullptr;
-    }
     //init mat. n *n
     auto rt = MemoryUtils::computeType(getTypes());
     auto mat = new SkMemoryMatrix(n, true);
@@ -1350,15 +1355,28 @@ SkMemoryMatrix* SkAnyMemory::diag(int k, double defVal) {
     //要改变的数据Index
     //从左下角。n行0列开始，
     //colIndex, rowIndex
-    int lt[2] = {0, n - 1 - index};
-    int rb[2] = {n - 1 - index, n - 1};
+    int lt[2];
+    int rb[2];
+    if(k > 0){
+        lt[0] = k;
+        lt[1] = 0;
+        rb[0] = n - 1;
+        rb[1] = n - 1 - k;
+    } else{
+        lt[0] = 0;
+        lt[1] = -k;
+        rb[0] = n - 1 + k;
+        rb[1] = n - 1;
+    }
     //start set element value
     HMath::LinearEquation line(lt[0], lt[1], rb[0], rb[1]);
     double result;
     double ele;
+    int idx;
     for (int i = 0; i < n; ++i) { //col
-        if(i < curC){
-            getValue(i, &ele);
+        idx= k <= 0 ? i : i - 1;
+        if(idx < curC){
+            getValue(idx, &ele);
         }
         for (int j = 0; j < n; ++j) { //row
             result = !line.isIn(i, j) ? defVal : ele;
@@ -1515,6 +1533,11 @@ void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
         }
         if (i != count - 1) {
             ss << ",";
+#if defined(_WIN32)
+            ss << "\r\n";
+#else
+            ss << "\n";
+#endif
         }
     }
 #if defined(_WIN32)

@@ -58,3 +58,50 @@ assert(r == mem.new('f', {1, 2, 3, 4, 5, 6, 0, 0}))
 
 r = m.concat(mem.new('f', {4, 5, 6}), 8, 'd', 10);
 assert(r == mem.new('d', {1, 2, 3, 4, 5, 6, 10, 10}))
+
+print("------- start test SkMemory -> flip ------ ")
+assert(m.flip() == mem.new('i', {3, 2, 1}))
+
+print("------- start test SkMemory -> diag ------ ")
+r = m.diag();
+print("diag =",r)
+assert(r == mem.newMat('i',
+        {1, 0, 0},
+        {0, 2, 0},
+        {0, 0, 3}
+))
+-- with k = -1.
+r = m.diag(-1);
+assert(r == mem.newMat('i',
+        {0, 0, 0, 0},
+        {1, 0, 0, 0},
+        {0, 2, 0, 0},
+        {0, 0, 3, 0}
+))
+-- with k = -1, and default value is 100.
+r = m.diag(-1, 100);
+assert(r == mem.newMat('i',
+        {100, 100, 100, 100},
+        {1, 100, 100, 100},
+        {100, 2, 100, 100},
+        {100, 100, 3, 100}
+))
+
+-- with k = 1.
+r = m.diag(1);
+print("diag(1) =", r)
+assert(r == mem.newMat('i',
+        {0, 1, 0, 0},
+        {0, 0, 2, 0},
+        {0, 0, 0, 3},
+        {0, 0, 0, 0}
+))
+
+-- with k = 1. default value -100
+r = m.diag(1, -100);
+assert(r == mem.newMat('i',
+        {-100, 1, -100, -100},
+        {-100, -100, 2, -100},
+        {-100, -100, -100, 3},
+        {-100, -100, -100, -100}
+))
