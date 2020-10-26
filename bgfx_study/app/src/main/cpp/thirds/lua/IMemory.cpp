@@ -602,14 +602,14 @@ double MemoryUtils::multiple(void *srcData, const char type, size_t totalIndex, 
     return getValue(srcData, type, totalIndex) * getValue(dstData, dstType, dstBytes);
 }
 
-const char MemoryUtils::computeType(const char *ts) {
+char MemoryUtils::computeType(const char *ts) {
     char type = ts[0];
     for (int i = 1, len = strlen(ts); i < len; ++i) {
         type = MemoryUtils::computeType(type, ts[i]);
     }
     return type;
 }
-const char MemoryUtils::computeType(const char type, const char type1) {
+char MemoryUtils::computeType(const char type, const char type1) {
     if(type == type1){
         return type;
     }
@@ -650,7 +650,7 @@ const char MemoryUtils::computeType(const char type, const char type1) {
     }
 }
 //type is unsigned
-const char MemoryUtils::upgradeType(const char type, const bool hasFloat) {
+char MemoryUtils::upgradeType(const char type, const bool hasFloat) {
     switch (type){
         case 'd':
             return 'F';
@@ -725,7 +725,7 @@ void MemoryUtils::setValue(void *data, const char t, size_t bytesIndex, double v
     }
 }
 
-const size_t MemoryUtils::computeBytesIndex(const char *types, size_t index) {
+size_t MemoryUtils::computeBytesIndex(const char *types, size_t index) {
     size_t bytesIndex = 0;
     const size_t len = strlen(types);
     for (int i = 0; i < index; ++i) {
