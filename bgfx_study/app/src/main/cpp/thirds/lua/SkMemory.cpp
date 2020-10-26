@@ -538,6 +538,9 @@ bool SkMemory::equals(SkMemory *o) {
 SkMemory* SkMemory::reshape(int count, char t, double defVal) {
     const auto srcType = getTypes()[0];
     const auto srcUnitSize = MemoryUtils::getUnitSize(srcType);
+    if(t == DEF_RESHAPE_TYPE){
+        t = srcType;
+    }
 
     auto pMemory = SkMemory::create(t, count);
     const auto unitSize = MemoryUtils::getUnitSize(t);
@@ -556,6 +559,9 @@ SkMemory* SkMemory::reshape(int count, char t, double defVal) {
 SkMemory* SkMemory::reshapeBefore(int count, char t, double defVal) {
     const auto srcType = getTypes()[0];
     const auto srcUnitSize = MemoryUtils::getUnitSize(srcType);
+    if(t == DEF_RESHAPE_TYPE){
+        t = srcType;
+    }
 
     auto outMem = SkMemory::create(t, count);
     const auto outUnitSize = MemoryUtils::getUnitSize(t);
@@ -575,9 +581,13 @@ SkMemory* SkMemory::reshapeBefore(int count, char t, double defVal) {
 }
 
 SkMemory *SkMemory::concat(SkMemory *oth, int resultCount, char resultType, double defVal) {
+
     const auto srcType = getTypes()[0];
     const auto srcUnitSize = MemoryUtils::getUnitSize(srcType);
     auto srcSize = getLength();
+    if(resultType == DEF_RESHAPE_TYPE){
+        resultType = MemoryUtils::computeType(srcType, oth->getTypes()[0]);
+    }
 
     auto outMem = SkMemory::create(resultType, resultCount);
     const auto out_unitSize = MemoryUtils::getUnitSize(resultType);
@@ -603,6 +613,10 @@ SkMemory *SkMemory::concat(SkAnyMemory *oth, int resultCount, char resultType, d
     const auto srcType = getTypes()[0];
     const auto srcUnitSize = MemoryUtils::getUnitSize(srcType);
     auto srcSize = getLength();
+    //handle default type
+    if(resultType == DEF_RESHAPE_TYPE){
+        resultType = MemoryUtils::computeType(srcType, MemoryUtils::computeType(oth->getTypes()));
+    }
     //out info
     auto outMem = SkMemory::create(resultType, resultCount);
     const auto out_unitSize = MemoryUtils::getUnitSize(resultType);
@@ -1184,6 +1198,10 @@ SkMemory *SkAnyMemory::reshape(int count, char t, double defVal) {
     auto len_srcTypes = strlen(srcTypes);
     const auto srcLen = getLength();
 
+    if(t == DEF_RESHAPE_TYPE){
+        t = MemoryUtils::computeType(srcTypes);
+    }
+
     auto outMem = SkMemory::create(t, count);
     const auto out_unitSize = MemoryUtils::getUnitSize(t);
     double val;
@@ -1205,6 +1223,9 @@ SkMemory* SkAnyMemory::reshapeBefore(int count, char t, double defVal) {
     const size_t len_srcTypes = strlen(getTypes());
     char srcType;
     size_t srcBytes = 0;
+    if(t == DEF_RESHAPE_TYPE){
+        t = MemoryUtils::computeType(getTypes());
+    }
 
     auto outMem = SkMemory::create(t, count);
     const auto outUnitSize = MemoryUtils::getUnitSize(t);
@@ -1231,6 +1252,9 @@ SkMemory *SkAnyMemory::concat(SkMemory *oth, int resultCount, char resultType, d
     auto srcSize = getLength();
     char srcType;
     size_t srcBytes = 0;
+    if(resultType == DEF_RESHAPE_TYPE){
+        resultType = MemoryUtils::computeType(oth->getTypes()[0], MemoryUtils::computeType(getTypes()));
+    }
     //out info
     auto outMem = SkMemory::create(resultType, resultCount);
     const auto out_unitSize = MemoryUtils::getUnitSize(resultType);
@@ -1260,6 +1284,10 @@ SkMemory* SkAnyMemory::concat(SkAnyMemory *oth, int resultCount, char resultType
     auto srcSize = getLength();
     char srcType;
     size_t srcBytes = 0;
+    if(resultType == DEF_RESHAPE_TYPE){
+        resultType = MemoryUtils::computeType(MemoryUtils::computeType(getTypes()),
+                MemoryUtils::computeType(oth->getTypes()));
+    }
     //out info
     auto outMem = SkMemory::create(resultType, resultCount);
     const auto out_unitSize = MemoryUtils::getUnitSize(resultType);
@@ -1472,7 +1500,11 @@ int SkMemoryMatrix::getColumnCount() {
 }
 
 void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
-    ss << "[";
+#if defined(_WIN32)
+    ss << "[\r\n";
+#else
+    ss << "[\n";
+#endif
     for (int i = 0; i < count; ++i) {
         if(array){
             array[i]->toString(ss);
@@ -1485,7 +1517,11 @@ void SkMemoryMatrix::toString(SB::StringBuilder &ss) {
             ss << ",";
         }
     }
-    ss << "]";
+#if defined(_WIN32)
+    ss << "\r\n]";
+#else
+    ss << "\n]";
+#endif
 }
 int SkMemoryMatrix::foreach(lua_State* L) {
     //upvalues... func
@@ -2063,6 +2099,9 @@ SkMemoryMatrix* SkMemoryMatrix::extractMat(size_t rowStart, size_t rowEnd, size_
     return mat;
 }
 SkMemoryMatrix* SkMemoryMatrix::reshape(int rowCount, int colCount, char type, double defVal) {
+    if(type == DEF_RESHAPE_TYPE){
+        type = MemoryUtils::computeType(getTypes());
+    }
     auto mat = new SkMemoryMatrix(rowCount);
     for (int i = 0; i < rowCount; ++i) {
         if(isSingleType()){

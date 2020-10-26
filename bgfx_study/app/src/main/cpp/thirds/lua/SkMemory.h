@@ -9,7 +9,7 @@
 
 #include "lua.hpp"
 #include "IMemory.h"
-#define DEF_RESHAPE_TYPE 'f'  //default reshape type
+#define DEF_RESHAPE_TYPE 0  //default unknown type
 
 class SkMemory;
 

@@ -61,9 +61,26 @@ static int mem_newMatrix(lua_State *L) {
     return 1;
 }
 
+#ifdef H_INTERNAL_TEST
+static int mem_test_comp(lua_State *L) {
+    auto str1 = lua_tostring(L, 1);
+    auto str2 = lua_tostring(L, 2);
+    auto type = MemoryUtils::computeType(MemoryUtils::computeType(str1),
+            MemoryUtils::computeType(str2));
+    char res[2];
+    res[0] = type;
+    res[1] = '\0';
+    lua_pushstring(L, res);
+    return 1;
+}
+#endif
+
 static const luaL_Reg mem_funcs[] = {
         {"new",       mem_new},
         {"newMat",    mem_newMatrix},
+#ifdef H_INTERNAL_TEST
+        {"test_comp", mem_test_comp},
+#endif
         {nullptr,     nullptr}
 };
 extern "C" int luaopen_hmem_lua(lua_State *L) {
@@ -172,6 +189,159 @@ auto eq = mem1 !=NULL ? mem1->equals(mem2) :(mem2 == NULL);\
 lua_pushboolean(L, eq);\
 return 1;\
 }
+
+//count, type, def value
+#define memory_reshape(mem, method)\
+static int mem##_##method(lua_State *L) {\
+    auto pMemory = LuaUtils::get_ref<mem>(L, lua_upvalueindex(1));\
+    auto count = lua_tointeger(L, 1);\
+    if(count <= 0 ){ \
+        return luaL_error(L, "wrong count for reshape.");\
+    }\
+    auto top = lua_gettop(L);\
+    SkMemory* result = nullptr;\
+    switch (top){\
+        case 3:{\
+            auto str = lua_tostring(L, 2);\
+            result = pMemory->method(count, str[0], lua_tonumber(L, 3));\
+        }break;\
+        case 2:{\
+            auto lt = lua_type(L, 2);\
+            if(lt == LUA_TNUMBER){\
+                result = pMemory->method(count, DEF_RESHAPE_TYPE, lua_tonumber(L, 2));\
+            } else if(lt == LUA_TSTRING){\
+                auto str = lua_tostring(L, 2);\
+                result = pMemory->method(count, str[0]);\
+            } else{\
+                return luaL_error(L, "wrong arguments. expect is (count, [type, default_value])");\
+            }\
+        }break;\
+        case 1:{\
+            result = pMemory->method(count);\
+        }break;\
+        default:\
+            return luaL_error(L, "wrong arguments. expect is (count, [type, default_value])");\
+    }\
+    if(result != nullptr){\
+        LuaUtils::push_ptr(L, result);\
+        return 1;\
+    }\
+    return 0;\
+}
+
+#define memory_concat(mem)\
+static int mem##_concat(lua_State *L) {\
+    auto pMemory = LuaUtils::get_ref<mem>(L, lua_upvalueindex(1));\
+    const auto msg = "wrong arguments , expect is (mem, resultCount[,type, default_value])";\
+    SkMemory* oth = LuaUtils::to_ref<SkMemory>(L, 1);\
+    SkAnyMemory* oth_any = nullptr;\
+    if(oth == nullptr){\
+        oth_any = LuaUtils::to_ref<SkAnyMemory>(L, 1);\
+        if(oth_any == nullptr){\
+            return luaL_error(L, msg);\
+        }\
+    }\
+    auto top = lua_gettop(L);\
+    SkMemory * result = nullptr;\
+    switch(top){\
+        case 4:{\
+            auto count = lua_tointeger(L, 2);\
+            auto str = lua_tostring(L, 3);\
+            if(oth != nullptr){\
+                result = pMemory->concat(oth, count, str[0], lua_tonumber(L, 4));\
+            } else{\
+                result = pMemory->concat(oth_any, count, str[0], lua_tonumber(L, 4));\
+            }\
+        }break;\
+        case 3:{\
+            auto type2 = lua_type(L, 2);\
+            if(type2 == LUA_TSTRING){\
+                auto str = lua_tostring(L, 2);\
+                if(oth != nullptr){\
+                    int c = pMemory->getLength() + oth->getLength();\
+                    result = pMemory->concat(oth, c, str[0], lua_tonumber(L, 3));\
+                } else{\
+                    int c = pMemory->getLength() + oth_any->getLength();\
+                    result = pMemory->concat(oth_any, c, str[0], lua_tonumber(L, 3));\
+                }\
+            } else if(type2 == LUA_TNUMBER){\
+                switch(lua_type(L, 3)){\
+                    case LUA_TNUMBER:\
+                        if(oth != nullptr){\
+                            result = pMemory->concat(oth, lua_tointeger(L, 2), DEF_RESHAPE_TYPE, lua_tonumber(L, 3));\
+                        } else{\
+                            result = pMemory->concat(oth_any, lua_tointeger(L, 2), DEF_RESHAPE_TYPE, lua_tonumber(L, 3));\
+                        }\
+                        break;\
+                    case LUA_TSTRING:\
+                        auto str = lua_tostring(L, 3);\
+                        if(oth != nullptr){\
+                            result = pMemory->concat(oth, lua_tointeger(L, 2), str[0]);\
+                        } else{\
+                            result = pMemory->concat(oth_any, lua_tointeger(L, 2), str[0]);\
+                        }\
+                        break;\
+                }\
+            } else{\
+                return luaL_error(L, msg);\
+            }\
+        }break;\
+        case 2:{\
+            if(oth != nullptr){\
+                result = pMemory->concat(oth, lua_tointeger(L, 2));\
+            } else{\
+                result = pMemory->concat(oth_any, lua_tointeger(L, 2));\
+            }\
+        }break;\
+        case 1:{\
+            if(oth != nullptr){\
+                int c = pMemory->getLength() + oth->getLength();\
+                result = pMemory->concat(oth, c);\
+            } else{\
+                int c = pMemory->getLength() + oth_any->getLength();\
+                result = pMemory->concat(oth_any, c);\
+            }\
+        }break;\
+    }\
+    if(result != nullptr){\
+        LuaUtils::push_ptr(L, result);\
+        return 1;\
+    }\
+    return luaL_error(L, msg);\
+}
+
+#define memory_diag(mem)\
+static int mem##_diag(lua_State *L) {\
+    auto pMemory = LuaUtils::get_ref<mem>(L, lua_upvalueindex(1));\
+    SkMemoryMatrix * result = nullptr;\
+    switch(lua_gettop(L)){\
+        case 2:{\
+            result = pMemory->diag(lua_tointeger(L, 1), lua_tonumber(L, 2));\
+        }break;\
+        case 1:{\
+            result = pMemory->diag(lua_tointeger(L, 1));\
+        }break;\
+        case 0:{\
+            result = pMemory->diag();\
+        }break;\
+    }\
+    if(result != nullptr){\
+        LuaUtils::push_ptr(L, result);\
+        return 1;\
+    }\
+    return luaL_error(L, "for 'memory.diag' arguments expect([int k, int default_val])");\
+}
+memory_diag(SkMemory)
+memory_diag(SkAnyMemory)
+
+memory_reshape(SkMemory,reshape)
+memory_reshape(SkAnyMemory,reshape)
+memory_reshape(SkMemory,reshapeBefore)
+memory_reshape(SkAnyMemory,reshapeBefore)
+
+memory_concat(SkMemory)
+memory_concat(SkAnyMemory)
+
 memory_eq(SkMemory)
 memory_eq(SkAnyMemory)
 memory_eq(SkMemoryMatrix)
@@ -210,6 +380,23 @@ memory_extract(SkAnyMemory)
 memory_kickOut(SkMemory)
 memory_kickOut(SkAnyMemory)
 
+static int SkMemory_flip(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemory>(L, lua_upvalueindex(1));
+    SkMemory* result = nullptr;
+    if(lua_gettop(L) > 0){
+        result = pMemory->flip(lua_toboolean(L, -1) == 1);
+    } else{
+        result = pMemory->flip();
+    }
+    LuaUtils::push_ptr(L, result);
+    return 1;
+}
+static int SkAnyMemory_flip(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkAnyMemory>(L, lua_upvalueindex(1));
+    LuaUtils::push_ptr(L, pMemory->flip());
+    return 1;
+}
+
 #define DEF_V_METHODS(type) \
 static const luaL_Reg s##type##_Methods[] = { \
         {"getTypes",         type##_getTypes}, \
@@ -219,6 +406,11 @@ static const luaL_Reg s##type##_Methods[] = { \
         {"isValid",          type##_isValid}, \
         {"extract",          type##_extract}, \
         {"kickOut",          type##_kickOut}, \
+        {"reshape",          type##_reshape}, \
+        {"reshapeBefore",    type##_reshapeBefore}, \
+        {"concat",           type##_concat}, \
+        {"flip",             type##_flip}, \
+        {"diag",             type##_diag}, \
         {nullptr,            nullptr}, \
 };
 DEF_V_METHODS(SkMemory)
@@ -548,6 +740,62 @@ static int SkMemoryMatrix_concat(lua_State *L) {
     }
     return 0;
 }
+static int SkMemoryMatrix_diag(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
+    SkMemory* result = nullptr;
+    if(lua_gettop(L) == 1){
+        result = pMemory->diag(lua_tointeger(L, 1));
+    } else{
+        result = pMemory->diag();
+    }
+    if(result != NULL){
+        LuaUtils::push_ptr(L, result);
+        return 1;
+    }
+    return 0;
+}
+//fliplr, flipud, triu, tril
+#define SkMemoryMatrix_flip(method)\
+static int SkMemoryMatrix_##method(lua_State *L) {\
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));\
+    SkMemoryMatrix* result = nullptr;\
+    if(lua_gettop(L) == 1){\
+        result = pMemory->method(lua_toboolean(L, 1) == 1);\
+    } else{\
+        result = pMemory->method();\
+    }\
+    if(result != NULL){\
+        LuaUtils::push_ptr(L, result);\
+        return 1;\
+    }\
+    return 0;\
+}
+#define SkMemoryMatrix_triul(method)\
+static int SkMemoryMatrix_##method(lua_State *L) {\
+    auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));\
+    SkMemoryMatrix* result = nullptr;\
+    switch (lua_gettop(L)){\
+        case 2:{\
+            result = pMemory->method(lua_tointeger(L, 1), lua_tonumber(L, 2));\
+        }break;\
+        case 1:{\
+            result = pMemory->method(lua_tointeger(L, 1));\
+        }break;\
+        case 0:{\
+            result = pMemory->method();\
+        }break;\
+    }\
+    if(result != NULL){\
+        LuaUtils::push_ptr(L, result);\
+        return 1;\
+    }\
+    return 0;\
+}
+SkMemoryMatrix_triul(triu)
+SkMemoryMatrix_triul(tril)
+
+SkMemoryMatrix_flip(fliplr)
+SkMemoryMatrix_flip(flipud)
 
 memory_copy(SkMemoryMatrix)
 const static luaL_Reg sSkMemoryMatrix_Methods[] = {
@@ -561,8 +809,14 @@ const static luaL_Reg sSkMemoryMatrix_Methods[] = {
         {"extractMat",       SkMemoryMatrix_extractMat},
         {"extractCol",       SkMemoryMatrix_extractCol},
         {"inverse",          SkMemoryMatrix_inverse},
+
         {"reshape",          SkMemoryMatrix_reshape},
         {"concat",           SkMemoryMatrix_concat},
+        {"diag",             SkMemoryMatrix_diag},
+        {"fliplr",           SkMemoryMatrix_fliplr},
+        {"flipud",           SkMemoryMatrix_flipud},
+        {"triu",             SkMemoryMatrix_triu},
+        {"tril",             SkMemoryMatrix_tril},
 
         {"determinant",       SkMemoryMatrix_determinant},
         {"remainderValue",    SkMemoryMatrix_remainderValue},

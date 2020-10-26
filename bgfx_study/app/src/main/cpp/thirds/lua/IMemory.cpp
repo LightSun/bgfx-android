@@ -616,8 +616,9 @@ const char MemoryUtils::computeType(const char type, const char type1) {
     const bool isFloat_t = type == 'f' || type == 'F';
     const bool isFloat_t1 = type1 == 'f' || type1 == 'F';
 
+    //isFloat_t ? type : (isFloat_t1 ? upgradeType(type, true) : type): used to return a float-signed type.
     if(getUnitSize(type) > getUnitSize(type1)){
-        if(isSigned(type)) return type;
+        if(isSigned(type)) return isFloat_t ? type : (isFloat_t1 ? upgradeType(type, true) : type);
         else{
             if(isSigned(type1)) return upgradeType(type, isFloat_t1);
             else{
@@ -627,7 +628,7 @@ const char MemoryUtils::computeType(const char type, const char type1) {
     } else if(getUnitSize(type) == getUnitSize(type1)){
         if(isSigned(type)){
             if(isSigned(type1)){
-                return type;
+                return isFloat_t ? type : type1;
             } else{
                 return upgradeType(type1, isFloat_t);
             }
@@ -635,15 +636,15 @@ const char MemoryUtils::computeType(const char type, const char type1) {
             if(isSigned(type1)){
                 return upgradeType(type, isFloat_t1);
             } else{
-                return type;
+                return type; //no signed means no float
             }
         }
     } else{
-        if(isSigned(type1)) return type1;
+        if(isSigned(type1)) return isFloat_t ? type : (isFloat_t1 ? upgradeType(type, true) : type);
         else{
             if(isSigned(type)) return upgradeType(type1, isFloat_t);
             else{
-                return type1;
+                return type1; //no signed means no float
             }
         }
     }
