@@ -99,8 +99,8 @@ public:
     static bool isSigned(const char type);
 
     /** compute a correct type which can compat the two types. */
-    static const char computeType(const char type, const char type1);
-    static const char computeType(const char* types);
+    static char computeType(const char type, const char type1);
+    static char computeType(const char* types);
     //result must be a signed type.
     /**
      * upgrade unsigned type to a signed type
@@ -108,7 +108,7 @@ public:
      * @param hasFloat has float or not
      * @return the upgrade type
      */
-    static const char upgradeType(const char type, const bool hasFloat);
+    static char upgradeType(const char type, const bool hasFloat);
 
     /** Multiply the corresponding data, and then accumulate/pile
      * @param data1
@@ -131,7 +131,7 @@ public:
     static void setValue(void *data, const char t, size_t bytesIndex, double val);
 
     /** compute the total bytes index. by types */
-    static const size_t computeBytesIndex(const char *types, size_t index);
+    static size_t computeBytesIndex(const char *types, size_t index);
 };
 
 class IMemory{
