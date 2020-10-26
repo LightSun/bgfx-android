@@ -675,7 +675,7 @@ double MemoryUtils::pile(void *data1, const char type1, void *data2, const char 
     }
     return out;
 }
-void MemoryUtils::write(void *data, const char t, size_t bytesIndex, double val) {
+void MemoryUtils::setValue(void *data, const char t, size_t bytesIndex, double val) {
 #define ASSIGN(type)  *(type*)addr = (type)val
 
     switch (t){
@@ -767,5 +767,3 @@ void SimpleMemory::destroyData() {
 bool SimpleMemory::isValid() {
     return data != nullptr;
 }
-
-SkMemoryHolder::SkMemoryHolder(char type, void *ptr) : type(type), ptr(ptr) {}

@@ -15,14 +15,6 @@ namespace SB{
 class IMemory;
 class SimpleMemory;
 
-class SkMemoryHolder{
-public:
-    char type;
-    void* ptr;
-
-    SkMemoryHolder(char type, void *ptr);
-};
-
 #define DESTROY_MEM_POINTER_ARRAY(array) \
 if(array){ \
 for (int i = 0; i < count; ++i) { \
@@ -87,7 +79,6 @@ public:
     static void convert(void *srcData, char srcType, size_t srcBytes,
             void *dstData, const char dstType, size_t dstBytes);
 
-    static double getValue(void *data, const char type, size_t bytesIndex);
     /**
      * multi the single data from one to another.
      * @param srcData the src data
@@ -125,19 +116,19 @@ public:
      * @param data2
      * @param type2
      * @param count
-     * @return
+     * @return pile result
      */
     static double pile(void *data1, const char type1, void *data2, const char type2, const int count);
 
+    static double getValue(void *data, const char type, size_t bytesIndex);
     /**
-     * wtite a value to target data with bytes index
-     * @param data
-     * @param t
-     * @param bytesIndex
-     * @param val
-     * @return
+     * write a value to target data with bytes index
+     * @param data the memory data
+     * @param t the dst data type
+     * @param bytesIndex the index as bytes
+     * @param val the value to set
      */
-    static void write(void *data, const char t, size_t bytesIndex, double val);
+    static void setValue(void *data, const char t, size_t bytesIndex, double val);
 
     /** compute the total bytes index. by types */
     static const size_t computeBytesIndex(const char *types, size_t index);

@@ -100,10 +100,12 @@ static int type##_tostring(lua_State *L) {\
     return 1;\
 }
 
+//tab, index ,val
 #define memory_newindex(type) \
 static int type##_newindex(lua_State *L) { \
     auto pMemory = LuaUtils::get_ref<type>(L, 1); \
-    return type::write(pMemory, L); \
+    pMemory->setValue(lua_tointeger(L, -2), lua_tonumber(L, -1));\
+    return 0;\
 }
 
 #define memory_foreach(type) \

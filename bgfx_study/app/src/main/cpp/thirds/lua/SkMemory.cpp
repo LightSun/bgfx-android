@@ -45,54 +45,6 @@ for (int i = 0; i < len; ++i) { \
 arr[i] = 0; \
 }
 
-#define READ(type) \
-type read_##type(SkMemory* mem, int index){ \
-auto addr = static_cast<type*>(mem->data); \
-addr += index; \
-return *addr; \
-}
-READ(float)
-READ(uint8_t)
-READ(uint16_t)
-READ(uint32_t)
-READ(short)
-READ(int)
-//READ(char)
-READ(double)
-
-#define READ_char() \
-s_char read_char(SkMemory* mem, int index){ \
-auto addr = static_cast<s_char*>(mem->data); \
-addr += index; \
-return *addr; \
-}
-READ_char();
-
-
-#define WRITE(type) \
-void write_##type(SkMemory* mem, int index, type val){ \
-auto addr = static_cast<type*>(mem->data); \
-addr += index; \
-*addr = val; \
-}
-WRITE(float)
-WRITE(uint8_t)
-WRITE(uint16_t)
-WRITE(uint32_t)
-WRITE(short)
-WRITE(int)
-//WRITE(char)
-WRITE(double)
-
-#define WRITE_char() \
-void write_char(SkMemory *mem, int index, s_char val) { \
-    auto addr = static_cast<s_char *>(mem->data); \
-    addr += index; \
-    *addr = val; \
-}
-WRITE_char()
-
-
 #define COPY_SINGLE_DATA(type) \
 { auto pData = (type *) (dstMem->data); \
 auto srcData = (type *) (data); \
@@ -391,7 +343,7 @@ SkMemory* SkMemory::_mul(SkMemory *val) {
         auto srcVal = MemoryUtils::getValue(data, srcType, j * srcUnitSize);
         auto dstVal = MemoryUtils::getValue(val->data, dstType, j * dstUnitSize);
 
-        MemoryUtils::write(pMemory->data, outType, j* outUnitSize, srcVal * dstVal);
+        MemoryUtils::setValue(pMemory->data, outType, j * outUnitSize, srcVal * dstVal);
     }
     return pMemory;
 }
@@ -415,7 +367,7 @@ SkMemory * SkMemory::_mul(SkAnyMemory *val) {
 
         auto srcVal = MemoryUtils::getValue(data, srcType, j * srcUnitSize);
         auto dstVal = MemoryUtils::getValue(val->data, dstType, dstBytes);
-        MemoryUtils::write(out_mem->data, outType, j* outUnitSize, srcVal * dstVal);
+        MemoryUtils::setValue(out_mem->data, outType, j * outUnitSize, srcVal * dstVal);
         dstBytes += MemoryUtils::getUnitSize(dstType);
     }
     return out_mem;
@@ -450,7 +402,7 @@ SkMemory* SkMemory::_mul(SkMemoryMatrix *val, bool dotMat) {
                 value += MemoryUtils::getValue(mem_dst->data, dstType, j* dstUnitSize);
             }
             srcVal = MemoryUtils::getValue(data, srcType, i * srcUnitSize);
-            MemoryUtils::write(out_mem->data, outType, i * outUnitSize, srcVal * value);
+            MemoryUtils::setValue(out_mem->data, outType, i * outUnitSize, srcVal * value);
         }
     } else{
         SkAnyMemory *mem_dst;
@@ -468,7 +420,7 @@ SkMemory* SkMemory::_mul(SkMemoryMatrix *val, bool dotMat) {
                 bytesIndex += MemoryUtils::getUnitSize(dstType);
             }
             srcVal = MemoryUtils::getValue(data, srcType, i * srcUnitSize);
-            MemoryUtils::write(out_mem->data, outType, i * outUnitSize, srcVal * value);
+            MemoryUtils::setValue(out_mem->data, outType, i * outUnitSize, srcVal * value);
         }
     }
     return out_mem;
@@ -492,7 +444,7 @@ SkMemory* SkMemory::dot(SkMemoryMatrix *val) {
         for (int i = 0, rc = val->getRowCount(); i < rc; ++i) {
             m1 = val->array[i];
             double value = MemoryUtils::pile(data, srcType, m1->data, m1->_types[0], count);
-            MemoryUtils::write(out_mem->data, outType, i * outUnitSize, value);
+            MemoryUtils::setValue(out_mem->data, outType, i * outUnitSize, value);
         }
     } else{
         SkAnyMemory *m1;
@@ -511,7 +463,7 @@ SkMemory* SkMemory::dot(SkMemoryMatrix *val) {
                 total += MemoryUtils::multiple(m1->data, type, val_bytesIndex, data, srcType, j * srcUnitSize);
                 val_bytesIndex += MemoryUtils::getUnitSize(type);
             }
-            MemoryUtils::write(out_mem->data, outType, i * outUnitSize, total);
+            MemoryUtils::setValue(out_mem->data, outType, i * outUnitSize, total);
         }
     }
     return out_mem;
@@ -597,7 +549,7 @@ SkMemory* SkMemory::reshape(int count, char t, double defVal) {
         } else{
             val = MemoryUtils::getValue(data, srcType, srcUnitSize * i);
         }
-        MemoryUtils::write(pMemory->data, t, i * unitSize, val);
+        MemoryUtils::setValue(pMemory->data, t, i * unitSize, val);
     }
     return pMemory;
 }
@@ -617,7 +569,7 @@ SkMemory* SkMemory::reshapeBefore(int count, char t, double defVal) {
         } else{
             val = MemoryUtils::getValue(data, srcType, srcUnitSize * (i - beforeCount));
         }
-        MemoryUtils::write(outMem->data, t, i * outUnitSize, val);
+        MemoryUtils::setValue(outMem->data, t, i * outUnitSize, val);
     }
     return outMem;
 }
@@ -642,7 +594,7 @@ SkMemory *SkMemory::concat(SkMemory *oth, int resultCount, char resultType, doub
         } else{
             val = defVal;
         }
-        MemoryUtils::write(outMem->data, resultType, out_unitSize * i, val);
+        MemoryUtils::setValue(outMem->data, resultType, out_unitSize * i, val);
     }
     return outMem;
 }
@@ -671,7 +623,7 @@ SkMemory *SkMemory::concat(SkAnyMemory *oth, int resultCount, char resultType, d
         } else{
             val = defVal;
         }
-        MemoryUtils::write(outMem->data, resultType, out_unitSize * i, val);
+        MemoryUtils::setValue(outMem->data, resultType, out_unitSize * i, val);
     }
     return outMem;
 }
@@ -684,8 +636,8 @@ SkMemory *SkMemory::flip(bool copy) {
         auto unitSize = MemoryUtils::getUnitSize(rt);
         //i , size - i - 1
         for (int i = 0; i < size; ++i) {
-            MemoryUtils::write(mem->data, rt, unitSize * i,
-                    MemoryUtils::getValue(data, rt, unitSize * (size - i - 1)));
+            MemoryUtils::setValue(mem->data, rt, unitSize * i,
+                                  MemoryUtils::getValue(data, rt, unitSize * (size - i - 1)));
         }
         return mem;
     } else{
@@ -735,15 +687,15 @@ void SkMemory::swapValue(int index1, int index2) {
     auto rt = getTypes()[0];
     auto unitSize = MemoryUtils::getUnitSize(getTypes()[0]);
     double val1 = MemoryUtils::getValue(data, rt, unitSize * index1);
-    MemoryUtils::write(data, rt, unitSize * index1,
-            MemoryUtils::getValue(data, rt, unitSize * index2));
-    MemoryUtils::write(data, rt, unitSize * index2, val1);
+    MemoryUtils::setValue(data, rt, unitSize * index1,
+                          MemoryUtils::getValue(data, rt, unitSize * index2));
+    MemoryUtils::setValue(data, rt, unitSize * index2, val1);
 }
 
 bool SkMemory::setValue(int index, double val) {
     if(0 <= index < getLength()){
         auto unitSize = MemoryUtils::getUnitSize(getTypes()[0]);
-        MemoryUtils::write(data, getTypes()[0], unitSize * index, val);
+        MemoryUtils::setValue(data, getTypes()[0], unitSize * index, val);
         return true;
     }
     return false;
@@ -1037,7 +989,7 @@ SkMemory* SkAnyMemory::_mul(SkMemoryMatrix *val, bool dotMat) {
             srcVal = MemoryUtils::getValue(data, srcType, srcBytesIndex);
             srcBytesIndex += MemoryUtils::getUnitSize(srcType);
 
-            MemoryUtils::write(out_mem->data, outType, i * outUnitSize, srcVal * value);
+            MemoryUtils::setValue(out_mem->data, outType, i * outUnitSize, srcVal * value);
         }
     } else{
         char srcType;
@@ -1064,7 +1016,7 @@ SkMemory* SkAnyMemory::_mul(SkMemoryMatrix *val, bool dotMat) {
             srcVal = MemoryUtils::getValue(data, srcType, srcBytesIndex);
             srcBytesIndex += MemoryUtils::getUnitSize(srcType);
 
-            MemoryUtils::write(out_mem->data, outType, i * outUnitSize, srcVal * value);
+            MemoryUtils::setValue(out_mem->data, outType, i * outUnitSize, srcVal * value);
         }
     }
     return out_mem;
@@ -1107,7 +1059,7 @@ SkMemory* SkAnyMemory::dot(SkMemoryMatrix *val) {
                 value += srcVal * dstVal;
                 srcBytes += MemoryUtils::getUnitSize(srcType);
             }
-            MemoryUtils::write(pMemory->data, outType, i * outUnitSize, value);
+            MemoryUtils::setValue(pMemory->data, outType, i * outUnitSize, value);
         }
     } else{
         SkAnyMemory *dstMem;
@@ -1132,7 +1084,7 @@ SkMemory* SkAnyMemory::dot(SkMemoryMatrix *val) {
                 srcBytes += MemoryUtils::getUnitSize(srcType);
                 dstBytes += MemoryUtils::getUnitSize(dstType);
             }
-            MemoryUtils::write(pMemory->data, outType, i * outUnitSize, value);
+            MemoryUtils::setValue(pMemory->data, outType, i * outUnitSize, value);
         }
     }
     return pMemory;
@@ -1162,8 +1114,8 @@ bool SkAnyMemory::setValue(int index, double val) {
         return false;
     }
     auto types = getTypes();
-    MemoryUtils::write(data, types[index % strlen(types)],
-            MemoryUtils::computeBytesIndex(types, index), val);
+    MemoryUtils::setValue(data, types[index % strlen(types)],
+                          MemoryUtils::computeBytesIndex(types, index), val);
     return true;
 }
 bool SkAnyMemory::getValue(int index, double *result) {
@@ -1190,7 +1142,7 @@ SkMemory *SkAnyMemory::extract(size_t start, size_t end1) {
     for (size_t i = start; i < end1; ++i) {
         srcType = _types[i % len_srcType];
         value = MemoryUtils::getValue(data, srcType, srcBytes);
-        MemoryUtils::write(outMem->data, outType, out_unitSize * (i - start), value);
+        MemoryUtils::setValue(outMem->data, outType, out_unitSize * (i - start), value);
         srcBytes += MemoryUtils::getUnitSize(srcType);
     }
     return outMem;
@@ -1217,9 +1169,9 @@ SkMemory *SkAnyMemory::kickOut(size_t index) {
         }
         value = MemoryUtils::getValue(data, srcType, srcBytes);
         if(i < index){
-            MemoryUtils::write(outMem->data, outType, out_unitSize * i , value);
+            MemoryUtils::setValue(outMem->data, outType, out_unitSize * i, value);
         } else{
-            MemoryUtils::write(outMem->data, outType, out_unitSize * (i - 1) , value);
+            MemoryUtils::setValue(outMem->data, outType, out_unitSize * (i - 1), value);
         }
         srcBytes += MemoryUtils::getUnitSize(srcType);
     }
@@ -1239,11 +1191,11 @@ SkMemory *SkAnyMemory::reshape(int count, char t, double defVal) {
     size_t srcBytes = 0;
     for (int i = 0; i < count; ++i) {
         if(i >= srcLen){
-            MemoryUtils::write(outMem->data, t, i * out_unitSize, defVal);
+            MemoryUtils::setValue(outMem->data, t, i * out_unitSize, defVal);
         } else{
             srcType = srcTypes[i % len_srcTypes];
             val = MemoryUtils::getValue(data, srcType, srcBytes);
-            MemoryUtils::write(outMem->data, t, i * out_unitSize, val);
+            MemoryUtils::setValue(outMem->data, t, i * out_unitSize, val);
             srcBytes += MemoryUtils::getUnitSize(srcType);
         }
     }
@@ -1268,7 +1220,7 @@ SkMemory* SkAnyMemory::reshapeBefore(int count, char t, double defVal) {
             val = MemoryUtils::getValue(data, srcType, srcBytes);
             srcBytes += MemoryUtils::getUnitSize(srcType);
         }
-        MemoryUtils::write(outMem->data, t, i * outUnitSize, val);
+        MemoryUtils::setValue(outMem->data, t, i * outUnitSize, val);
     }
     return outMem;
 }
@@ -1298,7 +1250,7 @@ SkMemory *SkAnyMemory::concat(SkMemory *oth, int resultCount, char resultType, d
         } else{
             val = defVal;
         }
-        MemoryUtils::write(outMem->data, resultType, out_unitSize * i, val);
+        MemoryUtils::setValue(outMem->data, resultType, out_unitSize * i, val);
     }
     return outMem;
 }
@@ -1330,7 +1282,7 @@ SkMemory* SkAnyMemory::concat(SkAnyMemory *oth, int resultCount, char resultType
         } else{
             val = defVal;
         }
-        MemoryUtils::write(outMem->data, resultType, out_unitSize * i, val);
+        MemoryUtils::setValue(outMem->data, resultType, out_unitSize * i, val);
     }
     return outMem;
 }
@@ -1347,7 +1299,7 @@ SkMemory *SkAnyMemory::flip() {
         type = getTypes()[(size - i - 1) % size];
         val = MemoryUtils::getValue(data, type, 
                 MemoryUtils::computeBytesIndex(getTypes(), size - i - 1));
-        MemoryUtils::write(pMemory->data, rt, i * unitSize, val);
+        MemoryUtils::setValue(pMemory->data, rt, i * unitSize, val);
     }
     return pMemory;
 }
@@ -1703,7 +1655,7 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemory *val) {
     for (int j = 0; j < len_val; ++j) { \
         value = MemoryUtils::multiple(mem->data, mem->_types[0], 0,\
                                       val->data, dstType , j * dstUnitSize); \
-        MemoryUtils::write(out_mem->data, outType, j * outUnitSize,value); \
+        MemoryUtils::setValue(out_mem->data, outType, j * outUnitSize,value); \
     }
 
     for (int i = 0, c = getRowCount(); i < c; ++i) {
@@ -1750,7 +1702,7 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkAnyMemory *val) {
         dstType = dstTypes[j % dstTypeLen]; \
         value = MemoryUtils::multiple(mem->data, mem->_types[0], 0, \
                                       val->data, dstType , dstBytesIndex); \
-        MemoryUtils::write(out_mem->data, outType, j * outUnitSize, value); \
+        MemoryUtils::setValue(out_mem->data, outType, j * outUnitSize, value); \
         dstBytesIndex += MemoryUtils::getUnitSize(dstType); \
     }
 
@@ -1809,7 +1761,7 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemoryMatrix *val) {
                         value += MemoryUtils::multiple(pMemory->data, cur_type, j * cur_unitSize,
                                                        val->array[k]->data, dst_type, dst_bytesIndex);
                     }
-                    MemoryUtils::write(out_mem->data, outType,  k *outUnitSize, value);
+                    MemoryUtils::setValue(out_mem->data, outType, k * outUnitSize, value);
                 }
             }
         } else{
@@ -1838,7 +1790,7 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemoryMatrix *val) {
                     }
                     SkASSERT(dst_type != 0);
                     bytesIndex += MemoryUtils::getUnitSize(dst_type);
-                    MemoryUtils::write(out_mem->data, outType,  k *outUnitSize, value);
+                    MemoryUtils::setValue(out_mem->data, outType, k * outUnitSize, value);
                 }
             }
         }
@@ -1884,7 +1836,7 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemoryMatrix *val) {
                         cur_bytesIndex += MemoryUtils::getUnitSize(cur_type);
                     }
                     SkASSERT(dst_Type != 0);
-                    MemoryUtils::write(outMem->data, outType,  k *outUnitSize, value);
+                    MemoryUtils::setValue(outMem->data, outType, k * outUnitSize, value);
                 }
             }
         } else{
@@ -1928,7 +1880,7 @@ SkMemoryMatrix* SkMemoryMatrix::_mul(SkMemoryMatrix *val) {
                     SkASSERT(dst_Type != 0);
                     dst_bytesIndex += MemoryUtils::getUnitSize(dst_Type);
 
-                    MemoryUtils::write(outMem->data, outType,  k *outUnitSize, value);
+                    MemoryUtils::setValue(outMem->data, outType, k * outUnitSize, value);
                 }
             }
         }
@@ -2071,7 +2023,7 @@ SkMemoryMatrix* SkMemoryMatrix::algebraicRemainderMat() {
         mat->array[i] = mem = SkMemory::create(outType, cc);
         for (int j = 0; j < cc; ++j) {
             val = remainderValue(i, j);
-            MemoryUtils::write(mem->data, outType, j * unitSize, val);
+            MemoryUtils::setValue(mem->data, outType, j * unitSize, val);
         }
     }
     return mat;
@@ -2283,7 +2235,7 @@ SkMemory* SkMemoryMatrix::diag(int k) {
     double val;
     for (int i = 0; i < count; ++i) {
         getValue(n - 1 - index + i, i, &val);
-        MemoryUtils::write(outMem->data, rt, out_unitSize * i, val);
+        MemoryUtils::setValue(outMem->data, rt, out_unitSize * i, val);
     }
     return outMem;
 }
@@ -2358,7 +2310,7 @@ int SkMemoryMatrix::inverse(lua_State* L) {
 
     auto mat = LuaUtils::get_ref<SkMemoryMatrix>(L, -1);
     auto func_set = [&](int id1, int id2, double val){
-        MemoryUtils::write(mat->array[id1]->data, rt, id2 * unitSize, val);
+        MemoryUtils::setValue(mat->array[id1]->data, rt, id2 * unitSize, val);
     };
     auto func_get = [&](int id1, int id2){
         return MemoryUtils::getValue(mat->array[id1]->data, rt, id2 * unitSize);
@@ -2449,7 +2401,7 @@ void SkMemoryMatrix::copyData(SkMemory *pMemory, int columnIndex) {
         double val;
         for (int i = 0; i < count; ++i) {
             val = MemoryUtils::getValue(anyArray[i]->data, type, bytesIndex);
-            MemoryUtils::write(pMemory->data, pMemory->_types[0], i * dstUnitSize, val);
+            MemoryUtils::setValue(pMemory->data, pMemory->_types[0], i * dstUnitSize, val);
         }
     }
 }
@@ -2464,10 +2416,10 @@ void SkMemoryMatrix::swapValue(int rowIndex1, int colIndex1, int rowIndex2, int 
         size_t offset2 = MemoryUtils::getUnitSize(t) * colIndex2;
 
         double tmpVal = MemoryUtils::getValue(mem1->data, t, offset1);
-        MemoryUtils::write(mem1->data, t, offset1,
-                           MemoryUtils::getValue(mem2->data, t, offset2)
+        MemoryUtils::setValue(mem1->data, t, offset1,
+                              MemoryUtils::getValue(mem2->data, t, offset2)
         );
-        MemoryUtils::write(mem2->data, t, offset2, tmpVal);
+        MemoryUtils::setValue(mem2->data, t, offset2, tmpVal);
     } else{
         const auto *mem1 = anyArray[rowIndex1];
         const auto *mem2 = array[rowIndex2];
@@ -2478,9 +2430,9 @@ void SkMemoryMatrix::swapValue(int rowIndex1, int colIndex1, int rowIndex2, int 
         const char type2 = getTypes()[colIndex2 % len];
 
         double tmpVal = MemoryUtils::getValue(mem1->data, type1, offset1);
-        MemoryUtils::write(mem1->data, type1, offset1,
-                           MemoryUtils::getValue(mem2->data, type2, offset2)
+        MemoryUtils::setValue(mem1->data, type1, offset1,
+                              MemoryUtils::getValue(mem2->data, type2, offset2)
         );
-        MemoryUtils::write(mem2->data, type2, offset2, tmpVal);
+        MemoryUtils::setValue(mem2->data, type2, offset2, tmpVal);
     }
 }
