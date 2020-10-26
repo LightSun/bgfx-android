@@ -222,11 +222,18 @@ static const luaL_Reg s##type##_Methods[] = { \
 DEF_V_METHODS(SkMemory)
 DEF_V_METHODS(SkAnyMemory)
 
+//table, index // old is return type::read(pMemory, L);
 #define memory_index(type) \
 static int type##_index(lua_State *L) { \
     auto pMemory = LuaUtils::get_ref<type>(L, 1); \
     if(lua_type(L, 2) == LUA_TNUMBER){ \
-        return type::read(pMemory, L); \
+        double val; \
+        if(pMemory->getValue(lua_tointeger(L, -1), &val)){ \
+            lua_pushnumber(L, val); \
+            return 1; \
+        }else{ \
+            return 0;\
+        } \
     } else{ \
         auto str = luaL_checkstring(L, 2); \
         auto methods = s##type##_Methods; \

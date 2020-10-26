@@ -211,91 +211,7 @@ SkMemory::SkMemory(lua_State *L, int tableCount, const char *t) : SkMemory(L, 0,
 bool SkMemory::isFloat() {
     return _types[0] == 'f';
 }
-int SkMemory::write(SkMemory* mem, lua_State *L) {
-    //table, index, value
-    auto index = lua_tointeger(L, -2);
-    if(index >= mem->getLength()){
-        return luaL_error(L, "index(%d) out of range(%d).", index, mem->getLength());
-    }
-    switch (mem->_types[0]) {
-        case 'f':
-            write_float(mem, index, TO_FLOAT(L, -1));
-            return 0;
-        case 'd':
-            write_uint32_t(mem, index, TO_NUMBER_32(L, -1));
-            return 0;
-        case 'w':
-            write_uint16_t(mem, index, TO_NUMBER_16(L, -1));
-            return 0;
-        case 'b': {
-            write_uint8_t(mem, index, TO_NUMBER_8(L, -1));
-            return 0;
-        }
 
-        case 's': {
-            write_short(mem, index, TO_SHORT(L, -1));
-            return 0;
-        }
-        case 'i': {
-            write_int(mem, index, TO_INT(L, -1));
-            return 0;
-        }
-        case 'c': {
-            write_char(mem, index, TO_CHAR(L, -1));
-            return 0;
-        }
-        case 'F': {
-            write_double(mem, index, TO_DOUBLE(L, -1));
-            return 0;
-        }
-        default:
-            return luaL_error(L, "wrong data type = %s", mem->_types);
-    }
-}
-int SkMemory::read(SkMemory* mem, lua_State *L) {
-    //table, index
-    auto index = lua_tointeger(L, -1);
-    if(index >= mem->getLength()){
-        return luaL_error(L, "index(%d) out of range(%d).", index, mem->getLength());
-    }
-    switch (mem->_types[0]) {
-        case 'f':
-            lua_pushnumber(L, read_float(mem, index));
-            return 1;
-        case 'd':
-            lua_pushnumber(L, read_uint32_t(mem, index));
-            return 1;
-        case 'w':
-            lua_pushnumber(L, read_uint16_t(mem, index));
-            return 1;
-
-        case 'b': {
-            lua_pushnumber(L, read_uint8_t(mem, index));
-            return 1;
-        }
-
-        case 's': {
-            lua_pushnumber(L, read_short(mem, index));
-            return 1;
-        }
-        case 'i': {
-            lua_pushnumber(L, read_int(mem, index));
-            return 1;
-        }
-        case 'c': {
-            lua_pushnumber(L, read_char(mem, index));
-            return 1;
-        }
-
-        case 'F': {
-            lua_pushnumber(L, read_double(mem, index));
-            return 1;
-        }
-
-        default:
-            return luaL_error(L, "wrong data type = %s", mem->_types);
-    }
-}
 void SkMemory::toString(SB::StringBuilder& ss) {
     auto len = getLength();
     switch (_types[0]) {
@@ -1221,28 +1137,6 @@ SkMemory* SkAnyMemory::dot(SkMemoryMatrix *val) {
     }
     return pMemory;
 }
-double SkAnyMemory::get(size_t index, bool* success) {
-    SkAnyMemory* mem = this;
-    int bytes = index / mem->_elementCount * mem->size / mem->_tabCount;
-    const auto typesLen = strlen(mem->_types);
-    char t;
-    for (int i = 0, len = index % mem->_elementCount + 1; i < len; ++i) {
-        t = mem->_types[i % typesLen];
-        //for last we read data to lua stack
-        if(i == len - 1){
-            if(success){
-                *success = true;
-            }
-            return MemoryUtils::getValue(mem->data, t, bytes);
-        }
-        bytes += MemoryUtils::getUnitSize(t);
-    }
-    if(success){
-        *success = false;
-    }
-    return -1;
-}
-
 bool SkAnyMemory::equals(SkAnyMemory *o) {
     if(o == NULL || strcmp(getTypes(), o->getTypes()) != 0){
         return false;
@@ -1268,7 +1162,7 @@ bool SkAnyMemory::setValue(int index, double val) {
         return false;
     }
     auto types = getTypes();
-    MemoryUtils::write(data, types[index % getLength()],
+    MemoryUtils::write(data, types[index % strlen(types)],
             MemoryUtils::computeBytesIndex(types, index), val);
     return true;
 }
@@ -1277,64 +1171,8 @@ bool SkAnyMemory::getValue(int index, double *result) {
         return false;
     }
     auto types = getTypes();
-    *result = MemoryUtils::getValue(data, types[index % getLength()], MemoryUtils::computeBytesIndex(types, index));
+    *result = MemoryUtils::getValue(data, types[index % strlen(types)], MemoryUtils::computeBytesIndex(types, index));
     return true;
-}
-
-//read data to lua stack
-int SkAnyMemory::read(SkAnyMemory *mem, lua_State *L) {
-    //table, index
-    auto index = lua_tointeger(L, -1);
-    if(index >= mem->getLength()){
-        return luaL_error(L, "index(%d) out of range(%d).", index, mem->getLength());
-    }
-    bool success;
-    double val = mem->get(index, &success);
-    if(success){
-        lua_pushnumber(L, val);
-        return 1;
-    }
-    return luaL_error(L, "wrong index");
-
-    //base bytes
-    /*int bytes = index / mem->_elementCount * mem->size / mem->_tabCount;
-    const auto typesLen = strlen(mem->_types);
-    char t;
-    for (int i = 0, len = index % mem->_elementCount + 1; i < len; ++i) {
-        t = mem->_types[i % typesLen];
-        //for last we read data to lua stack
-        if(i == len - 1){
-            if(MemoryUtils::write(L, t, mem->data, bytes) < 0){
-                return 0;
-            }
-            return 1;
-        }
-        bytes += MemoryUtils::getUnitSize(t);
-    }
-    return luaL_error(L, "wrong index");*/
-}
-int SkAnyMemory::write(SkAnyMemory *mem, lua_State *L) {
-    //table, index, value
-    auto index = lua_tointeger(L, -2);
-    if(index >= mem->getLength()){
-        return luaL_error(L, "index(%d) out of range(%d).", index, mem->getLength());
-    }
-    //base bytes
-    int bytes = index / mem->_elementCount * mem->size / mem->_tabCount;
-    const auto typesLen = strlen(mem->_types);
-    char t;
-    for (int i = 0, len = index % mem->_elementCount + 1; i < len; ++i) {
-        t = mem->_types[i % typesLen];
-        //for last we read data from lua stack
-        if(i == len - 1){
-            if(MemoryUtils::read(L, t, mem->data, bytes) < 0){
-                return 0;
-            }
-            return 1;
-        }
-        bytes += MemoryUtils::getUnitSize(t);
-    }
-    return 0;
 }
 
 SkMemory *SkAnyMemory::extract(size_t start, size_t end1) {
@@ -2185,7 +2023,9 @@ double SkMemoryMatrix::remainderValue(size_t rowIndex, size_t columnIndex) {
         curVal = MemoryUtils::getValue(array[rowIndex]->data, type,
                 MemoryUtils::getUnitSize(type) * columnIndex);
     } else{
-        curVal = anyArray[rowIndex]->get(columnIndex, nullptr);
+        if(!anyArray[rowIndex]->getValue(columnIndex, &curVal)){
+            LOGW("getValue failed from index = %d", columnIndex);
+        }
     }
 
     SkMemoryMatrix *mat = remainderMat(rowIndex, columnIndex);

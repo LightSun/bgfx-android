@@ -60,16 +60,6 @@ public:
     void toString(SB::StringBuilder &sb);
 
     const char *getTypes(){ return _types;}
-//------ index start from 0 --------
-    /**
-     * read data from memory to lua stack
-     */
-    static int read(SkMemory *mem, lua_State *L);
-
-    /**
-    * write data from lua stack to memory
-    */
-    static int write(SkMemory *mem, lua_State *L);
 
     int getLength();
 
@@ -151,10 +141,22 @@ public:
       */
     SkMemory *concat(SkAnyMemory *pMemory, int resultCount, char resultType = DEF_RESHAPE_TYPE, double defVal = 0);
 
+    /**
+     * flip the memory data
+     * @param copy true if result as copy
+     * @return the result memory
+     */
     SkMemory *flip(bool copy = true);
 
+    /**
+     * like matlib diag for build mat.
+     * @param k the k index
+     * @param defVal the default value
+     * @return the mat
+     */
     SkMemoryMatrix* diag(int k = 0, double defVal = 0);
 
+    //------ index start from 0 --------
     bool setValue(int index, double val);
     bool getValue(int index, double* result);
 public:
@@ -175,10 +177,6 @@ public:
     const char *_types;
     uint16_t _tabCount;      //table count.
     uint16_t _elementCount;  //element count of every table
-
-    static int read(SkAnyMemory *mem, lua_State *L);
-
-    static int write(SkAnyMemory *mem, lua_State *L);
 
 public:
     /**
@@ -243,7 +241,6 @@ public:
 
     int getLength() { return _tabCount * _elementCount; }
 
-    double get(size_t index, bool* success);
     SkMemory *kickOut(size_t index);
 
     bool equals(SkAnyMemory* o);
