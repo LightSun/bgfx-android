@@ -9,7 +9,7 @@
 
 #include "lua.hpp"
 #include "IMemory.h"
-#define DEF_RESHAPE_TYPE 0  //default unknown type
+#include "SkHolder.h"
 
 class SkMemory;
 
@@ -422,10 +422,13 @@ public:
      */
     int tiled(lua_State *L);
 
+    bool equals(SkMemoryMatrix* o);
+
     bool getValue(int rowIndex, int colIndex, double* result);
     bool setValue(int rowIndex, int colIndex, double val);
+    bool getValueRowByRow(int index, double *outVal);
 
-    bool equals(SkMemoryMatrix* o);
+    bool getValueColByCol(int index, double *outVal);
 };
 
 #endif //BGFX_STUDY_SKMEMORY_H

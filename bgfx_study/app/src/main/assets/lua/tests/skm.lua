@@ -29,18 +29,12 @@ assert(r[3] == -5)
 assert(r[4] == -6)
 
 -- reshape, concat, flip, diag
-print("------- start test SkMemory -> reshape ------ ")
+print("------- start test SkMemory -> reshape (rowC, [colC, type, def_val]) ------ ")
 m = mem.new('i', {1, 2, 3});
 print("reshape", m.reshape(4))
 assert(m.reshape(4) == mem.new('i', {1, 2, 3, 0}));
 assert(m.reshape(4, 'f') == mem.new('f', {1, 2, 3, 0}));
 assert(m.reshape(4, 'd', 10) == mem.new('d', {1, 2, 3, 10}));
-
-print("------- start test SkMemory -> reshapeBefore ------ ")
-print("reshapeBefore", m.reshapeBefore(4))
-assert(m.reshapeBefore(4) == mem.new('i', {0, 1, 2, 3}));
-assert(m.reshapeBefore(4, 'f') == mem.new('f', {0, 1, 2, 3}));
-assert(m.reshapeBefore(4, 'd', 10) == mem.new('d', {10, 1, 2, 3}));
 
 print("------- start test SkMemory -> concat ------ (mem, [count, type, defVal])")
 r = m.concat(mem.new('i', {4, 5, 6}));

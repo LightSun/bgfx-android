@@ -4,6 +4,7 @@
 #include <cstring>
 #include "SkMemory_lua.h"
 #include "SkMemory.h"
+#include "SkMemoryUtils.h"
 #include "bgfx_wrapper.h"
 #include "log.h"
 
@@ -190,43 +191,73 @@ lua_pushboolean(L, eq);\
 return 1;\
 }
 
-//count, type, def value
-#define memory_reshape(mem, method)\
-static int mem##_##method(lua_State *L) {\
+#define PUSH_HOLDER(holder)\
+if(holder.type == TYPE_MEM){\
+    SkMemory* outMem = static_cast<SkMemory *>(holder.ptr);\
+    LuaUtils::push_ptr(L, outMem);\
+    return 1;\
+} else if(holder.type == TYPE_MEM_ANY){\
+    SkAnyMemory* outMem = static_cast<SkAnyMemory *>(holder.ptr);\
+    LuaUtils::push_ptr(L, outMem);\
+    return 1;\
+}else if(holder.type == TYPE_MEM_MAT){\
+    SkMemoryMatrix* outMem = static_cast<SkMemoryMatrix *>(holder.ptr);\
+    LuaUtils::push_ptr(L, outMem);\
+    return 1;\
+} else if(holder.type == TYPE_ERROR_MSG){\
+    return luaL_error(L, holder.msg);\
+}else{\
+    return luaL_error(L, "wrong type = %d", holder.type);\
+}
+
+/* (rowC, colC, type, def_val) */
+#define memory_reshape(mem)\
+static int mem##_reshape(lua_State *L) {\
     auto pMemory = LuaUtils::get_ref<mem>(L, lua_upvalueindex(1));\
-    auto count = lua_tointeger(L, 1);\
-    if(count <= 0 ){ \
-        return luaL_error(L, "wrong count for reshape.");\
-    }\
-    auto top = lua_gettop(L);\
-    SkMemory* result = nullptr;\
-    switch (top){\
+    SkHolder holder;\
+    switch (lua_gettop(L)){\
+        case 4:{\
+            auto str = lua_tostring(L, 3);\
+            SkMemoryUtils::reshapeMem(pMemory, lua_tointeger(L, 1), lua_tointeger(L, 2), str[0], lua_tonumber(L, 4), &holder);\
+        }break;\
         case 3:{\
-            auto str = lua_tostring(L, 2);\
-            result = pMemory->method(count, str[0], lua_tonumber(L, 3));\
+            auto ct = lua_type(L, 2);\
+            if(ct == LUA_TSTRING){\
+                /* rowC, type, def_val. */ \
+                auto str = lua_tostring(L, 2);\
+                SkMemoryUtils::reshapeMem(pMemory, lua_tointeger(L, 1), 0, str[0], lua_tonumber(L, 3), &holder);\
+            } else if(ct == LUA_TNUMBER){\
+                if(lua_type(L, 3) == LUA_TSTRING){\
+                    /*rowC, colC,  type. */\
+                    auto str = lua_tostring(L, 3);\
+                    SkMemoryUtils::reshapeMem(pMemory, lua_tointeger(L, 1), lua_tointeger(L, 2), str[0], DEF_VALUE, &holder);\
+                } else{\
+                    /* rowC, colC,  def_val. */\
+                    SkMemoryUtils::reshapeMem(pMemory, lua_tointeger(L, 1), lua_tointeger(L, 2),\
+                            DEF_RESHAPE_TYPE, lua_tonumber(L, 3), &holder);\
+                }\
+            } else{\
+                return luaL_error(L, "wrong arguments. expect is (rowC, [colC, type, def_val])");\
+            }\
         }break;\
         case 2:{\
-            auto lt = lua_type(L, 2);\
-            if(lt == LUA_TNUMBER){\
-                result = pMemory->method(count, DEF_RESHAPE_TYPE, lua_tonumber(L, 2));\
-            } else if(lt == LUA_TSTRING){\
+            auto ct = lua_type(L, 2);\
+            if(ct == LUA_TSTRING){\
+                /* rowC, type */\
                 auto str = lua_tostring(L, 2);\
-                result = pMemory->method(count, str[0]);\
-            } else{\
-                return luaL_error(L, "wrong arguments. expect is (count, [type, default_value])");\
+                SkMemoryUtils::reshapeMem(pMemory, lua_tointeger(L, 1), 0, str[0], DEF_VALUE, &holder);\
+            }else{\
+                SkMemoryUtils::reshapeMem(pMemory, lua_tointeger(L, 1), lua_tointeger(L, 2), DEF_RESHAPE_TYPE, DEF_VALUE, &holder);\
             }\
         }break;\
         case 1:{\
-            result = pMemory->method(count);\
+            SkMemoryUtils::reshapeMem(pMemory, lua_tointeger(L, 1), 0,  DEF_RESHAPE_TYPE, DEF_VALUE, &holder);\
         }break;\
-        default:\
-            return luaL_error(L, "wrong arguments. expect is (count, [type, default_value])");\
     }\
-    if(result != nullptr){\
-        LuaUtils::push_ptr(L, result);\
-        return 1;\
+    if(holder.type != TYPE_NONE){\
+        PUSH_HOLDER(holder)\
     }\
-    return 0;\
+    return luaL_error(L, "wrong arguments. expect is (rowC, [colC, type, def_val])");\
 }
 
 #define memory_concat(mem)\
@@ -350,10 +381,8 @@ static int mem##_diag(lua_State *L) {\
 memory_diag(SkMemory)
 memory_diag(SkAnyMemory)
 
-memory_reshape(SkMemory,reshape)
-memory_reshape(SkAnyMemory,reshape)
-memory_reshape(SkMemory,reshapeBefore)
-memory_reshape(SkAnyMemory,reshapeBefore)
+memory_reshape(SkMemory)
+memory_reshape(SkAnyMemory)
 
 memory_concat(SkMemory)
 memory_concat(SkAnyMemory)
@@ -423,7 +452,6 @@ static const luaL_Reg s##type##_Methods[] = { \
         {"extract",          type##_extract}, \
         {"kickOut",          type##_kickOut}, \
         {"reshape",          type##_reshape}, \
-        {"reshapeBefore",    type##_reshapeBefore}, \
         {"concat",           type##_concat}, \
         {"flip",             type##_flip}, \
         {"diag",             type##_diag}, \
@@ -692,38 +720,82 @@ static int SkMemoryMatrix_extractMat(lua_State *L) {
     }
     return 0;
 }
+//(mode, rowC, colC, type, def_val)
 static int SkMemoryMatrix_reshape(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));
     int c = lua_gettop(L);
-    SkMemoryMatrix* result;
+    SkHolder holder;
     switch (c){
+        case 5:{
+            auto str = lua_tostring(L, 4);
+            SkMemoryUtils::reshapeMat(pMemory, lua_tostring(L, 1),lua_tointeger(L, 2), lua_tointeger(L, 3),
+                                      str[0], lua_tonumber(L, 5), &holder);
+        }break;
         case 4: {
-            auto str = lua_tostring(L, -2);
-            result = pMemory->reshape(lua_tointeger(L, -4), lua_tointeger(L, -3),
-                                      str[0], lua_tonumber(L, -1));
-        }
-            break;
-        case 3:{
-            if(lua_type(L, -1) == LUA_TSTRING){
-                auto str = lua_tostring(L, -1);
-                result = pMemory->reshape(lua_tointeger(L, -3), lua_tointeger(L, -2),
-                                          str[0]);
-            } else if(lua_type(L, -1) == LUA_TNUMBER){
-                result = pMemory->reshape(lua_tointeger(L, -3), lua_tointeger(L, -2), DEF_RESHAPE_TYPE,
-                                          lua_tonumber(L, -1));
+            if(lua_type(L, 1) == LUA_TSTRING){
+                if(lua_type(L, 4) == LUA_TSTRING){
+                    /* mode, rowC, colC, type */
+                    auto str = lua_tostring(L, 4);
+                    SkMemoryUtils::reshapeMat(pMemory, lua_tostring(L, 1),lua_tointeger(L, 2), lua_tointeger(L, 3),
+                                              str[0], DEF_VALUE, &holder);
+                } else{
+                    /* mode, rowC, colC, def_val */
+                    SkMemoryUtils::reshapeMat(pMemory, lua_tostring(L, 1),lua_tointeger(L, 2), lua_tointeger(L, 3),
+                                              DEF_RESHAPE_TYPE, lua_tonumber(L, 4), &holder);
+                }
             } else{
-                return luaL_error(L, "wrong arguments for mat.reshape. expect is (int, int, string, number)");
+                /* rowC, colC, type, def_val */
+                auto str = lua_tostring(L, 3);
+                SkMemoryUtils::reshapeMat(pMemory, MODE_ROW, lua_tointeger(L, 1), lua_tointeger(L, 2),
+                                          str[0], lua_tonumber(L, 4), &holder);
             }
-        }
-            break;
-        default:
-            return luaL_error(L, "wrong arguments for mat.reshape. expect is (int, int, string, number)");
+        }break;
+        case 3:{
+            if(lua_type(L, 1) == LUA_TSTRING){
+                if(lua_type(L, 3) == LUA_TSTRING){
+                    /* mode, rowC, type */
+                    auto str = lua_tostring(L, 3);
+                    SkMemoryUtils::reshapeMat(pMemory, lua_tostring(L, 1),lua_tointeger(L, 2), 0,
+                                              str[0], DEF_VALUE, &holder);
+                } else{
+                    /* mode, rowC, colC */
+                    SkMemoryUtils::reshapeMat(pMemory, lua_tostring(L, 1),lua_tointeger(L, 2), lua_tointeger(L, 3),
+                                              DEF_RESHAPE_TYPE, DEF_VALUE, &holder);
+                }
+            } else{
+                if(lua_type(L, 3) == LUA_TSTRING){
+                    /*rowC, colC, type */
+                    auto str = lua_tostring(L, 3);
+                    SkMemoryUtils::reshapeMat(pMemory, MODE_ROW, lua_tointeger(L, 1), lua_tointeger(L, 2),
+                                              str[0], DEF_VALUE, &holder);
+                } else{
+                    /*rowC, colC, def_val */
+                    SkMemoryUtils::reshapeMat(pMemory, MODE_ROW, lua_tointeger(L, 1), lua_tointeger(L, 2),
+                                              DEF_RESHAPE_TYPE, lua_tonumber(L, 3), &holder);
+                }
+            }
+        }break;
+        case 2:{
+            if(lua_type(L, 1) == LUA_TSTRING){
+                /* mode, rowC */
+                SkMemoryUtils::reshapeMat(pMemory, lua_tostring(L, 1), lua_tointeger(L, 2), 0,
+                                          DEF_RESHAPE_TYPE, DEF_VALUE, &holder);
+            } else{
+                /* rowC, colC */
+                SkMemoryUtils::reshapeMat(pMemory, MODE_ROW, lua_tointeger(L, 1), lua_tointeger(L, 2),
+                                          DEF_RESHAPE_TYPE, DEF_VALUE, &holder);
+            }
+        }break;
+        case 1:{
+            /* rowC */
+            SkMemoryUtils::reshapeMat(pMemory, MODE_ROW, lua_tointeger(L, 1), 0,
+                                      DEF_RESHAPE_TYPE, DEF_VALUE, &holder);
+        }break;
     }
-    if(result != NULL){
-        LuaUtils::push_ptr(L, result);
-        return 1;
+    if(holder.type != TYPE_NONE){
+        PUSH_HOLDER(holder)
     }
-    return 0;
+    return luaL_error(L, "wrong arguments for mat.reshape. expect is ([string mode,] int rowC [, int colC, string type, number def_val])");
 }
 static int SkMemoryMatrix_concat(lua_State *L) {
     auto pMemory = LuaUtils::get_ref<SkMemoryMatrix>(L, lua_upvalueindex(1));

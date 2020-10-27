@@ -719,20 +719,20 @@ void SkMemory::swapValue(int index1, int index2) {
 }
 
 bool SkMemory::setValue(int index, double val) {
-    if(0 <= index < getLength()){
-        auto unitSize = MemoryUtils::getUnitSize(getTypes()[0]);
-        MemoryUtils::setValue(data, getTypes()[0], unitSize * index, val);
-        return true;
+    if(index < 0 || index >= getLength()){
+        return false;
     }
-    return false;
+    auto unitSize = MemoryUtils::getUnitSize(getTypes()[0]);
+    MemoryUtils::setValue(data, getTypes()[0], unitSize * index, val);
+    return true;
 }
 bool SkMemory::getValue(int index, double* result) {
-    if(0 <= index < getLength()){
-        auto unitSize = MemoryUtils::getUnitSize(getTypes()[0]);
-        *result = MemoryUtils::getValue(data, getTypes()[0], unitSize * index);
-        return true;
+    if(index < 0 || index >= getLength()){
+        return false;
     }
-    return false;
+    auto unitSize = MemoryUtils::getUnitSize(getTypes()[0]);
+    *result = MemoryUtils::getValue(data, getTypes()[0], unitSize * index);
+    return true;
 }
 
 //======================= SKAnyMemory ===================================
@@ -1651,6 +1651,9 @@ int SkMemoryMatrix::tiled(lua_State *L) {
 }
 
 bool SkMemoryMatrix::getValue(int rowIndex, int colIndex, double* result) {
+    if(rowIndex >= getRowCount()){
+        return false;
+    }
     if(isSingleType()){
         return array[rowIndex]->getValue(colIndex, result);
     } else{
@@ -1658,6 +1661,9 @@ bool SkMemoryMatrix::getValue(int rowIndex, int colIndex, double* result) {
     }
 }
 bool SkMemoryMatrix::setValue(int rowIndex, int colIndex, double val) {
+    if(rowIndex >= getRowCount()){
+        return false;
+    }
     if(isSingleType()){
         return array[rowIndex]->setValue(colIndex, val);
     } else{
@@ -2517,4 +2523,20 @@ void SkMemoryMatrix::swapValue(int rowIndex1, int colIndex1, int rowIndex2, int 
         );
         MemoryUtils::setValue(mem2->data, type2, offset2, tmpVal);
     }
+}
+//get the value row by row
+bool SkMemoryMatrix::getValueRowByRow(int index, double *outVal) {
+    if(index < 0 || index >= getRowCount() * getColumnCount()){
+        return false;
+    }
+    const auto cc = getColumnCount();
+    return getValue(index / cc, index % cc, outVal);
+}
+//get the value column by column
+bool SkMemoryMatrix::getValueColByCol(int index, double *outVal) {
+    if(index < 0 || index >= getRowCount() * getColumnCount()){
+        return false;
+    }
+    const auto cc = getRowCount();
+    return getValue(index % cc, index / cc, outVal);;
 }

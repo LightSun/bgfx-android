@@ -38,14 +38,6 @@ assert(m.reshape(6), mem.new('F', { 1, 2, 3, 4, 0, 0 }));
 assert(m.reshape(6, 'i'), mem.new('i', { 1, 2, 3, 4, 0, 0 }));
 assert(m.reshape(6, 'i', 10), mem.new('i', { 1, 2, 3, 4, 10, 10 }));
 
-print("------ start test AnyMemory-> reshapeBefore -------")
---default reshape type is merged: 'if' merged to 'F' as double.
-assert(m.reshapeBefore(6), mem.new('F', { 0, 0, 1, 2, 3, 4 }));
--- assigned result type is 'i' as int.
-assert(m.reshapeBefore(6, 'i'), mem.new('i', { 0, 0, 1, 2, 3, 4 }));
--- assigned result type is 'i' as int. and with default value is 10.
-assert(m.reshapeBefore(6, 'i', 10), mem.new('i', { 10, 10, 1, 2, 3, 4 }));
-
 print("------- start test AnyMemory -> concat ------ (mem, count, type, defVal)")
 r = m.concat(mem.new('i', { 5, 6 }));
 assert(r == mem.new('F', { 1, 2, 3, 4, 5, 6 }))
