@@ -42,7 +42,7 @@ assert(m.reshapeBefore(4) == mem.new('i', {0, 1, 2, 3}));
 assert(m.reshapeBefore(4, 'f') == mem.new('f', {0, 1, 2, 3}));
 assert(m.reshapeBefore(4, 'd', 10) == mem.new('d', {10, 1, 2, 3}));
 
-print("------- start test SkMemory -> concat ------ (mem, count, type, defVal)")
+print("------- start test SkMemory -> concat ------ (mem, [count, type, defVal])")
 r = m.concat(mem.new('i', {4, 5, 6}));
 print("concat", r)
 assert(r == mem.new('i', {1, 2, 3, 4, 5, 6}))
@@ -63,6 +63,7 @@ print("------- start test SkMemory -> flip ------ ")
 assert(m.flip() == mem.new('i', {3, 2, 1}))
 
 print("------- start test SkMemory -> diag ------ ")
+-- default k = 0, default value = 0
 r = m.diag();
 print("diag =",r)
 assert(r == mem.newMat('i',
@@ -100,6 +101,15 @@ assert(r == mem.newMat('i',
 -- with k = 1. default value -100
 r = m.diag(1, -100);
 assert(r == mem.newMat('i',
+        {-100, 1, -100, -100},
+        {-100, -100, 2, -100},
+        {-100, -100, -100, 3},
+        {-100, -100, -100, -100}
+))
+
+-- with k = 1. type is 's' as short, default value -100
+r = m.diag(1, 's', -100);
+assert(r == mem.newMat('s',
         {-100, 1, -100, -100},
         {-100, -100, 2, -100},
         {-100, -100, -100, 3},

@@ -315,11 +315,27 @@ static int mem##_diag(lua_State *L) {\
     auto pMemory = LuaUtils::get_ref<mem>(L, lua_upvalueindex(1));\
     SkMemoryMatrix * result = nullptr;\
     switch(lua_gettop(L)){\
+        case 3:{\
+            auto str = lua_tostring(L, 2);\
+            result = pMemory->diag(lua_tointeger(L, 1), str[0], lua_tonumber(L, 3));\
+        }break;\
         case 2:{\
-            result = pMemory->diag(lua_tointeger(L, 1), lua_tonumber(L, 2));\
+            int t = lua_type(L, 2);\
+            if(t == LUA_TSTRING){\
+                auto str = lua_tostring(L, 2);\
+                result = pMemory->diag(lua_tointeger(L, 1), str[0]);\
+            } else if(t == LUA_TNUMBER){\
+                result = pMemory->diag(lua_tointeger(L, 1), DEF_RESHAPE_TYPE, lua_tonumber(L, 2));\
+            }\
         }break;\
         case 1:{\
-            result = pMemory->diag(lua_tointeger(L, 1));\
+            int t = lua_type(L, 1);\
+            if(t == LUA_TSTRING){\
+                 auto str = lua_tostring(L, 1);\
+                 result = pMemory->diag(0, str[0]);\
+            }else if(t == LUA_TNUMBER){\
+                 result = pMemory->diag(lua_tointeger(L, 1));\
+            }\
         }break;\
         case 0:{\
             result = pMemory->diag();\

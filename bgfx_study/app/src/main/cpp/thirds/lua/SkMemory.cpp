@@ -662,14 +662,17 @@ SkMemory *SkMemory::flip(bool copy) {
     return this;
 }
 //将当前的memory 当作斜线的元素数组 组成mat.
-SkMemoryMatrix* SkMemory::diag(int k, double defVal) {
+SkMemoryMatrix* SkMemory::diag(int k, char t,double defVal) {
     auto curC = getLength();
     int n = getLength() + abs(k);
+    if(t == DEF_RESHAPE_TYPE){
+        t = getTypes()[0];
+    }
 
     //init mat
     auto mat = new SkMemoryMatrix(n, true);
     for (int i = 0; i < n; ++i) {
-        mat->array[i] = SkMemory::create(getTypes(), n);
+        mat->array[i] = SkMemory::create(t, n);
     }
 
     //要改变的数据Index
@@ -1326,33 +1329,40 @@ SkMemory* SkAnyMemory::concat(SkAnyMemory *oth, int resultCount, char resultType
 
 SkMemory *SkAnyMemory::flip() {
     const auto size = getLength();
-    auto rt = MemoryUtils::computeType(getTypes());
+    auto srcTypes = getTypes();
+    const auto src_lenTypes = strlen(srcTypes);
+
+    auto rt = MemoryUtils::computeType(srcTypes);
     auto unitSize = MemoryUtils::getUnitSize(rt);
     auto pMemory = SkMemory::create(rt, size);
     
     char type;
     double val;
-    for (int i = 0, c = size / 2; i < c; ++i) {
-        type = getTypes()[(size - i - 1) % size];
+    for (int i = 0; i < size; ++i) {
+        type = srcTypes[(size - i - 1) % src_lenTypes];
         val = MemoryUtils::getValue(data, type, 
-                MemoryUtils::computeBytesIndex(getTypes(), size - i - 1));
+                MemoryUtils::computeBytesIndex(srcTypes, size - i - 1));
         MemoryUtils::setValue(pMemory->data, rt, i * unitSize, val);
     }
     return pMemory;
 }
 //将当前的memory 当作斜线的元素数组 组成mat.
-SkMemoryMatrix* SkAnyMemory::diag(int k, double defVal) {
+SkMemoryMatrix* SkAnyMemory::diag(int k, char rt, double defVal) {
     auto curC = getLength();
     int n = getLength() + abs(k);
+    if(rt == DEF_RESHAPE_TYPE){
+        rt = MemoryUtils::computeType(getTypes());
+    }
 
     //init mat. n *n
-    auto rt = MemoryUtils::computeType(getTypes());
     auto mat = new SkMemoryMatrix(n, true);
     for (int i = 0; i < n; ++i) {
         mat->array[i] = SkMemory::create(rt, n);
     }
-
-    //要改变的数据Index
+    //row-column
+    //--- (0,1), (0,2), (0,3)...(0,n)
+    //----(1,1), (1,2), (1,3)...(1,n)
+    //----...
     //从左下角。n行0列开始，
     //colIndex, rowIndex
     int lt[2];
@@ -2286,6 +2296,7 @@ SkMemory* SkMemoryMatrix::diag(int k) {
     //要改变的数据Index
     //从左下角。n行0列开始，
     //colIndex, rowIndex
+    //TODO opt
     int lt[2] = {0, n - 1 - index};
     int rb[2] = {n - 1 - index, n - 1};
     //create mem
@@ -2296,7 +2307,7 @@ SkMemory* SkMemoryMatrix::diag(int k) {
     //set data
     double val;
     for (int i = 0; i < count; ++i) {
-        getValue(n - 1 - index + i, i, &val);
+        getValue(i - k, i, &val);
         MemoryUtils::setValue(outMem->data, rt, out_unitSize * i, val);
     }
     return outMem;

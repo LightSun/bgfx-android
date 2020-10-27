@@ -29,6 +29,9 @@ class SkMemory : public SimpleMemory {
 
 public:
 
+    static SkMemory* create(const char* type, int count);
+    static SkMemory* create(char type, int count);
+
     ~SkMemory();
     /**
      * one memory contains can multi table.
@@ -94,9 +97,6 @@ public:
 
     SkMemory *extract(size_t start, size_t end1);
 
-    static SkMemory* create(const char* type, int count);
-    static SkMemory* create(char type, int count);
-
     /** kick out the index value from memory data.*/
     SkMemory *kickOut(size_t index);
 
@@ -151,10 +151,11 @@ public:
     /**
      * like matlib diag for build mat.
      * @param k the k index
+     * @param t the target result type. default is unknown
      * @param defVal the default value
      * @return the mat
      */
-    SkMemoryMatrix* diag(int k = 0, double defVal = 0);
+    SkMemoryMatrix* diag(int k = 0, char t = DEF_RESHAPE_TYPE,double defVal = 0);
 
     //------ index start from 0 --------
     bool setValue(int index, double val);
@@ -237,7 +238,7 @@ public:
     SkMemory *concat(SkAnyMemory *pMemory, int resultCount, char type = DEF_RESHAPE_TYPE, double defVal = 0);
 
     SkMemory *flip();
-    SkMemoryMatrix* diag(int k = 0, double defVal = 0);
+    SkMemoryMatrix* diag(int k = 0, char t = DEF_RESHAPE_TYPE, double defVal = 0);
 
     int getLength() { return _tabCount * _elementCount; }
 
