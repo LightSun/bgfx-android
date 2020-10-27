@@ -309,7 +309,7 @@ public:
 
     inline int getLength() { return count; }
 
-    int getRowCount() { return count; }
+    inline int getRowCount() { return count; }
 
     int getColumnCount();
 

@@ -2,12 +2,12 @@
 // Created by Administrator on 2020/10/8 0008.
 //
 
-#ifndef BGFX_STUDY_MATUTILS_H
-#define BGFX_STUDY_MATUTILS_H
+#ifndef BGFX_STUDY_MATHUTILS_H
+#define BGFX_STUDY_MATHUTILS_H
 
 #include <functional>
 
-class MatUtils{
+class MathUtils{
 public:
     //typedef void (*SetValue)(int id1, int id2, double value);
    // typedef double (*GetValue)(int id1, int id2);
@@ -24,4 +24,4 @@ public:
 };
 
 
-#endif //BGFX_STUDY_MATUTILS_H
+#endif //BGFX_STUDY_MATHUTILS_H

@@ -7,7 +7,7 @@
 #include "SkMemory.h"
 #include "common.h"
 #include "LuaUtils.h"
-#include "MatUtils.h"
+#include "MathUtils.h"
 #include "HMath.h"
 
 #define copy_data_f(dType) \
@@ -528,7 +528,7 @@ bool SkMemory::equals(SkMemory *o) {
         v1 = MemoryUtils::getValue(data, type, unitSize * i);
         v2 = MemoryUtils::getValue(o->data, type, unitSize * i);
         //compare double or float need fabs/fabsf
-        if(!MatUtils::doubleEqual(v1, v2)){
+        if(!MathUtils::doubleEqual(v1, v2)){
             return false;
         }
     }
@@ -1127,8 +1127,8 @@ bool SkAnyMemory::equals(SkAnyMemory *o) {
     size_t bytes = 0;
     for (int i = 0, c = getLength(); i < c; ++i) {
         type = getTypes()[i % len_type];
-        if(!MatUtils::doubleEqual(MemoryUtils::getValue(data, type, bytes),
-                MemoryUtils::getValue(o->data, type, bytes))){
+        if(!MathUtils::doubleEqual(MemoryUtils::getValue(data, type, bytes),
+                                   MemoryUtils::getValue(o->data, type, bytes))){
             return false;
         }
         bytes += MemoryUtils::getUnitSize(type);
@@ -2289,25 +2289,34 @@ SkMemory* SkMemoryMatrix::diag(int k) {
     }
     auto n = getRowCount();
     //getLength() - 1: 主对角线 index
-    const int index = n - 1 + k; //include index
-    if(index > 2*n - 1){
-        return nullptr;
-    }
-    //要改变的数据Index
+    //row-column
+    //--- (0,1), (0,2), (0,3)...(0,n)
+    //----(1,1), (1,2), (1,3)...(1,n)
+    //----...
     //从左下角。n行0列开始，
     //colIndex, rowIndex
-    //TODO opt
-    int lt[2] = {0, n - 1 - index};
-    int rb[2] = {n - 1 - index, n - 1};
+    int lt[2];
+    int rb[2];
+    if(k > 0){
+        lt[0] = k;
+        lt[1] = 0;
+        rb[0] = n - 1;
+        rb[1] = n - 1 - k;
+    } else{
+        lt[0] = 0;
+        lt[1] = -k;
+        rb[0] = n - 1 + k;
+        rb[1] = n - 1;
+    }
     //create mem
-    const int count = n - index; //n - 1 - index - 0
+    const int count = n - abs(k);
     auto rt = MemoryUtils::computeType(getTypes());
     auto out_unitSize = MemoryUtils::getUnitSize(rt);
     auto outMem = SkMemory::create(rt, count);
     //set data
     double val;
     for (int i = 0; i < count; ++i) {
-        getValue(i - k, i, &val);
+        getValue(lt[1] + i, lt[0] + i, &val);
         MemoryUtils::setValue(outMem->data, rt, out_unitSize * i, val);
     }
     return outMem;
@@ -2388,7 +2397,7 @@ int SkMemoryMatrix::inverse(lua_State* L) {
     auto func_get = [&](int id1, int id2){
         return MemoryUtils::getValue(mat->array[id1]->data, rt, id2 * unitSize);
     };
-    auto result = MatUtils::inverse(getRowCount(), func_set, func_get);
+    auto result = MathUtils::inverse(getRowCount(), func_set, func_get);
     if(result){
         return 1;
     }

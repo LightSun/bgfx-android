@@ -3,7 +3,7 @@
 //
 
 #include "HMath.h"
-#include "MatUtils.h"
+#include "MathUtils.h"
 
 namespace HMath{
     LinearEquation::LinearEquation(double a, double b) {
@@ -22,7 +22,7 @@ namespace HMath{
     }
     int LinearEquation::getLocation(double x, double y) {
         const auto ey = a * x + b;
-        if(MatUtils::doubleEqual(ey, y)){
+        if(MathUtils::doubleEqual(ey, y)){
             return 0;
         }
         if(ey > y){

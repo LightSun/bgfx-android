@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "MatUtils.h"
+#include "MathUtils.h"
 
 static inline uint64_t DoubleToBaised(double x)
 {
@@ -20,8 +20,8 @@ static inline uint64_t DoubleToBaised(double x)
 
 // three methods: https://blog.csdn.net/u010551600/article/details/81504909
 // this is from https://blog.csdn.net/luofl1992/article/details/7792632
-int MatUtils::inverse(int n, const std::function<void(int, int, double)>& func_set,
-                      const std::function<double(int, int)>& func_get) {
+int MathUtils::inverse(int n, const std::function<void(int, int, double)>& func_set,
+                       const std::function<double(int, int)>& func_get) {
     int *is = new int[n];
     int *js = new int[n];
     int i, j, k;
@@ -109,7 +109,7 @@ int MatUtils::inverse(int n, const std::function<void(int, int, double)>& func_s
     return 1;
 }
 //from google unit-test
-bool MatUtils::doubleEqual(double x1, double x2) {
+bool MathUtils::doubleEqual(double x1, double x2) {
     uint64_t u1 = DoubleToBaised(x1);
     uint64_t u2 = DoubleToBaised(x2);
     int ulp = 4;

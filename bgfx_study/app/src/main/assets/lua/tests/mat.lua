@@ -1,12 +1,12 @@
 
 local mem = require("memory")
 
-local mat;
+local mat, r;
 -- 逆矩阵
 mat = mem.newMat("i", { 1, 2}, { -1, -3})
 print("inverse", mat.inverse())
 -- mat.inverse 数据统一计算使用了double. 所以类型为‘F’
-local r = mat.inverse() == mem.newMat("i", { 3, 2}, { -1, -1});
+r = mat.inverse() == mem.newMat("i", { 3, 2}, { -1, -1});
 print("inverse == ", r)
 assert(not r)
 assert(mat.inverse() == mem.newMat("F", { 3, 2}, { -1, -1}))
@@ -33,3 +33,8 @@ assert(tostring(mat.algRemainderMat()) == '[[-3,2],[2,-3]]')
 --伴随矩阵
 print("adjointMat", mat.adjointMat())
 assert(tostring(mat.adjointMat()) == '[[-3,2],[2,-3]]')
+
+-- reshape, concat, fliplr, flipud, triu, tril, diag
+print(" ------- ------ start test matrix -> reshape (row, column [,type, def_val])-------")
+mat = mem.newMat("i", { 1, 2}, { 3, 4})
+--r = mat.reshape();
