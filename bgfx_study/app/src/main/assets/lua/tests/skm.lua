@@ -35,6 +35,12 @@ print("reshape", m.reshape(4))
 assert(m.reshape(4) == mem.new('i', {1, 2, 3, 0}));
 assert(m.reshape(4, 'f') == mem.new('f', {1, 2, 3, 0}));
 assert(m.reshape(4, 'd', 10) == mem.new('d', {1, 2, 3, 10}));
+-- row count = 3, column count = 2, default value = 10.
+assert(m.reshape(3, 2, 'd', 10) == mem.newMat('d',
+        {1, 2},
+        {3, 10},
+        {10, 10}
+));
 
 print("------- start test SkMemory -> concat ------ (mem, [count, type, defVal])")
 r = m.concat(mem.new('i', {4, 5, 6}));

@@ -37,6 +37,12 @@ assert(m.reshape(6), mem.new('F', { 1, 2, 3, 4, 0, 0 }));
 -- assigned result type is 'i' as int.
 assert(m.reshape(6, 'i'), mem.new('i', { 1, 2, 3, 4, 0, 0 }));
 assert(m.reshape(6, 'i', 10), mem.new('i', { 1, 2, 3, 4, 10, 10 }));
+-- row count = 3, column count = 2, type is 'd', default value 0
+assert(m.reshape(3, 2, 'd') == mem.newMat('d',
+        {1, 2},
+        {3, 4},
+        {0, 0}
+))
 
 print("------- start test AnyMemory -> concat ------ (mem, count, type, defVal)")
 r = m.concat(mem.new('i', { 5, 6 }));

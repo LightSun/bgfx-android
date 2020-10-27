@@ -109,7 +109,7 @@ public:
      * @param defVal the default value if not enough
      * @return the result memory
      */
-    SkMemory* reshape(int count, char t = DEF_RESHAPE_TYPE, double defVal = 0);
+    SkMemory* reshape(int count, char t = DEF_RESHAPE_TYPE, double defVal = DEF_VALUE);
 
 
    //SkMemoryMatrix* reshapeMat(const SkMemory* oth, char t = DEF_RESHAPE_TYPE, double defVal = 0);
@@ -120,7 +120,7 @@ public:
      * @param defVal the default value
      * @return the result memory
      */
-    SkMemory* reshapeBefore(int count, char t = DEF_RESHAPE_TYPE, double defVal = 0);
+    SkMemory* reshapeBefore(int count, char t = DEF_RESHAPE_TYPE, double defVal = DEF_VALUE);
 
     /**
      * concat the memory
@@ -130,7 +130,7 @@ public:
      * @param defVal the default value if not enough
      * @return the result memory
      */
-    SkMemory *concat(SkMemory *pMemory, int resultCount, char resultType = DEF_RESHAPE_TYPE, double defVal = 0);
+    SkMemory *concat(SkMemory *pMemory, int resultCount, char resultType = DEF_RESHAPE_TYPE, double defVal = DEF_VALUE);
     /**
       * concat the memory
       * @param pMemory the target memory to concat/merge
@@ -139,7 +139,7 @@ public:
       * @param defVal the default value if not enough
       * @return the result memory
       */
-    SkMemory *concat(SkAnyMemory *pMemory, int resultCount, char resultType = DEF_RESHAPE_TYPE, double defVal = 0);
+    SkMemory *concat(SkAnyMemory *pMemory, int resultCount, char resultType = DEF_RESHAPE_TYPE, double defVal = DEF_VALUE);
 
     /**
      * flip the memory data
@@ -155,7 +155,7 @@ public:
      * @param defVal the default value
      * @return the mat
      */
-    SkMemoryMatrix* diag(int k = 0, char t = DEF_RESHAPE_TYPE,double defVal = 0);
+    SkMemoryMatrix* diag(int k = 0, char t = DEF_RESHAPE_TYPE,double defVal = DEF_VALUE);
 
     //------ index start from 0 --------
     bool setValue(int index, double val);
@@ -231,14 +231,14 @@ public:
 
     SkMemory *extract(size_t start, size_t end1);
 
-    SkMemory *reshape(int count, char t = DEF_RESHAPE_TYPE, double defVal = 0);
-    SkMemory *reshapeBefore(int count, char t = DEF_RESHAPE_TYPE, double defVal = 0);
+    SkMemory *reshape(int count, char t = DEF_RESHAPE_TYPE, double defVal = DEF_VALUE);
+    SkMemory *reshapeBefore(int count, char t = DEF_RESHAPE_TYPE, double defVal = DEF_VALUE);
 
-    SkMemory *concat(SkMemory *pMemory, int resultCount, char type = DEF_RESHAPE_TYPE, double defVal = 0);
-    SkMemory *concat(SkAnyMemory *pMemory, int resultCount, char type = DEF_RESHAPE_TYPE, double defVal = 0);
+    SkMemory *concat(SkMemory *pMemory, int resultCount, char type = DEF_RESHAPE_TYPE, double defVal = DEF_VALUE);
+    SkMemory *concat(SkAnyMemory *pMemory, int resultCount, char type = DEF_RESHAPE_TYPE, double defVal = DEF_VALUE);
 
     SkMemory *flip();
-    SkMemoryMatrix* diag(int k = 0, char t = DEF_RESHAPE_TYPE, double defVal = 0);
+    SkMemoryMatrix* diag(int k = 0, char t = DEF_RESHAPE_TYPE, double defVal = DEF_VALUE);
 
     int getLength() { return _tabCount * _elementCount; }
 
@@ -367,7 +367,7 @@ public:
      * @param type the expect type ,default is float
      * @return the result mat.
      */
-    SkMemoryMatrix* reshape(int rowCount, int colCount, char type = DEF_RESHAPE_TYPE, double defVal = 0);
+    SkMemoryMatrix* reshape(int rowCount, int colCount, char type = DEF_RESHAPE_TYPE, double defVal = DEF_VALUE);
 
     /**
      * concat target mat by vertical or horizontal. And current mat is the left top.
@@ -376,7 +376,7 @@ public:
      * @param defVal default value . if element not enough
      * @return the result mat
      */
-    SkMemoryMatrix* concat(SkMemoryMatrix* oth, bool vertical = true, double defVal = 0);
+    SkMemoryMatrix* concat(SkMemoryMatrix* oth, bool vertical = true, double defVal = DEF_VALUE);
 
     /**
      * flip the left right data.
@@ -392,9 +392,9 @@ public:
 
     SkMemory* diag(int k = 0);
 
-    SkMemoryMatrix* triu(int k = 0, double defVal = 0);
+    SkMemoryMatrix* triu(int k = 0, double defVal = DEF_VALUE);
 
-    SkMemoryMatrix* tril(int k = 0, double defVal = 0);
+    SkMemoryMatrix* tril(int k = 0, double defVal = DEF_VALUE);
     /**
      * inverse the matrix
      * @param L the lua state
