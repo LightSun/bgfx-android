@@ -21,7 +21,6 @@ using namespace heaven7_Bgfx_demo;
 #endif
 
 #include "luaext_java/java_env.h"
-#include "nanovg/nanovg.h"
 
 //========================== impl ============================
 #define MAIN_RUNNER    "com/heaven7/android/bgfx/study/demo/NativeApi"
@@ -82,12 +81,12 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,
         Bgfx_lua_app::startApp(ptr, config);
     } else{
         //HelloWorldDemo, CurbesDemo, FontDemo, InstancingDemo, BumpDemo,
-        // CallbackDemo, VectorDisplayDemo
+        // CallbackDemo, VectorDisplayDemo, NanovgDemo
         InitConfig config;
         config.window = mWindow;
         config.win_width = ANativeWindow_getWidth(mWindow);
         config.win_height = ANativeWindow_getHeight(mWindow);
-        demo = createDemo<VectorDisplayDemo>(&config);
+        demo = createDemo<NanovgDemo>(&config);
         demo->startLoop();
     }
 }
