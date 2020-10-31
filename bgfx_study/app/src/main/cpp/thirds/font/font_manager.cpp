@@ -10,7 +10,6 @@
 #include <bgfx/bgfx.h>
 
 #define SDF_IMPLEMENTATION
-#define STB_TRUETYPE_IMPLEMENTATION 1
 #include <sdf/sdf.h>
 
 #include <wchar.h> // wcslen

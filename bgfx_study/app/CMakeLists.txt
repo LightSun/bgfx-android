@@ -47,6 +47,8 @@ aux_source_directory(src/main/cpp/thirds/meshoptimizer/src SRC_meshoptimizer)
 aux_source_directory(src/main/cpp/thirds/font SRC_font)
 aux_source_directory(src/main/cpp/thirds SRC_thirds)
 aux_source_directory(src/main/cpp/thirds/lua SRC_lua)
+aux_source_directory(src/main/cpp/thirds/nanovg SRC_nanovg)
+aux_source_directory(src/main/cpp/thirds/stb SRC_stb)
 
 aux_source_directory(src/main/cpp/android SRC_android)
 aux_source_directory(src/main/cpp/core SRC_core)
@@ -61,11 +63,13 @@ add_library(
 add_library(
         bgfx_study
         SHARED
+        ${SRC_stb}
         ${SRC_study}
         ${SRC_samples}
         ${SRC_font}
         ${SRC_thirds}
         ${SRC_lua}
+        ${SRC_nanovg}
 )
 find_library( # Sets the name of the path variable.
         log-lib

@@ -21,6 +21,7 @@ using namespace heaven7_Bgfx_demo;
 #endif
 
 #include "luaext_java/java_env.h"
+#include "nanovg/nanovg.h"
 
 //========================== impl ============================
 #define MAIN_RUNNER    "com/heaven7/android/bgfx/study/demo/NativeApi"
