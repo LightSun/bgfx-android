@@ -82,7 +82,7 @@ namespace heaven7_Bgfx_demo{
         DBG("loop draw >>> start");
         int i = 0;
         while(demo->draw() == 0){
-            DBG("loop draw >>> %d", ++i);
+           // DBG("loop draw >>> %d", ++i);
         }
         DBG("loop draw >>> end");
 //		PostMessage(s_ctx.m_hwnd, WM_QUIT, 0, 0);

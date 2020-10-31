@@ -48,6 +48,7 @@ aux_source_directory(src/main/cpp/thirds/font SRC_font)
 aux_source_directory(src/main/cpp/thirds SRC_thirds)
 aux_source_directory(src/main/cpp/thirds/lua SRC_lua)
 aux_source_directory(src/main/cpp/thirds/nanovg SRC_nanovg)
+aux_source_directory(src/main/cpp/thirds/nancanvas SRC_nancanvas)
 aux_source_directory(src/main/cpp/thirds/stb SRC_stb)
 
 aux_source_directory(src/main/cpp/android SRC_android)
@@ -70,6 +71,7 @@ add_library(
         ${SRC_thirds}
         ${SRC_lua}
         ${SRC_nanovg}
+        ${SRC_nancanvas}
 )
 find_library( # Sets the name of the path variable.
         log-lib

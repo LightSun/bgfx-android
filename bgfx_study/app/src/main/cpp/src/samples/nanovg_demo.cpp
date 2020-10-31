@@ -1035,8 +1035,9 @@ namespace heaven7_Bgfx_demo{
     }
 
     int32_t createImage(struct NVGcontext *_ctx, const char *_filePath, int _imageFlags) {
+        auto path = entry::concatStr("runtime/", _filePath);
         uint32_t size;
-        void *data = load(_filePath, &size);
+        void *data = load(path, &size);
         if (NULL == data) {
             return 0;
         }
@@ -1061,8 +1062,9 @@ namespace heaven7_Bgfx_demo{
     }
 
     int32_t createFont(NVGcontext *_ctx, const char *_name, const char *_filePath) {
+        auto path = entry::concatStr("runtime/", _filePath);
         uint32_t size;
-        void *data = load(_filePath, &size);
+        void *data = load(path, &size);
         if (NULL == data) {
             return -1;
         }
