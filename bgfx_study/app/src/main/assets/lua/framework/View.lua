@@ -9,7 +9,7 @@ local m = {}
 function m.new(parent)
     local self = {};
 
-    function self.onCreate()
+    function self.onInitialize()
 
     end
 
@@ -17,23 +17,12 @@ function m.new(parent)
 
     end
 
-    function self.onBackToFront()
-
-    end
-
-    function self.onFrontToBack()
-
-    end
-
     function self.onDraw(canvas)
 
     end
-    self.onCreate();
---[[    local meta = {
-        __gc = function(t)
-        end
-    }
-    setmetatable()]]
+    function self.equals(othView)
+
+    end
     return self;
 end
 
