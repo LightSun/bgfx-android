@@ -15,7 +15,7 @@ namespace NanoCanvas
     Font::Font(Canvas& canvas, const string& fname ,
                const Memory& memory, bool invalidateMem)
     {
-        if( canvas.valid() && memory.valid() && fname.length() )
+        if(canvas.valid() && memory.isValid() && fname.length() )
         {
             face = nvgCreateFontMem(canvas.nvgContext(),fname.c_str(),
                                         (unsigned char*)memory.data,

@@ -452,7 +452,7 @@ namespace NanoCanvas
          * @param rowWidth The max row width of the text box,NAN is not limited
          * @return The width of the specified text
          */
-        float measureText(const string& text,float rowWidth = NAN);
+        float measureText(const char* text,float rowWidth = NAN);
         
         /**
          * @brief Check the boundary of the text, before writing it on the canvas
@@ -463,7 +463,7 @@ namespace NanoCanvas
          * @param rowWidth The max row width of the text box,NAN is not limited
          * @return The width of the specified text
          */
-        float measureText(const string& text,float x,float y,float* bounds,float rowWidth = NAN);
+        float measureText(const char* text,float x,float y,float* bounds,float rowWidth = NAN);
         
         
     /*--------------------- Transformations ----------------*/
@@ -539,7 +539,7 @@ namespace NanoCanvas
          * @brief Resets the current transform to the identity matrix.
          * @return The canvas to set transform with
          */
-        Canvas& restTransform();
+        Canvas& resetTransform();
         
     /*--------------------- Canvas Control -----------------*/
         /**
@@ -553,7 +553,7 @@ namespace NanoCanvas
          * @param windowHeight Height of your window
          * @return The canvas to begine frame with
          */
-        Canvas& begineFrame(int windowWidth, int windowHeight);
+        Canvas& beginFrame(int windowWidth, int windowHeight);
         
         /**
          * @brief Cancels drawing the current frame.

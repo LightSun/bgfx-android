@@ -22,11 +22,11 @@ namespace NanoCanvas
         unsigned long size = 0UL;
         
         /// Check is the data is not NULL and size is not 0
-        bool valid()const{ return ( data && size ); }
+        bool isValid()const{ return (data && size ); }
         
         /**
-         * @brief Invalidate the memery object
-         * @attention This method does NOT free the memery,you have to do it yourself!
+         * @brief Invalidate the Memory object
+         * @attention This method does NOT free the Memory,you have to do it yourself!
          */
         void invalidate(){ data = nullptr ;size = 0UL; }
     };

@@ -32,9 +32,9 @@ namespace NanoCanvas
          * @param canvas The canvas who owns this font
          * @param fname The name of the font
          * @param mem The memory to load from
-         * @param invalidateMem Should invalidate the memery after loading
-         * @note Invalidate memery is not release the memery you should do that yourself!
-         * @see Memery::invalidate
+         * @param invalidateMem Should invalidate the Memory after loading
+         * @note Invalidate Memory is not release the Memory you should do that yourself!
+         * @see Memory::invalidate
          */
         Font(Canvas& canvas, const string& fname, const Memory& mem, bool invalidateMem);
         

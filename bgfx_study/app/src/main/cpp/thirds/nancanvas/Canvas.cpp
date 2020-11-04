@@ -224,10 +224,10 @@ namespace NanoCanvas {
         return *this;
     }
 
-    float Canvas::measureText(const string &text, float rowWidth) {
+    float Canvas::measureText(const char* text, float rowWidth) {
         float width = 0;
         if (std::isnan(rowWidth))
-            width = nvgTextBounds(m_nvgCtx, 0, 0, text.c_str(), nullptr, nullptr);
+            width = nvgTextBounds(m_nvgCtx, 0, 0, text, nullptr, nullptr);
         else {
             float bouds[4]{0};
             width = measureText(text, 0, 0, bouds, rowWidth);
@@ -235,13 +235,13 @@ namespace NanoCanvas {
         return width;
     }
 
-    float Canvas::measureText(const string &text, float x, float y,
+    float Canvas::measureText(const char* text, float x, float y,
                               float *bounds, float rowWidth) {
         local2Global(x, y);
         if (std::isnan(rowWidth))
-            nvgTextBounds(m_nvgCtx, x, y, text.c_str(), nullptr, bounds);
+            nvgTextBounds(m_nvgCtx, x, y, text, nullptr, bounds);
         else
-            nvgTextBoxBounds(m_nvgCtx, x, y, rowWidth, text.c_str(), nullptr, bounds);
+            nvgTextBoxBounds(m_nvgCtx, x, y, rowWidth, text, nullptr, bounds);
         float width = 0;
         if (bounds)
             width = bounds[2] - bounds[0];
@@ -462,13 +462,13 @@ namespace NanoCanvas {
         return *this;
     }
 
-    Canvas &Canvas::restTransform() {
+    Canvas &Canvas::resetTransform() {
         nvgResetTransform(m_nvgCtx);
         return *this;
     }
 
 /*---------------- Canvas Control -----------------*/
-    Canvas &Canvas::begineFrame(int windowWidth, int windowHeight) {
+    Canvas &Canvas::beginFrame(int windowWidth, int windowHeight) {
         nvgBeginFrame(m_nvgCtx, windowWidth, windowHeight, m_scaleRatio);
         // Clip out side area
         nvgScissor(m_nvgCtx, m_xPos, m_yPos, m_width, m_height);

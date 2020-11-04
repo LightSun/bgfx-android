@@ -8,13 +8,13 @@ namespace NanoCanvas
         m_canvas = &canvas;
         auto vg = canvas.nvgContext();
         if(vg && filePath.length() )
-            imageID = nvgCreateImage(vg,filePath.c_str(),imageFlags);
+            imageID = nvgCreateImage(vg, filePath.c_str(), imageFlags);
     }
     Image::Image(Canvas& canvas, const Memory& memory, int imageFlags)
     {
         m_canvas = &canvas;
         auto vg = canvas.nvgContext();
-        if(vg && memory.valid() )
+        if(vg && memory.isValid() )
         {
             imageID = nvgCreateImageMem(vg,imageFlags,
                                             (unsigned char*)(memory.data),
@@ -26,9 +26,9 @@ namespace NanoCanvas
     {
         m_canvas = &canvas;
         auto vg = canvas.nvgContext();
-        if(vg && memory.valid() )
+        if(vg && memory.isValid() )
         {
-            imageID = nvgCreateImageRGBA(vg,w,h,imageFlags,
+            imageID = nvgCreateImageRGBA(vg, w, h, imageFlags,
                                             (unsigned char*)(memory.data));
         }
     }

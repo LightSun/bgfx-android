@@ -222,7 +222,7 @@ namespace NanoCanvas
         }
     };
 
-  /*  namespace Colors
+    namespace Colors
     {
         static Color ZeroColor = 0U;
         static Color AliceBlue = 0xF0F8FFFF;
@@ -368,7 +368,7 @@ namespace NanoCanvas
         static Color WhiteSmoke = 0xF5F5F5FF;
         static Color Yellow = 0xFFFF00FF;
         static Color YellowGreen = 0x9ACD32FF;
-    }*/
+    }
 
     /** @brief Get hex code string from color */
     string to_string(const Color& color);

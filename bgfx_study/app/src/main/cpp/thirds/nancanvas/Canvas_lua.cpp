@@ -154,8 +154,8 @@ static int Canvas_clearColor(lua_State *L) {
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref(L, canvasIndex);
     //auto c = lua_tostring(L, 1);
-    NanoCanvas::Color color = LuaUtils::get_ref(L, -1);
-    canvas->clearColor(color);
+    NanoCanvas::Color* color = LuaUtils::get_ref(L, -1);
+    canvas->clearColor(*color);
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
