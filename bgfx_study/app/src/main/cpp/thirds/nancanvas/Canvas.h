@@ -259,7 +259,7 @@ namespace NanoCanvas
          * @param rowWidth The max row width of the text box,NAN is not limited
          * @return The canvas to operate with
          */
-        Canvas& fillText(const string& text,float x,float y,float rowWidth = NAN);
+        Canvas& fillText(const char* text,float x,float y,float rowWidth = NAN);
         
         /**
          * @brief Draws an image onto the canvas
@@ -269,12 +269,12 @@ namespace NanoCanvas
          * @param image Specifies the image to use
          * @param x The x coordinate where to place the image on the canvas
          * @param y The y coordinate where to place the image on the canvas
-         * @param width The width of the image to use (stretch or reduce the image),NAN as the default be the same as wdith of the clipped area  
-         * @param height The height of the image to use (stretch or reduce the image),NAN as the default be the same as wdith of the clipped area 
+         * @param width The width of the image to use (stretch or reduce the image),NAN as the default be the same as width of the clipped area
+         * @param height The height of the image to use (stretch or reduce the image),NAN as the default be the same as height of the clipped area
          * @param sx The x coordinate where to start clipping,0 as the default
          * @param sy The y coordinate where to start clipping,0 as the default
-         * @param swidth The wdith of the clipped image,NAN as defualt to clip to right side of the image
-         * @param sheight The height of the clipped image,NAN as defualt to clip to bottom side of the image
+         * @param swidth The width of the clipped image,NAN as default to clip to right side of the image
+         * @param sheight The height of the clipped image,NAN as default to clip to bottom side of the image
          * @return The canvas to draw this image
          */
         Canvas& drawImage(Image& image,float x,float y, 

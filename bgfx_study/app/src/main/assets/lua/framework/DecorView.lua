@@ -6,7 +6,7 @@
 local m = {}
 
 --config: renderType, renderState
-function m.new(useCanvas,extra)
+function m.new(config, extra)
     local self = {};
     self.views = {};
     --todo self.canvas =

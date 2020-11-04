@@ -153,6 +153,25 @@ namespace NanoCanvas
             return *this;
         }
 
+        inline Color& set(const char* color)
+        {
+            char* strC;
+            if(color[0] == '#'){
+                strC = static_cast<char *>(malloc(strlen(color)));
+                for (int i = 0; i < strlen(color) - 1; ++i) {
+                    strC[i] = color[i + 1];
+                }
+                strC[strlen(strC)] = '\0';
+
+                int c = atoi(strC);
+                set(c);
+                free(strC);
+                return *this;
+            } else{
+                return set(atoi(color));
+            }
+        }
+
         inline Color& set(float _r, float _g , float _b,float _a)
         {
             r =  clamp<Byte>( (Byte)(_r * UCHAR_MAX), 0, UCHAR_MAX);
@@ -203,7 +222,7 @@ namespace NanoCanvas
         }
     };
 
-    namespace Colors
+  /*  namespace Colors
     {
         static Color ZeroColor = 0U;
         static Color AliceBlue = 0xF0F8FFFF;
@@ -349,7 +368,7 @@ namespace NanoCanvas
         static Color WhiteSmoke = 0xF5F5F5FF;
         static Color Yellow = 0xFFFF00FF;
         static Color YellowGreen = 0x9ACD32FF;
-    }
+    }*/
 
     /** @brief Get hex code string from color */
     string to_string(const Color& color);

@@ -12,13 +12,13 @@ namespace NanoCanvas
     using std::string;
     static string nullstr;
     
-    /// The data structure for memery blocks
-    struct Memery
+    /// The data structure for Memory blocks
+    struct Memory
     {
-        /// The data of the memery block
+        /// The data of the Memory block
         void * data = nullptr;
         
-        /// Size of the memery block in bytes
+        /// Size of the Memory block in bytes
         unsigned long size = 0UL;
         
         /// Check is the data is not NULL and size is not 0

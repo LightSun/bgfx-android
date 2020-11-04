@@ -46,21 +46,21 @@ namespace NanoCanvas
         /**
          * @brief  Creates image by loading it from the specified chunk of memory.
          * @param canvas The canvas who owns the image
-         * @param memory The memery block to load from
+         * @param memory The memory block to load from
          * @param imageFlags Creation flags
          * @see Image::ImageFlag
          */
-        Image(Canvas& canvas,const Memery& memory, int imageFlags = 0);
+        Image(Canvas& canvas, const Memory& memory, int imageFlags = 0);
         
         /**
-         * @brief Creates image with RGBA formate from specified image data.
+         * @brief Creates image with RGBA format from specified image data.
          * @param canvas The canvas who owns the image
          * @param w The width of the image
          * @param w The height of the image
-         * @param memory The memery block to load from
+         * @param memory The memory block to load from
          * @param imageFlags Creation flags
          */
-        Image(Canvas& canvas,int w,int h,const Memery& memory,int imageFlags=0);
+        Image(Canvas& canvas, int w, int h, const Memory& memory, int imageFlags=0);
         
         ~Image();
         
@@ -73,7 +73,7 @@ namespace NanoCanvas
         inline bool valid()const{ return imageID;}
         
         /// Update the image with memory data
-        void update(const Memery& memory);
+        void update(const Memory& memory);
         
         /**
          * @brief Get image size

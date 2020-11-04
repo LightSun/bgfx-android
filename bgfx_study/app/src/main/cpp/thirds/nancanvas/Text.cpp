@@ -12,8 +12,8 @@ namespace NanoCanvas
         name = fname;
     }
     
-    Font::Font(Canvas& canvas, const string& fname , 
-               const Memery& memory,bool invalidateMem)
+    Font::Font(Canvas& canvas, const string& fname ,
+               const Memory& memory, bool invalidateMem)
     {
         if( canvas.valid() && memory.valid() && fname.length() )
         {

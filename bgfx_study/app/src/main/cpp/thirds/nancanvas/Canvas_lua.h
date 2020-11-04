@@ -12,6 +12,6 @@ extern "C" int luaopen_canvas_lua(lua_State *L);
 class CanvasLua{
 public:
     static void registers(lua_State *L);
-}
+};
 
 #endif //BGFX_STUDY_CANVAS_LUA_H

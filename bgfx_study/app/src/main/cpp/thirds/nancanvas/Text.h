@@ -36,7 +36,7 @@ namespace NanoCanvas
          * @note Invalidate memery is not release the memery you should do that yourself!
          * @see Memery::invalidate
          */
-        Font(Canvas& canvas,const string& fname,const Memery& mem,bool invalidateMem);
+        Font(Canvas& canvas, const string& fname, const Memory& mem, bool invalidateMem);
         
         /**
          * @brief Check is the font face is valid
