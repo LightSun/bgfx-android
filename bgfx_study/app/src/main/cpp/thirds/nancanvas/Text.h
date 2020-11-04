@@ -42,7 +42,7 @@ namespace NanoCanvas
          * @brief Check is the font face is valid
          * @return Is the font face is valid
          */
-        inline bool valid()const{ return face >= 0; }
+        inline bool isValid()const{ return face >= 0; }
         ~Font(){};
     };
     

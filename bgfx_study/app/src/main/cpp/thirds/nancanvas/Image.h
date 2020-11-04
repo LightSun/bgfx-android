@@ -70,7 +70,7 @@ namespace NanoCanvas
         Image& operator=(const Image&) = delete;
         
         /// Check is the image id is bigger than 0
-        inline bool valid()const{ return imageID != 0 ;}
+        inline bool isValid()const{ return imageID != 0 ;}
         
         /// Update the image with memory data
         void update(const Memory& memory);

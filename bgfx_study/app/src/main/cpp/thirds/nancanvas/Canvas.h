@@ -332,29 +332,28 @@ namespace NanoCanvas
          * @param color The color to fill with
          * @return The canvas to operate with
          */
-        Canvas& fillStyle(const Color& color);
+        Canvas& fillColor(const Color& color);
         
         /**
          * @brief Set the gradient or pattern paint used to fill the drawing
          * @param paint The paint used to fill the drawing
          * @return The canvas to operate with
          */
-        Canvas& fillStyle(const Paint& paint);
+        Canvas& fillGradient(const Gradient& paint);
         
         /**
          * @brief  Set the color used for strokes.
          * @param color Stroke color
          * @return The canvas to operate with
          */
-        Canvas& strokeStyle(const Color& color);
+        Canvas& strokeColor(const Color& color);
         
         /**
          * @brief Set the gradient or pattern paint used for strokes
          * @param paint The paint used to fill the drawing
          * @return The canvas to operate with
          */
-        Canvas& strokeStyle(const Paint& paint);
-        
+        Canvas& strokeGradient(const Gradient& paint);
         
         /**
          * @brief Set current font for text rendering 
@@ -370,7 +369,7 @@ namespace NanoCanvas
          * @param size The font size
          * @return The canvas to operate with
          */
-        Canvas& font(float size);
+        Canvas& fontSize(float size);
         
         /**
          * @brief Sets the text alignment of current text style
@@ -400,8 +399,8 @@ namespace NanoCanvas
          * @param outter The end color
          * @return The created gradient style object.
          */
-        static Paint createLinearGradient(float x0,float y0,float x1,float y1,
-                                      const Color& scolor , const Color& ecolor);
+        static Gradient* createLinearGradient(float x0, float y0, float x1, float y1,
+                                             const Color& scolor , const Color& ecolor);
         
         /**
          * @brief Creates a radial/circular gradient (to use on canvas content)
@@ -413,8 +412,8 @@ namespace NanoCanvas
          * @param ocolor The color on outer circle
          * @return The created gradient style object.
          */
-        static Paint createRadialGradient(float cx,float cy,float r1,float r2,
-                                      const Color& icolor , const Color& ocolor);
+        static Gradient* createRadialGradient(float cx, float cy, float r1, float r2,
+                                             const Color& icolor , const Color& ocolor);
                                       
         /**
          * @brief Creates and returns a box gradient.
@@ -429,8 +428,8 @@ namespace NanoCanvas
          * @param ocol The outer color of the gradient
          * @return The created gradient style object.
          */
-        static Paint createBoxGradient(float x, float y, float w, float h,
-                                float r, float f, Color icol, Color ocol);
+        static Gradient* createBoxGradient(float x, float y, float w, float h,
+                                          float r, float f, Color icol, Color ocol);
         
         /**
          * @brief Creates and returns an image pattern paint.
@@ -443,8 +442,8 @@ namespace NanoCanvas
          * @param alpha The transparent of the image pattern
          * @return The patter paint created
          */
-        static Paint createPattern(const Image& image,float ox, float oy, 
-                                   float w, float h,float angle = 0.0f, float alpha = 1.0f);
+        static Gradient* createImageGradient(const Image& image, float ox, float oy,
+                                            float w, float h, float angle = 0.0f, float alpha = 1.0f);
         
         /**
          * @brief Check the width of the text, before writing it on the canvas

@@ -66,7 +66,7 @@ namespace NanoCanvas
 #include "Color.hpp"
 #include "Text.h"
 #include "Image.h"
-#include "Paint.hpp"
+#include "Gradient.hpp"
 #include "Canvas.h"
 
 #endif //__NANOCANVAS_H__

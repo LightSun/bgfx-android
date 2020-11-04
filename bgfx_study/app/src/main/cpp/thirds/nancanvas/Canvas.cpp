@@ -7,10 +7,10 @@ namespace NanoCanvas {
         return nvgRGBA(color.r, color.g, color.b, color.a);
     }
 
-    NVGpaint nvgPaint(Canvas &canvas, const Paint &paint) {
+    NVGpaint nvgPaint(Canvas &canvas, const Gradient &paint) {
         NVGpaint nvgPaint;
         switch (paint.type) {
-            case Paint::Type::Linear: {
+            case Gradient::Type::Linear: {
                 float x0 = paint.xx;
                 float y0 = paint.yy;
                 float x1 = paint.aa;
@@ -22,7 +22,7 @@ namespace NanoCanvas {
                                              nvgColor(paint.eColor));
             }
                 break;
-            case Paint::Type::Box: {
+            case Gradient::Type::Box: {
                 float x = paint.xx;
                 float y = paint.yy;
                 canvas.local2Global(x, y);
@@ -32,7 +32,7 @@ namespace NanoCanvas {
                                           nvgColor(paint.eColor));
             }
                 break;
-            case Paint::Type::Radial: {
+            case Gradient::Type::Radial: {
                 float cx = paint.xx;
                 float cy = paint.yy;
                 canvas.local2Global(cx, cy);
@@ -42,7 +42,7 @@ namespace NanoCanvas {
                                              nvgColor(paint.eColor));
             }
                 break;
-            case Paint::Type::ImagePattern: {
+            case Gradient::Type::ImagePattern: {
                 float ox = paint.xx;
                 float oy = paint.yy;
                 canvas.local2Global(ox, oy);
@@ -53,7 +53,7 @@ namespace NanoCanvas {
                                            paint.dd);
             }
                 break;
-            case Paint::Type::None:
+            case Gradient::Type::None:
             default:
                 break;
         }
@@ -108,94 +108,94 @@ namespace NanoCanvas {
     }
 
 
-    Canvas &Canvas::fillStyle(const Color &color) {
+    Canvas &Canvas::fillColor(const Color &color) {
         nvgFillColor(m_nvgCtx, nvgRGBA(color.r, color.g, color.b, color.a));
         return *this;
     }
 
-    Canvas &Canvas::fillStyle(const Paint &paint) {
-        if (paint.type != Paint::Type::None) {
+    Canvas &Canvas::fillGradient(const Gradient &paint) {
+        if (paint.type != Gradient::Type::None) {
             NVGpaint npaint = nvgPaint(*this, paint);
             nvgFillPaint(m_nvgCtx, npaint);
         }
         return *this;
     }
 
-    Canvas &Canvas::strokeStyle(const Paint &paint) {
-        if (paint.type != Paint::Type::None) {
+    Canvas &Canvas::strokeGradient(const Gradient &paint) {
+        if (paint.type != Gradient::Type::None) {
             NVGpaint npaint = nvgPaint(*this, paint);
             nvgStrokePaint(m_nvgCtx, npaint);
         }
         return *this;
     }
 
-    Canvas &Canvas::strokeStyle(const Color &color) {
+    Canvas &Canvas::strokeColor(const Color &color) {
         nvgStrokeColor(m_nvgCtx, nvgRGBA(color.r, color.g, color.b, color.a));
         return *this;
     }
 
-    Paint Canvas::createLinearGradient(float x0, float y0, float x1, float y1,
-                                       const Color &scolor, const Color &ecolor) {
-        Paint gdt;
-        gdt.type = Paint::Type::Linear;
-        gdt.xx = x0;
-        gdt.yy = y0;
-        gdt.aa = x1;
-        gdt.bb = y1;
-        gdt.sColor = scolor;
-        gdt.eColor = ecolor;
+    Gradient* Canvas::createLinearGradient(float x0, float y0, float x1, float y1,
+                                          const Color &scolor, const Color &ecolor) {
+        Gradient* gdt = new Gradient();
+        gdt->type = Gradient::Type::Linear;
+        gdt->xx = x0;
+        gdt->yy = y0;
+        gdt->aa = x1;
+        gdt->bb = y1;
+        gdt->sColor = scolor;
+        gdt->eColor = ecolor;
         return gdt;
     }
 
-    Paint Canvas::createRadialGradient(float cx, float cy, float r1, float r2,
-                                       const Color &icolor, const Color &ocolor) {
-        Paint gdt;
-        gdt.type = Paint::Type::Radial;
-        gdt.xx = cx;
-        gdt.yy = cy;
-        gdt.aa = r1;
-        gdt.bb = r2;
-        gdt.sColor = icolor;
-        gdt.eColor = ocolor;
+    Gradient* Canvas::createRadialGradient(float cx, float cy, float r1, float r2,
+                                          const Color &icolor, const Color &ocolor) {
+        Gradient* gdt = new Gradient();
+        gdt->type = Gradient::Type::Radial;
+        gdt->xx = cx;
+        gdt->yy = cy;
+        gdt->aa = r1;
+        gdt->bb = r2;
+        gdt->sColor = icolor;
+        gdt->eColor = ocolor;
         return gdt;
     }
 
-    Paint Canvas::createBoxGradient(float x, float y, float w, float h,
-                                    float r, float f, Color icol, Color ocol) {
-        Paint gdt;
-        gdt.type = Paint::Type::Box;
-        gdt.xx = x;
-        gdt.yy = y;
-        gdt.aa = w;
-        gdt.bb = h;
-        gdt.cc = r;
-        gdt.dd = f;
-        gdt.sColor = icol;
-        gdt.eColor = ocol;
+    Gradient* Canvas::createBoxGradient(float x, float y, float w, float h,
+                                       float r, float f, Color icol, Color ocol) {
+        Gradient* gdt = new Gradient();
+        gdt->type = Gradient::Type::Box;
+        gdt->xx = x;
+        gdt->yy = y;
+        gdt->aa = w;
+        gdt->bb = h;
+        gdt->cc = r;
+        gdt->dd = f;
+        gdt->sColor = icol;
+        gdt->eColor = ocol;
         return gdt;
     }
 
-    Paint Canvas::createPattern(const Image &image, float ox, float oy,
-                                float w, float h, float angle, float alpha) {
-        Paint gdt;
-        gdt.type = Paint::Type::ImagePattern;
-        gdt.imageID = image.imageID;
-        gdt.xx = ox;
-        gdt.yy = oy;
-        gdt.aa = w;
-        gdt.bb = h;
-        gdt.cc = angle;
-        gdt.dd = alpha;
+    Gradient* Canvas::createImageGradient(const Image &image, float ox, float oy,
+                                         float w, float h, float angle, float alpha) {
+        Gradient* gdt = new Gradient();
+        gdt->type = Gradient::Type::ImagePattern;
+        gdt->imageID = image.imageID;
+        gdt->xx = ox;
+        gdt->yy = oy;
+        gdt->aa = w;
+        gdt->bb = h;
+        gdt->cc = angle;
+        gdt->dd = alpha;
         return gdt;
     }
 
     Canvas &Canvas::font(const Font &font) {
-        if (font.valid())
+        if (font.isValid())
             nvgFontFaceId(m_nvgCtx, font.face);
         return *this;
     }
 
-    Canvas &Canvas::font(float size) {
+    Canvas &Canvas::fontSize(float size) {
         nvgFontSize(m_nvgCtx, size);
         return *this;
     }
@@ -380,7 +380,7 @@ namespace NanoCanvas {
     Canvas &Canvas::drawImage(Image &image, float x, float y,
                               float width, float height,
                               float sx, float sy, float swidth, float sheight) {
-        if (image.valid()) {
+        if (image.isValid()) {
             save();
 
             local2Global(x, y);
@@ -407,7 +407,7 @@ namespace NanoCanvas {
             rx = x - sx * sw;
             ry = y - sy * sh;
 
-            Paint pattern = createPattern(image, rx, ry, rw, rh, 0, 1.0f);
+            Gradient pattern = createImageGradient(image, rx, ry, rw, rh, 0, 1.0f);
             fillStyle(pattern);
             rect(rx, ry, rw, rh).fill();
             restore();

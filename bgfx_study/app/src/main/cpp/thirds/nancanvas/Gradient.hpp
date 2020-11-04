@@ -5,7 +5,7 @@ namespace NanoCanvas
 {
     /// The Paint can be used as gradiants and image patterns with Canvas::fillStyle
     /// @see Canvas::fillStyle 
-    struct Paint
+    struct Gradient
     {
         /// Paint type
         enum class Type
@@ -21,6 +21,7 @@ namespace NanoCanvas
             /// Invalidate paint
             None
         } type = Type::None; /// The type of this paint
+
         float xx =0.0f, yy =0.0f , aa =0.0f, bb =0.0f, cc =0.0f,dd =0.0f;
         /// The nanovg image id of the image pattern
         int imageID  = 0;

@@ -34,5 +34,34 @@ repmat
 ========= nanvans ==========
 from: https://github.com/Geequlim/NanoCanvas
 
+================ draw to framebuffer ======
+// Helper functions to create bgfx framebuffer to render to.
+// Example:
+//		float scale = 2;
+//		NVGLUframebuffer* fb = nvgluCreateFramebuffer(ctx, 100 * scale, 100 * scale, 0);
+//		nvgluSetViewFramebuffer(VIEW_ID, fb);
+//		nvgluBindFramebuffer(fb);
+//		nvgBeginFrame(ctx, 100, 100, scale);
+//		// renders anything offscreen
+//		nvgEndFrame(ctx);
+//		nvgluBindFramebuffer(NULL);
+//
+//		// Pastes the framebuffer rendering.
+//		nvgBeginFrame(ctx, 1024, 768, scale);
+//		NVGpaint paint = nvgImagePattern(ctx, 0, 0, 100, 100, 0, fb->image, 1);
+//		nvgBeginPath(ctx);
+//		nvgRect(ctx, 0, 0, 100, 100);
+//		nvgFillPaint(ctx, paint);
+//		nvgFill(ctx);
+//		nvgEndFrame(ctx);
+
+void requestScreenShot(
+		  FrameBufferHandle _handle
+		, const char* _filePath
+		);
+
+======================== LineCap/LineJoin =======
+like javafx.scene.shape.StrokeLineCap and StrokeLineJoin
+
 
 
