@@ -15,7 +15,7 @@ namespace NanoCanvas
         int face = -1;
         
         /// The font name
-        string name = nullstr;
+        const char* name;
         
         Font() = default;
         
@@ -25,7 +25,7 @@ namespace NanoCanvas
          * @param fname The name of the font
          * @param ttfPath The ttf file path to load
          */
-        Font(Canvas& canvas, const string& fname , const string& ttfPath);
+        Font(Canvas* canvas, const char* fname , const char* ttfPath);
         
         /**
          * @brief Creates image by loading it from the specified memory chunk.
@@ -36,7 +36,7 @@ namespace NanoCanvas
          * @note Invalidate Memory is not release the Memory you should do that yourself!
          * @see Memory::invalidate
          */
-        Font(Canvas& canvas, const string& fname, const Memory& mem, bool invalidateMem);
+        Font(Canvas* canvas, const char* fname, const Memory& mem, bool invalidateMem);
         
         /**
          * @brief Check is the font face is valid

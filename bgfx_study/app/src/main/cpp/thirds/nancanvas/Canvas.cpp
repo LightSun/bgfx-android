@@ -218,7 +218,7 @@ namespace NanoCanvas {
         nvgFontSize(canvas.nvgContext(), textStyle.size);
     }
 
-    Canvas &Canvas::fillStyle(const TextStyle &textStyle) {
+    Canvas &Canvas::textStyle(const TextStyle &textStyle) {
         applyTextStyle(*this, textStyle);
         nvgFillColor(m_nvgCtx, nvgColor(textStyle.color));
         return *this;
@@ -229,6 +229,7 @@ namespace NanoCanvas {
         if (std::isnan(rowWidth))
             width = nvgTextBounds(m_nvgCtx, 0, 0, text, nullptr, nullptr);
         else {
+            //left. top, right, bottom.
             float bouds[4]{0};
             width = measureText(text, 0, 0, bouds, rowWidth);
         }

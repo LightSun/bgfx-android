@@ -10,6 +10,7 @@
 #include "nanovg/nanovg_bgfx.h"
 #include "Color.hpp"
 #include "Gradient.hpp"
+#include "Text.h"
 
 static int Canvas_moveTo(lua_State *L) {
     //(float x,float y)
@@ -281,7 +282,37 @@ static int Canvas_globalAlpha(lua_State *L) {
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
-//TODO font/fontSize...etc.
+static int Canvas_font(lua_State *L) {
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    NanoCanvas::Font* font = LuaUtils::get_ref<NanoCanvas::Font>(L, 1);
+    canvas->font(font);
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_fontSize(lua_State *L) {
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->fontSize(TO_FLOAT(L, 1));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_textAlign(lua_State *L) {
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->textAlign(TO_INT(L, 1), TO_INT(L, 2));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_textStyle(lua_State *L) {
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    NanoCanvas::TextStyle* ts = LuaUtils::get_ref<NanoCanvas::TextStyle>(L, 1);
+    canvas->textStyle(ts);
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+//TODO TextStyle...etc.
 //TODO drawImage
 namespace sNanoCanvas{
     const static luaL_Reg Canvas_Methods[] = {
@@ -295,22 +326,19 @@ namespace sNanoCanvas{
 }
 DEF__INDEX(Canvas, NanoCanvas::Canvas)
 
-static int Canvas_gc(lua_State *L) {
-    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, -1);
-    nvgDelete(canvas->nvgContext());
-    delete canvas;
-    return 0;
+//-------------------------------------------------------------------------
+#define DEF_GC(type)\
+static int type##_gc(lua_State *L) {\
+    NanoCanvas::type* c = LuaUtils::get_ref<NanoCanvas::type>(L, -1);\
+    delete c;\
+    return 0;\
 }
-static int Color_gc(lua_State *L) {
-    NanoCanvas::Color* color = LuaUtils::get_ref<NanoCanvas::Color>(L, -1);
-    delete color;
-    return 0;
-}
-static int Gradient_gc(lua_State *L) {
-    NanoCanvas::Gradient* g = LuaUtils::get_ref<NanoCanvas::Gradient>(L, -1);
-    delete g;
-    return 0;
-}
+DEF_GC(Canvas)
+DEF_GC(Color)
+DEF_GC(Gradient)
+DEF_GC(Font)
+DEF_GC(TextStyle)
+
 namespace gNanoCanvas{
     const static luaL_Reg Canvas_Methods[] = {
             {"__index",           Canvas_index},
@@ -323,6 +351,14 @@ namespace gNanoCanvas{
     };
     const static luaL_Reg Gradient_Methods[] = {
             {"__gc",              Gradient_gc},
+            {NULL, NULL}
+    };
+    const static luaL_Reg Font_Methods[] = {
+            {"__gc",              Font_gc},
+            {NULL, NULL}
+    };
+    const static luaL_Reg TextStyle_Methods[] = {
+            {"__gc",              TextStyle_gc},
             {NULL, NULL}
     };
 }
@@ -425,6 +461,16 @@ static int newImageGradient(lua_State *L) {
     LuaUtils::push_ptr(L, gradient);*/
     return 1;
 }
+static int newFont(lua_State *L){
+    //(Canvas& canvas, const char* fname , const char* ttfPath)
+    if(lua_gettop(L) < 3){
+        return luaL_error(L, "wrong arguments for newFont. expect params are (Canvas& canvas, const char* fname , const char* ttfPath)");
+    }
+    NanoCanvas::Canvas * canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, 1);
+    auto pFont = new NanoCanvas::Font(canvas, lua_tostring(L, 2), lua_tostring(L, 3));
+    LuaUtils::push_ptr(L, pFont);
+    return 1;
+}
 
 static const luaL_Reg mem_funcs[] = {
         {"newCanvas", newCanvas},
@@ -432,6 +478,8 @@ static const luaL_Reg mem_funcs[] = {
         {"newLinearGradient",  newLinearGradient},
         {"newRadialGradient",  newRadialGradient},
         {"newBoxGradient",     newBoxGradient},
+        //depend on canvas
+        {"newFont",            newFont},
         {nullptr,     nullptr}
 };
 extern "C" int luaopen_hmem_lua(lua_State *L) {
@@ -440,8 +488,14 @@ extern "C" int luaopen_hmem_lua(lua_State *L) {
 }
 
 DEF_MTNAME(NanoCanvas::Canvas)
+DEF_MTNAME(NanoCanvas::Color)
+DEF_MTNAME(NanoCanvas::Gradient)
+DEF_MTNAME(NanoCanvas::Font)
+DEF_MTNAME(NanoCanvas::TextStyle)
 void CanvasLua::registers(lua_State *L) {
     REG_CLASS(L, NanoCanvas::Canvas);
     REG_CLASS(L, NanoCanvas::Color);
     REG_CLASS(L, NanoCanvas::Gradient);
+    REG_CLASS(L, NanoCanvas::Font);
+    REG_CLASS(L, NanoCanvas::TextStyle);
 }

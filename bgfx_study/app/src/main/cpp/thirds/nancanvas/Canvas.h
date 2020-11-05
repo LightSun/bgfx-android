@@ -379,7 +379,7 @@ namespace NanoCanvas
          * @see TextAlign::VerticalAlign
          * @return The canvas to operate with
          */
-        Canvas& textAlign( HorizontalAlign hAlign,VerticalAlign vAlign);
+        Canvas& textAlign(HorizontalAlign hAlign,VerticalAlign vAlign);
         
         /**
          * @brief Set styles for text rendering
@@ -387,7 +387,7 @@ namespace NanoCanvas
          * @see NanoCanvas::TextStyle
          * @return The canvas to operate with
          */
-        Canvas& fillStyle(const TextStyle& textStyle);
+        Canvas& textStyle(const TextStyle& textStyle);
         
         /**
          * @brief Creates a linear gradient (to use on canvas content)
