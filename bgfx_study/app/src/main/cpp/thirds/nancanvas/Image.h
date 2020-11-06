@@ -41,7 +41,7 @@ namespace NanoCanvas
          * @param imageFlags Creation flags
          * @see Image::ImageFlag
          */
-        Image(Canvas& canvas,const string& filePath, int imageFlags = 0);
+        Image(Canvas& canvas,const char* filePath, int imageFlags = 0);
         
         /**
          * @brief  Creates image by loading it from the specified chunk of memory.

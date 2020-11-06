@@ -59,7 +59,7 @@ namespace NanoCanvas
             /// Align text horizontally to right.  
             Right     = 1<<2,
         };
-        
+
         /// Vertical Alignment
         enum VerticalAlign
         {
@@ -93,10 +93,10 @@ namespace NanoCanvas
         Color color       = Colors::ZeroColor;
         /// The horizontal alignment of current text style
         /// @see TextAlign::HorizontalAlign
-        TextAlign::HorizontalAlign hAlign = TextAlign::Left;
+        int hAlign = TextAlign::Left;
         /// The vertical alignment of current text style
         /// @see TextAlign::VerticalAlign
-        TextAlign::VerticalAlign vAlign   = TextAlign::Baseline;
+        int vAlign = TextAlign::Baseline;
     };
 }
 

@@ -3,3 +3,21 @@
 --- Created by Administrator.
 --- DateTime: 2020/11/1 0001 下午 10:32
 ---
+local m = {};
+
+-- HorizontalAlign
+m.TEXT_ALIGN_Left   = 1;
+m.TEXT_ALIGN_Center = 2;
+m.TEXT_ALIGN_Right  = 4;
+-- VerticalAlign
+m.TEXT_ALIGN_Top        = 8;
+m.TEXT_ALIGN_Middle     = 16;
+m.TEXT_ALIGN_Bottom     = 32;
+m.TEXT_ALIGN_Baseline   = 64;
+
+--Counter clock wise
+m.WINDING_CCW = 1;
+-- clock wise
+m.WINDING_CW = 2;
+
+return m;

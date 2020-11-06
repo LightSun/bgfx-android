@@ -200,7 +200,7 @@ namespace NanoCanvas {
         return *this;
     }
 
-    Canvas &Canvas::textAlign(HorizontalAlign hAlign, VerticalAlign vAlign) {
+    Canvas &Canvas::textAlign(unsigned int hAlign,unsigned int vAlign) {
         nvgTextAlign(m_nvgCtx, hAlign | vAlign);
         return *this;
     }
@@ -247,6 +247,12 @@ namespace NanoCanvas {
         if (bounds)
             width = bounds[2] - bounds[0];
         return width;
+    }
+    void Canvas::measureText(const char *text, float x, float y, float *outW, float *outH, float rowWidth) {
+        float bounds[4];
+        measureText(text, x, y, bounds, rowWidth);
+        *outW = bounds[2] - bounds[0];
+        *outH = bounds[3] - bounds[1];
     }
 
 /* ------------------- Basic Path ----------------------*/
@@ -408,10 +414,11 @@ namespace NanoCanvas {
             rx = x - sx * sw;
             ry = y - sy * sh;
 
-            Gradient pattern = createImageGradient(image, rx, ry, rw, rh, 0, 1.0f);
-            fillStyle(pattern);
+            Gradient* pattern = createImageGradient(image, rx, ry, rw, rh, 0, 1.0f);
+            fillGradient(*pattern);
             rect(rx, ry, rw, rh).fill();
             restore();
+            delete pattern;
         }
         return *this;
     }

@@ -2,15 +2,33 @@
 // Created by Administrator on 2020/11/3 0003.
 //
 
+#include "NanoCanvas.h"
+#include "Text.h"
+#include "Color.hpp"
+#include "Gradient.hpp"
+#include "Image.h"
+#include "Canvas.h"
 #include "../lua/lua.hpp"
 #include "../lua/LuaUtils.h"
 #include "../lua/LuaUtils.h"
 #include "Canvas_lua.h"
-#include "Canvas.h"
 #include "nanovg/nanovg_bgfx.h"
-#include "Color.hpp"
-#include "Gradient.hpp"
-#include "Text.h"
+
+#define CANVAS_M0(name)\
+static int Canvas_##name(lua_State *L) {\
+    auto canvasIndex = lua_upvalueindex(1);\
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);\
+    canvas->name();\
+    lua_pushvalue(L, canvasIndex);\
+    return 1;\
+}
+#define CANVAS_M0_NO_RETURN(name)\
+static int Canvas_##name(lua_State *L) {\
+    auto canvasIndex = lua_upvalueindex(1);\
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);\
+    canvas->name();\
+    return 0;\
+}
 
 static int Canvas_moveTo(lua_State *L) {
     //(float x,float y)
@@ -45,11 +63,33 @@ static int Canvas_arcTo(lua_State *L) {
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
-static int Canvas_arc(lua_State *L) {
-    //arc(float x,float y,float r,
-    //                    float sAngle,float eAngle,bool counterclockwise = false)
-    if(lua_gettop(L) < 5){
+static int Canvas_quadCurveTo(lua_State *L) {
+    //(float cpx,float cpy,float x,float y)
+    if(lua_gettop(L) < 4){
         return luaL_error(L, "wrong arguments. expect (float x1,float y1,float x2,float y2,float r)");
+    }
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->quadraticCurveTo(TO_FLOAT(L,1), TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_bezierCurveTo(lua_State *L) {
+    //(float cpx,float cpy,float cpx2,float cpy2, float x,float y)
+    if(lua_gettop(L) < 6){
+        return luaL_error(L, "wrong arguments. expect (float x1,float y1,float x2,float y2,float r)");
+    }
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->bezierCurveTo(TO_FLOAT(L,1), TO_FLOAT(L,2), TO_FLOAT(L,3),
+            TO_FLOAT(L,4), TO_FLOAT(L,5), TO_FLOAT(L,6));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_arc(lua_State *L) {
+    //arc(float x,float y,float r, float sAngle ,float eAngle, bool counterclockwise = false)
+    if(lua_gettop(L) < 5){
+        return luaL_error(L, "wrong arguments. expect (float x,float y,float r, float sAngle, float eAngle, [bool counterclockwise = false])");
     }
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
@@ -59,13 +99,6 @@ static int Canvas_arc(lua_State *L) {
         canvas->arc(TO_FLOAT(L,1), TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4), TO_FLOAT(L,5),
                 lua_toboolean(L, 6) == 1);
     }
-    lua_pushvalue(L, canvasIndex);
-    return 1;
-}
-static int Canvas_closePath(lua_State *L) {
-    auto canvasIndex = lua_upvalueindex(1);
-    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
-    canvas->closePath();
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
@@ -132,20 +165,6 @@ static int Canvas_ellipse(lua_State *L) {
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
     canvas->ellipse(TO_FLOAT(L,1), TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4));
-    lua_pushvalue(L, canvasIndex);
-    return 1;
-}
-static int Canvas_fill(lua_State *L) {
-    auto canvasIndex = lua_upvalueindex(1);
-    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
-    canvas->fill();
-    lua_pushvalue(L, canvasIndex);
-    return 1;
-}
-static int Canvas_stroke(lua_State *L) {
-    auto canvasIndex = lua_upvalueindex(1);
-    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
-    canvas->stroke();
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
@@ -286,7 +305,7 @@ static int Canvas_font(lua_State *L) {
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
     NanoCanvas::Font* font = LuaUtils::get_ref<NanoCanvas::Font>(L, 1);
-    canvas->font(font);
+    canvas->font(*font);
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
@@ -308,24 +327,340 @@ static int Canvas_textStyle(lua_State *L) {
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
     NanoCanvas::TextStyle* ts = LuaUtils::get_ref<NanoCanvas::TextStyle>(L, 1);
-    canvas->textStyle(ts);
+    canvas->textStyle(*ts);
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
-//TODO TextStyle...etc.
-//TODO drawImage
+static int Canvas_measureText(lua_State *L) {
+    //(const char* text,float x,float y,float *outW, float *outH,float rowWidth)
+    int top = lua_gettop(L);
+    if(top < 3){
+        return luaL_error(L, "wrong arguments. expect (const char *text, float x, float y, [float rowWidth])");
+    }
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    float w, h;
+    if(top == 3){
+        canvas->measureText(lua_tostring(L, 1), TO_FLOAT(L, 2), TO_FLOAT(L, 3), &w, &h);
+    } else{
+        canvas->measureText(lua_tostring(L, 1), TO_FLOAT(L, 2), TO_FLOAT(L, 3), &w, &h, TO_FLOAT(L, 4));
+    }
+    lua_pushnumber(L, w);
+    lua_pushnumber(L, h);
+    return 1;
+}
+
+static int Canvas_scale(lua_State *L) {
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->scale(TO_FLOAT(L, 1), TO_FLOAT(L, 2));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_rotate(lua_State *L) {
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->rotate(TO_FLOAT(L, 1));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_translate(lua_State *L) {
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->translate(TO_FLOAT(L, 1), TO_FLOAT(L, 2));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_transform(lua_State *L) {
+    //(float a, float b, float c, float d, float e, float f)
+    int top = lua_gettop(L);
+    if(top < 6){
+        return luaL_error(L, "wrong arguments. expect (float a, float b, float c, float d, float e, float f)");
+    }
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->transform(TO_FLOAT(L, 1), TO_FLOAT(L, 2), TO_FLOAT(L, 3),
+                      TO_FLOAT(L, 4), TO_FLOAT(L, 5), TO_FLOAT(L, 6));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_setTransform(lua_State *L) {
+    //float a, float b, float c, float d, float e, float f
+    int top = lua_gettop(L);
+    if(top < 6){
+        return luaL_error(L, "wrong arguments. expect (float a, float b, float c, float d, float e, float f)");
+    }
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->setTransform(TO_FLOAT(L, 1), TO_FLOAT(L, 2), TO_FLOAT(L, 3),
+                      TO_FLOAT(L, 4), TO_FLOAT(L, 5), TO_FLOAT(L, 6));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_beginFrame(lua_State *L) {
+    //float a, float b, float c, float d, float e, float f
+    int top = lua_gettop(L);
+    if(top < 2){
+        return luaL_error(L, "wrong arguments. expect (float a, float b, float c, float d, float e, float f)");
+    }
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->beginFrame(TO_INT(L, 1), TO_INT(L, 2));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_clip(lua_State *L) {
+    //(float x, float y, float w, float h)
+    int top = lua_gettop(L);
+    if(top < 4){
+        return luaL_error(L, "wrong arguments. expect (float x, float y, float w, float h)");
+    }
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->clip(TO_FLOAT(L, 1), TO_FLOAT(L, 2), TO_FLOAT(L, 3),
+                 TO_FLOAT(L, 4));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_pathWinding(lua_State *L) {
+    //float a, float b, float c, float d, float e, float f
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->pathWinding(TO_INT(L, 1) == 1 ? NanoCanvas::Canvas::Winding::CCW : NanoCanvas::Canvas::Winding::CW);
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_setSize(lua_State *L) {
+    //float a, float b, float c, float d, float e, float f
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->setSize(TO_INT(L, 1), TO_INT(L, 2));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_setPosition(lua_State *L) {
+    //float a, float b, float c, float d, float e, float f
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->setPosition(TO_FLOAT(L, 1), TO_FLOAT(L, 2));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_setScaleRatio(lua_State *L) {
+    //float a, float b, float c, float d, float e, float f
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->setScaleRatio(TO_FLOAT(L, 1));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_local2Global(lua_State *L) {
+    //float a, float b, float c, float d, float e, float f
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    float f1 = TO_FLOAT(L, 1);
+    float f2 = TO_FLOAT(L, 2);
+    canvas->local2Global(f1, f2);
+    lua_pushnumber(L, f1);
+    lua_pushnumber(L, f2);
+    return 1;
+}
+static int Canvas_global2Local(lua_State *L) {
+    //float a, float b, float c, float d, float e, float f
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    float f1 = TO_FLOAT(L, 1);
+    float f2 = TO_FLOAT(L, 2);
+    canvas->global2Local(f1, f2);
+    lua_pushnumber(L, f1);
+    lua_pushnumber(L, f2);
+    return 1;
+}
+static int Canvas_drawImage(lua_State *L) {
+    //(Image& image,float x, float y,
+    //    float width = NAN,float height = NAN,
+    //    float sx = 0,float sy = 0,
+    //    float swidth = NAN,float sheight = NAN)
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    NanoCanvas::Image* img = LuaUtils::get_ref<NanoCanvas::Image>(L, 1);
+    switch(lua_gettop(L)){
+        case 3:{
+            canvas->drawImage(*img, TO_FLOAT(L,2), TO_FLOAT(L,3));
+        }
+            break;
+        case 4:{
+            canvas->drawImage(*img, TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4));
+        }
+            break;
+        case 5:{
+            canvas->drawImage(*img, TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4), TO_FLOAT(L,5));
+        }
+            break;
+        case 6:{
+            canvas->drawImage(*img, TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4),
+                    TO_FLOAT(L,5), TO_FLOAT(L,6));
+        }
+            break;
+        case 7:{
+            canvas->drawImage(*img, TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4),
+                              TO_FLOAT(L,5), TO_FLOAT(L,6), TO_FLOAT(L,7));
+        }
+            break;
+        case 8:{
+            canvas->drawImage(*img, TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4),
+                              TO_FLOAT(L,5), TO_FLOAT(L,6), TO_FLOAT(L,7), TO_FLOAT(L,8));
+        }
+            break;
+        case 9:{
+            canvas->drawImage(*img, TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4),
+                              TO_FLOAT(L,5), TO_FLOAT(L,6), TO_FLOAT(L,7),
+                              TO_FLOAT(L,8), TO_FLOAT(L,9));
+        }
+            break;
+            //(Image& image,float x, float y,float width = NAN,float height = NAN,float sx = 0,float sy = 0,float swidth = NAN,float sheight = NAN)
+        default:
+            return luaL_error(L, "wrong arguments for drawImage. expect (Image& image,float x, float y,"
+                                 "[float width = NAN,float height = NAN,float sx = 0,float sy = 0,"
+                                 "float swidth = NAN,float sheight = NAN] )");
+    }
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+CANVAS_M0(resetTransform)
+CANVAS_M0(cancelFrame)
+CANVAS_M0(beginPath)
+CANVAS_M0(resetClip)
+CANVAS_M0(save)
+CANVAS_M0(restore)
+CANVAS_M0(reset)
+CANVAS_M0(closePath)
+CANVAS_M0(fill)
+CANVAS_M0(stroke)
+CANVAS_M0_NO_RETURN(endFrame)
+
 namespace sNanoCanvas{
+#define CANVAS_M_RAW(name)\
+{#name,    Canvas_##name},
     const static luaL_Reg Canvas_Methods[] = {
-            {"moveTo",           Canvas_moveTo},
-            {"lineTo",           Canvas_lineTo},
-            {"arcTo",            Canvas_arcTo},
-            {"arc",              Canvas_arc},
-            {"closePath",        Canvas_closePath},
+            CANVAS_M_RAW(moveTo)
+            CANVAS_M_RAW(lineTo)
+            CANVAS_M_RAW(arcTo)
+            CANVAS_M_RAW(quadCurveTo)
+            CANVAS_M_RAW(bezierCurveTo)
+            CANVAS_M_RAW(arc)
+            CANVAS_M_RAW(closePath)
+            CANVAS_M_RAW(rect)
+            CANVAS_M_RAW(roundedRect)
+            CANVAS_M_RAW(circle)
+            CANVAS_M_RAW(ellipse)
+            CANVAS_M_RAW(fill)
+            CANVAS_M_RAW(stroke)
+            CANVAS_M_RAW(fillRect)
+            CANVAS_M_RAW(strokeRect)
+            CANVAS_M_RAW(clearColor)
+            CANVAS_M_RAW(fillText)
+            CANVAS_M_RAW(drawImage)
+            CANVAS_M_RAW(lineCap)
+            CANVAS_M_RAW(lineJoin)
+            CANVAS_M_RAW(lineWidth)
+            CANVAS_M_RAW(miterLimit)
+            CANVAS_M_RAW(globalAlpha)
+            CANVAS_M_RAW(fillColor)
+            CANVAS_M_RAW(fillGradient)
+            CANVAS_M_RAW(strokeColor)
+            CANVAS_M_RAW(strokeGradient)
+            CANVAS_M_RAW(font)
+            CANVAS_M_RAW(fontSize)
+            CANVAS_M_RAW(textAlign)
+            CANVAS_M_RAW(textStyle)
+            CANVAS_M_RAW(measureText)
+            CANVAS_M_RAW(scale)
+            CANVAS_M_RAW(rotate)
+            CANVAS_M_RAW(translate)
+            CANVAS_M_RAW(transform)
+            CANVAS_M_RAW(setTransform)
+            CANVAS_M_RAW(resetTransform)
+            CANVAS_M_RAW(beginFrame)
+            CANVAS_M_RAW(cancelFrame)
+            CANVAS_M_RAW(endFrame)
+            CANVAS_M_RAW(beginPath)
+            CANVAS_M_RAW(pathWinding)
+            CANVAS_M_RAW(clip)
+            CANVAS_M_RAW(resetClip)
+            CANVAS_M_RAW(save)
+            CANVAS_M_RAW(restore)
+            CANVAS_M_RAW(reset)
+            CANVAS_M_RAW(setSize)
+            CANVAS_M_RAW(setPosition)
+            CANVAS_M_RAW(setScaleRatio)
+            CANVAS_M_RAW(local2Global)
+            CANVAS_M_RAW(global2Local)
+
             {NULL, NULL}
     };
 }
 DEF__INDEX(Canvas, NanoCanvas::Canvas)
+//---------------------- text style ==============
+static int TextStyle_font(lua_State* L){
+    auto upIndex = lua_upvalueindex(1);
+    auto pStyle = LuaUtils::get_ref<NanoCanvas::TextStyle>(L, upIndex);
+    auto font = LuaUtils::get_ref<NanoCanvas::Font>(L, 1);
+    pStyle->face = font->face;
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+static int TextStyle_color(lua_State* L){
+    auto upIndex = lua_upvalueindex(1);
+    auto pStyle = LuaUtils::get_ref<NanoCanvas::TextStyle>(L, upIndex);
+    auto c = LuaUtils::get_ref<NanoCanvas::Color>(L, 1);
+    pStyle->color = *c;
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+static int TextStyle_hAlign(lua_State* L){
+    auto upIndex = lua_upvalueindex(1);
+    auto pStyle = LuaUtils::get_ref<NanoCanvas::TextStyle>(L, upIndex);
+    pStyle->hAlign = TO_INT(L, 1);
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+static int TextStyle_vAlign(lua_State* L){
+    auto upIndex = lua_upvalueindex(1);
+    auto pStyle = LuaUtils::get_ref<NanoCanvas::TextStyle>(L, upIndex);
+    pStyle->vAlign = TO_INT(L, 1);
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+#define TextStyle_f(name)\
+static int TextStyle_##name(lua_State* L){\
+    auto upIndex = lua_upvalueindex(1);\
+    auto pStyle = LuaUtils::get_ref<NanoCanvas::TextStyle>(L, upIndex);\
+    pStyle->name = TO_FLOAT(L, 1);\
+    lua_pushvalue(L, upIndex);\
+    return 1;\
+}
+TextStyle_f(size)
+TextStyle_f(lineHeight)
+TextStyle_f(blur)
+TextStyle_f(letterSpace)
 
+namespace sNanoCanvas{
+#define TextStyle_M_RAW(name)\
+{#name,    TextStyle_##name},
+    const static luaL_Reg TextStyle_Methods[] = {
+            TextStyle_M_RAW(font)
+            TextStyle_M_RAW(size)
+            TextStyle_M_RAW(lineHeight)
+            TextStyle_M_RAW(blur)
+            TextStyle_M_RAW(letterSpace)
+            TextStyle_M_RAW(color)
+            TextStyle_M_RAW(hAlign)
+            TextStyle_M_RAW(vAlign)
+            {NULL, NULL}
+    };
+}
+DEF__INDEX(TextStyle, NanoCanvas::TextStyle)
 //-------------------------------------------------------------------------
 #define DEF_GC(type)\
 static int type##_gc(lua_State *L) {\
@@ -338,6 +673,7 @@ DEF_GC(Color)
 DEF_GC(Gradient)
 DEF_GC(Font)
 DEF_GC(TextStyle)
+DEF_GC(Image)
 
 namespace gNanoCanvas{
     const static luaL_Reg Canvas_Methods[] = {
@@ -358,7 +694,12 @@ namespace gNanoCanvas{
             {NULL, NULL}
     };
     const static luaL_Reg TextStyle_Methods[] = {
+            {"__index",           TextStyle_index},
             {"__gc",              TextStyle_gc},
+            {NULL, NULL}
+    };
+    const static luaL_Reg Image_Methods[] = {
+            {"__gc",              Image_gc},
             {NULL, NULL}
     };
 }
@@ -413,7 +754,7 @@ static int newLinearGradient(lua_State *L) {
     auto ecolor = LuaUtils::get_ref<NanoCanvas::Color>(L, 6);
     auto gradient = NanoCanvas::Canvas::createLinearGradient(TO_FLOAT(L, 1), TO_FLOAT(L, 2),
                                                              TO_FLOAT(L, 3), TO_FLOAT(L, 4),
-                                                             scolor, ecolor);
+                                                             *scolor, *ecolor);
     LuaUtils::push_ptr(L, gradient);
     return 1;
 }
@@ -427,7 +768,7 @@ static int newRadialGradient(lua_State *L) {
     auto ecolor = LuaUtils::get_ref<NanoCanvas::Color>(L, 6);
     auto gradient = NanoCanvas::Canvas::createRadialGradient(TO_FLOAT(L, 1), TO_FLOAT(L, 2),
                                                              TO_FLOAT(L, 3), TO_FLOAT(L, 4),
-                                                             scolor, ecolor);
+                                                             *scolor, *ecolor);
     LuaUtils::push_ptr(L, gradient);
     return 1;
 }
@@ -442,23 +783,21 @@ static int newBoxGradient(lua_State *L) {
     auto gradient = NanoCanvas::Canvas::createBoxGradient(TO_FLOAT(L, 1), TO_FLOAT(L, 2),
                                                              TO_FLOAT(L, 3), TO_FLOAT(L, 4),
                                                              TO_FLOAT(L, 5), TO_FLOAT(L, 6),
-                                                          icol, ocol);
+                                                          *icol, *ocol);
     LuaUtils::push_ptr(L, gradient);
     return 1;
 }
 static int newImageGradient(lua_State *L) {
-    //(float x0, float y0, float x1, float y1,  const Color& scolor , const Color& ecolor)
+    //(const Image &image, float ox, float oy,float w, float h, float angle, float alpha)
     if(lua_gettop(L) < 6){
         return luaL_error(L, "wrong arguments for newLinearGradient. expect params are (float x0, float y0, float x1, float y1,"
                              " const Color& scolor , const Color& ecolor)");
     }
-    auto scolor = LuaUtils::get_ref<NanoCanvas::Color>(L, 5);
-    auto ecolor = LuaUtils::get_ref<NanoCanvas::Color>(L, 6);
-    //TODO
-    /*auto gradient = NanoCanvas::Canvas::createImageGradient(TO_FLOAT(L, 1), TO_FLOAT(L, 2),
+    NanoCanvas::Image* img = LuaUtils::get_ref<NanoCanvas::Image>(L, 1);
+    auto gradient = NanoCanvas::Canvas::createImageGradient(*img, TO_FLOAT(L, 1), TO_FLOAT(L, 2),
                                                              TO_FLOAT(L, 3), TO_FLOAT(L, 4),
-                                                             scolor, ecolor);
-    LuaUtils::push_ptr(L, gradient);*/
+                                                            TO_FLOAT(L, 3), TO_FLOAT(L, 4));
+    LuaUtils::push_ptr(L, gradient);
     return 1;
 }
 static int newFont(lua_State *L){
@@ -471,6 +810,22 @@ static int newFont(lua_State *L){
     LuaUtils::push_ptr(L, pFont);
     return 1;
 }
+static int newImage(lua_State *L){
+    //(Canvas& canvas,const char* filePath, int imageFlags = 0)
+    int top = lua_gettop(L);
+    if(top < 2){
+        return luaL_error(L, "wrong arguments for newImage. expect params are (Canvas& canvas, const char* fname , const char* ttfPath)");
+    }
+    NanoCanvas::Canvas *canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, 1);
+    NanoCanvas::Image* img;
+    if(top == 2){
+        img = new NanoCanvas::Image(*canvas, lua_tostring(L, 2));
+    } else{
+        img = new NanoCanvas::Image(*canvas, lua_tostring(L, 2), lua_tointeger(L, 3));
+    }
+    LuaUtils::push_ptr(L, img);
+    return 1;
+}
 
 static const luaL_Reg mem_funcs[] = {
         {"newCanvas", newCanvas},
@@ -478,11 +833,13 @@ static const luaL_Reg mem_funcs[] = {
         {"newLinearGradient",  newLinearGradient},
         {"newRadialGradient",  newRadialGradient},
         {"newBoxGradient",     newBoxGradient},
+        {"newImageGradient",     newImageGradient},
         //depend on canvas
         {"newFont",            newFont},
+        {"newImage",           newImage},
         {nullptr,     nullptr}
 };
-extern "C" int luaopen_hmem_lua(lua_State *L) {
+extern "C" int luaopen_canvas_lua(lua_State *L) {
     luaL_newlib(L, mem_funcs);
     return 1;
 }
@@ -492,10 +849,12 @@ DEF_MTNAME(NanoCanvas::Color)
 DEF_MTNAME(NanoCanvas::Gradient)
 DEF_MTNAME(NanoCanvas::Font)
 DEF_MTNAME(NanoCanvas::TextStyle)
+DEF_MTNAME(NanoCanvas::Image)
 void CanvasLua::registers(lua_State *L) {
     REG_CLASS(L, NanoCanvas::Canvas);
     REG_CLASS(L, NanoCanvas::Color);
     REG_CLASS(L, NanoCanvas::Gradient);
     REG_CLASS(L, NanoCanvas::Font);
     REG_CLASS(L, NanoCanvas::TextStyle);
+    REG_CLASS(L, NanoCanvas::Image);
 }

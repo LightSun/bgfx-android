@@ -3,12 +3,12 @@
 
 namespace NanoCanvas
 {
-    Image::Image(Canvas& canvas,const string& filePath, int imageFlags)
+    Image::Image(Canvas& canvas,const char* filePath, int imageFlags)
     {
         m_canvas = &canvas;
         auto vg = canvas.nvgContext();
-        if(vg && filePath.length() )
-            imageID = nvgCreateImage(vg, filePath.c_str(), imageFlags);
+        if(vg && strlen(filePath))
+            imageID = nvgCreateImage(vg, filePath, imageFlags);
     }
     Image::Image(Canvas& canvas, const Memory& memory, int imageFlags)
     {

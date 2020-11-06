@@ -17,7 +17,7 @@ namespace NanoCanvas
     class Canvas
     {
     public:
-        enum class Winding 
+        enum Winding
         {
             /// Counter clock wise
             CCW = 1,
@@ -26,7 +26,7 @@ namespace NanoCanvas
         };
         
         /// Line cap style
-        enum class LineCap 
+        enum class LineCap
         {
             ///  A flat edge is added to each end of the line
             BUTT,
@@ -373,13 +373,13 @@ namespace NanoCanvas
         
         /**
          * @brief Sets the text alignment of current text style
-         * @param hAlign The horizontak alignment
-         * @param vAlign The verical alignment
+         * @param hAlign The horizontal alignment
+         * @param vAlign The vertical alignment
          * @see TextAlign::HorizontalAlign        
          * @see TextAlign::VerticalAlign
          * @return The canvas to operate with
          */
-        Canvas& textAlign(HorizontalAlign hAlign,VerticalAlign vAlign);
+        Canvas& textAlign(unsigned int hAlign,unsigned int vAlign);
         
         /**
          * @brief Set styles for text rendering
@@ -463,8 +463,17 @@ namespace NanoCanvas
          * @return The width of the specified text
          */
         float measureText(const char* text,float x,float y,float* bounds,float rowWidth = NAN);
-        
-        
+        /**
+         * measure text with width and height
+         * @param text the text
+         * @param x  The x-coordinate of the text
+         * @param y The y-coordinate of the text
+         * @param outW the out width by measure
+         * @param outH the out height by measure
+         * @param rowWidth the max row width
+         */
+        void measureText(const char* text,float x,float y,float *outW, float *outH,float rowWidth = NAN);
+
     /*--------------------- Transformations ----------------*/
         
         /**
@@ -574,7 +583,7 @@ namespace NanoCanvas
          * @param dir CVS_CW or CVS_CW
          * @return The canvas to operate with
          */
-        Canvas& pathWinding( Winding dir);
+        Canvas& pathWinding(Winding dir);
         
 
         /**
@@ -698,7 +707,7 @@ namespace NanoCanvas
         
         
         /**
-         * @brief Get the NanoVG context for advanced contol
+         * @brief Get the NanoVG context for advanced control
          * @return The NanoVG context of this canvas
          */
         NVGcontext* nvgContext(){ return m_nvgCtx; }
