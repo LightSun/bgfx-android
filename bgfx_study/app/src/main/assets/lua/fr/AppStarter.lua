@@ -8,12 +8,12 @@ local bgfx = require("bgfx");
 local m = {};
 
 -- decorViews
-function m.start(appConfig, decorViews)
+function m.start(decorViews, appConfig)
     -- renderType, debugFlags, reset(flags)
     if(not appConfig) then
-        appConfig = {renderType='Count',vendorId=0,reset=0x00000080};
+        appConfig = {renderType='Count',vendorId=0, reset=0x00000080};
     end
-    if(not decorViews) then
+    if(not decorViews or type(decorViews) ~= 'table') then
         error("at least need one DecorView.");
     end
     local initializer = bgfx.getInit();

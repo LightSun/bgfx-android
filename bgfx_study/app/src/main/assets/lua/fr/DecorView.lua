@@ -3,19 +3,20 @@
 --- Created by Administrator.
 --- DateTime: 2020/11/1 0001 下午 10:40
 ---
+local gui = require("fr.UiCore")
 local m = {}
 
 --config: renderType, renderState
-function m.new(config, extra)
+function m.new(config)
     local self = {};
     self.views = {};
-    --todo self.canvas =
+    self.canvas = gui.newCanvas(config.viewId, config.width, config.height, config.scaleRatio)
 
     function self.addView(view, index)
         if(not index) then
             index = #self.views;
         end
-        table.insert(self.views, index, view);
+        table.insert(self.views, index + 1, view);
     end
     function self.removeView(view)
         local index;
@@ -28,21 +29,31 @@ function m.new(config, extra)
         table.remove(self.views, index)
     end
     function self.setView(index, view)
-        self.views[index] = view;
+        self.views[index + 1] = view;
     end
-
-    function self.getExtra()
-        return extra;
+    -- index from 0
+    function self.getChildAt(index)
+        return self.views[index + 1];
+    end
+    function self.getChildrenCount()
+        return #self.views;
     end
 
     function self.onInitialize()
-
+        for _, v in ipairs(self.views) do
+            v.onInitialize();
+        end
     end
     function self.onDestroy()
-
+        for _, v in ipairs(self.views) do
+            v.onDestroy();
+        end
     end
     function self.onDraw()
-
+        local canvas = self.canvas;
+        for _, v in ipairs(self.views) do
+            v.onDraw(canvas);
+        end
     end
     return self;
 end

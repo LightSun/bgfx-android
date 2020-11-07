@@ -49,7 +49,6 @@ function m.setViewClear(_id, c_flags, c_rgba, c_depth, c_stencil)
     --print("bgfx >>> setViewClear")
     bgfx_lua.setViewClear(_id, c_flags, c_rgba, c_depth, c_stencil);
 end
-
 function m.setViewRect(_id, x, y, w, h)
     --print("bgfx >>> setViewRect")
     bgfx_lua.setViewRect(_id, x, y, w, h);

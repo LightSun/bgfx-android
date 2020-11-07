@@ -123,6 +123,9 @@ public final class Luaer {
                 if(clibs.contains(module)){
                     return null;
                 }
+                if(module.contains(".")){
+                    module = module.replaceAll("\\.", "/");
+                }
                 Logger.d(TAG, "getLuaFilepath", "module = " + module);
                 return LUA_DIR + "/" + module + ".lua";
             }

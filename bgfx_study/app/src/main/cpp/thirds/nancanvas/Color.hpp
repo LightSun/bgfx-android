@@ -158,7 +158,7 @@ namespace NanoCanvas
             char* strC;
             if(color[0] == '#'){
                 strC = static_cast<char *>(malloc(strlen(color)));
-                for (int i = 0; i < strlen(color) - 1; ++i) {
+                for (int i = 0; i < strlen(strC); ++i) {
                     strC[i] = color[i + 1];
                 }
                 strC[strlen(strC)] = '\0';

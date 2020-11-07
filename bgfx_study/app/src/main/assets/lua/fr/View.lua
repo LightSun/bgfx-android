@@ -8,6 +8,11 @@ local m = {}
 
 function m.new(parent)
     local self = {};
+    self.parent = parent;
+
+    function self.getParent()
+        return self.parent;
+    end
 
     function self.onInitialize()
 
@@ -18,9 +23,6 @@ function m.new(parent)
     end
 
     function self.onDraw(canvas)
-
-    end
-    function self.equals(othView)
 
     end
     return self;

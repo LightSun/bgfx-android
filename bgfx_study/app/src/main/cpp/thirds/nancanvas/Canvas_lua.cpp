@@ -759,9 +759,9 @@ static int newLinearGradient(lua_State *L) {
     return 1;
 }
 static int newRadialGradient(lua_State *L) {
-    //(float x0, float y0, float x1, float y1,  const Color& scolor , const Color& ecolor)
+    //(float cx, float cy, float r1, float r2,  const Color& scolor , const Color& ecolor)
     if(lua_gettop(L) < 6){
-        return luaL_error(L, "wrong arguments for newLinearGradient. expect params are (float x0, float y0, float x1, float y1,"
+        return luaL_error(L, "wrong arguments for newRadialGradient. expect params are (float cx, float cy, float r1, float r2,"
                              " const Color& scolor , const Color& ecolor)");
     }
     auto scolor = LuaUtils::get_ref<NanoCanvas::Color>(L, 5);
@@ -773,9 +773,9 @@ static int newRadialGradient(lua_State *L) {
     return 1;
 }
 static int newBoxGradient(lua_State *L) {
-    //(float x0, float y0, float x1, float y1,  const Color& scolor , const Color& ecolor)
+    //float x, float y, float w, float h,     float r, float f, Color icol, Color ocol
     if(lua_gettop(L) < 8){
-        return luaL_error(L, "wrong arguments for newLinearGradient. expect params are (float x0, float y0, float x1, float y1,"
+        return luaL_error(L, "wrong arguments for newBoxGradient. expect params are (float x0, float y0, float x1, float y1,"
                              " const Color& scolor , const Color& ecolor)");
     }
     auto icol = LuaUtils::get_ref<NanoCanvas::Color>(L, 7);
@@ -790,8 +790,7 @@ static int newBoxGradient(lua_State *L) {
 static int newImageGradient(lua_State *L) {
     //(const Image &image, float ox, float oy,float w, float h, float angle, float alpha)
     if(lua_gettop(L) < 6){
-        return luaL_error(L, "wrong arguments for newLinearGradient. expect params are (float x0, float y0, float x1, float y1,"
-                             " const Color& scolor , const Color& ecolor)");
+        return luaL_error(L, "wrong arguments for newImageGradient. expect params are (const Image &image, float ox, float oy,float w, float h, float angle, float alpha)");
     }
     NanoCanvas::Image* img = LuaUtils::get_ref<NanoCanvas::Image>(L, 1);
     auto gradient = NanoCanvas::Canvas::createImageGradient(*img, TO_FLOAT(L, 1), TO_FLOAT(L, 2),
@@ -800,12 +799,17 @@ static int newImageGradient(lua_State *L) {
     LuaUtils::push_ptr(L, gradient);
     return 1;
 }
+static int newTextStyle(lua_State *L){
+    auto pStyle = new NanoCanvas::TextStyle();
+    LuaUtils::push_ptr(L, pStyle);
+    return 1;
+}
 static int newFont(lua_State *L){
     //(Canvas& canvas, const char* fname , const char* ttfPath)
     if(lua_gettop(L) < 3){
         return luaL_error(L, "wrong arguments for newFont. expect params are (Canvas& canvas, const char* fname , const char* ttfPath)");
     }
-    NanoCanvas::Canvas * canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, 1);
+    NanoCanvas::Canvas *canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, 1);
     auto pFont = new NanoCanvas::Font(canvas, lua_tostring(L, 2), lua_tostring(L, 3));
     LuaUtils::push_ptr(L, pFont);
     return 1;
@@ -830,10 +834,11 @@ static int newImage(lua_State *L){
 static const luaL_Reg mem_funcs[] = {
         {"newCanvas", newCanvas},
         {"newColor",  newColor},
+        {"newTextStyle",  newTextStyle},
         {"newLinearGradient",  newLinearGradient},
         {"newRadialGradient",  newRadialGradient},
         {"newBoxGradient",     newBoxGradient},
-        {"newImageGradient",     newImageGradient},
+        {"newImageGradient",   newImageGradient},
         //depend on canvas
         {"newFont",            newFont},
         {"newImage",           newImage},
