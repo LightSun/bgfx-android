@@ -6,8 +6,11 @@
 local g = require("fr.View")
 local m = {}
 
-function m.new(parent)
-    local super = g.new(parent);
+function m.new(typeName)
+    if( not typeName) then
+        typeName = 'ViewGroup';
+    end
+    local super = g.new(typeName);
     local self = {};
     self.views = {};
     -- index from 0
@@ -16,6 +19,7 @@ function m.new(parent)
             index = #self.views;
         end
         table.insert(self.views, index + 1, view);
+        view.onAttach(self)
     end
     -- index from 0
     function self.removeView(view)
@@ -26,13 +30,24 @@ function m.new(parent)
                 break;
             end
         end
-        table.remove(self.views, index)
+        if(index) then
+            table.remove(self.views, index)
+            view.onDetach(self);
+        end
     end
     function self.removeViewAt(index)
-        table.remove(self.views, index + 1)
+        local view = table.remove(self.views, index + 1)
+        if(view) then
+            view.onDetach(self);
+        end
     end
     function self.setView(index, view)
+        local old = self.views[index + 1];
         self.views[index + 1] = view;
+        if(old) then
+            old.onDetach(self)
+        end
+        view.onAttach(self);
     end
     -- index from 0
     function self.getChildAt(index)
@@ -44,10 +59,10 @@ function m.new(parent)
     function self.getParent()
         return super.parent;
     end
-    function self.onInitialize()
-        super.onInitialize();
+    function self.onInitialize(ctx)
+        super.onInitialize(ctx);
         for _, v in ipairs(self.views) do
-            v.onInitialize();
+            v.onInitialize(ctx);
         end
     end
     function self.onDestroy()

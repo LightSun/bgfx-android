@@ -476,6 +476,12 @@ static int Canvas_global2Local(lua_State *L) {
     lua_pushnumber(L, f2);
     return 1;
 }
+static int Canvas_getContext(lua_State *L) {
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, lua_upvalueindex(1));
+    auto context = canvas->nvgContext();
+    LuaUtils::push_ptr(L, context);
+    return 1;
+}
 static int Canvas_drawImage(lua_State *L) {
     //(Image& image,float x, float y,
     //    float width = NAN,float height = NAN,
@@ -596,6 +602,7 @@ namespace sNanoCanvas{
             CANVAS_M_RAW(setScaleRatio)
             CANVAS_M_RAW(local2Global)
             CANVAS_M_RAW(global2Local)
+            CANVAS_M_RAW(getContext)
 
             {NULL, NULL}
     };
@@ -805,27 +812,27 @@ static int newTextStyle(lua_State *L){
     return 1;
 }
 static int newFont(lua_State *L){
-    //(Canvas& canvas, const char* fname , const char* ttfPath)
+    //(NVGcontext* ctx, const char* fname , const char* ttfPath)
     if(lua_gettop(L) < 3){
-        return luaL_error(L, "wrong arguments for newFont. expect params are (Canvas& canvas, const char* fname , const char* ttfPath)");
+        return luaL_error(L, "wrong arguments for newFont. expect params are (NVGcontext* ptr, const char* fname , const char* ttfPath)");
     }
-    NanoCanvas::Canvas *canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, 1);
-    auto pFont = new NanoCanvas::Font(canvas, lua_tostring(L, 2), lua_tostring(L, 3));
+    NVGcontext* ctx = LuaUtils::get_ref<NVGcontext>(L, 1);
+    auto pFont = new NanoCanvas::Font(ctx, lua_tostring(L, 2), lua_tostring(L, 3));
     LuaUtils::push_ptr(L, pFont);
     return 1;
 }
 static int newImage(lua_State *L){
-    //(Canvas& canvas,const char* filePath, int imageFlags = 0)
+    //(NVGcontext* ptr, const char* filePath, int imageFlags = 0)
     int top = lua_gettop(L);
     if(top < 2){
-        return luaL_error(L, "wrong arguments for newImage. expect params are (Canvas& canvas, const char* fname , const char* ttfPath)");
+        return luaL_error(L, "wrong arguments for newImage. expect params are (NVGcontext* ptr, const char* fname , const char* ttfPath)");
     }
-    NanoCanvas::Canvas *canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, 1);
+    NVGcontext* ctx = LuaUtils::get_ref<NVGcontext>(L, 1);
     NanoCanvas::Image* img;
     if(top == 2){
-        img = new NanoCanvas::Image(*canvas, lua_tostring(L, 2));
+        img = new NanoCanvas::Image(ctx, lua_tostring(L, 2));
     } else{
-        img = new NanoCanvas::Image(*canvas, lua_tostring(L, 2), lua_tointeger(L, 3));
+        img = new NanoCanvas::Image(ctx, lua_tostring(L, 2), lua_tointeger(L, 3));
     }
     LuaUtils::push_ptr(L, img);
     return 1;
@@ -839,7 +846,7 @@ static const luaL_Reg mem_funcs[] = {
         {"newRadialGradient",  newRadialGradient},
         {"newBoxGradient",     newBoxGradient},
         {"newImageGradient",   newImageGradient},
-        //depend on canvas
+        //depend on nvgContext
         {"newFont",            newFont},
         {"newImage",           newImage},
         {nullptr,     nullptr}
@@ -855,6 +862,7 @@ DEF_MTNAME(NanoCanvas::Gradient)
 DEF_MTNAME(NanoCanvas::Font)
 DEF_MTNAME(NanoCanvas::TextStyle)
 DEF_MTNAME(NanoCanvas::Image)
+DEF_MTNAME(NVGcontext)
 void CanvasLua::registers(lua_State *L) {
     REG_CLASS(L, NanoCanvas::Canvas);
     REG_CLASS(L, NanoCanvas::Color);
@@ -862,4 +870,5 @@ void CanvasLua::registers(lua_State *L) {
     REG_CLASS(L, NanoCanvas::Font);
     REG_CLASS(L, NanoCanvas::TextStyle);
     REG_CLASS(L, NanoCanvas::Image);
+    REG_EMPTY_CLASS(L, NVGcontext);
 }

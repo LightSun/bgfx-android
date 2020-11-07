@@ -1,6 +1,8 @@
 #ifndef TEXT_H
 #define TEXT_H
 
+class NVGcontext;
+
 namespace NanoCanvas
 {
     class Canvas;
@@ -21,22 +23,22 @@ namespace NanoCanvas
         
         /**
          * @brief Creates font by loading it from the disk from specified file path.
-         * @param canvas The canvas who owns this font
+         * @param ctx The context
          * @param fname The name of the font
          * @param ttfPath The ttf file path to load
          */
-        Font(Canvas* canvas, const char* fname , const char* ttfPath);
+        Font(NVGcontext* ctx, const char* fname , const char* ttfPath);
         
         /**
          * @brief Creates image by loading it from the specified memory chunk.
-         * @param canvas The canvas who owns this font
+         * @param ctx The context
          * @param fname The name of the font
          * @param mem The memory to load from
          * @param invalidateMem Should invalidate the Memory after loading
          * @note Invalidate Memory is not release the Memory you should do that yourself!
          * @see Memory::invalidate
          */
-        Font(Canvas* canvas, const char* fname, const Memory& mem, bool invalidateMem);
+        Font(NVGcontext* ctx, const char* fname, const Memory& mem, bool invalidateMem);
         
         /**
          * @brief Check is the font face is valid

@@ -1,6 +1,8 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+class NVGcontext;
+//you should
 namespace NanoCanvas
 {
     class Canvas;
@@ -41,7 +43,7 @@ namespace NanoCanvas
          * @param imageFlags Creation flags
          * @see Image::ImageFlag
          */
-        Image(Canvas& canvas,const char* filePath, int imageFlags = 0);
+        Image(NVGcontext* ctx,const char* filePath, int imageFlags = 0);
         
         /**
          * @brief  Creates image by loading it from the specified chunk of memory.
@@ -50,7 +52,7 @@ namespace NanoCanvas
          * @param imageFlags Creation flags
          * @see Image::ImageFlag
          */
-        Image(Canvas& canvas, const Memory& memory, int imageFlags = 0);
+        Image(NVGcontext* ctx, const Memory& memory, int imageFlags = 0);
         
         /**
          * @brief Creates image with RGBA format from specified image data.
@@ -60,7 +62,7 @@ namespace NanoCanvas
          * @param memory The memory block to load from
          * @param imageFlags Creation flags
          */
-        Image(Canvas& canvas, int w, int h, const Memory& memory, int imageFlags=0);
+        Image(NVGcontext* ctx, int w, int h, const Memory& memory, int imageFlags=0);
         
         ~Image();
         
@@ -85,8 +87,8 @@ namespace NanoCanvas
         /// The image id of nanovg
         int imageID = 0;
     private:
-        /// The owner canvas
-        Canvas * m_canvas = nullptr;
+        /// The owner context
+        NVGcontext * _ctx = nullptr;
     };
 }
 

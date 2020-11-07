@@ -26,9 +26,9 @@ namespace NanoCanvas
         /// The nanovg image id of the image pattern
         int imageID  = 0;
         /// The start color of the gradiant
-        Color sColor = Colors::ZeroColor;
+        Color sColor = 0u;
         /// The end color of the gradiant
-        Color eColor = Colors::ZeroColor;
+        Color eColor = 0u;
     };
 }
 

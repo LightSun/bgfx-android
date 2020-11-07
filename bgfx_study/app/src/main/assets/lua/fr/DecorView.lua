@@ -3,20 +3,28 @@
 --- Created by Administrator.
 --- DateTime: 2020/11/1 0001 下午 10:40
 ---
+local obj = require("core.Object")
 local gui = require("fr.UiCore")
+local bgfx = require("bgfx");
 local m = {}
 
---config: renderType, renderState
-function m.new(config)
-    local self = {};
+--- create decor view with canvas config
+--- canvas config: (viewId, width, height, [scaleRatio])
+function m.new(canvasConfig)
+    local self = obj.new("DecorView");
     self.views = {};
-    self.canvas = gui.newCanvas(config.viewId, config.width, config.height, config.scaleRatio)
+    if( canvasConfig and type(canvasConfig) == 'table') then
+        self.canvas = gui.newCanvas(canvasConfig.viewId, canvasConfig.width, canvasConfig.height, canvasConfig.scaleRatio)
+    else
+        print("create DecorView with no config, latter will create canvas by default.")
+    end
 
     function self.addView(view, index)
         if(not index) then
             index = #self.views;
         end
         table.insert(self.views, index + 1, view);
+        view.onAttach(self)
     end
     function self.removeView(view)
         local index;
@@ -26,10 +34,24 @@ function m.new(config)
                 break;
             end
         end
-        table.remove(self.views, index)
+        if(index) then
+            table.remove(self.views, index)
+            view.onDetach(self);
+        end
+    end
+    function self.removeViewAt(index)
+        local view = table.remove(self.views, index + 1)
+        if(view) then
+            view.onDetach(self);
+        end
     end
     function self.setView(index, view)
+        local old = self.views[index + 1];
         self.views[index + 1] = view;
+        if(old) then
+            old.onDetach(self)
+        end
+        view.onAttach(self);
     end
     -- index from 0
     function self.getChildAt(index)
@@ -39,9 +61,18 @@ function m.new(config)
         return #self.views;
     end
 
+    function self.getCanvas()
+        if(not self.canvas) then
+            local reso = bgfx.getInit().resolution
+            self.canvas = gui.newCanvas(0, reso.width, reso.height, 1)
+        end
+        return self.canvas;
+    end
+
     function self.onInitialize()
+        local ctx = self.getCanvas().getContext()
         for _, v in ipairs(self.views) do
-            v.onInitialize();
+            v.onInitialize(ctx);
         end
     end
     function self.onDestroy()

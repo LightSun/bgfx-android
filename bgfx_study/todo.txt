@@ -63,5 +63,8 @@ void requestScreenShot(
 ======================== LineCap/LineJoin =======
 like javafx.scene.shape.StrokeLineCap and StrokeLineJoin
 
+=============
+NVGcontext: add ref count.
+
 
 

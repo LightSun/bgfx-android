@@ -115,14 +115,14 @@ function m.newImageGradient(image, x, y, w, h, angle, alpha)
     return canvasL.newImageGradient(image, x, y, w, h, angle, alpha)
 end
 
-function m.newFont(canvas, fname, ttfPath)
-    --(Canvas& canvas, const char* fname , const char* ttfPath)
-    return canvasL.newFont(canvas, fname, ttfPath);
+function m.newFont(context, fname, ttfPath)
+    --(nvgContext* context, const char* fname , const char* ttfPath)
+    return canvasL.newFont(context, fname, ttfPath);
 end
 
-function m.newImage(canvas, filePath, flags)
-    --(Canvas& canvas,const char* filePath, int imageFlags = 0)
-    return canvasL.newImage(canvas, filePath, flags);
+function m.newImage(context, filePath, flags)
+    --(nvgContext* context,const char* filePath, int imageFlags = 0)
+    return canvasL.newImage(context, filePath, flags);
 end
 
 function m.newTextStyle()

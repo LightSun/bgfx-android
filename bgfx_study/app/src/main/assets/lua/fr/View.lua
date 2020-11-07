@@ -3,18 +3,31 @@
 --- Created by Administrator.
 --- DateTime: 2020/11/1 0001 下午 10:50
 ---
-
+local obj = require("core.Object")
 local m = {}
 
-function m.new(parent)
-    local self = {};
-    self.parent = parent;
+function m.new(typeName)
+    if( not typeName) then
+        typeName = 'View';
+    end
+    local self = obj.new(typeName);
+    self.parent = nil;
 
+    function self.isView()
+        return true;
+    end
     function self.getParent()
         return self.parent;
     end
+    --- often called by remove from parent
+    function self.onDetach(p)
+        self.parent = nil;
+    end
+    function self.onAttach(p)
+        self.parent = p;
+    end
 
-    function self.onInitialize()
+    function self.onInitialize(ctx)
 
     end
 

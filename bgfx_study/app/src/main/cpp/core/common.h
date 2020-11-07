@@ -43,17 +43,7 @@ namespace bx{
             return super::write(_data, _size, _err);
         }
     };
-    class FileReaderImpl : public bx::FileReader
-    {
-    private:
-        typedef bx::FileReader super;
-
-    public:
-        FileReaderImpl(){}
-        ~FileReaderImpl();
-        virtual bool open(const bx::FilePath& _filePath, bx::Error* _err) override ;
-    };
-    class FileReaderAndroid : public bx::FileReaderI
+    class FileReaderAndroid : public bx::FileReader
     {
     public:
         FileReaderAndroid(AAssetManager* _assetManager)
@@ -68,36 +58,9 @@ namespace bx{
             close();
         }
 
-        virtual bool open(const bx::FilePath& _filePath, bx::Error* _err) override
-        {
-            BX_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors.");
+        virtual bool open(const bx::FilePath& _filePath, bx::Error* _err) override;
 
-            if (NULL != m_file)
-            {
-                BX_ERROR_SET(_err, bx::kErrorReaderWriterAlreadyOpen, "FileReader: File is already open.");
-                return false;
-            }
-
-            m_file = AAssetManager_open(m_assetManager, _filePath.getCPtr(), AASSET_MODE_RANDOM);
-            if (NULL == m_file)
-            {
-                BX_ERROR_SET(_err, bx::kErrorReaderWriterOpen, "FileReader: Failed to open file.");
-                return false;
-            }
-
-            m_open = true;
-            return true;
-        }
-
-        virtual void close() override
-        {
-            if (m_open
-                &&  NULL != m_file)
-            {
-                AAsset_close(m_file);
-                m_file = NULL;
-            }
-        }
+        virtual void close() override;
 
         virtual int64_t seek(int64_t _offset, bx::Whence::Enum _whence) override
         {
@@ -129,6 +92,16 @@ namespace bx{
         AAssetManager* m_assetManager;
         AAsset* m_file;
         bool m_open;
+    };
+    class FileReaderImpl : public bx::FileReader
+    {
+    private:
+        typedef bx::FileReader super;
+
+    public:
+        FileReaderImpl(){};
+        ~FileReaderImpl();
+        virtual bool open(const bx::FilePath& _filePath, bx::Error* _err) override ;
     };
 }
 

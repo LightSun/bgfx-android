@@ -8,7 +8,7 @@ end
 
 ---create super object .
 ---@param typeName: the type name of current object
----@param func_create: function to create object
+---@param func_create: function to create object. can be nil
 ---@param ...: the params to create object
 function m.new(typeName , func_create , ...)
     assert(type(typeName) == "string")

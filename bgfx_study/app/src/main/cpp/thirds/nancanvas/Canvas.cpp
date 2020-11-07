@@ -511,7 +511,6 @@ namespace NanoCanvas {
         nvgIntersectScissor(m_nvgCtx, x, y, w, h);
         return *this;
     }
-
     Canvas &Canvas::resetClip() {
         nvgResetScissor(m_nvgCtx);
         return *this;

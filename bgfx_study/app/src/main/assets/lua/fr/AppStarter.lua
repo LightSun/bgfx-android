@@ -5,6 +5,8 @@
 ---
 ---
 local bgfx = require("bgfx");
+--local preds = require("core.utils.Predicates")
+local dv = require("fr.DecorView")
 local m = {};
 
 -- decorViews
@@ -13,7 +15,7 @@ function m.start(decorViews, appConfig)
     if(not appConfig) then
         appConfig = {renderType='Count',vendorId=0, reset=0x00000080};
     end
-    if(not decorViews or type(decorViews) ~= 'table') then
+    if(not decorViews or type(decorViews) ~= 'table') or (#decorViews == 0) then
         error("at least need one DecorView.");
     end
     local initializer = bgfx.getInit();
@@ -40,6 +42,17 @@ function m.start(decorViews, appConfig)
     end
     local app = bgfx.newApp(app_pre_init, app_init, app_draw, app_destroy);
     app.start(app);
+end
+
+--- start view with default canvas config. this often used for test.
+function m.startViews(appConfig, ...)
+    local views = {...}
+    local decorView = dv.new();
+    for _, v in ipairs(views) do
+        decorView.addView(v)
+    end
+    local tab = {decorView}
+    m.start(tab, appConfig);
 end
 
 return m;
