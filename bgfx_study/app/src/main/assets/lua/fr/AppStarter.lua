@@ -10,12 +10,12 @@ local dv = require("fr.DecorView")
 local m = {};
 
 -- decorViews
-function m.start(decorViews, appConfig)
+function m.start(decorView, appConfig)
     -- renderType, debugFlags, reset(flags)
     if(not appConfig) then
         appConfig = {renderType='Count',vendorId=0, reset=0x00000080};
     end
-    if(not decorViews or type(decorViews) ~= 'table') or (#decorViews == 0) then
+    if(not decorView or type(decorView) ~= 'table') then
         error("at least need one DecorView.");
     end
     local initializer = bgfx.getInit();
@@ -26,19 +26,13 @@ function m.start(decorViews, appConfig)
         reso.reset = appConfig.reset; --vsync
     end
     local app_init = function ()
-        for _, v in ipairs(decorViews) do
-            v.onInitialize();
-        end
+        decorView.onInitialize();
     end
     local app_draw = function ()
-        for _, v in ipairs(decorViews) do
-            v.onDraw();
-        end
+        decorView.onDraw();
     end
     local app_destroy = function ()
-        for _, v in ipairs(decorViews) do
-            v.onDestroy();
-        end
+        decorView.onDestroy();
     end
     local app = bgfx.newApp(app_pre_init, app_init, app_draw, app_destroy);
     app.start(app);
@@ -51,8 +45,7 @@ function m.startViews(appConfig, ...)
     for _, v in ipairs(views) do
         decorView.addView(v)
     end
-    local tab = {decorView}
-    m.start(tab, appConfig);
+    m.start(decorView, appConfig);
 end
 
 return m;

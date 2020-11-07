@@ -15,7 +15,9 @@ function m.new(canvasConfig)
     self.views = {};
     if( canvasConfig and type(canvasConfig) == 'table') then
         self.canvas = gui.newCanvas(canvasConfig.viewId, canvasConfig.width, canvasConfig.height, canvasConfig.scaleRatio)
+        self.viewId = canvasConfig.viewId;
     else
+        self.viewId = 0;
         print("create DecorView with no config, latter will create canvas by default.")
     end
 
@@ -64,7 +66,7 @@ function m.new(canvasConfig)
     function self.getCanvas()
         if(not self.canvas) then
             local reso = bgfx.getInit().resolution
-            self.canvas = gui.newCanvas(0, reso.width, reso.height, 1)
+            self.canvas = gui.newCanvas(self.viewId, reso.width, reso.height, 1)
         end
         return self.canvas;
     end
@@ -82,9 +84,14 @@ function m.new(canvasConfig)
     end
     function self.onDraw()
         local canvas = self.canvas;
+        local reso = bgfx.getInit().resolution
+        bgfx.setViewRect(self.viewId, 0, 0, reso.width, reso.height);
+
+        bgfx.touch(self.viewId);
         for _, v in ipairs(self.views) do
             v.onDraw(canvas);
         end
+        bgfx.frame();
     end
     return self;
 end
