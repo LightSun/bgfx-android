@@ -23,7 +23,10 @@ extern "C" {
 #ifndef USE_NATIVE_ACTIVITY
 #define TINYSTL_ALLOCATOR entry::TinyStlAllocator
 
+
 namespace bx{
+    struct FileReaderI; struct FileWriterI; struct AllocatorI;
+
     class FileWriterImpl : public bx::FileWriter
     {
     private:
@@ -43,7 +46,7 @@ namespace bx{
             return super::write(_data, _size, _err);
         }
     };
-    class FileReaderAndroid : public bx::FileReader
+    class FileReaderAndroid : public bx::FileReaderI
     {
     public:
         FileReaderAndroid(AAssetManager* _assetManager)
@@ -58,15 +61,46 @@ namespace bx{
             close();
         }
 
-        virtual bool open(const bx::FilePath& _filePath, bx::Error* _err) override;
+        virtual bool open(const bx::FilePath& _filePath, bx::Error* _err) override{
+            BX_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors.");
 
-        virtual void close() override;
+            if (NULL != m_file) {
+                BX_ERROR_SET(_err, bx::kErrorReaderWriterAlreadyOpen,
+                             "FileReader: File is already open.");
+                return false;
+            }
+            //relative
+            m_file = AAssetManager_open(m_assetManager, _filePath.getCPtr(), AASSET_MODE_RANDOM);
+            if (NULL == m_file) {
+                BX_ERROR_SET(_err, bx::kErrorReaderWriterOpen, "FileReader: Failed to open file.");
+                return false;
+            }
+
+            m_open = true;
+            return true;
+        }
+
+        virtual void close() override{
+            if (m_open
+                && NULL != m_file) {
+                AAsset_close(m_file);
+                m_file = NULL;
+            }
+        }
 
         virtual int64_t seek(int64_t _offset, bx::Whence::Enum _whence) override
         {
             BX_ASSERT(NULL != m_file, "Reader/Writer file is not open.");
-            return AAsset_seek64(m_file, _offset, _whence);
-
+            switch (_whence){
+                case Whence::Begin:
+                    return AAsset_seek64(m_file, _offset, SEEK_SET);
+                case Whence::Current:
+                    return AAsset_seek64(m_file, _offset, SEEK_CUR);
+                case Whence::End:
+                    return AAsset_seek64(m_file, _offset, SEEK_END);
+                default:
+                    return 0;
+            }
         }
 
         virtual int32_t read(void* _data, int32_t _size, bx::Error* _err) override

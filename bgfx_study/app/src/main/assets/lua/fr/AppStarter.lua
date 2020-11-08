@@ -18,7 +18,9 @@ function m.start(decorView, appConfig)
     if(not decorView or type(decorView) ~= 'table') then
         error("at least need one DecorView.");
     end
+    print("---- initializer ----- ")
     local initializer = bgfx.getInit();
+    print("---- initializer ----- ")
     local reso = initializer.resolution;
     local app_pre_init = function()
         initializer.type = appConfig.renderType;

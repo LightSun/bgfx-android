@@ -110,39 +110,5 @@ namespace bx {
         filePath.append(_filePath);
         return super::open(filePath.getPtr(), _err);
     }
-
-    bool FileReaderAndroid::open(const bx::FilePath &_filePath, bx::Error *_err) {
-        BX_ASSERT(NULL != _err, "Reader/Writer interface calling functions must handle errors.");
-
-        if (NULL != m_file) {
-            BX_ERROR_SET(_err, bx::kErrorReaderWriterAlreadyOpen,
-                         "FileReader: File is already open.");
-            return false;
-        }
-        entry::String filePath(entry::s_currentDir);
-        filePath.append(_filePath);
-        bx::FilePath fp(filePath);
-        //absolute
-        if(fp.isAbsolute()){
-            return bx::FileReader::open(filePath, _err);
-        }
-        //relative
-        m_file = AAssetManager_open(m_assetManager, filePath.getCPtr(), AASSET_MODE_RANDOM);
-        if (NULL == m_file) {
-            BX_ERROR_SET(_err, bx::kErrorReaderWriterOpen, "FileReader: Failed to open file.");
-            return false;
-        }
-
-        m_open = true;
-        return true;
-    }
-
-    void FileReaderAndroid::close() {
-        if (m_open
-            && NULL != m_file) {
-            AAsset_close(m_file);
-            m_file = NULL;
-        }
-    }
 }
 #endif

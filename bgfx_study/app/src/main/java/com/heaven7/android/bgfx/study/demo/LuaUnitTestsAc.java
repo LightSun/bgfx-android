@@ -60,6 +60,7 @@ public class LuaUnitTestsAc extends AppCompatActivity {
         items.add(new BgfxLuaActivity.Item("lua/tests/mat.lua", "test mat"));
         items.add(new BgfxLuaActivity.Item("lua/tests/skm.lua", "test sk mem"));
         items.add(new BgfxLuaActivity.Item("lua/tests/skanym.lua", "test skany mem"));
+        items.add(new BgfxLuaActivity.Item("lua/tests/fr/TestView.lua", "test TestView(canvas)"));
         return items;
     }
     public void runTest(BgfxLuaActivity.Item item){

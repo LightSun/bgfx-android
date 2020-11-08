@@ -10,6 +10,7 @@
 #include "lua/SkLua.h"
 #include "lua/lua.hpp"
 #include <lua/int64.h>
+#include "nancanvas/Canvas_lua.h"
 
 using namespace heaven7_Bgfx_demo;
 
@@ -106,6 +107,7 @@ static const luaL_Reg bgfx_libs[] = {
         {"bgfx_lua", luaopen_bgfx_lua},
         {"bx_lua", luaopen_bx_lua},
         {"hmem_lua", luaopen_hmem_lua},
+        {"canvas_lua", luaopen_canvas_lua},
         {"int64", luaopen_int64},
         {"uint64", luaopen_uint64},
         {nullptr, nullptr}

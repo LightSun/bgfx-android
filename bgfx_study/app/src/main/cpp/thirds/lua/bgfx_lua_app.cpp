@@ -14,24 +14,30 @@ namespace Bgfx_lua_app {
 
     void startApp(long ptr, entry::InitConfig *pConfig) {
         lua_State* L = reinterpret_cast<lua_State *>(ptr);
-        LuaAppHolder** p = (LuaAppHolder**)lua_newuserdata(L, sizeof(LuaAppHolder*));
-        *p = new LuaAppHolder();
-
-        luaL_getmetatable(L, "ud_LuaAppHolder_");
-        lua_setmetatable(L, -2);
-        lua_setglobal(L, KEY_APP_HOLDER);
-
-        LOGD("create LuaAppHolder = %p", *p);
-        (*p)->startLoop(pConfig);
+        getAppHolder(L)->startLoop(pConfig);
     }
 
     LuaAppHolder* getAppHolder(lua_State* L) {
-        //luaB_dumpStack(L);
+        LuaAppHolder* result;
         lua_getglobal(L, KEY_APP_HOLDER);
-        LuaAppHolder** p = static_cast<LuaAppHolder **>(lua_touserdata(L, -1));
-        lua_pop(L, 1);
-       // luaB_dumpStack(L);
-        return *p;
+        if(lua_isnil(L, -1)){
+            lua_pop(L, 1);
+            LOGD("create getAppHolder---- ");
+            //luaB_dumpStack(L);
+            LuaAppHolder** p = (LuaAppHolder**)lua_newuserdata(L, sizeof(LuaAppHolder*));
+            *p = result = new LuaAppHolder();
+
+            luaL_getmetatable(L, "ud_LuaAppHolder_");
+            lua_setmetatable(L, -2);
+            lua_setglobal(L, KEY_APP_HOLDER);
+            //luaB_dumpStack(L);
+            LOGD("end create getAppHolder---- ");
+        } else{
+            LuaAppHolder** p = static_cast<LuaAppHolder **>(lua_touserdata(L, -1));
+            lua_pop(L, 1);
+            result = *p;
+        }
+        return result;
     }
 
     bgfx::Init *requireInit(lua_State* L) {
