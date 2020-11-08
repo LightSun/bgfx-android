@@ -72,7 +72,15 @@ function m.new(canvasConfig)
     end
 
     function self.onInitialize()
+        bgfx.setDebug(0); -- BGFX_DEBUG_NONE
+        bgfx.setViewClear(0
+        , 3          -- BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH
+        , 0x303030ff
+        , 1.0
+        , 0);
+        --dumpStack();
         local ctx = self.getCanvas().getContext()
+        --dumpStack();
         for _, v in ipairs(self.views) do
             v.onInitialize(ctx);
         end
@@ -88,9 +96,11 @@ function m.new(canvasConfig)
         bgfx.setViewRect(self.viewId, 0, 0, reso.width, reso.height);
 
         bgfx.touch(self.viewId);
+        canvas.beginFrame(reso.width, reso.height);
         for _, v in ipairs(self.views) do
             v.onDraw(canvas);
         end
+        canvas.endFrame();
         bgfx.frame();
     end
     return self;

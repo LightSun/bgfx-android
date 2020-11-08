@@ -8,9 +8,9 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.heaven7.adapter.BaseSelector;
 import com.heaven7.adapter.QuickRecycleViewAdapter;
 import com.heaven7.adapter.util.ViewHelper2;
+import com.heaven7.android.bgfx.study.demo.bean.LuaItem;
 import com.heaven7.android.bgfx.study.demo.lua.Luaer;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
     RecyclerView mRv;
 
     private Luaer mLuaer = Luaer.get();
-    private List<Item> mItems;
+    private List<LuaItem> mLuaItems;
 
     @Override
     protected int getLayoutId() {
@@ -34,28 +34,31 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
         NativeApi.setUseLua(true);
         super.onCreate(savedInstanceState);
 
+        String path = getIntent().getStringExtra(Constants.KEY_LUA_FILE);
         mRv = findViewById(R.id.rv);
         mBgfxLuaView = findViewById(R.id.bgfx_lua_view);
 
-        mItems = createItems();
+        mLuaItems = createItems();
         mRv.setLayoutManager(new LinearLayoutManager(this));
-        mRv.setAdapter(new QuickRecycleViewAdapter<Item>(R.layout.item_name, mItems) {
+        mRv.setAdapter(new QuickRecycleViewAdapter<LuaItem>(R.layout.item_name, mLuaItems) {
             @Override
-            protected void onBindData(Context context, int position, final Item item, int itemLayoutId, ViewHelper2 helper) {
-                helper.setText(android.R.id.text1, item.desc)
+            protected void onBindData(Context context, int position, final LuaItem luaItem, int itemLayoutId, ViewHelper2 helper) {
+                helper.setText(android.R.id.text1, luaItem.desc)
                         .setRootOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 mRv.setVisibility(View.GONE);
-                                mBgfxLuaView.setScriptFile(mLuaer, item.path);
+                                mBgfxLuaView.setScriptFile(mLuaer, luaItem.path);
                             }
                         });
             }
         });
+        //run the path
+        final String runPath = path != null ? path : mLuaItems.get(0).path;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mBgfxLuaView.setScriptFile(mLuaer, mItems.get(0).path);
+                mBgfxLuaView.setScriptFile(mLuaer, runPath);
             }
         });
     }
@@ -70,20 +73,11 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
         super.onDestroy();
     }
 
-    private List<Item> createItems() {
-        List<Item> items = new ArrayList<>();
-        items.add(new Item("lua/curbes.lua", "Curbes"));
-        items.add(new Item("lua/hello_world.lua", "Hello World"));
-        return items;
+    private List<LuaItem> createItems() {
+        List<LuaItem> luaItems = new ArrayList<>();
+        luaItems.add(new LuaItem("lua/curbes.lua", "Curbes"));
+        luaItems.add(new LuaItem("lua/hello_world.lua", "Hello World"));
+        return luaItems;
     }
 
-    public static class Item extends BaseSelector {
-        final String path;
-        final String desc;
-
-        public Item(String path, String desc) {
-            this.path = path;
-            this.desc = desc;
-        }
-    }
 }

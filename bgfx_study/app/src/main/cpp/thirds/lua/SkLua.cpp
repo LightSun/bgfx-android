@@ -25,6 +25,7 @@
 #include "int64.h"
 #include "SkMemory_lua.h"
 #include "bx_lua.h"
+//#include "../nancanvas/Canvas_lua.h"
 
 extern "C" {
 #include <cstring>

@@ -422,6 +422,19 @@ static int Canvas_clip(lua_State *L) {
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
+static int Canvas_clipOut(lua_State *L) {
+    //(float x, float y, float w, float h)
+    int top = lua_gettop(L);
+    if(top < 4){
+        return luaL_error(L, "wrong arguments. expect (float x, float y, float w, float h)");
+    }
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->clipOut(TO_FLOAT(L, 1), TO_FLOAT(L, 2), TO_FLOAT(L, 3),
+                 TO_FLOAT(L, 4));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
 static int Canvas_pathWinding(lua_State *L) {
     //float a, float b, float c, float d, float e, float f
     auto canvasIndex = lua_upvalueindex(1);
@@ -593,6 +606,7 @@ namespace sNanoCanvas{
             CANVAS_M_RAW(beginPath)
             CANVAS_M_RAW(pathWinding)
             CANVAS_M_RAW(clip)
+            CANVAS_M_RAW(clipOut)
             CANVAS_M_RAW(resetClip)
             CANVAS_M_RAW(save)
             CANVAS_M_RAW(restore)
@@ -682,31 +696,48 @@ DEF_GC(Font)
 DEF_GC(TextStyle)
 DEF_GC(Image)
 
+#define DEF_TOSTRING(type)\
+static int type##_tostring(lua_State* L){\
+    lua_pushstring(L, #type);\
+    return 1;\
+}
+DEF_TOSTRING(Canvas)
+DEF_TOSTRING(Color)
+DEF_TOSTRING(Gradient)
+DEF_TOSTRING(Font)
+DEF_TOSTRING(TextStyle)
+DEF_TOSTRING(Image)
 namespace gNanoCanvas{
     const static luaL_Reg Canvas_Methods[] = {
             {"__index",           Canvas_index},
+            {"__tostring",        Canvas_tostring},
             {"__gc",              Canvas_gc},
             {NULL, NULL}
     };
     const static luaL_Reg Color_Methods[] = {
             {"__gc",              Color_gc},
+            {"__tostring",        Color_tostring},
             {NULL, NULL}
     };
     const static luaL_Reg Gradient_Methods[] = {
             {"__gc",              Gradient_gc},
+            {"__tostring",        Gradient_tostring},
             {NULL, NULL}
     };
     const static luaL_Reg Font_Methods[] = {
             {"__gc",              Font_gc},
+            {"__tostring",        Font_tostring},
             {NULL, NULL}
     };
     const static luaL_Reg TextStyle_Methods[] = {
             {"__index",           TextStyle_index},
+            {"__tostring",        TextStyle_tostring},
             {"__gc",              TextStyle_gc},
             {NULL, NULL}
     };
     const static luaL_Reg Image_Methods[] = {
             {"__gc",              Image_gc},
+            {"__tostring",        Image_tostring},
             {NULL, NULL}
     };
 }
@@ -719,14 +750,14 @@ static int newCanvas(lua_State *L) {
     switch (lua_gettop(L)){
         case 4: {
             NVGcontext *context = nvgCreate(1, viewId);
-            canvas = new NanoCanvas::Canvas(context,
-                                            lua_tointeger(L,2), lua_tointeger(L, 3), (float)lua_tonumber(L, 4));
+            canvas = new NanoCanvas::Canvas(context,lua_tointeger(L,2),
+                    lua_tointeger(L, 3), (float)lua_tonumber(L, 4));
         }
             break;
         case 3:{
             NVGcontext* context = nvgCreate(1, viewId);
-            canvas = new NanoCanvas::Canvas(context,
-                                            lua_tointeger(L,2), lua_tointeger(L, 3));
+            canvas = new NanoCanvas::Canvas(context,lua_tointeger(L,2),
+                    lua_tointeger(L, 3));
         }
             break;
         default:
@@ -851,7 +882,9 @@ static const luaL_Reg mem_funcs[] = {
         {"newImage",           newImage},
         {nullptr,     nullptr}
 };
+
 extern "C" int luaopen_canvas_lua(lua_State *L) {
+    CanvasLua::registers(L);
     luaL_newlib(L, mem_funcs);
     return 1;
 }

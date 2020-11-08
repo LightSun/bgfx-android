@@ -479,8 +479,12 @@ namespace NanoCanvas {
     Canvas &Canvas::beginFrame(int windowWidth, int windowHeight) {
         nvgBeginFrame(m_nvgCtx, windowWidth, windowHeight, m_scaleRatio);
         // Clip out side area
-        nvgScissor(m_nvgCtx, m_xPos, m_yPos, m_width, m_height);
+        //nvgScissor(m_nvgCtx, m_xPos, m_yPos, m_width, m_height);
 
+        return *this;
+    }
+    Canvas & Canvas::clipOut(float x, float y, float w, float h) {
+        nvgScissor(m_nvgCtx, x, y, w, h);
         return *this;
     }
 

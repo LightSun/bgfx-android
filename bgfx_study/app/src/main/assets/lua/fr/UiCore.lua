@@ -77,7 +77,7 @@ function m.newCanvas(viewId, width, height, scaleRatio)
     (setScaleRatio)
     (local2Global)
     (global2Local)]]
-    return canvasL.newCanvas(viewId, width, height, scaleRatio);
+    return canvas_lua.newCanvas(viewId, width, height, scaleRatio);
 end
 
 function m.newColor(strOrInt)

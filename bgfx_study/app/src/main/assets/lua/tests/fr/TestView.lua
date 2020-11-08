@@ -13,7 +13,7 @@ local function newTestView()
     local color1;
 
     function self.onInitialize(ctx)
-        color1 = uiCore.newColor(0xff000000);
+        color1 = uiCore.newColor(0xff000000); --rgba
         textStyle = uiCore.newTextStyle()
         textStyle.size(36)
                 .color(uiCore.newColor(0xFFFFFFFF))
@@ -26,17 +26,18 @@ local function newTestView()
     end
 
     function self.onDraw(canvas)
-        canvas.save().translate(100, 100);
+        --canvas.save()
+                --.translate(100, 100);
         canvas.beginPath()
             .roundedRect(50,50,100,100,10)
             .fillColor(color1)
             .fill();
 
         -- Draw styled text
-        canvas.fillStyle(textStyle)
+--[[        canvas.textStyle(textStyle)
             .beginPath()
-            .fillText("Hello Canvas",30,190);
-        canvas.restore();
+            .fillText("Hello Canvas",30,190);]]
+        --canvas.restore();
     end
 
     return self;
