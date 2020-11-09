@@ -26,18 +26,17 @@ local function newTestView()
     end
 
     function self.onDraw(canvas)
-        --canvas.save()
-                --.translate(100, 100);
-        canvas.beginPath()
+        print("---newTestView: onDraw ----")
+        canvas_lua.h_testDraw(canvas.getContext());
+--[[        canvas.beginPath()
             .roundedRect(50,50,100,100,10)
             .fillColor(color1)
-            .fill();
+            .fill();]]
 
         -- Draw styled text
 --[[        canvas.textStyle(textStyle)
             .beginPath()
             .fillText("Hello Canvas",30,190);]]
-        --canvas.restore();
     end
 
     return self;

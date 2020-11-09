@@ -868,6 +868,39 @@ static int newImage(lua_State *L){
     LuaUtils::push_ptr(L, img);
     return 1;
 }
+#ifdef H_INTERNAL_TEST
+#include "nanovg/nanovg.h"
+static int h_testDraw(lua_State *L){
+    NVGcontext* ctx = LuaUtils::get_ref<NVGcontext>(L, 1);
+    NVGcontext* vg = ctx;
+   //圆角矩形
+    nvgBeginPath(ctx);
+    nvgRoundedRect(ctx, 50, 50,300,30, 10);
+    nvgFillColor(ctx, nvgRGBA(255,192,0,255));
+    nvgFill(ctx);
+
+    //矩形
+    nvgBeginPath(ctx);
+    nvgRect(ctx, 100, 100, 120,30);
+    nvgFillColor(ctx, nvgRGBA(255,192,0,255));
+    nvgFill(ctx);
+    //矩形 + 圆
+    nvgBeginPath(vg);
+    nvgRect(vg, 100,200, 120,30);
+    nvgCircle(vg, 200, 200, 20);
+    nvgPathWinding(vg, NVG_HOLE);	// Mark circle as a hole. 相交的地方以src为准.
+    nvgFillColor(vg, nvgRGBA(255,192,0,255));
+    nvgFill(vg);
+
+    nvgBeginPath(vg);
+    nvgRect(vg, 100, 300, 120,30);
+    nvgCircle(vg, 200,300, 20);
+    nvgPathWinding(vg, NVG_SOLID);//相交的地方以dst为准.
+    nvgFillColor(vg, nvgRGBA(255,192,0,255));
+    nvgFill(vg);
+    return 0;
+}
+#endif
 
 static const luaL_Reg mem_funcs[] = {
         {"newCanvas", newCanvas},
@@ -880,6 +913,9 @@ static const luaL_Reg mem_funcs[] = {
         //depend on nvgContext
         {"newFont",            newFont},
         {"newImage",           newImage},
+#ifdef H_INTERNAL_TEST
+        {"h_testDraw",           h_testDraw},
+#endif
         {nullptr,     nullptr}
 };
 

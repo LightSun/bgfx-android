@@ -398,17 +398,19 @@ namespace heaven7_Bgfx_demo{
         float dx, dy, d;
         float br = (ex < ey ? ex : ey) * 0.5f;
         float blink = 1 - powf(sinf(t * 0.5f), 200) * 0.8f;
-
+         //线性渐变
         bg = nvgLinearGradient(vg, x, y + h * 0.5f, x + w * 0.1f, y + h, nvgRGBA(0, 0, 0, 32),
                                nvgRGBA(0, 0, 0, 16));
+        //绘制背景(偏黑色)
         nvgBeginPath(vg);
-        nvgEllipse(vg, lx + 3.0f, ly + 16.0f, ex, ey);
+        nvgEllipse(vg, lx + 3.0f, ly + 16.0f, ex, ey); //椭圆
         nvgEllipse(vg, rx + 3.0f, ry + 16.0f, ex, ey);
         nvgFillPaint(vg, bg);
         nvgFill(vg);
 
         bg = nvgLinearGradient(vg, x, y + h * 0.25f, x + w * 0.1f, y + h,
                                nvgRGBA(220, 220, 220, 255), nvgRGBA(128, 128, 128, 255));
+        //背景偏白色
         nvgBeginPath(vg);
         nvgEllipse(vg, lx, ly, ex, ey);
         nvgEllipse(vg, rx, ry, ex, ey);
@@ -424,6 +426,7 @@ namespace heaven7_Bgfx_demo{
         }
         dx *= ex * 0.4f;
         dy *= ey * 0.5f;
+        //左眼珠子(偏黑色)
         nvgBeginPath(vg);
         nvgEllipse(vg, lx + dx, ly + dy + ey * 0.25f * (1 - blink), br, br * blink);
         nvgFillColor(vg, nvgRGBA(32, 32, 32, 255));
@@ -438,13 +441,15 @@ namespace heaven7_Bgfx_demo{
         }
         dx *= ex * 0.4f;
         dy *= ey * 0.5f;
+        //右眼珠子(偏黑色)
         nvgBeginPath(vg);
         nvgEllipse(vg, rx + dx, ry + dy + ey * 0.25f * (1 - blink), br, br * blink);
         nvgFillColor(vg, nvgRGBA(32, 32, 32, 255));
         nvgFill(vg);
-
+        //圆形的渐变色。从中心向四周扩散。内半径，外半径
         gloss = nvgRadialGradient(vg, lx - ex * 0.25f, ly - ey * 0.5f, ex * 0.1f, ex * 0.75f,
                                   nvgRGBA(255, 255, 255, 128), nvgRGBA(255, 255, 255, 0));
+        //在眼睛上绘制一个光泽度. (左)
         nvgBeginPath(vg);
         nvgEllipse(vg, lx, ly, ex, ey);
         nvgFillPaint(vg, gloss);
@@ -457,7 +462,7 @@ namespace heaven7_Bgfx_demo{
         nvgFillPaint(vg, gloss);
         nvgFill(vg);
     }
-
+    //绘制曲线
     void drawGraph(struct NVGcontext *vg, float x, float y, float w, float h, float t) {
         struct NVGpaint bg;
         float samples[6];
@@ -482,9 +487,11 @@ namespace heaven7_Bgfx_demo{
                                nvgRGBA(0, 160, 192, 64));
         nvgBeginPath(vg);
         nvgMoveTo(vg, sx[0], sy[0]);
-        for (i = 1; i < 6; i++)
+        for (i = 1; i < 6; i++) {
+            //贝塞尔曲线(2个控制点)
             nvgBezierTo(vg, sx[i - 1] + dx * 0.5f, sy[i - 1], sx[i] - dx * 0.5f, sy[i], sx[i],
                         sy[i]);
+        }
         nvgLineTo(vg, x + w, y + h);
         nvgLineTo(vg, x, y + h);
         nvgFillPaint(vg, bg);
@@ -529,7 +536,7 @@ namespace heaven7_Bgfx_demo{
             nvgCircle(vg, sx[i], sy[i], 2.0f);
         nvgFillColor(vg, nvgRGBA(220, 220, 220, 255));
         nvgFill(vg);
-
+        //恢复stroke width
         nvgStrokeWidth(vg, 1.0f);
     }
 
@@ -688,6 +695,7 @@ namespace heaven7_Bgfx_demo{
         nvgRestore(vg);
     }
 
+    //环形圆环
     void drawColorwheel(struct NVGcontext *vg, float x, float y, float w, float h, float t) {
         int i;
         float r0, r1, ax, ay, bx, by, cx, cy, aeps, r;
@@ -707,10 +715,12 @@ namespace heaven7_Bgfx_demo{
         r0 = r1 - 20.0f;
         aeps = 0.5f / r1;    // half a pixel arc length in radians (2pi cancels out).
 
+        //HSL即色相、饱和度、亮度（英语：Hue, Saturation, Lightness）。
         for (i = 0; i < 6; i++) {
             float a0 = (float) i / 6.0f * NVG_PI * 2.0f - aeps;
             float a1 = (float) (i + 1.0f) / 6.0f * NVG_PI * 2.0f + aeps;
             nvgBeginPath(vg);
+            //参数： 中心点，半径，角度start(弧度), 角度end, 模式
             nvgArc(vg, cx, cy, r0, a0, a1, NVG_CW);
             nvgArc(vg, cx, cy, r1, a1, a0, NVG_CCW);
             nvgClosePath(vg);
@@ -737,7 +747,7 @@ namespace heaven7_Bgfx_demo{
         nvgTranslate(vg, cx, cy);
         nvgRotate(vg, hue * NVG_PI * 2);
 
-        // Marker on
+        // Marker on - 移动在圆环上移动的矩形
         nvgStrokeWidth(vg, 2.0f);
         nvgBeginPath(vg);
         nvgRect(vg, r0 - 1, -3, r1 - r0 + 2, 6);
@@ -759,7 +769,7 @@ namespace heaven7_Bgfx_demo{
         ay = sinf(120.0f / 180.0f * NVG_PI) * r;
         bx = cosf(-120.0f / 180.0f * NVG_PI) * r;
         by = sinf(-120.0f / 180.0f * NVG_PI) * r;
-        nvgBeginPath(vg);
+       /* nvgBeginPath(vg);
         nvgMoveTo(vg, r, 0);
         nvgLineTo(vg, ax, ay);
         nvgLineTo(vg, bx, by);
@@ -773,10 +783,10 @@ namespace heaven7_Bgfx_demo{
         nvgFillPaint(vg, paint);
         nvgFill(vg);
         nvgStrokeColor(vg, nvgRGBA(0, 0, 0, 64));
-        nvgStroke(vg);
+        nvgStroke(vg);*/
 
         // Select circle on triangle
-        ax = cosf(120.0f / 180.0f * NVG_PI) * r * 0.3f;
+       /* ax = cosf(120.0f / 180.0f * NVG_PI) * r * 0.3f;
         ay = sinf(120.0f / 180.0f * NVG_PI) * r * 0.4f;
         nvgStrokeWidth(vg, 2.0f);
         nvgBeginPath(vg);
@@ -790,7 +800,7 @@ namespace heaven7_Bgfx_demo{
         nvgCircle(vg, ax, ay, 7);
         nvgPathWinding(vg, NVG_HOLE);
         nvgFillPaint(vg, paint);
-        nvgFill(vg);
+        nvgFill(vg); */
 
         nvgRestore(vg);
 
@@ -1347,21 +1357,21 @@ namespace heaven7_Bgfx_demo{
         float x, y, popx, popy;
 
         drawEyes(vg, width - 800, height - 240, 150, 100, mx, my, t);
-        drawParagraph(vg, width - 550, 35, 150, 100, mx, my);
+        //drawParagraph(vg, width - 550, 35, 150, 100, mx, my);
         drawGraph(vg, 0, height / 2, width, height / 2, t);
 
         drawColorwheel(vg, width - 350, 35, 250.0f, 250.0f, t);
 
         // Line joints
-        drawLines(vg, 50, height - 50, 600, 35, t);
+      //  drawLines(vg, 50, height - 50, 600, 35, t);
 
         // Line caps
-        drawWidths(vg, width - 50, 35, 30);
+       // drawWidths(vg, width - 50, 35, 30);
 
         // Line caps
-        drawCaps(vg, width - 50, 260, 30);
+       // drawCaps(vg, width - 50, 260, 30);
 
-        drawScissor(vg, 40, height - 150, t);
+       // drawScissor(vg, 40, height - 150, t);
 
         nvgSave(vg);
         if (blowup) {

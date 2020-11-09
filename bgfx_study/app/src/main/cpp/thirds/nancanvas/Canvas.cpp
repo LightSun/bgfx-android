@@ -484,6 +484,7 @@ namespace NanoCanvas {
         return *this;
     }
     Canvas & Canvas::clipOut(float x, float y, float w, float h) {
+        local2Global(x, y);
         nvgScissor(m_nvgCtx, x, y, w, h);
         return *this;
     }

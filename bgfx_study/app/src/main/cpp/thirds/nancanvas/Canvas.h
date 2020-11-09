@@ -637,8 +637,8 @@ namespace NanoCanvas
     /*------------------ Canvas propoties ---------------------*/
     
         /**
-         * @brief Check is the context avaliable
-         * @return Is the context avaliable
+         * @brief Check is the context valid
+         * @return Is the context valid
          */
         inline bool valid()const { return m_nvgCtx; }
         
