@@ -280,10 +280,10 @@ static int Canvas_lineJoin(lua_State *L) {
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
-static int Canvas_lineWidth(lua_State *L) {
+static int Canvas_strokeWidth(lua_State *L) {
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
-    canvas->lineWidth(TO_FLOAT(L, 1));
+    canvas->strokeWidth(TO_FLOAT(L, 1));
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
@@ -582,7 +582,7 @@ namespace sNanoCanvas{
             CANVAS_M_RAW(drawImage)
             CANVAS_M_RAW(lineCap)
             CANVAS_M_RAW(lineJoin)
-            CANVAS_M_RAW(lineWidth)
+            CANVAS_M_RAW(strokeWidth)
             CANVAS_M_RAW(miterLimit)
             CANVAS_M_RAW(globalAlpha)
             CANVAS_M_RAW(fillColor)

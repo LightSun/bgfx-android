@@ -304,7 +304,7 @@ namespace NanoCanvas
          * @param width The current line width, in pixels
          * @return The canvas to operate with
          */
-        Canvas& lineWidth(float width);
+        Canvas& strokeWidth(float width);
         
         /**
          * @brief Sets the maximum miter length

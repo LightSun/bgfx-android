@@ -97,7 +97,7 @@ namespace NanoCanvas {
         return *this;
     }
 
-    Canvas &Canvas::lineWidth(float width) {
+    Canvas &Canvas::strokeWidth(float width) {
         nvgStrokeWidth(m_nvgCtx, width);
         return *this;
     }
