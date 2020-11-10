@@ -6,10 +6,65 @@
 
 local obj = require("core.Object")
 local m = {}
---todo 多个形状
 
-function m.rectsFill(rects, c)
-    local self = obj.new("RectFillDrawable")
+--------- rect -----------
+function m.rectFillColor(x, y, w, h, c)
+    local self = obj.new("rectFillColor")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .rect(x, y, w, h)
+              .fillColor(c)
+              .fill();
+    end
+    return self;
+end
+
+function m.rectFillGradient(x, y, w, h, gradient)
+    local self = obj.new("rectFillGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .rect(x, y, w, h)
+              .fillGradient(gradient)
+              .fill();
+    end
+    return self;
+end
+function m.rectStrokeColor(x, y, w, h, c, strokeW)
+    local self = obj.new("rectStrokeColor")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .rect(x, y, w, h)
+              .strokeWidth(strokeW)
+              .strokeColor(c)
+              .stroke();
+    end
+    return self;
+end
+function m.rectStrokeGradient(x, y, w, h, gradient)
+    local self = obj.new("rectStrokeGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .rect(x, y, w, h)
+              .strokeGradient(gradient)
+              .stroke();
+    end
+    return self;
+end
+
+function m.rectsFillGradient(rects, gradient)
+    local self = obj.new("rectsFillGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+        for _, rc in ipairs(rects) do
+            canvas.rect(rc.x, rc.y, rc.w, rc.h);
+        end
+        canvas.fillGradient(gradient)
+              .fill();
+    end
+    return self;
+end
+function m.rectsFillColor(rects, c)
+    local self = obj.new("rectsFillColor")
     function self.draw(canvas)
         canvas.beginPath();
         for _, rc in ipairs(rects) do
@@ -20,19 +75,8 @@ function m.rectsFill(rects, c)
     end
     return self;
 end
-function m.rectFill(x, y, w, h, c)
-    local self = obj.new("RectFillDrawable")
-    function self.draw(canvas)
-        canvas.beginPath()
-              .rect(x, y, w, h)
-              .fillColor(c)
-              .fill();
-    end
-    return self;
-end
-
-function m.rectsStroke(rects, c, strokeW)
-    local self = obj.new("RectStrokeDrawable")
+function m.rectsStrokeColor(rects, c, strokeW)
+    local self = obj.new("rectsStrokeColor")
     function self.draw(canvas)
         canvas.beginPath();
         for _, rc in ipairs(rects) do
@@ -44,20 +88,119 @@ function m.rectsStroke(rects, c, strokeW)
     end
     return self;
 end
-function m.rectStroke(x, y, w, h, c, strokeW)
-    local self = obj.new("RectStrokeDrawable")
+
+function m.rectsStrokeGradient(rects, gradient)
+    local self = obj.new("rectsStrokeGradient")
     function self.draw(canvas)
         canvas.beginPath()
-              .rect(x, y, w, h)
+        for _, rc in ipairs(rects) do
+            canvas.rect(rc.x, rc.y, rc.w, rc.h);
+        end
+        canvas.strokeGradient(gradient)
+              .stroke();
+    end
+    return self;
+end
+
+------------ round rect --------------------
+---
+function m.roundRectFillColor(x, y, w, h, radius, c)
+    local self = obj.new("roundRectFillColor")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .roundedRect(x, y, w, h, radius)
+              .fillColor(c)
+              .fill();
+    end
+    return self;
+end
+
+function m.roundRectFillGradient(x, y, w, h, radius, gradient)
+    local self = obj.new("roundRectFillGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .roundedRect(x, y, w, h, radius)
+              .fillGradient(gradient)
+              .fill();
+    end
+    return self;
+end
+function m.roundRectStrokeColor(x, y, w, h, radius, c, strokeW)
+    local self = obj.new("roundRectStrokeColor")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .roundedRect(x, y, w, h, radius)
               .strokeWidth(strokeW)
               .strokeColor(c)
               .stroke();
     end
     return self;
 end
+function m.roundRectStrokeGradient(x, y, w, h, radius, gradient)
+    local self = obj.new("roundRectStrokeGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .roundedRect(x, y, w, h, radius)
+              .strokeGradient(gradient)
+              .stroke();
+    end
+    return self;
+end
 
-function m.ellipseFill(cx, cy, rx, ry, c)
-    local self = obj.new("RectStrokeDrawable")
+function m.roundRectsFillGradient(rects, gradient)
+    local self = obj.new("roundRectsFillGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+        for _, rc in ipairs(rects) do
+            canvas.roundedRect(rc.x, rc.y, rc.w, rc.h, rc.radius);
+        end
+        canvas.fillGradient(gradient)
+              .fill();
+    end
+    return self;
+end
+function m.roundRectsFillColor(rects, c)
+    local self = obj.new("roundRectsFillColor")
+    function self.draw(canvas)
+        canvas.beginPath();
+        for _, rc in ipairs(rects) do
+            canvas.roundedRect(rc.x, rc.y, rc.w, rc.h, rc.radius);
+        end
+        canvas.fillColor(c)
+              .fill();
+    end
+    return self;
+end
+function m.roundRectsStrokeColor(rects, c, strokeW)
+    local self = obj.new("roundRectsStrokeColor")
+    function self.draw(canvas)
+        canvas.beginPath();
+        for _, rc in ipairs(rects) do
+            canvas.roundedRect(rc.x, rc.y, rc.w, rc.h, rc.radius);
+        end
+        canvas.strokeWidth(strokeW)
+              .strokeColor(c)
+              .stroke();
+    end
+    return self;
+end
+
+function m.roundRectsStrokeGradient(rects, gradient)
+    local self = obj.new("roundRectsStrokeGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+        for _, rc in ipairs(rects) do
+            canvas.roundedRect(rc.x, rc.y, rc.w, rc.h, rc.radius);
+        end
+        canvas.strokeGradient(gradient)
+              .stroke();
+    end
+    return self;
+end
+
+-------------- ellipse -------------------
+function m.ellipseFillColor(cx, cy, rx, ry, c)
+    local self = obj.new("ellipseFillColor")
     function self.draw(canvas)
         canvas.beginPath()
               .ellipse(cx, cy, rx, ry)
@@ -66,21 +209,8 @@ function m.ellipseFill(cx, cy, rx, ry, c)
     end
     return self;
 end
-
-function m.ellipsesFill(ellipses, c)
-    local self = obj.new("RectStrokeDrawable")
-    function self.draw(canvas)
-        canvas.beginPath();
-        for _, rc in ipairs(ellipses) do
-            canvas.rect(rc.cx, rc.cy, rc.rx, rc.ry);
-        end
-        canvas.fillColor(c)
-              .fill();
-    end
-    return self;
-end
-function m.ellipsesStroke(ellipses, c, strokeW)
-    local self = obj.new("RectStrokeDrawable")
+function m.ellipsesStrokeColor(ellipses, c, strokeW)
+    local self = obj.new("ellipsesStrokeColor")
     function self.draw(canvas)
         canvas.beginPath();
         for _, rc in ipairs(ellipses) do
@@ -92,48 +222,171 @@ function m.ellipsesStroke(ellipses, c, strokeW)
     end
     return self;
 end
-function m.ellipseStroke(cx, cy, rx, ry, c, strokeW)
-    local self = obj.new("RectStrokeDrawable")
+function m.ellipseFillGradient(cx, cy, rx, ry, gradient)
+    local self = obj.new("ellipseFillGradient")
     function self.draw(canvas)
         canvas.beginPath()
               .ellipse(cx, cy, rx, ry)
-              .strokeWidth(strokeW)
-              .strokeColor(c)
+              .fillGradient(gradient)
+              .fill();
+    end
+    return self;
+end
+function m.ellipseStrokeGradient(cx, cy, rx, ry, gradient)
+    local self = obj.new("ellipseStrokeGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .ellipse(cx, cy, rx, ry)
+              .strokeGradient(gradient)
               .stroke();
     end
     return self;
 end
 
-function m.new()
-    local self = obj.new("ComposeDrawable")
-    function self.rect(x, y, w, h, round)
-
-    end
-    function self.ellipse(cx, cy, rx, ry)
-
-    end
-    function self.circle(cx, cy, r)
-
-    end
-    function self.line(sx, sy, ex, ey)
-
-    end
-    function self.fillColor(c)
-
-    end
-    function self.strokeColor(c, strokeW)
-
-    end
-    function self.fillGradient(g)
-
-    end
-    function self.strokeGradient(g, strokeW)
-
-    end
+function m.ellipsesFillColor(ellipses, c)
+    local self = obj.new("ellipsesFillColor")
     function self.draw(canvas)
-
+        canvas.beginPath();
+        for _, rc in ipairs(ellipses) do
+            canvas.ellipse(rc.cx, rc.cy, rc.rx, rc.ry);
+        end
+        canvas.fillColor(c)
+              .fill();
+    end
+    return self;
+end
+function m.ellipsesStrokeColor(ellipses, c, strokeW)
+    local self = obj.new("ellipseStrokeColor")
+    function self.draw(canvas)
+        canvas.beginPath()
+        for _, rc in ipairs(ellipses) do
+            canvas.ellipse(rc.cx, rc.cy, rc.rx, rc.ry);
+        end
+        canvas.strokeWidth(strokeW)
+              .strokeColor(c)
+              .stroke();
+    end
+    return self;
+end
+function m.ellipsesFillGradient(ellipses, gradient)
+    local self = obj.new("ellipsesFillGradient")
+    function self.draw(canvas)
+        canvas.beginPath();
+        for _, rc in ipairs(ellipses) do
+            canvas.ellipse(rc.cx, rc.cy, rc.rx, rc.ry);
+        end
+        canvas.fillGradient(gradient)
+              .fill();
     end
     return self;
 end
 
-return m
+function m.ellipsesStrokeGradient(ellipses, gradient)
+    local self = obj.new("ellipsesStrokeGradient")
+    function self.draw(canvas)
+        canvas.beginPath();
+        for _, rc in ipairs(ellipses) do
+            canvas.ellipse(rc.cx, rc.cy, rc.rx, rc.ry);
+        end
+        canvas.strokeGradient(gradient)
+              .stroke();
+    end
+    return self;
+end
+
+------------ circle ----------------
+function m.circleFillColor(cx, cy, r, c)
+    local self = obj.new("circleFillColor")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .circle(cx, cy, r)
+              .fillColor(c)
+              .fill();
+    end
+    return self;
+end
+
+function m.circleStrokeColor(cx, cy, r, c, strokeW)
+    local self = obj.new("circleStrokeColor")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .strokeW(strokeW)
+              .circle(cx, cy, r)
+              .strokeColor(c)
+              .stroke();
+    end
+    return self;
+end
+function m.circleFillGradient(cx, cy, r, gradient)
+    local self = obj.new("circleFillGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .circle(cx, cy, r)
+              .fillGradient(gradient)
+              .fill();
+    end
+    return self;
+end
+
+function m.circleStrokeGradient(cx, cy, r, gradient)
+    local self = obj.new("circleStrokeColor")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .circle(cx, cy, r)
+              .strokeGradient(gradient)
+              .stroke();
+    end
+    return self;
+end
+
+function m.circlesFillColor(circles, c)
+    local self = obj.new("circlesFillColor")
+    function self.draw(canvas)
+        canvas.beginPath()
+        for _, rc in ipairs(circles) do
+            canvas.circle(rc.cx, rc.cy, rc.r);
+        end
+        canvas.fillColor(c)
+              .fill();
+    end
+    return self;
+end
+
+function m.circlesStrokeColor(circles, c, strokeW)
+    local self = obj.new("circlesStrokeColor")
+    function self.draw(canvas)
+        canvas.beginPath()
+              .strokeW(strokeW)
+        for _, rc in ipairs(circles) do
+            canvas.circle(rc.cx, rc.cy, rc.r);
+        end
+        canvas.strokeColor(c)
+              .stroke();
+    end
+    return self;
+end
+function m.circlesFillGradient(circles, gradient)
+    local self = obj.new("circlesFillGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+        for _, rc in ipairs(circles) do
+            canvas.circle(rc.cx, rc.cy, rc.r);
+        end
+        canvas.fillGradient(gradient)
+              .fill();
+    end
+    return self;
+end
+
+function m.circlesStrokeGradient(circles, gradient)
+    local self = obj.new("circlesStrokeGradient")
+    function self.draw(canvas)
+        canvas.beginPath()
+        for _, rc in ipairs(circles) do
+            canvas.circle(rc.cx, rc.cy, rc.r);
+        end
+        canvas.strokeGradient(gradient)
+              .stroke();
+    end
+    return self;
+end

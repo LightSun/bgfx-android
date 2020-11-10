@@ -249,15 +249,19 @@ static int Canvas_lineCap(lua_State *L) {
     //BUTT,ROUND,SQUARE
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
-    auto str = lua_tostring(L, 1);
-    if(strcmp("ROUND", str) == 0){
-        canvas->lineCap(NanoCanvas::Canvas::LineCap::ROUND);
-    } else if(strcmp("BUTT", str) == 0){
-        canvas->lineCap(NanoCanvas::Canvas::LineCap::BUTT);
-    }else if(strcmp("SQUARE", str) == 0){
-        canvas->lineCap(NanoCanvas::Canvas::LineCap::SQUARE);
-    }else{
-        return luaL_error(L, "wrong line cap. expect is 'BUTT/ROUND/SQUARE'");
+    auto str = lua_tointeger(L, 1);
+    switch (str){
+        case 1:
+            canvas->lineCap(NanoCanvas::Canvas::LineCap::BUTT);
+            break;
+        case 2:
+            canvas->lineCap(NanoCanvas::Canvas::LineCap::SQUARE);
+            break;
+        case 3:
+            canvas->lineCap(NanoCanvas::Canvas::LineCap::ROUND);
+            break;
+        default:
+            return luaL_error(L, "wrong arguments for canvas.lineCap()");
     }
     lua_pushvalue(L, canvasIndex);
     return 1;
@@ -267,15 +271,19 @@ static int Canvas_lineJoin(lua_State *L) {
     //BEVEL,ROUND,MITER
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
-    auto str = lua_tostring(L, 1);
-    if(strcmp("ROUND", str) == 0){
-        canvas->lineJoin(NanoCanvas::Canvas::LineJoin::ROUND);
-    } else if(strcmp("MITER", str) == 0){
-        canvas->lineJoin(NanoCanvas::Canvas::LineJoin::MITER);
-    }else if(strcmp("BEVEL", str) == 0){
-        canvas->lineJoin(NanoCanvas::Canvas::LineJoin::BEVEL);
-    }else{
-        return luaL_error(L, "wrong line join. expect is 'BEVEL/ROUND/MITER'");
+    auto str = lua_tointeger(L, 1);
+    switch (str){
+        case 3:
+            canvas->lineJoin(NanoCanvas::Canvas::LineJoin::ROUND);
+            break;
+        case 4:
+            canvas->lineJoin(NanoCanvas::Canvas::LineJoin::BEVEL);
+            break;
+        case 5:
+            canvas->lineJoin(NanoCanvas::Canvas::LineJoin::MITER);
+            break;
+        default:
+            return luaL_error(L, "wrong arguments for canvas.lineJoin()");
     }
     lua_pushvalue(L, canvasIndex);
     return 1;

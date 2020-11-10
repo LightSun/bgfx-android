@@ -33,8 +33,7 @@ namespace NanoCanvas
             /// A rounded end cap is added to each end of the line
             ROUND,
             /// A square end cap is added to each end of the line
-            SQUARE
-            
+            SQUARE,
         };
         
         /// Line join style

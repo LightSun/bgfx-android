@@ -22,6 +22,15 @@ m.WINDING_CCW = 1;
 -- clock wise
 m.WINDING_CW = 2;
 
+-- line caps
+m.LINE_CAP_BUTT       = 1;
+m.LINE_CAP_NVG_SQUARE = 2;
+m.LINE_CAP_NVG_ROUND  = 3;
+-- line joins
+m.LINE_JOIN_ROUND  = 3;
+m.LINE_JOIN_BEVEL  = 4;
+m.LINE_JOIN_MITER  = 5;
+
 --(viewId, width, height, [scaleRatio])
 function m.newCanvas(viewId, width, height, scaleRatio)
     --[[ (moveTo)
@@ -77,7 +86,7 @@ function m.newCanvas(viewId, width, height, scaleRatio)
     (setScaleRatio)
     (local2Global)
     (global2Local)]]
-    return canvas_lua.newCanvas(viewId, width, height, scaleRatio);
+    return canvasL.newCanvas(viewId, width, height, scaleRatio);
 end
 
 function m.newColor(strOrInt)
