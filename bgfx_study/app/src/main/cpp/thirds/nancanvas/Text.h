@@ -92,7 +92,7 @@ namespace NanoCanvas
         /// The letter spacing of current text style in pixel
         float letterSpace = NAN;
         /// The color of current text style
-        Color color       = Colors::ZeroColor;
+        Color color       = 0u;
         /// The horizontal alignment of current text style
         /// @see TextAlign::HorizontalAlign
         int hAlign = TextAlign::Left;

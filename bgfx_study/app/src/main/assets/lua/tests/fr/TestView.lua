@@ -6,11 +6,27 @@
 local as = require("fr.AppStarter")
 local view = require("fr.View")
 local uiCore = require("fr.UiCore")
+local bx = require("bx")
+local bgfx = require("bgfx")
+
+local function sinf(val)
+    return math.sin(val);
+end
+local function cosf(val)
+    return math.cos(val);
+end
+local function nvgRGBA(r, g, b, a)
+    return uiCore.newColor(0xff000000 | (r << 24 + g << 16 + b << 8 + a));
+end
+local function nvgRadialGradient(cx, cy, inr, outr, icol, ocol)
+    return uiCore.newRadialGradient(cx, cy, inr, outr, icol, ocol)
+end
 
 local function newTestView()
     local self = view.new("TestView")
     local textStyle;
     local color1;
+    local m_timeOffset;
 
     function self.onInitialize(ctx)
         color1 = uiCore.newColor(0xff000000); --rgba
@@ -18,6 +34,7 @@ local function newTestView()
         textStyle.size(36)
                 .color(uiCore.newColor(0xFFFFFFFF))
                 .font(uiCore.newFont(ctx, "droidsans", "runtime/font/droidsans.ttf"))
+        m_timeOffset = bx.getHPCounter();
     end
 
     function self.onDestroy()
@@ -27,16 +44,142 @@ local function newTestView()
 
     function self.onDraw(canvas)
         print("---newTestView: onDraw ----")
-        canvas_lua.h_testDraw(canvas.getContext());
---[[        canvas.beginPath()
-            .roundedRect(50,50,100,100,10)
-            .fillColor(color1)
-            .fill();]]
+        --canvas_lua.h_testDraw(canvas.getContext());
 
-        -- Draw styled text
---[[        canvas.textStyle(textStyle)
-            .beginPath()
-            .fillText("Hello Canvas",30,190);]]
+--[[        int m_width = config.win_width;
+        int m_height = config.win_height;
+        int64_t now = bx::getHPCounter();
+        const double freq = double(bx::getHPFrequency() );
+        float time = (float)( (now-m_timeOffset)/freq);]]
+        local reso = bgfx.getInit().resolution;
+        local m_width = reso.width;
+        local m_height = reso.height;
+        local now = bx.getHPCounter();
+        local freq = bx.getHPFrequency();
+        local time = (now - m_timeOffset) /freq;
+
+        self.renderDemo(canvas, 50, 50, m_width, m_height, time, 0);
+    end
+
+    function self.renderDemo(canvas, mx, my, width, height,  t, blowup)
+        --todo draw more
+        self.drawGraph(canvas, 0, height / 2, width, height / 2, t);
+    end
+
+    function self.drawGraph(canvas, x, y, w, h, t)
+        local sx = {};
+        local sy = {};
+        local dx = w / 5.0;
+        local samples = {}
+        local bg;
+
+        samples[1] = (1 + sinf(t * 1.2345 + cosf(t * 0.33457) * 0.44)) * 0.5;
+        samples[2] = (1 + sinf(t * 0.68363 + cosf(t * 1.3) * 1.55)) * 0.5;
+        samples[3] = (1 + sinf(t * 1.1642 + cosf(t * 0.33457) * 1.24)) * 0.5;
+        samples[4] = (1 + sinf(t * 0.56345 + cosf(t * 1.63) * 0.14)) * 0.5;
+        samples[5] = (1 + sinf(t * 1.6245 + cosf(t * 0.254) * 0.3)) * 0.5;
+        samples[6] = (1 + sinf(t * 0.345 + cosf(t * 0.03) * 0.6)) * 0.5;
+
+        for i = 1, 6, 1 do
+            sx[i] = x + i * dx;
+            sy[i] = y + h * samples[i] * 0.8;
+        end
+        -- Graph background
+        bg = uiCore.newLinearGradient(x, y, x, y + h, nvgRGBA(0, 160, 192, 0),
+                nvgRGBA(0, 160, 192, 64))
+
+        canvas.beginPath()
+              .moveTo(sx[1], sy[1])
+        for i = 2, 6, 1 do
+            canvas.bezierTo(sx[i - 1] + dx * 0.5, sy[i - 1], sx[i] - dx * 0.5, sy[i], sx[i],
+                sy[i]);
+        end
+        canvas.lineTo(x + w, y + h)
+            .lineTo(x, y + h)
+            .fillGradient(bg)
+            .fill()
+        -- Graph line
+--[[        nvgBeginPath(vg);
+        nvgMoveTo(vg, sx[0], sy[0] + 2);
+        for (i = 1; i < 6; i++)
+        nvgBezierTo(vg, sx[i - 1] + dx * 0.5f, sy[i - 1] + 2, sx[i] - dx * 0.5f, sy[i] + 2,
+        sx[i], sy[i] + 2);
+        nvgStrokeColor(vg, nvgRGBA(0, 0, 0, 32));
+        nvgStrokeWidth(vg, 3.0f);
+        nvgStroke(vg);]]
+        canvas.beginPath()
+             .moveTo(sx[1], sy[1] + 2)
+        for i = 2, 6, 1 do
+            canvas.bezierTo(sx[i - 1] + dx * 0.5, sy[i - 1] + 2, sx[i] - dx * 0.5, sy[i] + 2,
+                sx[i], sy[i] + 2);
+        end
+        canvas.strokeColor(nvgRGBA(0, 0, 0, 32))
+        .strokeWidth(3.0)
+        .stroke()
+
+--[[        nvgBeginPath(vg);
+        nvgMoveTo(vg, sx[0], sy[0]);
+        for (i = 1; i < 6; i++)
+        nvgBezierTo(vg, sx[i - 1] + dx * 0.5f, sy[i - 1], sx[i] - dx * 0.5f, sy[i], sx[i],
+        sy[i]);
+        nvgStrokeColor(vg, nvgRGBA(0, 160, 192, 255));
+        nvgStrokeWidth(vg, 3.0f);
+        nvgStroke(vg);]]
+        canvas.beginPath()
+              .moveTo(sx[1], sy[1])
+        for i = 2, 6, 1 do
+            canvas.bezierTo(sx[i - 1] + dx * 0.5, sy[i - 1], sx[i] - dx * 0.5, sy[i], sx[i],
+                sy[i]);
+        end
+        canvas.strokeColor(nvgRGBA(0, 160, 192, 255))
+              .strokeWidth(3.0)
+              .stroke()
+        -- Graph sample pos
+--[[        for (i = 0; i < 6; i++) {
+        bg = nvgRadialGradient(vg, sx[i], sy[i] + 2, 3.0f, 8.0f, nvgRGBA(0, 0, 0, 32),
+            nvgRGBA(0, 0, 0, 0));
+        nvgBeginPath(vg);
+        nvgRect(vg, sx[i] - 10, sy[i] - 10 + 2, 20, 20);
+        nvgFillPaint(vg, bg);
+        nvgFill(vg);
+        }
+
+        nvgBeginPath(vg);
+        for (i = 0; i < 6; i++)
+            nvgCircle(vg, sx[i], sy[i], 4.0f);
+        nvgFillColor(vg, nvgRGBA(0, 160, 192, 255));
+        nvgFill(vg);
+        nvgBeginPath(vg);
+        for (i = 0; i < 6; i++)
+            nvgCircle(vg, sx[i], sy[i], 2.0f);
+        nvgFillColor(vg, nvgRGBA(220, 220, 220, 255));
+        nvgFill(vg);
+        nvgStrokeWidth(vg, 1.0f);]]
+        for i = 1, 6, 1 do
+            bg = nvgRadialGradient(sx[i], sy[i] + 2, 3.0, 8.0,
+                    nvgRGBA(0, 0, 0, 32),
+                    nvgRGBA(0, 0, 0, 0));
+            canvas.beginPath()
+            .rect(sx[i] - 10, sy[i] - 10 + 2, 20, 20)
+            .fillGradient(bg)
+            .fill()
+        end
+
+        canvas.beginPath()
+        for i = 1, i < 7, 1 do
+            canvas.circle(sx[i], sy[i], 4.0)
+        end
+        canvas.fillColor(nvgRGBA(0, 160, 192, 255))
+        canvas.fill()
+
+        canvas.beginPath()
+        for i = 1, 6, 1 do
+            canvas.circle(sx[i], sy[i], 2.0)
+        end
+        canvas.fillColor(nvgRGBA(220, 220, 220, 255))
+        canvas.fill()
+        --reset
+        canvas.strokeWidth(1.0);
     end
 
     return self;
