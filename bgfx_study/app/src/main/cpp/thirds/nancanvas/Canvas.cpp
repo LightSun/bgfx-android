@@ -276,14 +276,14 @@ namespace NanoCanvas {
         return *this;
     }
 
-    Canvas &Canvas::quadraticCurveTo(float cpx, float cpy, float x, float y) {
+    Canvas &Canvas::quadTo(float cpx, float cpy, float x, float y) {
         local2Global(cpx, cpy);
         local2Global(x, y);
         nvgQuadTo(m_nvgCtx, cpx, cpy, x, y);
         return *this;
     }
 
-    Canvas &Canvas::bezierCurveTo(float cp1x, float cp1y,
+    Canvas &Canvas::bezierTo(float cp1x, float cp1y,
                                   float cp2x, float cp2y,
                                   float x, float y) {
         local2Global(cp1x, cp1y);

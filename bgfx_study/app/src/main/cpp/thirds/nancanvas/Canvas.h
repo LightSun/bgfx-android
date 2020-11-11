@@ -105,7 +105,7 @@ namespace NanoCanvas
          * @param y The y-coordinate of the ending point
          * @return The Canvas to operate with
          */
-        Canvas& quadraticCurveTo(float cpx,float cpy,float x, float y);
+        Canvas& quadTo(float cpx,float cpy,float x, float y);
         
         /**
          * @brief Creates a cubic Bézier curve
@@ -124,7 +124,7 @@ namespace NanoCanvas
          * @param y The y-coordinate of the ending point
          * @return The Canvas to operate with
          */
-        Canvas& bezierCurveTo(float cp1x,float cp1y,
+        Canvas& bezierTo(float cp1x,float cp1y,
                               float cp2x,float cp2y,
                               float x, float y);
         

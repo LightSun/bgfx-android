@@ -63,25 +63,25 @@ static int Canvas_arcTo(lua_State *L) {
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
-static int Canvas_quadCurveTo(lua_State *L) {
+static int Canvas_quadTo(lua_State *L) {
     //(float cpx,float cpy,float x,float y)
     if(lua_gettop(L) < 4){
         return luaL_error(L, "wrong arguments. expect (float x1,float y1,float x2,float y2,float r)");
     }
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
-    canvas->quadraticCurveTo(TO_FLOAT(L,1), TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4));
+    canvas->quadTo(TO_FLOAT(L,1), TO_FLOAT(L,2), TO_FLOAT(L,3), TO_FLOAT(L,4));
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
-static int Canvas_bezierCurveTo(lua_State *L) {
+static int Canvas_bezierTo(lua_State *L) {
     //(float cpx,float cpy,float cpx2,float cpy2, float x,float y)
     if(lua_gettop(L) < 6){
         return luaL_error(L, "wrong arguments. expect (float x1,float y1,float x2,float y2,float r)");
     }
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
-    canvas->bezierCurveTo(TO_FLOAT(L,1), TO_FLOAT(L,2), TO_FLOAT(L,3),
+    canvas->bezierTo(TO_FLOAT(L,1), TO_FLOAT(L,2), TO_FLOAT(L,3),
             TO_FLOAT(L,4), TO_FLOAT(L,5), TO_FLOAT(L,6));
     lua_pushvalue(L, canvasIndex);
     return 1;
@@ -573,8 +573,8 @@ namespace sNanoCanvas{
             CANVAS_M_RAW(moveTo)
             CANVAS_M_RAW(lineTo)
             CANVAS_M_RAW(arcTo)
-            CANVAS_M_RAW(quadCurveTo)
-            CANVAS_M_RAW(bezierCurveTo)
+            CANVAS_M_RAW(quadTo)
+            CANVAS_M_RAW(bezierTo)
             CANVAS_M_RAW(arc)
             CANVAS_M_RAW(closePath)
             CANVAS_M_RAW(rect)
