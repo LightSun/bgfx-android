@@ -19,6 +19,7 @@
 #define TO_NUMBER_32(L, idx) static_cast<uint32_t>(lua_tonumber(L, idx))
 #define TO_FLOAT(L, idx) static_cast<float>(lua_tonumber(L, idx))
 #define TO_INT(L, idx) static_cast<int>(lua_tonumber(L, idx))
+#define TO_UINT(L, idx) static_cast<unsigned int>(lua_tonumber(L, idx))
 #define TO_SHORT(L, idx) static_cast<short>(lua_tonumber(L, idx))
 #define TO_CHAR(L, idx) static_cast<s_char>(lua_tonumber(L, idx))
 #define TO_DOUBLE(L, idx) static_cast<double>(lua_tonumber(L, idx))

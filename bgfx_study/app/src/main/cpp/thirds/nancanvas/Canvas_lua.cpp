@@ -783,10 +783,26 @@ static int newColor(lua_State *L) {
         c->set(lua_tostring(L, -1));
     } else if(t == LUA_TNUMBER){
         c = new NanoCanvas::Color();
-        c->set(lua_tointeger(L, -1));
+        c->set(TO_UINT(L, -1));
     } else{
         return luaL_error(L, "color only support. string or int");
     }
+    LuaUtils::push_ptr(L, c);
+    return 1;
+}
+static int newColorRgba(lua_State *L) {
+    NanoCanvas::Color * c = new NanoCanvas::Color();
+    c->set(TO_INT(L, 1), TO_INT(L, 2),
+           TO_INT(L, 3), TO_INT(L, 4)
+            );
+    LuaUtils::push_ptr(L, c);
+    return 1;
+}
+static int newColorRgbaF(lua_State *L) {
+    NanoCanvas::Color * c = new NanoCanvas::Color();
+    c->set(TO_FLOAT(L, 1), TO_FLOAT(L, 2),
+           TO_FLOAT(L, 3), TO_FLOAT(L, 4)
+    );
     LuaUtils::push_ptr(L, c);
     return 1;
 }
@@ -913,6 +929,8 @@ static int h_testDraw(lua_State *L){
 static const luaL_Reg mem_funcs[] = {
         {"newCanvas", newCanvas},
         {"newColor",  newColor},
+        {"newColorRgba",  newColorRgba},
+        {"newColorRgbaF",  newColorRgbaF},
         {"newTextStyle",  newTextStyle},
         {"newLinearGradient",  newLinearGradient},
         {"newRadialGradient",  newRadialGradient},

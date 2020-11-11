@@ -92,6 +92,12 @@ end
 function m.newColor(strOrInt)
     return canvasL.newColor(strOrInt)
 end
+function m.newColorRgba(r, g, b, a)
+    return canvasL.newColorRgba(r, g, b, a)
+end
+function m.newColorRgbaF(r, g, b, a)
+    return canvasL.newColorRgbaF(r, g, b, a)
+end
 
 function m.newLinearGradient(x0, y0, x1, y1, startColor, endColor)
     --(float x0, float y0, float x1, float y1,  const Color& scolor , const Color& ecolor)

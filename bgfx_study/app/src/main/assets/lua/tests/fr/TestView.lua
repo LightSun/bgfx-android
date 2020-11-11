@@ -16,7 +16,7 @@ local function cosf(val)
     return math.cos(val);
 end
 local function nvgRGBA(r, g, b, a)
-    return uiCore.newColor(0xff000000 | (r << 24 + g << 16 + b << 8 + a));
+    return uiCore.newColorRgba(r, g, b, a);
 end
 local function nvgRadialGradient(cx, cy, inr, outr, icol, ocol)
     return uiCore.newRadialGradient(cx, cy, inr, outr, icol, ocol)
@@ -58,7 +58,12 @@ local function newTestView()
         local freq = bx.getHPFrequency();
         local time = (now - m_timeOffset) /freq;
 
-        self.renderDemo(canvas, 50, 50, m_width, m_height, time, 0);
+        --self.renderDemo(canvas, 50, 50, m_width, m_height, time, 0);
+
+        canvas.beginPath()
+        .roundedRect(50, 50, 300,30, 10)
+        .fillColor(nvgRGBA(255,192,0,255))
+        .fill();
     end
 
     function self.renderDemo(canvas, mx, my, width, height,  t, blowup)
@@ -73,6 +78,18 @@ local function newTestView()
         local samples = {}
         local bg;
 
+
+--[[        samples[0] = (1 + sinf(t * 1.2345f + cosf(t * 0.33457f) * 0.44f)) * 0.5f;
+        samples[1] = (1 + sinf(t * 0.68363f + cosf(t * 1.3f) * 1.55f)) * 0.5f;
+        samples[2] = (1 + sinf(t * 1.1642f + cosf(t * 0.33457f) * 1.24f)) * 0.5f;
+        samples[3] = (1 + sinf(t * 0.56345f + cosf(t * 1.63f) * 0.14f)) * 0.5f;
+        samples[4] = (1 + sinf(t * 1.6245f + cosf(t * 0.254f) * 0.3f)) * 0.5f;
+        samples[5] = (1 + sinf(t * 0.345f + cosf(t * 0.03f) * 0.6f)) * 0.5f;
+
+        for (i = 0; i < 6; i++) {
+        sx[i] = x + i * dx;
+        sy[i] = y + h * samples[i] * 0.8f;
+        }]]
         samples[1] = (1 + sinf(t * 1.2345 + cosf(t * 0.33457) * 0.44)) * 0.5;
         samples[2] = (1 + sinf(t * 0.68363 + cosf(t * 1.3) * 1.55)) * 0.5;
         samples[3] = (1 + sinf(t * 1.1642 + cosf(t * 0.33457) * 1.24)) * 0.5;
@@ -103,7 +120,7 @@ local function newTestView()
         nvgMoveTo(vg, sx[0], sy[0] + 2);
         for (i = 1; i < 6; i++)
         nvgBezierTo(vg, sx[i - 1] + dx * 0.5f, sy[i - 1] + 2, sx[i] - dx * 0.5f, sy[i] + 2,
-        sx[i], sy[i] + 2);
+            sx[i], sy[i] + 2);
         nvgStrokeColor(vg, nvgRGBA(0, 0, 0, 32));
         nvgStrokeWidth(vg, 3.0f);
         nvgStroke(vg);]]
@@ -166,7 +183,7 @@ local function newTestView()
         end
 
         canvas.beginPath()
-        for i = 1, i < 7, 1 do
+        for i = 1, 6, 1 do
             canvas.circle(sx[i], sy[i], 4.0)
         end
         canvas.fillColor(nvgRGBA(0, 160, 192, 255))
