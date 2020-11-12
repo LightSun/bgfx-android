@@ -140,8 +140,7 @@ namespace NanoCanvas
          * @param counterclockwise Optional. Specifies whether the drawing should be counterclockwise or clockwise. False is default, and indicates clockwise, while true indicates counter-clockwise.
          * @return 
          */
-        Canvas& arc(float x,float y,float r,
-                    float sAngle,float eAngle,bool counterclockwise = false);
+        Canvas& arc(float x,float y,float r, float sAngle,float eAngle,bool counterclockwise = false);
         
         /**
          * @brief Close current path with a line segment

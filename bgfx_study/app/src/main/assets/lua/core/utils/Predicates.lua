@@ -14,26 +14,26 @@ end
 
 function m.isList(tab)
     if(type(tab)~="table")then
-        return false;
+        return nil;
     end
     local CF = require("core.CollectionFamily")
 
     local state, result = pcall(tab.getCollectionType)
     if(not state or result ~=  CF.COLLECTION_TYPE_LIST) then
-        return false;
+        return nil;
     end
     return true
 end
 
 function m.isMap(tab)
     if(type(tab)~="table")then
-        return false;
+        return nil;
     end
     local CF = require("core.CollectionFamily")
 
     local state, result = pcall(tab.getCollectionType)
     if(not state or result ~=  CF.COLLECTION_TYPE_MAP) then
-        return false;
+        return nil;
     end
     return true
 end

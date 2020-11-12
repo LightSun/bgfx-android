@@ -8,6 +8,7 @@ local view = require("fr.View")
 local uiCore = require("fr.UiCore")
 local bx = require("bx")
 local bgfx = require("bgfx")
+local math2 = require("core.utils.Math")
 
 local function sinf(val)
     return math.sin(val);
@@ -34,68 +35,66 @@ local function newRectViewTester()
     function self.onDraw(canvas)
         print("---newTestView: onDraw ----")
         --canvas_lua.h_testDraw(canvas.getContext());
-        self.testLine_fillColor(canvas);
+        self.testArc_fillColor(canvas);
+
         canvas.offsetPosition(0, 60)
-        self.testLine_StrokeColor(canvas);
-        canvas.offsetPosition(0, 60)
-        self.testLine_fillGradient(canvas);
-        canvas.offsetPosition(0, 60)
-        self.testLine_strokeGradient(canvas);
+        self.testArc_fillColor2(canvas);
+
+        canvas.offsetPosition(0, 100)
+        self.testArc_strokeColor(canvas);
+
+        canvas.offsetPosition(0, 100)
+        self.testArc_strokeGradient(canvas);
+
+        canvas.offsetPosition(0, 100)
+        self.testArc_strokeGradient2(canvas)
+
         canvas.setPosition(0, 0)
     end
 
-    function self.testLine_fillColor(canvas)
+    function self.testArc_fillColor(canvas)
         canvas.beginPath()
               .moveTo(50, 50)
-              .lineTo(100, 50)
-               .lineTo(100, 100)
-               .lineTo(50, 100)
-                .lineTo(50, 50)
+              .arcTo(100, 50, 100, 100, 30) -- 切线 和 半径
               .fillColor(nvgRGBA(255,192,0,255))
               .fill();
     end
-    function self.testLine_StrokeColor(canvas)
+    function self.testArc_fillColor2(canvas)
         canvas.beginPath()
-              .moveTo(50, 50)
-              .lineTo(100, 50)
-              .lineTo(100, 100)
-              .lineTo(50, 100)
-                .lineTo(50, 50)
-              .strokeWidth(3)
+              .arc(100, 100, 50, math2.toRadian(30), math2.toRadian(180))
+              .fillColor(nvgRGBA(255,192,0,255))
+              .fill();
+    end
+    function self.testArc_strokeColor(canvas)
+        canvas.beginPath()
+              .arc(100, 100, 50, math2.toRadian(30), math2.toRadian(180), true) --默认顺时针, true 表示逆时针
               .strokeColor(nvgRGBA(255,192,0,255))
               .stroke();
     end
 
-    function self.testLine_fillGradient(canvas)
+    function self.testArc_strokeGradient(canvas)
         local x1 = 50;
         local y1 = 50;
         local x2 = 100;
         local y2 = 100;
-        local bg = uiCore.newLinearGradient(x1, y1, x2, y2, nvgRGBA(0, 160, 192, 0),
-                nvgRGBA(0, 160, 192, 64))
+        -- newLinearGradient 是整体放大
+        local bg = uiCore.newLinearGradient(x1, y1, x2, y2, nvgRGBA(255, 0, 0, 255),
+                nvgRGBA(0, 255, 0, 255))
         canvas.beginPath()
-                .moveTo(50, 50)
-                .lineTo(100, 50)
-                .lineTo(100, 100)
-                .lineTo(50, 100)
-                .lineTo(50, 50)
-              .fillGradient(bg)
-              .fill();
+              .arc(100, 100, 50, math2.toRadian(0), math2.toRadian(180), true)
+              .strokeGradient(bg)
+              .stroke();
     end
 
-    function self.testLine_strokeGradient(canvas)
+    function self.testArc_strokeGradient2(canvas)
         local x1 = 50;
         local y1 = 50;
-        local x2 = 100;
-        local y2 = 100;
-        local bg = uiCore.newLinearGradient(x1, y1, x2, y2, nvgRGBA(0, 160, 192, 0),
-                nvgRGBA(0, 160, 192, 64))
+        local x2 = 1000;
+        local y2 = 1000;
+        local bg = uiCore.newLinearGradient(x1, y1, x2, y2, nvgRGBA(255, 0, 0, 255),
+                nvgRGBA(0, 255, 0, 255))
         canvas.beginPath()
-              .moveTo(50, 50)
-              .lineTo(100, 50)
-              .lineTo(100, 100)
-              .lineTo(50, 100)
-               .lineTo(50, 50)
+              .arc(100, 100, 50, math2.toRadian(0), math2.toRadian(180), true)
               .strokeGradient(bg)
               .stroke();
     end
