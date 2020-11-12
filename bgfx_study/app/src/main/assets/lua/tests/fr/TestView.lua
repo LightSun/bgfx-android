@@ -58,20 +58,101 @@ local function newTestView()
         local freq = bx.getHPFrequency();
         local time = (now - m_timeOffset) /freq;
 
-        --self.renderDemo(canvas, 50, 50, m_width, m_height, time, 0);
+        -- self.renderDemo(canvas, 50, 50, m_width, m_height, time, 0);
 
-        canvas.beginPath()
-        .roundedRect(50, 50, 300,30, 10)
-        .fillColor(nvgRGBA(255,192,0,255))
-        .fill();
+        canvas.setPosition(0, 0)
+        self.testRoundRect_fillColor(canvas);
+        canvas.offsetPosition(0, 50);
+        self.testRoundRect_fillGradient(canvas);
+        canvas.offsetPosition(0, 50);
+        self.testRoundRect_strokeColor(canvas);
+        canvas.offsetPosition(0, 50);
+        self.testRoundRect_strokeGradient(canvas)
     end
 
+    function self.testRoundRect_fillColor(canvas)
+        canvas.beginPath()
+              .roundedRect(50, 50, 300, 30, 10)
+              .fillColor(nvgRGBA(255,192,0,255))
+              .fill();
+    end
+    function self.testRoundRect_strokeColor(canvas)
+        canvas.beginPath()
+              .roundedRect(50, 50, 300,30, 10)
+              .strokeWidth(3)
+              .strokeColor(nvgRGBA(255,192,0,255))
+              .stroke();
+    end
+    function self.testRoundRect_fillGradient(canvas)
+        local x1 = 50;
+        local y1 = 50;
+        local x2 = 50 + 300;
+        local y2 = 50 + 30;
+        local bg = uiCore.newLinearGradient(x1, y1, x2, y2, nvgRGBA(0, 160, 192, 0),
+                nvgRGBA(0, 160, 192, 64))
+        canvas.beginPath()
+              .roundedRect(50, 50, 300, 30, 10)
+              .fillGradient(bg)
+              .fill();
+    end
+    function self.testRoundRect_strokeGradient(canvas)
+        local x1 = 50;
+        local y1 = 50;
+        local x2 = 50 + 300;
+        local y2 = 50 + 30;
+        local bg = uiCore.newLinearGradient(x1, y1, x2, y2, nvgRGBA(0, 160, 192, 0),
+                nvgRGBA(0, 160, 192, 64))
+        canvas.beginPath()
+              .roundedRect(50, 50, 300, 30, 10)
+              .strokeGradient(bg)
+              .stroke();
+    end
+
+    function self.testRect_fillColor(canvas)
+        canvas.beginPath()
+              .rect(50, 50, 300, 30)
+              .fillColor(nvgRGBA(255,192,0,255))
+              .fill();
+    end
+    function self.testRect_strokeColor(canvas)
+        canvas.beginPath()
+              .rect(50, 50, 300,30)
+              .strokeWidth(3)
+              .strokeColor(nvgRGBA(255,192,0,255))
+              .stroke();
+    end
+    function self.testRect_fillGradient(canvas)
+        local x1 = 50;
+        local y1 = 50;
+        local x2 = 50 + 300;
+        local y2 = 50 + 30;
+        local bg = uiCore.newLinearGradient(x1, y1, x2, y2, nvgRGBA(0, 160, 192, 0),
+                nvgRGBA(0, 160, 192, 64))
+        canvas.beginPath()
+              .rect(50, 50, 300, 30)
+              .fillGradient(bg)
+              .fill();
+    end
+    function self.testRect_strokeGradient(canvas)
+        local x1 = 50;
+        local y1 = 50;
+        local x2 = 50 + 300;
+        local y2 = 50 + 30;
+        local bg = uiCore.newLinearGradient(x1, y1, x2, y2, nvgRGBA(0, 160, 192, 0),
+                nvgRGBA(0, 160, 192, 64))
+        canvas.beginPath()
+              .rect(50, 50, 300, 30)
+              .strokeGradient(bg)
+              .stroke();
+    end
+--------------------------------------------------------------------------------
     function self.renderDemo(canvas, mx, my, width, height,  t, blowup)
         --todo draw more
         self.drawGraph(canvas, 0, height / 2, width, height / 2, t);
     end
 
     function self.drawGraph(canvas, x, y, w, h, t)
+        print("x, y, w, h, t: ", x, y, w, h, t)
         local sx = {};
         local sy = {};
         local dx = w / 5.0;
@@ -97,11 +178,27 @@ local function newTestView()
         samples[5] = (1 + sinf(t * 1.6245 + cosf(t * 0.254) * 0.3)) * 0.5;
         samples[6] = (1 + sinf(t * 0.345 + cosf(t * 0.03) * 0.6)) * 0.5;
 
+        print("samples:", samples)
+
         for i = 1, 6, 1 do
-            sx[i] = x + i * dx;
+            sx[i] = x + (i - 1) * dx;
             sy[i] = y + h * samples[i] * 0.8;
         end
+        print("sx:", sx)
+        print("sy:", sy)
         -- Graph background
+--[[        bg = nvgLinearGradient(vg, x, y, x, y + h, nvgRGBA(0, 160, 192, 0),
+                nvgRGBA(0, 160, 192, 64));
+        nvgBeginPath(vg);
+        nvgMoveTo(vg, sx[0], sy[0]);
+        for (i = 1; i < 6; i++) {
+        nvgBezierTo(vg, sx[i - 1] + dx * 0.5f, sy[i - 1], sx[i] - dx * 0.5f, sy[i], sx[i],
+        sy[i]);
+        }
+        nvgLineTo(vg, x + w, y + h);
+        nvgLineTo(vg, x, y + h);
+        nvgFillPaint(vg, bg);
+        nvgFill(vg);]]
         bg = uiCore.newLinearGradient(x, y, x, y + h, nvgRGBA(0, 160, 192, 0),
                 nvgRGBA(0, 160, 192, 64))
 
@@ -124,7 +221,8 @@ local function newTestView()
         nvgStrokeColor(vg, nvgRGBA(0, 0, 0, 32));
         nvgStrokeWidth(vg, 3.0f);
         nvgStroke(vg);]]
-        canvas.beginPath()
+
+--[[        canvas.beginPath()
              .moveTo(sx[1], sy[1] + 2)
         for i = 2, 6, 1 do
             canvas.bezierTo(sx[i - 1] + dx * 0.5, sy[i - 1] + 2, sx[i] - dx * 0.5, sy[i] + 2,
@@ -132,7 +230,7 @@ local function newTestView()
         end
         canvas.strokeColor(nvgRGBA(0, 0, 0, 32))
         .strokeWidth(3.0)
-        .stroke()
+        .stroke()]]
 
 --[[        nvgBeginPath(vg);
         nvgMoveTo(vg, sx[0], sy[0]);
@@ -142,7 +240,8 @@ local function newTestView()
         nvgStrokeColor(vg, nvgRGBA(0, 160, 192, 255));
         nvgStrokeWidth(vg, 3.0f);
         nvgStroke(vg);]]
-        canvas.beginPath()
+
+--[[        canvas.beginPath()
               .moveTo(sx[1], sy[1])
         for i = 2, 6, 1 do
             canvas.bezierTo(sx[i - 1] + dx * 0.5, sy[i - 1], sx[i] - dx * 0.5, sy[i], sx[i],
@@ -150,7 +249,8 @@ local function newTestView()
         end
         canvas.strokeColor(nvgRGBA(0, 160, 192, 255))
               .strokeWidth(3.0)
-              .stroke()
+              .stroke()]]
+
         -- Graph sample pos
 --[[        for (i = 0; i < 6; i++) {
         bg = nvgRadialGradient(vg, sx[i], sy[i] + 2, 3.0f, 8.0f, nvgRGBA(0, 0, 0, 32),
@@ -172,7 +272,8 @@ local function newTestView()
         nvgFillColor(vg, nvgRGBA(220, 220, 220, 255));
         nvgFill(vg);
         nvgStrokeWidth(vg, 1.0f);]]
-        for i = 1, 6, 1 do
+
+--[[        for i = 1, 6, 1 do
             bg = nvgRadialGradient(sx[i], sy[i] + 2, 3.0, 8.0,
                     nvgRGBA(0, 0, 0, 32),
                     nvgRGBA(0, 0, 0, 0));
@@ -196,7 +297,7 @@ local function newTestView()
         canvas.fillColor(nvgRGBA(220, 220, 220, 255))
         canvas.fill()
         --reset
-        canvas.strokeWidth(1.0);
+        canvas.strokeWidth(1.0);]]
     end
 
     return self;

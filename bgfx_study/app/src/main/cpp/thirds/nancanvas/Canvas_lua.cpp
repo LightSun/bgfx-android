@@ -467,6 +467,25 @@ static int Canvas_setPosition(lua_State *L) {
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
+static int Canvas_offsetPosition(lua_State *L) {
+    //float a, float b, float c, float d, float e, float f
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    canvas->offsetPosition(TO_FLOAT(L, 1), TO_FLOAT(L, 2));
+    lua_pushvalue(L, canvasIndex);
+    return 1;
+}
+static int Canvas_getPosition(lua_State *L) {
+    //float a, float b, float c, float d, float e, float f
+    auto canvasIndex = lua_upvalueindex(1);
+    NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
+    float f1 = 0;
+    float f2 = 0;
+    canvas->local2Global(f1, f2);
+    lua_pushnumber(L, f1);
+    lua_pushnumber(L, f2);
+    return 1;
+}
 static int Canvas_setScaleRatio(lua_State *L) {
     //float a, float b, float c, float d, float e, float f
     auto canvasIndex = lua_upvalueindex(1);
@@ -620,7 +639,9 @@ namespace sNanoCanvas{
             CANVAS_M_RAW(restore)
             CANVAS_M_RAW(reset)
             CANVAS_M_RAW(setSize)
+            CANVAS_M_RAW(getPosition)
             CANVAS_M_RAW(setPosition)
+            CANVAS_M_RAW(offsetPosition)
             CANVAS_M_RAW(setScaleRatio)
             CANVAS_M_RAW(local2Global)
             CANVAS_M_RAW(global2Local)

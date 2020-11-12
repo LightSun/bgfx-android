@@ -1,7 +1,6 @@
 package com.heaven7.android.bgfx.study.demo;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -64,6 +63,8 @@ public class LuaUnitTestsAc extends AppCompatActivity {
         luaItems.add(new LuaItem("lua/tests/skm.lua", "test sk mem"));
         luaItems.add(new LuaItem("lua/tests/skanym.lua", "test skany mem"));
         luaItems.add(new LuaItem("lua/tests/fr/TestView.lua", "test TestView(canvas)", true));
+        luaItems.add(new LuaItem("lua/tests/fr/RectTester.lua", "test Rects' (canvas)", true));
+        luaItems.add(new LuaItem("lua/tests/fr/LineTester.lua", "test Lines' (canvas)", true));
         return luaItems;
     }
     public void runTest(LuaItem luaItem){

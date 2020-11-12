@@ -666,6 +666,13 @@ namespace NanoCanvas
             m_yPos = y;
             return *this;
         }
+
+        inline Canvas& offsetPosition(float dx , float dy)
+        {
+            m_xPos += dx;
+            m_yPos += dy;
+            return *this;
+        }
         
         /**
          * @brief Set scale ration of the canvas
