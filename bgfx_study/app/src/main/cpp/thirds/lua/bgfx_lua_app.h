@@ -36,14 +36,14 @@ typedef void (*EndTask)(LuaAppHolder * holder);
 //防止指令重排. linux 内核可用 cpu_relax函数（效果相同）
 //#define barrier() __asm__ __volatile__("": : :"memory")
 
-#define lua_runMain(L) \
+/*#define lua_runMain(L) \
     LuaAppHolder *pHolder = Bgfx_lua_app::getAppHolder(L); \
-    pHolder->config->RunMain(reinterpret_cast<long>(L));
+    pHolder->config->RunMain(reinterpret_cast<long>(L));*/
 
 
 namespace Bgfx_lua_app{
 
-    void startApp(long ptr, entry::InitConfig *pConfig);
+    bool startApp(long ptr, entry::InitConfig *pConfig);
     bgfx::Init* requireInit(lua_State* L);
     LuaAppHolder* getAppHolder(lua_State* L);
 
@@ -69,11 +69,13 @@ public:
     void pause();
     void resume();
 
+    bool isRunning();
+
 private:
     static int32_t threadFunc(bx::Thread* _thread, void* _userData);
     //bx thread can't be static
     bx::Thread m_thread;
-
+    //can't use static
     std::mutex _mutex;
     std::condition_variable _condition;
 };

@@ -76,7 +76,12 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        NativeApi.onLifeCycle(mLuaer.getLuaPtr(), Lifecycle.Event.ON_RESUME.ordinal());
+        mBgfxLuaView.addPendingTask(new Runnable() {
+            @Override
+            public void run() {
+                NativeApi.onLifeCycle(mLuaer.getLuaPtr(), Lifecycle.Event.ON_RESUME.ordinal());
+            }
+        });
     }
     @Override
     protected void onDestroy() {

@@ -12,6 +12,16 @@
 namespace Bgfx_lua_app {
 #define KEY_APP_HOLDER "$_LuaAppHolder_"
 
+    static inline void androidSetWindow(::ANativeWindow* _window){
+        bgfx::PlatformData pd;
+        pd.ndt          = NULL;
+        pd.nwh          = _window;
+        pd.context      = NULL;
+        pd.backBuffer   = NULL;
+        pd.backBufferDS = NULL;
+        bgfx::setPlatformData(pd);
+    }
+
     void onLifecycle(long ptr, jint mark) {
         auto L = reinterpret_cast<lua_State *>(ptr);
 #define ON_PAUSE 3
@@ -30,9 +40,16 @@ namespace Bgfx_lua_app {
         }
     }
 
-    void startApp(long ptr, entry::InitConfig *pConfig) {
+    bool startApp(long ptr, entry::InitConfig *pConfig) {
         lua_State* L = reinterpret_cast<lua_State *>(ptr);
-        getAppHolder(L)->startLoop(pConfig);
+        auto pHolder = getAppHolder(L);
+        if(pHolder->isRunning()){
+            androidSetWindow((ANativeWindow*)pConfig->window);
+            return false;
+        } else{
+            pHolder->startLoop(pConfig);
+            return true;
+        }
     }
 
     LuaAppHolder* getAppHolder(lua_State* L) {
@@ -118,9 +135,10 @@ void LuaApp::init(LuaAppHolder *holder) {
     bgfx::Init *pInit = holder->bgfx_init;
     //LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);
     //LOGD("init config, w = %d, h = %d", pConfig->win_width, pConfig->win_height);
-    pInit->platformData.nwh = pConfig->window;
     pInit->resolution.width = pConfig->win_width;
     pInit->resolution.height = pConfig->win_height;
+
+    pInit->platformData.nwh = pConfig->window;
     pInit->platformData.ndt = NULL;
     pInit->platformData.context = NULL;
     pInit->platformData.backBuffer = NULL;
@@ -356,12 +374,18 @@ void LuaAppHolder::start(LuaApp *app) {
 }
 void LuaAppHolder::pause(){
     LOGD("LuaAppHolder >>> start pause...");
-    m_thread.push(new CmdData(TYPE_LUA_APP_PAUSE, (void*)NULL));
-    app->pause();
+    if(app->isRunning()){
+        m_thread.push(new CmdData(TYPE_LUA_APP_PAUSE, (void*)NULL));
+        app->pause();
+    }
 }
 void LuaAppHolder::resume() {
     LOGD("LuaAppHolder >>> start resume...");
     _condition.notify_one();
+}
+
+bool LuaAppHolder::isRunning() {
+    return m_thread.isRunning();
 }
 
 CmdData::CmdData(uint8_t type, void *data) : type(type), data(data) {

@@ -24,6 +24,18 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
         getHolder().addCallback(this);
     }
 
+    public void addPendingTask(Runnable task){
+        if(mInited){
+            post(task);
+        }else {
+            if(mPendingTask != null){
+                Log.d(TAG, "mPendingTask not null");
+                return;
+            }
+            mPendingTask = task;
+        }
+    }
+
     public void setScriptFile(final Luaer mLuaer, final String assetPath) {
         Log.d(TAG, "setScriptFile: path = " + assetPath);
         NativeApi.destroySurface(this);
@@ -68,6 +80,7 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.d(TAG, "surfaceDestroyed");
+        mInited = false;
         NativeApi.destroySurface(this);
     }
 }

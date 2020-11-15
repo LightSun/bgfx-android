@@ -79,7 +79,9 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,
         config->win_height = ANativeWindow_getHeight(mWindow);
         config->RunMain = java_runMain;
         config->OnExitRenderThread = java_onExitRenderThread;
-        Bgfx_lua_app::startApp(ptr, config);
+        if(!Bgfx_lua_app::startApp(ptr, config)){
+            delete config;
+        }
     } else{
         //HelloWorldDemo, CurbesDemo, FontDemo, InstancingDemo, BumpDemo,
         // CallbackDemo, VectorDisplayDemo, NanovgDemo

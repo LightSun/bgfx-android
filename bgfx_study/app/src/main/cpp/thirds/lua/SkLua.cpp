@@ -626,29 +626,6 @@ namespace gbgfx {
         };
     }
 }
-
-// =============================== LuaApp =================
-static int gc_luaApp(lua_State *L) {
-    //here we don't gc lua_app. wait. it really need recycle. draw failed or user-quit.or switch next app
-    LOGD("gc_luaApp");
-    LuaApp *pApp = LuaUtils::get_obj<LuaApp>(L, 1);
-    //pApp->quit();
-    return 0;
-}
-
-static int destroy_luaApp(lua_State *L) {
-    LOGD("destroy_luaApp");
-    LuaApp *pApp = LuaUtils::get_obj<LuaApp>(L, 1);
-    pApp->quit();
-    return 0;
-}
-
-static int start_luaApp(lua_State *L) {
-    LuaApp *pApp = LuaUtils::get_obj<LuaApp>(L, 1);
-    pApp->start();
-    return 0;
-}
-
 //======================= Stats ========================
 
 #define STATS_NUMBER(x) \
