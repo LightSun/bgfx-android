@@ -12,6 +12,24 @@
 namespace Bgfx_lua_app {
 #define KEY_APP_HOLDER "$_LuaAppHolder_"
 
+    void onLifecycle(long ptr, jint mark) {
+        auto L = reinterpret_cast<lua_State *>(ptr);
+#define ON_PAUSE 3
+#define ON_RESUME 2
+#define ON_DESTROY 5
+        switch (mark){
+            case ON_PAUSE:
+                getAppHolder(L)->pause();
+                break;
+            case ON_RESUME:
+                getAppHolder(L)->resume();
+                break;
+            case ON_DESTROY:
+                getAppHolder(L)->quitAll();
+                break;
+        }
+    }
+
     void startApp(long ptr, entry::InitConfig *pConfig) {
         lua_State* L = reinterpret_cast<lua_State *>(ptr);
         getAppHolder(L)->startLoop(pConfig);
@@ -53,6 +71,7 @@ namespace Bgfx_lua_app {
 
 void LuaAppHolder::destroyApp() {
     if (app) {
+        app->actDestroy();
         delete app;
         app = nullptr;
     }
@@ -119,7 +138,7 @@ void LuaApp::init(LuaAppHolder *holder) {
     }
 }
 
-int LuaApp::draw() {
+void LuaApp::draw() {
     if (func_draw) {
         lua_getglobal(L, func_draw);
         if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
@@ -128,13 +147,11 @@ int LuaApp::draw() {
             luaL_error(L, "call LuaApp draw failed. func = %s, msg = %s", func_draw, msg);
         } else {
             LOGD("LuaApp::draw-------------");
-            luaB_dumpStack(L);//TODO may no result ??
-            auto result = TO_NUMBER_16(L, -1);
+            //luaB_dumpStack(L);//TODO may no result ??
+           // auto result = TO_NUMBER_16(L, -1);
             lua_pop(L, 1);
-            return result;
         }
     }
-    return -1;
 }
 
 void LuaApp::doPreInit() {
@@ -150,14 +167,10 @@ void LuaApp::doPreInit() {
     }
 }
 
-void LuaApp::start() {
-    Bgfx_lua_app::getAppHolder(L)->start(this);
-}
-
-void LuaApp::destroy() {
-    if (!destroyed) {
+void LuaApp::actDestroy() {
+    if (getState() != APP_STATE_DESTROYED) {
+        setState(APP_STATE_DESTROYED);
         ext_println("destroy");
-        destroyed = true;
         //destroy lua func
         if (func_destroy) {
             lua_getglobal(L, func_destroy);
@@ -187,16 +200,31 @@ void LuaApp::destroy() {
 }
 
 bool LuaApp::isDestroyed() {
-    return destroyed;
+    return getState() == APP_STATE_DESTROYED;
 }
 
 void LuaApp::quit() {
     LOGD("LuaApp quit:...");
-    shouldQuit.store(true, std::memory_order_release);//对读线程可见
+    setState(APP_STATE_TO_QUIT);
 }
 
-bool LuaApp::isQuit() {
-    return shouldQuit.load(std::memory_order_relaxed);
+bool LuaApp::isRunning() {
+    return state.load(std::memory_order_relaxed) == APP_STATE_RUNNING;
+}
+void LuaApp::resume() {
+    setState(APP_STATE_RUNNING);
+}
+unsigned char LuaApp::getState() {
+    return state.load(std::memory_order_relaxed);
+}
+void LuaApp::pause() {
+    setState(APP_STATE_PAUSED);
+}
+void LuaApp::setState(unsigned char s) {
+    state.store(s, std::memory_order_release);//对读线程可见
+}
+bool LuaApp::isPaused() {
+    return getState() == APP_STATE_PAUSED;
 }
 
 //---------------------------------------------------------------------
@@ -205,13 +233,39 @@ static inline void performApp(LuaAppHolder *holder){
     LuaApp *demo = holder->app;
     bgfx::frame();
     LOGD("loop draw >>> start. app = %p", demo);
-    int i = 0;
-    while (!demo->isQuit() && demo->draw() == 0) {
-        //bx::debugPrintf
-        bx::debugPrintf("loop draw >>> %d", ++i);
+    for(;; ){
+        switch (demo->getState()){
+            case APP_STATE_PAUSED:
+                LOGD("APP_STATE_PAUSED");
+                goto ndes;
+
+            case APP_STATE_RUNNING:
+                LOGD("APP_STATE_RUNNING");
+                demo->draw();
+                //bx::debugPrintf("loop draw >>> %d", ++i);
+                break;
+            case APP_STATE_NONE:
+                LOGD("APP_STATE_NONE");
+                break;
+
+            case APP_STATE_DESTROYED:
+                LOGD("APP_STATE_DESTROYED");
+                goto out;
+
+            case APP_STATE_TO_QUIT:
+                LOGD("APP_STATE_NONE");
+                goto out;
+
+            default:
+                LOGW("can't reach here. wrong state = %d", demo->getState());
+                goto out;
+        }
     }
-    LOGD("loop draw >>> end");
+ndes:
+    return;
+out:
     holder->destroyApp();
+    LOGD("performApp >>> end");
 }
 
 int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
@@ -220,6 +274,7 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
     LuaAppHolder *holder = static_cast<LuaAppHolder *>(_userData);
     CmdData *data = nullptr;
     LuaApp *demo = nullptr;
+    bool shouldBreak = false;
 
     //bgfx api: should call in one thread.
     while (true) {
@@ -229,34 +284,46 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
             switch (data->type) {
                 case TYPE_LUA_APP_INIT: {
                     demo = holder->app = static_cast<LuaApp *>(data->data);
-                    LOGD("start LuaApp : %p", demo);
-                    if (!demo->isQuit()) {
-                        demo->doPreInit();
-                        demo->init(holder);
-                        performApp(holder);
-                    } else{
-                        holder->destroyApp();
-                    }
+                    LOGD("TYPE_LUA_APP_INIT , start LuaApp : %p", demo);
+                    demo->resume();
+                    demo->doPreInit();
+                    demo->init(holder);
+                    performApp(holder);
                     break;
                 }
 
-                case TYPE_QUIT_ALL:
-                    LOGD("quit all.");
-                    if (data->task) {
-                        data->task();
+                case TYPE_LUA_APP_PAUSE:{
+                    LOGD("TYPE_LUA_APP_PAUSE...");
+                    std::unique_lock<std::mutex> lock(holder->_mutex);
+                    holder->_condition.wait(lock);
+                    auto pApp = holder->app;
+                    if(pApp != nullptr && !pApp->isDestroyed()){
+                        pApp->resume();
+                        //restart loop for draw
+                        LOGD("resume: restart for draw.");
+                        performApp(holder);
                     }
+                    LOGD(" pause end -> next may will resume...");
+                }
+                    break;
+
+                case TYPE_QUIT_ALL:
+                    LOGD("TYPE_QUIT_ALL.");
+                    holder->destroyApp();
+                    if (data->task) {
+                        data->task(holder);
+                    }
+                    shouldBreak = true;
                     break;
             }
             //quit all
-            if (data->type == TYPE_QUIT_ALL) {
-                delete data;
+            delete data;
+            if (shouldBreak) {
                 break;
-            } else {
-                delete data;
             }
         }
     }
-    //m_thread.shutdown();
+    //TODO multi platform
     releaseWindow(holder->bgfx_init->platformData.nwh);
     if(holder->config->OnExitRenderThread){
         holder->config->OnExitRenderThread();
@@ -266,15 +333,35 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
 }
 
 void LuaAppHolder::quitAll(EndTask task) {
+    LOGD("LuaAppHolder >>> start quit all.");
     m_thread.push(new CmdData(TYPE_QUIT_ALL, task));
+    if(app != nullptr){
+        //if previous is paused .just resume to destroy
+        if(app->isPaused()){
+            app->quit();
+            resume();
+        } else{
+            app->quit();
+        }
+    }
 }
 
 void LuaAppHolder::start(LuaApp *app) {
+    if(this->app != nullptr){
+        LOGW("start LuaApp failed: last app exists,ptr = %p. you should quit first", this->app);
+        return;
+    }
     m_thread.push(new CmdData(TYPE_LUA_APP_INIT, app));
     LOGD("_appInit init ok. try TYPE_LUA_APP_START");
 }
-void LuaAppHolder::sendCmd(CmdData *data) {
-    m_thread.push(data);
+void LuaAppHolder::pause(){
+    LOGD("LuaAppHolder >>> start pause...");
+    m_thread.push(new CmdData(TYPE_LUA_APP_PAUSE, (void*)NULL));
+    app->pause();
+}
+void LuaAppHolder::resume() {
+    LOGD("LuaAppHolder >>> start resume...");
+    _condition.notify_one();
 }
 
 CmdData::CmdData(uint8_t type, void *data) : type(type), data(data) {

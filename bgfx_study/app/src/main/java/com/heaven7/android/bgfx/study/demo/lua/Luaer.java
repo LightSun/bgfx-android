@@ -74,6 +74,9 @@ public final class Luaer {
     public LuaState getLuaState(){
         return mLuaState;
     }
+    public long getLuaPtr(){
+        return mLuaState.getNativePointer();
+    }
 
     public Context getApplicationContext(){
         return context.getApplicationContext();

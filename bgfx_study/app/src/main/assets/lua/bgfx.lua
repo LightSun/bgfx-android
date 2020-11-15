@@ -25,8 +25,8 @@ function m.getInit()
     return ud_wrap.wrapGetSet(init);
 end
 
-function m.newApp(func_pre_init, func_init, func_draw, func_destroy)
-    return bgfx_lua.newApp(
+function m.startApp(func_pre_init, func_init, func_draw, func_destroy)
+    return bgfx_lua.startApp(
             func_wrap.wrapEasy(func_pre_init, "app_pre_init"),
             func_wrap.wrapEasy(func_init, "app_init"),
             func_wrap.wrapEasy(func_draw, "app_draw"),

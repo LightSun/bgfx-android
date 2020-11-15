@@ -1,8 +1,5 @@
 package com.heaven7.android.bgfx.study.demo;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import androidx.annotation.Keep;
 
 import com.heaven7.core.util.MainWorker;
@@ -26,6 +23,9 @@ public final class NativeApi {
     public static native void destroySurface(Object src);
 
     public native static void initLuaBgfx(long luaPtr);
+
+    //bind life cycle with android.
+    public static native void onLifeCycle(long luaPtr, int mark);
     //1: func_error(string)
     //2: func_result(...)
     //3: func() -> ...

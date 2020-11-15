@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -68,8 +69,19 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        NativeApi.onLifeCycle(mLuaer.getLuaPtr(), Lifecycle.Event.ON_PAUSE.ordinal());
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NativeApi.onLifeCycle(mLuaer.getLuaPtr(), Lifecycle.Event.ON_RESUME.ordinal());
+    }
+    @Override
     protected void onDestroy() {
         NativeApi.setUseLua(false);
+        NativeApi.onLifeCycle(mLuaer.getLuaPtr(), Lifecycle.Event.ON_DESTROY.ordinal());
         super.onDestroy();
     }
 

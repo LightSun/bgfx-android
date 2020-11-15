@@ -13,17 +13,26 @@
 
 #include <atomic>
 #include <stdatomic.h>
+#include <mutex>
 
 #define TYPE_NONE 0;
 #define TYPE_LUA_APP_INIT    1
+#define TYPE_LUA_APP_PAUSE   2
 #define TYPE_QUIT_ALL        10
 
-typedef const char* FUNC_NAME;
-typedef void (*EndTask)();
+#define APP_STATE_NONE    1
+#define APP_STATE_RUNNING 2
+#define APP_STATE_PAUSED  3
+#define APP_STATE_TO_QUIT 4
+#define APP_STATE_DESTROYED 5
 
 class LuaApp;
 class LuaAppHolder;
 class CmdData;
+
+typedef const char* FUNC_NAME;
+typedef void (*EndTask)(LuaAppHolder * holder);
+
 //防止指令重排. linux 内核可用 cpu_relax函数（效果相同）
 //#define barrier() __asm__ __volatile__("": : :"memory")
 
@@ -37,6 +46,8 @@ namespace Bgfx_lua_app{
     void startApp(long ptr, entry::InitConfig *pConfig);
     bgfx::Init* requireInit(lua_State* L);
     LuaAppHolder* getAppHolder(lua_State* L);
+
+    void onLifecycle(long luaPtr, jint mark);
 }
 
 class LuaAppHolder{
@@ -52,14 +63,19 @@ public:
     void destroyApp();
 
     void startLoop(entry::InitConfig *pConfig);
-    void quitAll(EndTask task);
+    void quitAll(EndTask task = NULL);
     void start(LuaApp * app);
-    void sendCmd(CmdData * data);
+
+    void pause();
+    void resume();
 
 private:
     static int32_t threadFunc(bx::Thread* _thread, void* _userData);
     //bx thread can't be static
     bx::Thread m_thread;
+
+    std::mutex _mutex;
+    std::condition_variable _condition;
 };
 
 class CmdData{
@@ -83,19 +99,26 @@ public:
     void init(LuaAppHolder *pConfig);
 
     //called in sub-thread.
-    int draw();
+    void draw();
 
-    void destroy();
+    /** real destroy. not change state */
+    void actDestroy();
 
     bool isDestroyed();
 
     void quit();
 
-    bool isQuit();
-
     void doPreInit();
 
-    void start();
+    void resume();
+
+    bool isRunning();
+
+    void pause();
+
+    inline unsigned char getState();
+
+    inline void setState(unsigned char s);
     /**
     * create lua app with init, draw, destroy function.
     * @param L the lua state
@@ -106,15 +129,16 @@ public:
     */
     LuaApp(lua_State* L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy);
 
+    bool isPaused();
+
 private:
-    bool destroyed;
     lua_State* L;
     FUNC_NAME func_preInit;
     FUNC_NAME func_init;
     FUNC_NAME func_draw;
     FUNC_NAME func_destroy;
 
-    std::atomic<bool> shouldQuit{false};
+    std::atomic<uint8_t> state{APP_STATE_NONE};
 };
 
 

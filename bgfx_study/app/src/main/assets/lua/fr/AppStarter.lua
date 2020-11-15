@@ -36,8 +36,7 @@ function m.start(decorView, appConfig)
     local app_destroy = function ()
         decorView.onDestroy();
     end
-    local app = bgfx.newApp(app_pre_init, app_init, app_draw, app_destroy);
-    app.start(app);
+    bgfx.startApp(app_pre_init, app_init, app_draw, app_destroy);
 end
 
 --- start view with default canvas config. this often used for test.

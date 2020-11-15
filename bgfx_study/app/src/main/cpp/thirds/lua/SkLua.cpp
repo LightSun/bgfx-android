@@ -144,13 +144,23 @@ static int bgfx_setDebug(lua_State *L) {
 }
 
 //new app. this should only be called only once.
-static int bgfx_newApp(lua_State *L) {
+static int bgfx_startApp(lua_State *L) {
+    auto holder = Bgfx_lua_app::getAppHolder(L);
+    if(holder->app != nullptr){
+        return luaL_error(L, "already exit app, you should call bgfx.destroyApp() first.");
+    }
     const char *fn_pre_init = lua_tostring(L, -4);
     const char *fn_init = lua_tostring(L, -3);
     const char *fn_draw = luaL_checkstring(L, -2);
     const char *fn_destroy = lua_tostring(L, -1);
-    LuaUtils::push_new<LuaApp>(L, L, fn_pre_init, fn_init, fn_draw, fn_destroy);
-    return 1;
+    auto pApp = new LuaApp(L, fn_pre_init, fn_init, fn_draw, fn_destroy);
+   // LuaUtils::push_new<LuaApp>(L, L, fn_pre_init, fn_init, fn_draw, fn_destroy);
+    holder->start(pApp);
+    return 0;
+}
+static int bgfx_destroyApp(lua_State *L) {
+    Bgfx_lua_app::getAppHolder(L)->quitAll();
+    return 0;
 }
 
 static int bgfx_setViewClear(lua_State *L) {
@@ -639,13 +649,6 @@ static int start_luaApp(lua_State *L) {
     return 0;
 }
 
-const struct luaL_Reg gLuaApp_Methods[] = {
-        {"start",   start_luaApp},
-        {"destroy", destroy_luaApp},
-        {"__gc",    gc_luaApp},
-        {NULL, NULL},
-};
-
 //======================= Stats ========================
 
 #define STATS_NUMBER(x) \
@@ -941,7 +944,8 @@ inline bgfx::Init *getBgfxInit(lua_State *L) {
 // here we direct load bgfx_lua.
 static const luaL_Reg bgfx_funcs[] = {
         {"getInit",            bgfx_getInit},
-        {"newApp",             bgfx_newApp},
+        {"startApp",           bgfx_startApp},
+        {"destroyApp",         bgfx_destroyApp},
         {"setDebug",           bgfx_setDebug},
         {"setViewClear",       bgfx_setViewClear},
         {"setViewRect",        bgfx_setViewRect},
@@ -1027,7 +1031,7 @@ void SkLua::Load(lua_State *L) {
     REG_CLASS(L, bgfx::Caps);
     REG_CLASS(L, bgfx::VertexLayout);
 
-    REG_CLASS(L, LuaApp);
+    REG_EMPTY_CLASS(L, LuaApp);
 
     REG_EMPTY_CLASS(L, bgfx::Memory);
     REG_CLASS(L, bgfx::VertexBufferHandle);

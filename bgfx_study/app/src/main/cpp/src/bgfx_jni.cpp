@@ -102,6 +102,10 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject src){
         }
     }
 }
+extern "C" JNIEXPORT void JNICALL Java_com_heaven7_android_bgfx_study_demo_NativeApi_onLifeCycle(
+        JNIEnv* env, jclass clazz, long luaPtr, jint mark){
+    Bgfx_lua_app::onLifecycle(luaPtr, mark);
+}
 
 static const luaL_Reg bgfx_libs[] = {
         {"bgfx_lua", luaopen_bgfx_lua},
@@ -119,3 +123,4 @@ extern "C" JNIEXPORT void JNICALL Java_com_heaven7_android_bgfx_study_demo_Nativ
     lua_State *L = reinterpret_cast<lua_State *>(luaPtr);
     luaL_openlibs2(L, bgfx_libs);
 }
+
