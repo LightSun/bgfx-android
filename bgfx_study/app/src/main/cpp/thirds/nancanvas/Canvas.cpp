@@ -208,11 +208,11 @@ namespace NanoCanvas {
     void applyTextStyle(Canvas &canvas, const TextStyle &textStyle) {
         if (textStyle.face >= 0)
             nvgFontFaceId(canvas.nvgContext(), textStyle.face);
-        if (!std::isnan(textStyle.lineHeight))
+        if (textStyle.lineHeight > 0)
             nvgTextLineHeight(canvas.nvgContext(), textStyle.lineHeight);
-        if (!std::isnan(textStyle.blur))
+        if (textStyle.blur > 0)
             nvgFontBlur(canvas.nvgContext(), textStyle.blur);
-        if (!std::isnan(textStyle.letterSpace))
+        if (textStyle.letterSpace > 0)
             nvgTextLetterSpacing(canvas.nvgContext(), textStyle.letterSpace);
         nvgTextAlign(canvas.nvgContext(), textStyle.hAlign | textStyle.vAlign);
         nvgFontSize(canvas.nvgContext(), textStyle.size);
@@ -226,7 +226,7 @@ namespace NanoCanvas {
 
     float Canvas::measureText(const char* text, float rowWidth) {
         float width = 0;
-        if (std::isnan(rowWidth))
+        if (rowWidth <= 0)
             width = nvgTextBounds(m_nvgCtx, 0, 0, text, nullptr, nullptr);
         else {
             //left. top, right, bottom.
@@ -239,7 +239,7 @@ namespace NanoCanvas {
     float Canvas::measureText(const char* text, float x, float y,
                               float *bounds, float rowWidth) {
         local2Global(x, y);
-        if (std::isnan(rowWidth))
+        if (rowWidth <= 0)
             nvgTextBounds(m_nvgCtx, x, y, text, nullptr, bounds);
         else
             nvgTextBoxBounds(m_nvgCtx, x, y, rowWidth, text, nullptr, bounds);
@@ -376,7 +376,7 @@ namespace NanoCanvas {
     Canvas &Canvas::fillText(const char *text, float x, float y, float rowWidth) {
         if (strlen(text)) {
             local2Global(x, y);
-            if (std::isnan(rowWidth))
+            if (rowWidth <= 0)
                 nvgText(m_nvgCtx, x, y, text, nullptr);
             else
                 nvgTextBox(m_nvgCtx, x, y, rowWidth, text, nullptr);
@@ -393,14 +393,14 @@ namespace NanoCanvas {
             local2Global(x, y);
             int w, h;
             image.size(w, h);
-
-            if (std::isnan(swidth))
+            //std::isNan has bugs on android . we removed it and use -1
+            if (swidth <= 0)
                 swidth = w - sx;
-            if (std::isnan(sheight))
+            if (sheight <= 0)
                 sheight = h - sy;
-            if (std::isnan(width))
+            if (width <= 0)
                 width = swidth;
-            if (std::isnan(height))
+            if (height <= 0)
                 height = sheight;
 
             resetClip();

@@ -932,23 +932,18 @@ static int newImage(lua_State *L){
             break;
 
         case 4:{
-            //TODO
+            bgfx::Memory* mem = LuaUtils::get_ref<bgfx::Memory>(L, 4);
+            img = new NanoCanvas::Image(ctx, TO_INT(L, 2), TO_INT(L,3), *mem);
         }
             break;
         case 5:{
-
+            bgfx::Memory* mem = LuaUtils::get_ref<bgfx::Memory>(L, 4);
+            img = new NanoCanvas::Image(ctx, TO_INT(L, 2), TO_INT(L,3), *mem, TO_INT(L, 5));
         }
             break;
-    }
-    if(top == 2){
-        if(lua_type(L, 2) == LUA_TSTRING){
-            img = new NanoCanvas::Image(ctx, lua_tostring(L, 2));
-        } else{
-            bgfx::Memory* mem = LuaUtils::get_ref<bgfx::Memory>(L, 2);
-            img = new NanoCanvas::Image(ctx, *mem);
-        }
-    } else{
-        img = new NanoCanvas::Image(ctx, lua_tostring(L, 2), lua_tointeger(L, 3));
+
+        default:
+            return luaL_error(L, "wrong arguments for newImage.");
     }
     LuaUtils::push_ptr(L, img);
     return 1;

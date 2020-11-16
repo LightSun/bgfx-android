@@ -82,26 +82,6 @@ bgfx::Memory* loadMem(bx::FileReaderI* _reader, const char* _filePath)
 	return NULL;
 }
 
-void* loadMem(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size)
-{
-	if (bx::open(_reader, _filePath) )
-	{
-		uint32_t size = (uint32_t)bx::getSize(_reader);
-		void* data = BX_ALLOC(_allocator, size);
-		bx::read(_reader, data, size);
-		bx::close(_reader);
-
-		if (NULL != _size)
-		{
-			*_size = size;
-		}
-		return data;
-	}
-
-	DBG("Failed to load %s.", _filePath);
-	return NULL;
-}
-
 static bgfx::ShaderHandle loadShader(bx::FileReaderI* _reader, const char* _name)
 {
 	char filePath[512];
@@ -264,7 +244,7 @@ bgfx::TextureHandle loadTexture(const char* _name, uint64_t _flags, uint8_t _ski
 bimg::ImageContainer* imageLoad(const char* _filePath, bgfx::TextureFormat::Enum _dstFormat)
 {
 	uint32_t size = 0;
-	void* data = loadMem(entry::getFileReader(), entry::getAllocator(), _filePath, &size);
+	void* data = load(entry::getFileReader(), entry::getAllocator(), _filePath, &size);
 
 	return bimg::imageParse(entry::getAllocator(), data, size, bimg::TextureFormat::Enum(_dstFormat) );
 }

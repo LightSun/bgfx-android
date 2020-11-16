@@ -257,7 +257,7 @@ namespace NanoCanvas
          * @param rowWidth The max row width of the text box,NAN is not limited
          * @return The canvas to operate with
          */
-        Canvas& fillText(const char* text,float x,float y,float rowWidth = NAN);
+        Canvas& fillText(const char* text,float x,float y,float rowWidth = -1);
         
         /**
          * @brief Draws an image onto the canvas
@@ -276,9 +276,9 @@ namespace NanoCanvas
          * @return The canvas to draw this image
          */
         Canvas& drawImage(Image& image,float x,float y, 
-                          float width = NAN,float height = NAN,
+                          float width = -1,float height = -1,
                           float sx = 0,float sy = 0,
-                          float swidth = NAN,float sheight = NAN);
+                          float swidth = -1,float sheight = -1);
         
     /*-------------------- Style Control -------------------*/
     
@@ -449,7 +449,7 @@ namespace NanoCanvas
          * @param rowWidth The max row width of the text box,NAN is not limited
          * @return The width of the specified text
          */
-        float measureText(const char* text,float rowWidth = NAN);
+        float measureText(const char* text,float rowWidth = -1);
         
         /**
          * @brief Check the boundary of the text, before writing it on the canvas
@@ -460,7 +460,7 @@ namespace NanoCanvas
          * @param rowWidth The max row width of the text box,NAN is not limited
          * @return The width of the specified text
          */
-        float measureText(const char* text,float x,float y,float* bounds,float rowWidth = NAN);
+        float measureText(const char* text,float x,float y,float* bounds,float rowWidth = -1);
         /**
          * measure text with width and height
          * @param text the text
@@ -470,7 +470,7 @@ namespace NanoCanvas
          * @param outH the out height by measure
          * @param rowWidth the max row width
          */
-        void measureText(const char* text,float x,float y,float *outW, float *outH,float rowWidth = NAN);
+        void measureText(const char* text,float x,float y,float *outW, float *outH,float rowWidth = -1);
 
     /*--------------------- Transformations ----------------*/
         

@@ -60,7 +60,7 @@ namespace NanoCanvas
          * @brief Creates image with RGBA format from specified image data.
          * @param canvas The canvas who owns the image
          * @param w The width of the image
-         * @param w The height of the image
+         * @param h The height of the image
          * @param memory The memory block to load from
          * @param imageFlags Creation flags
          */

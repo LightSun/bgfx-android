@@ -29,14 +29,14 @@ local function newRectViewTester()
 
     function self.onInitialize(ctx)
         ts1 = uiCore.newTextStyle();
-        ts1.font(uiCore.newFont(ctx, "", ""))
-        .size()
-        .lineHeight()
-        .blur(2)
-        .letterSpace(20)
-        .color()
-        .hAlign()
-        .vAlign()
+        ts1.font(uiCore.newFontFromAssets(ctx, "sans-bold", "runtime/font/roboto-bold.ttf"))
+        .size(18)
+        --.lineHeight()
+        --.blur(2)
+        --.letterSpace(5)
+        .color(nvgRGBA(255,192,0,255))
+       -- .hAlign(uiCore.TEXT_ALIGN_Center)
+         .vAlign(uiCore.TEXT_ALIGN_Top) -- baseline may cause can't see in '(0, 0)'
     end
 
     function self.onDestroy()
@@ -45,32 +45,34 @@ local function newRectViewTester()
     function self.onDraw(canvas)
         print("---newTestView: onDraw ----")
         --canvas_lua.h_testDraw(canvas.getContext());
-        self.testBezier_strokeColor(canvas);
+        self.testText_strokeColor(canvas);
 
-        canvas.offsetPosition(0, 300)
-        self.testBezier_fillColor(canvas);
+       -- canvas.offsetPosition(0, 300)
+        --self.testBezier_fillColor(canvas);
 
-        canvas.setPosition(0, 0)
+        --canvas.setPosition(0, 0)
     end
 
     function self.testText_strokeColor(canvas)
         canvas.beginPath()
-              .moveTo(50, 100)
-              .quadTo(50, 50, 100, 50)
-              .moveTo(200, 200)
-              .bezierTo(200, 250, 250, 250, 280, 180)
-              .strokeColor(nvgRGBA(255,0,0,255))
-              .stroke();
-    end
+              .textStyle(ts1)
+              .fillText("Hello world!", 100, 100);
 
-    function self.testText_fillColor(canvas)
         canvas.beginPath()
-              .moveTo(50, 100)
-              .quadTo(50, 50, 100, 50)
-              .moveTo(200, 200)
-              .bezierTo(200, 250, 250, 250, 280, 180)
-              .fillColor(nvgRGBA(255,0,0,255))
-              .fill();
+              .textStyle(ts1)
+              .fillText("Hello world!", 0 , 0);
+
+        canvas.beginPath()
+              .textStyle(ts1)
+              .fillText("Hello world!", 0 , 300);
+
+        canvas.beginPath()
+              .textStyle(ts1)
+              .fillText("Hello world!", 50 , 0);
+
+        canvas.beginPath()
+              .textStyle(ts1)
+              .fillText("Hello world!", 50, 200);
     end
 
     return self;

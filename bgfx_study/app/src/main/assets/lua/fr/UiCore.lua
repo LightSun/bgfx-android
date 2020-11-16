@@ -4,7 +4,7 @@
 --- DateTime: 2020/11/1 0001 下午 10:32
 ---
 local canvasL = require("canvas_lua")
-local bx = require("bx");
+local bx0 = require("bx");
 
 local m = {};
 
@@ -34,59 +34,6 @@ m.LINE_JOIN_MITER  = 5;
 
 --(viewId, width, height, [scaleRatio])
 function m.newCanvas(viewId, width, height, scaleRatio)
-    --[[ (moveTo)
-    (lineTo)
-    (arcTo)
-    (quadCurveTo)
-    (bezierCurveTo)
-    (arc)
-    (closePath)
-    (rect)
-    (roundedRect)
-    (circle)
-    (ellipse)
-    (fill)
-    (stroke)
-    (fillRect)
-    (strokeRect)
-    (clearColor)
-    (fillText)
-    (drawImage)
-    (lineCap)
-    (lineJoin)
-    (lineWidth)
-    (miterLimit)
-    (globalAlpha)
-    (fillColor)
-    (fillGradient)
-    (strokeColor)
-    (strokeGradient)
-    (font)
-    (fontSize)
-    (textAlign)
-    (textStyle)
-    (measureText)
-    (scale)
-    (rotate)
-    (translate)
-    (transform)
-    (setTransform)
-    (resetTransform)
-    (beginFrame)
-    (cancelFrame)
-    (endFrame)
-    (beginPath)
-    (pathWinding)
-    (clip)
-    (resetClip)
-    (save)
-    (restore)
-    (reset)
-    (setSize)
-    (setPosition)
-    (setScaleRatio)
-    (local2Global)
-    (global2Local)]]
     return canvasL.newCanvas(viewId, width, height, scaleRatio);
 end
 
@@ -130,23 +77,30 @@ function m.newImageGradient(image, x, y, w, h, angle, alpha)
     -- (const Image &image, float ox, float oy, float w, float h, float angle, float alpha)
     return canvasL.newImageGradient(image, x, y, w, h, angle, alpha)
 end
-
+-- font -------------------
 function m.newFont(context, fname, ttfPath)
     --(nvgContext* context, const char* fname , const char* ttfPath)
     return canvasL.newFont(context, fname, ttfPath);
 end
-
-function m.loadFont(context, fname, ttfpath)
-    return canvasL.newFont(context, fname, bx.loadMem(ttfpath));
+function m.newFontFromAssets(context, fname, ttfpath)
+    return canvasL.newFont(context, fname, bx0.loadMemFromAssets(ttfpath));
 end
 
-function m.loadFontFromAssets(context, fname, ttfpath)
-    return canvasL.newFont(context, fname, bx.loadMemFromAssets(ttfpath));
-end
-
+-- image -----------------
 function m.newImage(context, filePath, flags)
     --(nvgContext* context,const char* filePath, int imageFlags = 0)
     return canvasL.newImage(context, filePath, flags);
+end
+function m.newImageWH(context, w, h, filePath, flags)
+    --(nvgContext* context,const char* filePath, int imageFlags = 0)
+    return canvasL.newImage(context, w, h, bx0.loadMem(filePath), flags);
+end
+function m.newImageFromAssets(context, filePath, flags)
+    return canvasL.newImage(context, bx0.loadMemFromAssets(filePath), flags);
+end
+
+function m.newImageFromAssetsWH(context, w, h, filePath, flags)
+    return canvasL.newImage(context, w, h, bx0.loadMemFromAssets(filePath), flags);
 end
 
 function m.newTextStyle()

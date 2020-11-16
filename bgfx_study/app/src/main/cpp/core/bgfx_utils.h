@@ -7,6 +7,7 @@
 #define BGFX_UTILS_H_HEADER_GUARD
 
 #include <bx/pixelformat.h>
+#include <bx/readerwriter.h>
 #include <bgfx/bgfx.h>
 #include <bimg/bimg.h>
 #include "bounds.h"
@@ -26,8 +27,6 @@ void* load(const char* _filePath, uint32_t* _size = NULL);
 void unload(void* _ptr);
 
 bgfx::Memory* loadMem(bx::FileReaderI* _reader, const char* _filePath);
-
-void* loadMem(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size);
 
 ///
 bgfx::ShaderHandle loadShader(const char* _name);

@@ -66,7 +66,7 @@ function m.new(canvasConfig)
     function self.getCanvas()
         if(not self.canvas) then
             local reso = bgfx.getInit().resolution
-            self.canvas = gui.newCanvas(self.viewId, reso.width, reso.height, 3)
+            self.canvas = gui.newCanvas(self.viewId, reso.width, reso.height, 1)
         end
         return self.canvas;
     end

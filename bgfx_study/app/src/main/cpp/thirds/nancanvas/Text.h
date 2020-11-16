@@ -88,11 +88,11 @@ namespace NanoCanvas
         float size        = 12.0f;
         /// The proportional line height of current text style. 
         /// The line height is specified as multiple of font size. 
-        float lineHeight  = NAN;
+        float lineHeight  = -1;
         /// The blur of current text style
-        float blur        = NAN;
+        float blur        = -1;
         /// The letter spacing of current text style in pixel
-        float letterSpace = NAN;
+        float letterSpace = -1;
         /// The color of current text style
         Color color       = 0u;
         /// The horizontal alignment of current text style
