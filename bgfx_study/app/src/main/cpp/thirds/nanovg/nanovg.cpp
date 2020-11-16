@@ -2855,8 +2855,9 @@ void nvgTextBoxBounds(NVGcontext* ctx, float x, float y, float breakRowWidth, co
 			bounds[0] = bounds[1] = bounds[2] = bounds[3] = 0.0f;
 		return;
 	}
+	float ascent = 0, descent = 0;
 
-	nvgTextMetrics(ctx, NULL, NULL, &lineh);
+	nvgTextMetrics(ctx, &ascent, &descent, &lineh);
 
 	state->textAlign = NVG_ALIGN_LEFT | valign;
 

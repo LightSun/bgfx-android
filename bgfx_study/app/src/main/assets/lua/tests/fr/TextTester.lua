@@ -73,6 +73,8 @@ local function newRectViewTester()
         canvas.beginPath()
               .textStyle(ts1)
               .fillText("Hello world!", 50, 200);
+        local w, h = canvas.measureText("Hello world!", 0, 0);
+        print("wh: ",w, h)
     end
 
     return self;

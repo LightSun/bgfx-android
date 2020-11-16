@@ -340,7 +340,7 @@ static int Canvas_textStyle(lua_State *L) {
     return 1;
 }
 static int Canvas_measureText(lua_State *L) {
-    //(const char* text,float x,float y,float *outW, float *outH,float rowWidth)
+    //(const char* text,float x,float y, [float rowWidth])
     int top = lua_gettop(L);
     if(top < 3){
         return luaL_error(L, "wrong arguments. expect (const char *text, float x, float y, [float rowWidth])");
@@ -355,7 +355,7 @@ static int Canvas_measureText(lua_State *L) {
     }
     lua_pushnumber(L, w);
     lua_pushnumber(L, h);
-    return 1;
+    return 2;
 }
 
 static int Canvas_scale(lua_State *L) {
