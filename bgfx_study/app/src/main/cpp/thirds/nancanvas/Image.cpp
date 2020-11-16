@@ -8,21 +8,17 @@ namespace NanoCanvas {
             imageID = nvgCreateImage(ctx, filePath, imageFlags);
     }
 
-    Image::Image(NVGcontext *ctx, const Memory &memory, int imageFlags) {
+    Image::Image(NVGcontext *ctx, const bgfx::Memory &memory, int imageFlags) {
         _ctx = ctx;
-        if (memory.isValid()) {
-            imageID = nvgCreateImageMem(ctx, imageFlags,
-                                        (unsigned char *) (memory.data),
-                                        memory.size);
-        }
+        imageID = nvgCreateImageMem(ctx, imageFlags,
+                                    (unsigned char *) (memory.data),
+                                    memory.size);
     }
 
-    Image::Image(NVGcontext *ctx, int w, int h, const Memory &memory, int imageFlags) {
+    Image::Image(NVGcontext *ctx, int w, int h, const bgfx::Memory &memory, int imageFlags) {
         _ctx = ctx;
-        if (memory.isValid()) {
-            imageID = nvgCreateImageRGBA(ctx, w, h, imageFlags,
-                                         (unsigned char *) (memory.data));
-        }
+        imageID = nvgCreateImageRGBA(ctx, w, h, imageFlags,
+                                     (unsigned char *) (memory.data));
     }
 
     Image::~Image() {
@@ -31,7 +27,7 @@ namespace NanoCanvas {
         }
     }
 
-    void Image::update(const Memory &memory) {
+    void Image::update(const bgfx::Memory &memory) {
         if (_ctx) {
             nvgUpdateImage(_ctx, imageID, (const unsigned char *) (memory.data));
         }

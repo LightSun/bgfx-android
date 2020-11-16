@@ -25,6 +25,10 @@ void* load(const char* _filePath, uint32_t* _size = NULL);
 ///
 void unload(void* _ptr);
 
+bgfx::Memory* loadMem(bx::FileReaderI* _reader, const char* _filePath);
+
+void* loadMem(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size);
+
 ///
 bgfx::ShaderHandle loadShader(const char* _name);
 

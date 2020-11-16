@@ -20,7 +20,7 @@ namespace entry {
     void setCurrentDir(const char *_dir) {
         s_currentDir.set(_dir);
     }
-
+    //default reader is asset-reader
     bx::FileReaderI *getFileReader() {
         return s_fileReader;
     }

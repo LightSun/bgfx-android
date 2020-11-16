@@ -5,31 +5,13 @@
 #include <algorithm>
 #include <string>
 #include <cmath>
+#include "bgfx/bgfx.h"
 
 
 namespace NanoCanvas
 {
     using std::string;
     static string nullstr;
-    
-    /// The data structure for Memory blocks
-    struct Memory
-    {
-        /// The data of the Memory block
-        void * data = nullptr;
-        
-        /// Size of the Memory block in bytes
-        unsigned long size = 0UL;
-        
-        /// Check is the data is not NULL and size is not 0
-        bool isValid()const{ return (data && size ); }
-        
-        /**
-         * @brief Invalidate the Memory object
-         * @attention This method does NOT free the Memory,you have to do it yourself!
-         */
-        void invalidate(){ data = nullptr ;size = 0UL; }
-    };
     
     /// The π definition
     static constexpr long double PI = 3.14159265358979323846264338327L;

@@ -4,6 +4,7 @@
 --- DateTime: 2020/11/1 0001 下午 10:32
 ---
 local canvasL = require("canvas_lua")
+local bx = require("bx");
 
 local m = {};
 
@@ -133,6 +134,14 @@ end
 function m.newFont(context, fname, ttfPath)
     --(nvgContext* context, const char* fname , const char* ttfPath)
     return canvasL.newFont(context, fname, ttfPath);
+end
+
+function m.loadFont(context, fname, ttfpath)
+    return canvasL.newFont(context, fname, bx.loadMem(ttfpath));
+end
+
+function m.loadFontFromAssets(context, fname, ttfpath)
+    return canvasL.newFont(context, fname, bx.loadMemFromAssets(ttfpath));
 end
 
 function m.newImage(context, filePath, flags)

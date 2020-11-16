@@ -74,4 +74,13 @@ function m.mtxRotateXY(mem_f, _ax, _ay)
     return bx1.mtxRotateXY(mem_f, _ax, _ay);
 end
 
+------------ utils ------
+function m.loadMem(filepath)
+    return bx1.loadMem(filepath);
+end
+
+function m.loadMemFromAssets(assetPath)
+    return bx1.loadMemFromAssets(assetPath);
+end
+
 return m;

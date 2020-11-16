@@ -11,8 +11,8 @@ namespace NanoCanvas {
     }
 
     Font::Font(NVGcontext *ctx, const char *fname,
-               const Memory &memory, bool invalidateMem) {
-        if (memory.isValid() && strlen(fname)) {
+               const bgfx::Memory &memory, bool invalidateMem) {
+        if (strlen(fname)) {
             face = nvgCreateFontMem(ctx, fname,
                                     (unsigned char *) memory.data,
                                     memory.size, invalidateMem);

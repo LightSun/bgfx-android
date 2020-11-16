@@ -66,7 +66,7 @@ void unload(void* _ptr)
 	BX_FREE(entry::getAllocator(), _ptr);
 }
 
-static const bgfx::Memory* loadMem(bx::FileReaderI* _reader, const char* _filePath)
+bgfx::Memory* loadMem(bx::FileReaderI* _reader, const char* _filePath)
 {
 	if (bx::open(_reader, _filePath) )
 	{
@@ -75,14 +75,14 @@ static const bgfx::Memory* loadMem(bx::FileReaderI* _reader, const char* _filePa
 		bx::read(_reader, mem->data, size);
 		bx::close(_reader);
 		mem->data[mem->size-1] = '\0';
-		return mem;
+		return const_cast<bgfx::Memory *>(mem);
 	}
 
 	DBG("Failed to load %s.", _filePath);
 	return NULL;
 }
 
-static void* loadMem(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size)
+void* loadMem(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size)
 {
 	if (bx::open(_reader, _filePath) )
 	{

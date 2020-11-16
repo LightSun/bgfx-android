@@ -803,6 +803,18 @@ namespace gbgfx {
             {NULL, NULL},
     };
 }
+//---------------------- Memory ----------------------
+static int bgfx_Memory_index(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<bgfx::Memory>(L, -1);
+    BX_FREE(entry::getAllocator(), pMemory);
+    return 0;
+}
+namespace gbgfx {
+    const struct luaL_Reg Memory_Methods[] = {
+            {"__index",          bgfx_Memory_index},
+            {NULL, NULL},
+    };
+}
 //---------------------- VertexLayout ----------------------
 
 static int vertexLayout_begin(lua_State *L) {
@@ -1011,7 +1023,7 @@ void SkLua::Load(lua_State *L) {
 
     REG_EMPTY_CLASS(L, LuaApp);
 
-    REG_EMPTY_CLASS(L, bgfx::Memory);
+    REG_CLASS(L, bgfx::Memory);
     REG_CLASS(L, bgfx::VertexBufferHandle);
     REG_CLASS(L, bgfx::VertexLayoutHandle);
     REG_CLASS(L, bgfx::IndexBufferHandle);
