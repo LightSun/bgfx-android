@@ -57,7 +57,7 @@ namespace heaven7_Bgfx_demo{
         if(!destroyed){
             destroyed = true;
             m_thread.shutdown();
-            releaseWindow(config.window);
+            Platforms::releaseWindow(config.window);
             bgfx::shutdown();
         }
     }

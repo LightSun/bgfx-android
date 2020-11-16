@@ -147,6 +147,7 @@ static int bgfx_setDebug(lua_State *L) {
 static int bgfx_startApp(lua_State *L) {
     auto holder = Bgfx_lua_app::getAppHolder(L);
     if(holder->app != nullptr){
+        //TODO switch app / jump another activity and return ?
         return luaL_error(L, "already exit app, you should call bgfx.destroyApp() first.");
     }
     const char *fn_pre_init = lua_tostring(L, -4);

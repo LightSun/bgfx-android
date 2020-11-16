@@ -70,7 +70,9 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,
     if(_useLua){
         //find class can only used in main thread
         jclass aClass = env->FindClass(MAIN_RUNNER);
-        _ApiClass = static_cast<jclass>(env->NewGlobalRef(aClass));
+        if(_ApiClass == NULL){
+            _ApiClass = static_cast<jclass>(env->NewGlobalRef(aClass));
+        }
         env->DeleteLocalRef(aClass);
 
         InitConfig* config = new InitConfig();
@@ -93,9 +95,9 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,
         demo->startLoop();
     }
 }
-EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject src){
+EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src, jlong luaPtr){
     if(_useLua){
-        //TODO
+        Bgfx_lua_app::releaseWindow(luaPtr);
     } else{
         if(demo){
             demo->destroy();

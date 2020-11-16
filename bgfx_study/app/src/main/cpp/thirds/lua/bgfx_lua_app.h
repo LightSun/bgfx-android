@@ -47,6 +47,11 @@ namespace Bgfx_lua_app{
     bgfx::Init* requireInit(lua_State* L);
     LuaAppHolder* getAppHolder(lua_State* L);
 
+    /**
+     * release platform window.
+     */
+    void releaseWindow(long ptr);
+
     void onLifecycle(long luaPtr, jint mark);
 }
 
@@ -103,8 +108,10 @@ public:
     //called in sub-thread.
     void draw();
 
-    /** real destroy. not change state */
-    void actDestroy();
+    /** real destroy. not change state
+     * @param lightly if it light , it means just call onDestroy and never change state. also not clean lua ref.
+     * */
+    void actDestroy(bool lightly = false);
 
     bool isDestroyed();
 
@@ -112,7 +119,7 @@ public:
 
     void doPreInit();
 
-    void resume();
+    void markRunning();
 
     bool isRunning();
 
@@ -133,7 +140,17 @@ public:
 
     bool isPaused();
 
+    /**
+     * called on lifecycle 'onPause'
+     */
+    void onPause();
+    /**
+     * called on lifecycle 'onResume'
+     */
+    void onResume();
+
 private:
+    inline void _callLuaDestroy();
     lua_State* L;
     FUNC_NAME func_preInit;
     FUNC_NAME func_init;

@@ -20,7 +20,7 @@ public final class NativeApi {
     public static native void initAssets(Object ctx, Object assetM);
     public static native void initializeSurface(Object src, Object surface, long luaPtr);
 
-    public static native void destroySurface(Object src);
+    public static native void destroySurface(Object src, long luaPtr);
 
     public native static void initLuaBgfx(long luaPtr);
 

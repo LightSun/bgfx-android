@@ -10,10 +10,10 @@
 #include "android/asset_manager.h"
 #endif
 
-extern "C"{
-void releaseWindow(void* window){
-    ANativeWindow* anw = static_cast<ANativeWindow *>(window);
-    ANativeWindow_release(anw);
-}
+namespace Platforms{
 
-};
+    void releaseWindow(void* window){
+        ANativeWindow* anw = static_cast<ANativeWindow *>(window);
+        ANativeWindow_release(anw);
+    }
+}

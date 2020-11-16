@@ -38,7 +38,7 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void setScriptFile(final Luaer mLuaer, final String assetPath) {
         Log.d(TAG, "setScriptFile: path = " + assetPath);
-        NativeApi.destroySurface(this);
+        //NativeApi.destroySurface(this);
         if(mInited){
             post(new Runnable() {
                 @Override
@@ -66,7 +66,7 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(TAG, "surfaceCreated");
         //Log.d(TAG, "surfaceCreated >>> threadId = " + Thread.currentThread().getId());
-        NativeApi.initializeSurface(this, holder.getSurface(), Luaer.get().getLuaState().getNativePointer());
+        NativeApi.initializeSurface(this, holder.getSurface(), Luaer.get().getLuaPtr());
         mInited = true;
         if(mPendingTask != null){
             mPendingTask.run();
@@ -81,6 +81,6 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.d(TAG, "surfaceDestroyed");
         mInited = false;
-        NativeApi.destroySurface(this);
+        NativeApi.destroySurface(this, Luaer.get().getLuaPtr());
     }
 }

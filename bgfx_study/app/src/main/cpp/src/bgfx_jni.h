@@ -21,7 +21,7 @@
 
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(initAssets, jobject ctx, jobject assetM);
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,jobject surface, jlong luaPtr);
-EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(destroySurface, jobject src);
+EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src, jlong luaPtr);
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(setUseLua, jboolean useLua);
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API(destroyAll);
 //EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initLuaBgfx, jlong luaPtr);

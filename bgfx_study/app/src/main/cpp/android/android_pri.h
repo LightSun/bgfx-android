@@ -12,9 +12,8 @@
 #include <android/native_window.h>
 #endif
 
-extern "C"{
-void releaseWindow(void* window);
-
+namespace Platforms{
+    void releaseWindow(void* window);
 };
 
 

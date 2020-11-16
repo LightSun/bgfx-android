@@ -36,6 +36,6 @@ public class BgfxSurfaceView extends SurfaceView implements SurfaceHolder.Callba
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.d(TAG, "surfaceDestroyed");
-        NativeApi.destroySurface(this);
+        NativeApi.destroySurface(this, 0);
     }
 }

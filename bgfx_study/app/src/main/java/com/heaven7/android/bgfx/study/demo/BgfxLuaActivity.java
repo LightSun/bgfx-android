@@ -66,12 +66,13 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
 
     public void onClickSwitchDemo(View view){
         mRv.setVisibility(View.VISIBLE);
+        //startActivity(new );
     }
 
     @Override
     protected void onPause() {
-        super.onPause();
         NativeApi.onLifeCycle(mLuaer.getLuaPtr(), Lifecycle.Event.ON_PAUSE.ordinal());
+        super.onPause();
     }
     @Override
     protected void onResume() {

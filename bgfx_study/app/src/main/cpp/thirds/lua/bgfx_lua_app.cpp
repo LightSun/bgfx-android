@@ -22,17 +22,37 @@ namespace Bgfx_lua_app {
         bgfx::setPlatformData(pd);
     }
 
+    void releaseWindow(long ptr){
+        if(ptr != 0){
+            auto L = reinterpret_cast<lua_State *>(ptr);
+            Platforms::releaseWindow(getAppHolder(L)->bgfx_init->platformData.nwh);
+        }
+    }
+
     void onLifecycle(long ptr, jint mark) {
+        if(ptr == 0){
+            return;
+        }
         auto L = reinterpret_cast<lua_State *>(ptr);
 #define ON_PAUSE 3
 #define ON_RESUME 2
 #define ON_DESTROY 5
         switch (mark){
-            case ON_PAUSE:
-                getAppHolder(L)->pause();
+            case ON_PAUSE: {
+                //todo callback lua onPause
+                auto pHolder = getAppHolder(L);
+                auto app = pHolder->app;
+                if(app != NULL){
+                    pHolder->pause();
+                }
+            }
                 break;
-            case ON_RESUME:
-                getAppHolder(L)->resume();
+            case ON_RESUME:{
+                auto pHolder = getAppHolder(L);
+                if(pHolder->app != NULL){
+                    pHolder->resume();
+                }
+            }
                 break;
             case ON_DESTROY:
                 getAppHolder(L)->quitAll();
@@ -41,15 +61,19 @@ namespace Bgfx_lua_app {
     }
 
     bool startApp(long ptr, entry::InitConfig *pConfig) {
+        if(ptr == 0){
+            return false;
+        }
         lua_State* L = reinterpret_cast<lua_State *>(ptr);
         auto pHolder = getAppHolder(L);
         if(pHolder->isRunning()){
-            androidSetWindow((ANativeWindow*)pConfig->window);
-            return false;
+            delete pHolder->config;
+            pHolder->config = pConfig;
+            LOGD("startApp >>> reset InitConfig >>> ");
         } else{
             pHolder->startLoop(pConfig);
-            return true;
         }
+        return true;
     }
 
     LuaAppHolder* getAppHolder(lua_State* L) {
@@ -159,15 +183,10 @@ void LuaApp::init(LuaAppHolder *holder) {
 void LuaApp::draw() {
     if (func_draw) {
         lua_getglobal(L, func_draw);
-        if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
+        if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
             LOGE("%s", msg);
             luaL_error(L, "call LuaApp draw failed. func = %s, msg = %s", func_draw, msg);
-        } else {
-            LOGD("LuaApp::draw-------------");
-            //luaB_dumpStack(L);//TODO may no result ??
-           // auto result = TO_NUMBER_16(L, -1);
-            lua_pop(L, 1);
         }
     }
 }
@@ -185,35 +204,32 @@ void LuaApp::doPreInit() {
     }
 }
 
-void LuaApp::actDestroy() {
-    if (getState() != APP_STATE_DESTROYED) {
-        setState(APP_STATE_DESTROYED);
-        ext_println("destroy");
-        //destroy lua func
-        if (func_destroy) {
-            lua_getglobal(L, func_destroy);
-            if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-                const char *msg = lua_tostring(L, -1);
-                LOGE("%s", msg);
-                luaL_error(L, "call LuaApp destroy failed. func = %s, msg = %s", func_destroy, msg);
-            }
-        }
-        lua_pushnil(L);
-        lua_setglobal(L, func_preInit);
-
-        lua_pushnil(L);
-        lua_setglobal(L, func_init);
-
-        lua_pushnil(L);
-        lua_setglobal(L, func_draw);
-
-        lua_pushnil(L);
-        lua_setglobal(L, func_destroy);
-
-        //destroy thread. window , and bgfx
-        //m_thread.shutdown();
-        //releaseWindow(getBgfxInit()->platformData.nwh);
+void LuaApp::actDestroy(bool lightly) {
+    if(lightly){
+        _callLuaDestroy();
         bgfx::shutdown();
+    } else{
+        if (getState() != APP_STATE_DESTROYED) {
+            setState(APP_STATE_DESTROYED);
+            ext_println("destroy");
+            //call destroy for lua
+            _callLuaDestroy();
+
+            lua_pushnil(L);
+            lua_setglobal(L, func_preInit);
+
+            lua_pushnil(L);
+            lua_setglobal(L, func_init);
+
+            lua_pushnil(L);
+            lua_setglobal(L, func_draw);
+
+            lua_pushnil(L);
+            lua_setglobal(L, func_destroy);
+            //destroy thread. window , and bgfx
+            //m_thread.shutdown();
+            bgfx::shutdown();
+        }
     }
 }
 
@@ -229,7 +245,7 @@ void LuaApp::quit() {
 bool LuaApp::isRunning() {
     return state.load(std::memory_order_relaxed) == APP_STATE_RUNNING;
 }
-void LuaApp::resume() {
+void LuaApp::markRunning() {
     setState(APP_STATE_RUNNING);
 }
 unsigned char LuaApp::getState() {
@@ -245,6 +261,25 @@ bool LuaApp::isPaused() {
     return getState() == APP_STATE_PAUSED;
 }
 
+void LuaApp::onPause() {
+    //TODO perform pause to lua
+    LOGW("onPause");
+}
+
+void LuaApp::onResume() {
+    //TODO perform resume to lua
+    LOGW("onResume");
+}
+void LuaApp::_callLuaDestroy() {
+    if (func_destroy) {
+        lua_getglobal(L, func_destroy);
+        if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+            const char *msg = lua_tostring(L, -1);
+            LOGE("%s", msg);
+            luaL_error(L, "call LuaApp destroy failed. func = %s, msg = %s", func_destroy, msg);
+        }
+    }
+}
 //---------------------------------------------------------------------
 
 static inline void performApp(LuaAppHolder *holder){
@@ -279,7 +314,9 @@ static inline void performApp(LuaAppHolder *holder){
                 goto out;
         }
     }
-ndes:
+ndes:    //as bgfx should destroy onPause
+    demo->onPause();
+    demo->actDestroy(true);
     return;
 out:
     holder->destroyApp();
@@ -291,7 +328,6 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
     LOGD("threadFunc: start.");
     LuaAppHolder *holder = static_cast<LuaAppHolder *>(_userData);
     CmdData *data = nullptr;
-    LuaApp *demo = nullptr;
     bool shouldBreak = false;
 
     //bgfx api: should call in one thread.
@@ -301,9 +337,9 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
             data = static_cast<CmdData *>(pVoid);
             switch (data->type) {
                 case TYPE_LUA_APP_INIT: {
-                    demo = holder->app = static_cast<LuaApp *>(data->data);
+                    LuaApp *demo = holder->app = static_cast<LuaApp *>(data->data);
                     LOGD("TYPE_LUA_APP_INIT , start LuaApp : %p", demo);
-                    demo->resume();
+                    demo->markRunning();
                     demo->doPreInit();
                     demo->init(holder);
                     performApp(holder);
@@ -316,18 +352,20 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
                     holder->_condition.wait(lock);
                     auto pApp = holder->app;
                     if(pApp != nullptr && !pApp->isDestroyed()){
-                        pApp->resume();
+                        //as bgfx should destroy onPause, we should reinit here
+                        pApp->markRunning();
+                        pApp->doPreInit();
+                        pApp->init(holder);
+                        pApp->onResume();
                         //restart loop for draw
                         LOGD("resume: restart for draw.");
                         performApp(holder);
                     }
-                    LOGD(" pause end -> next may will resume...");
                 }
                     break;
 
                 case TYPE_QUIT_ALL:
                     LOGD("TYPE_QUIT_ALL.");
-                    holder->destroyApp();
                     if (data->task) {
                         data->task(holder);
                     }
@@ -341,8 +379,6 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
             }
         }
     }
-    //TODO multi platform
-    releaseWindow(holder->bgfx_init->platformData.nwh);
     if(holder->config->OnExitRenderThread){
         holder->config->OnExitRenderThread();
     }
@@ -385,7 +421,7 @@ void LuaAppHolder::resume() {
 }
 
 bool LuaAppHolder::isRunning() {
-    return m_thread.isRunning();
+    return app != nullptr && m_thread.isRunning();
 }
 
 CmdData::CmdData(uint8_t type, void *data) : type(type), data(data) {
