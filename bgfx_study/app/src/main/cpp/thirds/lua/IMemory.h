@@ -183,6 +183,9 @@ public:
 
     int foreach(lua_State* L){ return 0;}
 
+    int getLength(){ return  0;}
+    void toString(SB::StringBuilder& sb){}
+
 public:
     void *data;
     size_t size;

@@ -153,17 +153,6 @@ static int bx_mtxRotateXY(lua_State *L) {
     bx::mtxRotateXY(static_cast<float *>(pMemory->data), ax, ay);
     return 0;
 }
-static int utils_loadMem(lua_State *L) {
-    bx::FileReader reader;
-    auto pMemory = loadMem(&reader, lua_tostring(L, 1));
-    LuaUtils::push_ptr(L, pMemory);
-    return 1;
-}
-static int utils_loadMemFromAssets(lua_State *L) {
-    auto pMemory = loadMem(entry::getFileReader(), lua_tostring(L, 1));
-    LuaUtils::push_ptr(L, pMemory);
-    return 1;
-}
 
 //-------------------- bx::Vec3 --------------------
 static int vec3_gc(lua_State *L) {
@@ -185,9 +174,6 @@ static const luaL_Reg bx_funcs[] = {
         {"mtxLookAt",      bx_mtxLookAt},
         {"mtxProj",        bx_mtxProj},
         {"mtxRotateXY",    bx_mtxRotateXY},
-        //help methods
-        {"loadMem",            utils_loadMem},
-        {"loadMemFromAssets",  utils_loadMemFromAssets},
         {nullptr,          nullptr}
 };
 extern "C" int luaopen_bx_lua(lua_State *L) {

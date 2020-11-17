@@ -1,8 +1,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include "bgfx/bgfx.h"
-
+class SkMemory;
 class NVGcontext;
 //you should
 namespace NanoCanvas
@@ -54,7 +53,7 @@ namespace NanoCanvas
          * @param imageFlags Creation flags
          * @see Image::ImageFlag
          */
-        Image(NVGcontext* ctx, const bgfx::Memory& memory, int imageFlags = 0);
+        Image(NVGcontext* ctx, const SkMemory& memory, int imageFlags = 0);
         
         /**
          * @brief Creates image with RGBA format from specified image data.
@@ -64,7 +63,7 @@ namespace NanoCanvas
          * @param memory The memory block to load from
          * @param imageFlags Creation flags
          */
-        Image(NVGcontext* ctx, int w, int h, const bgfx::Memory& memory, int imageFlags=0);
+        Image(NVGcontext* ctx, int w, int h, const SkMemory& memory, int imageFlags=0);
         
         ~Image();
         
@@ -77,7 +76,7 @@ namespace NanoCanvas
         inline bool isValid()const{ return imageID != 0 ;}
         
         /// Update the image with memory data
-        void update(const bgfx::Memory& memory);
+        void update(const SkMemory& memory);
         
         /**
          * @brief Get image size

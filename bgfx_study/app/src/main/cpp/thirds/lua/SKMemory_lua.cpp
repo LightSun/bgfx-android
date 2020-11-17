@@ -2,6 +2,9 @@
 // Created by Administrator on 2020/9/10 0010.
 //
 #include <cstring>
+#include <bx/file.h>
+#include <bgfx_utils.h>
+#include <common.h>
 #include "SkMemory_lua.h"
 #include "SkMemory.h"
 #include "SkMemoryUtils.h"
@@ -62,6 +65,29 @@ static int mem_newMatrix(lua_State *L) {
     return 1;
 }
 
+static SkMemory* loadFile(bx::FileReaderI* reader, const char* file){
+    uint32_t size;
+    auto data = load0(reader, entry::getAllocator(), file, &size);
+    auto pMemory = new SkMemory();
+    pMemory->_types = "b";
+    pMemory->size = size;
+    pMemory->data = data;
+    return pMemory;
+}
+
+static int mem_loadFile(lua_State *L) {
+    bx::FileReader reader;
+    auto pMemory = loadFile(&reader, lua_tostring(L, 1));
+    LuaUtils::push_ptr(L, pMemory);
+    return 1;
+}
+
+static int mem_loadFileFromAssets(lua_State *L) {
+    auto pMemory = loadFile(entry::getFileReader(), lua_tostring(L, 1));
+    LuaUtils::push_ptr(L, pMemory);
+    return 1;
+}
+
 #ifdef H_INTERNAL_TEST
 static int mem_test_comp(lua_State *L) {
     auto str1 = lua_tostring(L, 1);
@@ -79,6 +105,8 @@ static int mem_test_comp(lua_State *L) {
 static const luaL_Reg mem_funcs[] = {
         {"new",       mem_new},
         {"newMat",    mem_newMatrix},
+        {"loadFile",  mem_loadFile},
+        {"loadFileFromAssets", mem_loadFileFromAssets},
 #ifdef H_INTERNAL_TEST
         {"test_comp", mem_test_comp},
 #endif
@@ -962,9 +990,7 @@ const static luaL_Reg gSkMemoryMatrix_Methods[] = {
 };
 
 DEF_MTNAME(SkMemory)
-
 DEF_MTNAME(SkAnyMemory)
-
 DEF_MTNAME(SkMemoryMatrix)
 
 void SkMemoryLua::registers(lua_State *L) {

@@ -31,4 +31,14 @@ function m.newMat(type, ...)
     return mem.newMat(type, ...);
 end
 
+--- load file to memory
+function m.loadFile(filepath)
+    return mem.loadFile(filepath);
+end
+
+--- load asset file to memory
+function m.loadFileFromAssets(path)
+    return mem.loadFileFromAssets(path);
+end
+
 return m;

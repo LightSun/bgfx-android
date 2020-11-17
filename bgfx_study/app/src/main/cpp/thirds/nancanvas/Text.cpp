@@ -1,5 +1,6 @@
 #include "NanoCanvas.h"
 #include "nanovg/nanovg.h"
+#include "lua/SkMemory.h"
 
 namespace NanoCanvas {
 
@@ -10,8 +11,7 @@ namespace NanoCanvas {
         name = fname;
     }
 
-    Font::Font(NVGcontext *ctx, const char *fname,
-               const bgfx::Memory &memory, bool invalidateMem) {
+    Font::Font(NVGcontext *ctx, const char *fname, const SkMemory& memory, bool invalidateMem) {
         if (strlen(fname)) {
             face = nvgCreateFontMem(ctx, fname,
                                     (unsigned char *) memory.data,

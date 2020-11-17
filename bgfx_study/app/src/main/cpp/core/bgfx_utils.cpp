@@ -29,7 +29,7 @@ namespace stl = tinystl;
 
 #include <bimg/decode.h>
 
-void* load(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size)
+void* load0(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size)
 {
 	if (bx::open(_reader, _filePath) )
 	{
@@ -58,7 +58,7 @@ void* load(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _fi
 
 void* load(const char* _filePath, uint32_t* _size)
 {
-	return load(entry::getFileReader(), entry::getAllocator(), _filePath, _size);
+	return load0(entry::getFileReader(), entry::getAllocator(), _filePath, _size);
 }
 
 void unload(void* _ptr)
@@ -156,7 +156,7 @@ bgfx::TextureHandle loadTexture(bx::FileReaderI* _reader, const char* _filePath,
 	bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
 
 	uint32_t size;
-	void* data = load(_reader, entry::getAllocator(), _filePath, &size);
+	void* data = load0(_reader, entry::getAllocator(), _filePath, &size);
 	if (NULL != data)
 	{
 		bimg::ImageContainer* imageContainer = bimg::imageParse(entry::getAllocator(), data, size);
@@ -244,7 +244,7 @@ bgfx::TextureHandle loadTexture(const char* _name, uint64_t _flags, uint8_t _ski
 bimg::ImageContainer* imageLoad(const char* _filePath, bgfx::TextureFormat::Enum _dstFormat)
 {
 	uint32_t size = 0;
-	void* data = load(entry::getFileReader(), entry::getAllocator(), _filePath, &size);
+	void* data = load0(entry::getFileReader(), entry::getAllocator(), _filePath, &size);
 
 	return bimg::imageParse(entry::getAllocator(), data, size, bimg::TextureFormat::Enum(_dstFormat) );
 }

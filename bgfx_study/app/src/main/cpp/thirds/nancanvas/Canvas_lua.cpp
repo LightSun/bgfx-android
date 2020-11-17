@@ -11,6 +11,7 @@
 #include "../lua/lua.hpp"
 #include "../lua/LuaUtils.h"
 #include "../lua/LuaUtils.h"
+#include "../lua/SkMemory.h"
 #include "Canvas_lua.h"
 #include "nanovg/nanovg_bgfx.h"
 
@@ -897,7 +898,7 @@ static int newFont(lua_State *L){
     if(lua_type(L, -1) == LUA_TSTRING){
         pFont = new NanoCanvas::Font(ctx, lua_tostring(L, 2), lua_tostring(L, 3));
     } else{
-        bgfx::Memory* mem = LuaUtils::get_ref<bgfx::Memory>(L, 3);
+        SkMemory* mem = LuaUtils::get_ref<SkMemory>(L, 3);
         pFont = new NanoCanvas::Font(ctx, lua_tostring(L, 2), *mem);
     }
     LuaUtils::push_ptr(L, pFont);
@@ -916,7 +917,7 @@ static int newImage(lua_State *L){
             if(lua_type(L, 2) == LUA_TSTRING){
                 img = new NanoCanvas::Image(ctx, lua_tostring(L, 2));
             } else{
-                bgfx::Memory* mem = LuaUtils::get_ref<bgfx::Memory>(L, 2);
+                SkMemory* mem = LuaUtils::get_ref<SkMemory>(L, 2);
                 img = new NanoCanvas::Image(ctx, *mem);
             }
         }
@@ -925,19 +926,19 @@ static int newImage(lua_State *L){
             if(lua_type(L, 2) == LUA_TSTRING){
                 img = new NanoCanvas::Image(ctx, lua_tostring(L, 2), lua_tointeger(L, 3));
             } else{
-                bgfx::Memory* mem = LuaUtils::get_ref<bgfx::Memory>(L, 2);
+                SkMemory* mem = LuaUtils::get_ref<SkMemory>(L, 2);
                 img = new NanoCanvas::Image(ctx, *mem, lua_tointeger(L, 3));
             }
         }
             break;
 
         case 4:{
-            bgfx::Memory* mem = LuaUtils::get_ref<bgfx::Memory>(L, 4);
+            SkMemory* mem = LuaUtils::get_ref<SkMemory>(L, 4);
             img = new NanoCanvas::Image(ctx, TO_INT(L, 2), TO_INT(L,3), *mem);
         }
             break;
         case 5:{
-            bgfx::Memory* mem = LuaUtils::get_ref<bgfx::Memory>(L, 4);
+            SkMemory* mem = LuaUtils::get_ref<SkMemory>(L, 4);
             img = new NanoCanvas::Image(ctx, TO_INT(L, 2), TO_INT(L,3), *mem, TO_INT(L, 5));
         }
             break;

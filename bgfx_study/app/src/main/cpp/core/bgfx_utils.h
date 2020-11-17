@@ -20,6 +20,8 @@ namespace stl = tinystl;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void* load0(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size);
 ///
 void* load(const char* _filePath, uint32_t* _size = NULL);
 

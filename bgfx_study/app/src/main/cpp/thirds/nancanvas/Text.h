@@ -2,6 +2,7 @@
 #define TEXT_H
 
 #include "NanoCanvas.h"
+class SkMemory;
 
 class NVGcontext;
 
@@ -40,7 +41,7 @@ namespace NanoCanvas
          * @note Invalidate Memory is not release the Memory you should do that yourself!
          * @see Memory::invalidate
          */
-        Font(NVGcontext* ctx, const char* fname, const bgfx::Memory& mem, bool invalidateMem = false);
+        Font(NVGcontext* ctx, const char* fname, const SkMemory& mem, bool invalidateMem = false);
         
         /**
          * @brief Check is the font face is valid

@@ -4,7 +4,7 @@
 --- DateTime: 2020/11/1 0001 下午 10:32
 ---
 local canvasL = require("canvas_lua")
-local bx0 = require("bx");
+local mem = require("memory");
 
 local m = {};
 
@@ -58,15 +58,15 @@ end
 ---
 --- @brief Creates and returns a box gradient.
 --- @par Box gradient is a feathered rounded rectangle, it is useful for rendering drop shadows or highlights for boxes.
---- @param x number: The x-coordinate of the upper-left corner of the rectangle
---- @param y number: The y-coordinate of the upper-left corner of the rectangle
---- @param w number: The width of the rectangle, in pixels
---- @param h number: The height of the rectangle, in pixels
---- @param r number: The radius of the circle formed by 4 corners of the rounded rectangle
---- @param f number: How blurry the border of the rectangle is
---- @param icol userdata: The inner color of the gradient
---- @param ocol userdata: The outer color of the gradient
---- @return userdata:The created gradient style object.
+--- @param x number The x-coordinate of the upper-left corner of the rectangle
+--- @param y number The y-coordinate of the upper-left corner of the rectangle
+--- @param w number The width of the rectangle, in pixels
+--- @param h number The height of the rectangle, in pixels
+--- @param r number The radius of the circle formed by 4 corners of the rounded rectangle
+--- @param f number How blurry the border of the rectangle is
+--- @param icol userdata The inner color of the gradient
+--- @param ocol userdata The outer color of the gradient
+--- @return userdata The created gradient style object.
 ---
 function m.newBoxGradient(x, y, w, h, r, f, icol, ocol)
     --(float x, float y, float w, float h,  float r, float f, Color icol, Color ocol)
@@ -83,24 +83,24 @@ function m.newFont(context, fname, ttfPath)
     return canvasL.newFont(context, fname, ttfPath);
 end
 function m.newFontFromAssets(context, fname, ttfpath)
-    return canvasL.newFont(context, fname, bx0.loadMemFromAssets(ttfpath));
+    return canvasL.newFont(context, fname, mem.loadFileFromAssets(ttfpath));
 end
 
--- image -----------------
+-- image ----------------- flags default = 0
 function m.newImage(context, filePath, flags)
     --(nvgContext* context,const char* filePath, int imageFlags = 0)
     return canvasL.newImage(context, filePath, flags);
 end
 function m.newImageWH(context, w, h, filePath, flags)
     --(nvgContext* context,const char* filePath, int imageFlags = 0)
-    return canvasL.newImage(context, w, h, bx0.loadMem(filePath), flags);
+    return canvasL.newImage(context, w, h, mem.loadFile(filePath), flags);
 end
 function m.newImageFromAssets(context, filePath, flags)
-    return canvasL.newImage(context, bx0.loadMemFromAssets(filePath), flags);
+    return canvasL.newImage(context, mem.loadFileFromAssets(filePath), flags);
 end
 
 function m.newImageFromAssetsWH(context, w, h, filePath, flags)
-    return canvasL.newImage(context, w, h, bx0.loadMemFromAssets(filePath), flags);
+    return canvasL.newImage(context, w, h, mem.loadFileFromAssets(filePath), flags);
 end
 
 function m.newTextStyle()
