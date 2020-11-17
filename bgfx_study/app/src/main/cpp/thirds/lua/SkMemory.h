@@ -25,6 +25,9 @@ namespace SB {
     class StringBuilder;
 }
 
+typedef double (*Func_Merge)(void* ctx,const char** outError, double* elements, size_t unitCount);
+typedef void (*Func_Split)(void* ctx, const char** outError, double val, size_t unitCount, double* out);
+
 class SkMemory : public SimpleMemory {
 
 public:
@@ -100,6 +103,28 @@ public:
     /** kick out the index value from memory data.*/
     SkMemory *kickOut(size_t index);
 
+    /**
+     * merge multi elements to one element.
+     * @param dstType the dst data type
+     * @param unitCount the unit count
+     * @param Merge the merge function
+     * @param ctx the context
+     * @param outError the out error msg pointer
+     * @return the new memory
+     */
+    SkMemory *mergeUnit(char dstType, size_t unitCount, Func_Merge Merge, void* ctx, const char** outError);
+
+    /**
+     * split one element to multi elements
+     * @param dstType the dest data type
+     * @param unitCount the unit count of split
+     * @param Split the Split Function
+     * @param ctx the context
+     * @param outError the out error msg pointer
+     * @return the new memory
+     */
+    SkMemory *splitUnit(char dstType, size_t unitCount, Func_Split Split, void* ctx, const char** outError);
+
     bool equals(SkMemory* o);
 
     /**
@@ -149,7 +174,7 @@ public:
     SkMemory *flip(bool copy = true);
 
     /**
-     * like matlib diag for build mat.
+     * like 'matlib's diag' for build mat.
      * @param k the k index
      * @param t the target result type. default is unknown
      * @param defVal the default value
@@ -243,6 +268,28 @@ public:
     int getLength() { return _tabCount * _elementCount; }
 
     SkMemory *kickOut(size_t index);
+
+    /**
+    * merge multi elements to one element.
+    * @param dstType the dst data type
+    * @param unitCount the unit count
+    * @param Merge the merge function
+    * @param ctx the context
+    * @param outError the out error msg pointer
+    * @return the new memory
+    */
+    SkMemory *mergeUnit(char dstType, size_t unitCount, Func_Merge Merge, void* ctx, const char** outError);
+
+    /**
+     * split one element to multi elements
+     * @param dstType the dest data type
+     * @param unitCount the unit count of split
+     * @param Split the Split Function
+     * @param ctx the context
+     * @param outError the out error msg pointer
+     * @return the new memory
+     */
+    SkMemory *splitUnit(char dstType, size_t unitCount, Func_Split Split, void* ctx, const char** outError);
 
     bool equals(SkAnyMemory* o);
 
@@ -429,6 +476,28 @@ public:
     bool getValueRowByRow(int index, double *outVal);
 
     bool getValueColByCol(int index, double *outVal);
+
+    /**
+    * merge multi elements to one element.
+    * @param dstType the dst data type
+    * @param unitCount the unit count
+    * @param Merge the merge function
+    * @param ctx the context
+    * @param outError the out error msg pointer
+    * @return the new memory
+    */
+    SkMemoryMatrix *mergeUnit(char dstType, size_t unitCount, Func_Merge Merge, void* ctx, const char** outError);
+
+    /**
+     * split one element to multi elements
+     * @param dstType the dest data type
+     * @param unitCount the unit count of split
+     * @param Split the Split Function
+     * @param ctx the context
+     * @param outError the out error msg pointer
+     * @return the new memory
+     */
+    SkMemoryMatrix *splitUnit(char dstType, size_t unitCount, Func_Split Split, void* ctx, const char** outError);
 };
 
 #endif //BGFX_STUDY_SKMEMORY_H

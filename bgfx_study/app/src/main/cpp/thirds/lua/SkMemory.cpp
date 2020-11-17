@@ -513,6 +513,59 @@ SkMemory *SkMemory::kickOut(size_t index) {
     memcpy(outAddr, (void*)da, (pMemory->getLength() - index) * unitSize);
     return pMemory;
 }
+SkMemory* SkMemory::mergeUnit(char dstType, size_t unitCount,Func_Merge Merge,void *ctx, const char** errorMsg) {
+    *errorMsg = NULL;
+    if(getLength() % unitCount != 0) return NULL; // can't merge unit
+    size_t dstLen = getLength() / unitCount;
+    auto pMemory = SkMemory::create(dstType, dstLen);
+
+    const char srcType = _types[0];
+    const int srcUnitSize = MemoryUtils::getUnitSize(srcType);
+
+    double eles[unitCount];
+    double val;
+    for (int i = 0; i < dstLen; ++i) {
+        for (int j = 0; j < unitCount; ++j) {
+            eles[j] = MemoryUtils::getValue(data, srcType, (i * unitCount + j) * srcUnitSize);
+        }
+        val = Merge(ctx, errorMsg, eles, unitCount);
+        if(*errorMsg != NULL){
+            goto fail;
+        }
+        pMemory->setValue(i, val);
+    }
+    return pMemory;
+fail:
+    pMemory->unRefAndDestroy();
+    return NULL;
+}
+SkMemory* SkMemory::splitUnit(char dstType, size_t unitCount, Func_Split Split,void *ctx, const char** errorMsg) {
+    *errorMsg = NULL;
+    auto srcLen = getLength();
+    size_t dstLen = srcLen * unitCount;
+    auto pMemory = SkMemory::create(dstType, dstLen);
+    
+    const char srcType = _types[0];
+    const int srcUnitSize = MemoryUtils::getUnitSize(srcType);
+
+    double val;
+    double eles[unitCount];
+    for (int i = 0; i < srcLen; ++i) {
+        val = MemoryUtils::getValue(data, srcType, i * srcUnitSize);
+        Split(ctx, errorMsg, val, unitCount, eles);
+        if(*errorMsg != NULL){
+            goto fail;
+        }
+        for (size_t j = 0; j < unitCount; ++j) {
+            pMemory->setValue(i * unitCount + j, eles[j]);
+        }
+    }
+    return pMemory;
+fail:
+    pMemory->unRefAndDestroy();
+    return NULL;
+}
+
 bool SkMemory::equals(SkMemory *o) {
     if(o == nullptr || getTypes()[0] != o->getTypes()[0]){
         return false;
@@ -1203,6 +1256,66 @@ SkMemory *SkAnyMemory::kickOut(size_t index) {
     }
 
     return outMem;
+}
+
+SkMemory* SkAnyMemory::mergeUnit(char dstType, size_t unitCount,Func_Merge Merge, void *ctx, const char** error) {
+    *error = NULL;
+    if(getLength() % unitCount != 0) return NULL; // can't merge unit
+    size_t dstLen = getLength() / unitCount;
+    auto pMemory = SkMemory::create(dstType, dstLen);
+
+    const char len_srcType = strlen(_types);
+    char srcType;
+    size_t srcBytesIndex = 0;
+
+    double eles[unitCount];
+    double val;
+    for (int i = 0; i < dstLen; ++i) {
+        for (int j = 0; j < unitCount; ++j) {
+            srcType = _types[(i * unitCount + j) % len_srcType];
+            eles[j] = MemoryUtils::getValue(data, srcType, srcBytesIndex);
+            srcBytesIndex += MemoryUtils::getUnitSize(srcType);
+        }
+        val = Merge(ctx, error, eles, unitCount);
+        if(*error != NULL){
+            goto fail;
+        }
+        pMemory->setValue(i, val);
+    }
+    return pMemory;
+fail:
+    pMemory->unRefAndDestroy();
+    return NULL;
+}
+SkMemory* SkAnyMemory::splitUnit(char dstType, size_t unitCount, Func_Split Split, void *ctx, const char** error) {
+    *error = NULL;
+    auto srcLen = getLength();
+    size_t dstLen = srcLen * unitCount;
+    auto pMemory = SkMemory::create(dstType, dstLen);
+
+    const char len_srcType = strlen(_types);
+    char srcType;
+    size_t srcBytesIndex = 0;
+
+    double val;
+    double eles[unitCount];
+    for (int i = 0; i < srcLen; ++i) {
+        srcType = _types[i % len_srcType];
+        val = MemoryUtils::getValue(data, srcType, srcBytesIndex);
+        srcBytesIndex += MemoryUtils::getUnitSize(srcType);
+
+        Split(ctx, error, val, unitCount, eles);
+        if(*error != NULL){
+            goto fail;
+        }
+        for (size_t j = 0; j < unitCount; ++j) {
+            pMemory->setValue(i * unitCount + j, eles[j]);
+        }
+    }
+    return pMemory;
+fail:
+    pMemory->unRefAndDestroy();
+    return NULL;
 }
 
 SkMemory *SkAnyMemory::reshape(int count, char t, double defVal) {
@@ -2539,4 +2652,53 @@ bool SkMemoryMatrix::getValueColByCol(int index, double *outVal) {
     }
     const auto cc = getRowCount();
     return getValue(index % cc, index / cc, outVal);;
+}
+SkMemoryMatrix* SkMemoryMatrix::mergeUnit(char dstType, size_t unitCount,
+                                          Func_Merge Merge, void* ctx, const char** outError) {
+    auto rc = getRowCount();
+    SkMemoryMatrix * result = new SkMemoryMatrix(rc, true);
+    if(isSingleType()){
+        for (int i = 0; i < rc; ++i) {
+            result->array[i] = array[i]->mergeUnit(dstType, unitCount, Merge, ctx, outError);
+            if(*outError != NULL){
+                goto fail;
+            }
+        }
+    } else{
+        for (int i = 0; i < rc; ++i) {
+            result->array[i] = anyArray[i]->mergeUnit(dstType, unitCount, Merge, ctx, outError);
+            if(*outError != NULL){
+                goto fail;
+            }
+        }
+    }
+    return result;
+fail:
+    result->unRefAndDestroy();
+    return NULL;
+}
+
+SkMemoryMatrix* SkMemoryMatrix::splitUnit(char dstType, size_t unitCount,
+                                          Func_Split Split, void* ctx, const char** outError) {
+    auto rc = getRowCount();
+    SkMemoryMatrix * result = new SkMemoryMatrix(rc, true);
+    if(isSingleType()){
+        for (int i = 0; i < rc; ++i) {
+            result->array[i] = array[i]->splitUnit(dstType, unitCount, Split, ctx, outError);
+            if(*outError != NULL){
+                goto fail;
+            }
+        }
+    } else{
+        for (int i = 0; i < rc; ++i) {
+            result->array[i] = anyArray[i]->splitUnit(dstType, unitCount, Split, ctx, outError);
+            if(*outError != NULL){
+                goto fail;
+            }
+        }
+    }
+    return result;
+fail:
+    result->unRefAndDestroy();
+    return NULL;
 }

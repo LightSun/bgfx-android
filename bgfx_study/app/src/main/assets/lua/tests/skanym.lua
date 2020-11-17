@@ -109,3 +109,26 @@ assert(r == mem.newMat('i',
         {-100, -100, -100, -100, 4},
         {-100, -100, -100, -100, -100}
 ))
+
+print("==================== start test mergeUnit =================")
+m = mem.new('dfb', {1, 2, 3});
+r = m.mergeUnit('d', 3, function (tab)
+    local sum = 0;
+    for _, v in ipairs(tab) do
+        sum = sum + v;
+    end
+    return sum;
+end);
+print("mergeUnit", r)
+assert(#r == 1)
+assert(r[0] == 6)
+assert(r.getTypes() == 'd')
+print("===== test mergeUnit ok ====")
+
+print("==================== start test splitUnit =================")
+r = r.splitUnit('i', 3, function (val, count)
+    return {1, 2, 3}
+end);
+assert(r == mem.new("i", {1, 2, 3}))
+
+print("===== test splitUnit ok ====")

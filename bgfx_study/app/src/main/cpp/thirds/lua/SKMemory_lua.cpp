@@ -406,6 +406,76 @@ static int mem##_diag(lua_State *L) {\
     }\
     return luaL_error(L, "for 'memory.diag' arguments expect([int k, int default_val])");\
 }
+static double mergeUnitImpl(void* ctx, const char** outError, double* elements, size_t unitCount){
+    lua_State* L = static_cast<lua_State *>(ctx);
+    //3 = func, 4 = 3, 5 = tab
+    // func param:  (tab) => val
+    lua_pushvalue(L, -1);
+    lua_newtable(L);
+    for (int i = 0; i < unitCount; ++i) {
+        lua_pushnumber(L, elements[i]);
+        lua_rawseti(L, -2, i + 1);
+    }
+    if(lua_pcall(L, 1, 1, 0) == LUA_OK){
+        auto val = lua_tonumber(L, -1);
+        return val;
+    } else{
+        *outError = lua_tostring(L, -1);
+        return 0;
+    }
+}
+static void splitUnitImpl(void* ctx, const char** outError, double val, size_t unitCount, double* out){
+    lua_State* L = static_cast<lua_State *>(ctx);
+    //3 = func, 4 = 3
+    // func param:  (double val, size_t unitCount) => tab
+    lua_pushvalue(L, -1);
+    lua_pushnumber(L, val);
+    lua_pushinteger(L, unitCount);
+    //3 = func, 4 = 3, 5 = val , 6 = unitCount
+    if(lua_pcall(L, 2, 1, 0) == LUA_OK){
+        if(lua_type(L, -1) != LUA_TTABLE){
+            *outError = "lua callback function return error type. Table needed.";
+        } else{
+            auto len = luaL_len(L, -1);
+            if(len != unitCount){
+                *outError = "lua callback function return table, but element count is wrong.";
+            } else{
+                for (int i = 0; i < len; ++i) {
+                    lua_geti(L, -1, i + 1);
+                    out[i] = lua_tonumber(L, -1);
+                    lua_pop(L, 1);
+                }
+            }
+        }
+    } else{
+        *outError = lua_tostring(L, -1);
+    }
+}
+
+#define memory_mergeUnit(mem, func, func_impl) \
+static int mem##_##func(lua_State* L){\
+    /* (type, unitCount, func) */ \
+    auto pMemory = LuaUtils::get_ref<mem>(L, lua_upvalueindex(1));\
+    auto types = lua_tostring(L, 1);\
+    char msg[1024];\
+    const char* a = msg;\
+    auto result = pMemory->func(types[0], lua_tointeger(L, 2), func_impl, L, &a);\
+    if(result != NULL){\
+        LuaUtils::push_ptr(L, result);\
+        return 1;\
+    } else if(a != NULL){\
+        return luaL_error(L, a);\
+    }else{\
+        return luaL_error(L, "argument error for mergeUnit().");\
+    }\
+}
+memory_mergeUnit(SkMemory, mergeUnit, mergeUnitImpl)
+memory_mergeUnit(SkMemory, splitUnit, splitUnitImpl)
+memory_mergeUnit(SkAnyMemory, mergeUnit, mergeUnitImpl)
+memory_mergeUnit(SkAnyMemory, splitUnit, splitUnitImpl)
+memory_mergeUnit(SkMemoryMatrix, mergeUnit, mergeUnitImpl)
+memory_mergeUnit(SkMemoryMatrix, splitUnit, splitUnitImpl)
+
 memory_diag(SkMemory)
 memory_diag(SkAnyMemory)
 
@@ -483,6 +553,8 @@ static const luaL_Reg s##type##_Methods[] = { \
         {"concat",           type##_concat}, \
         {"flip",             type##_flip}, \
         {"diag",             type##_diag}, \
+        {"mergeUnit",        type##_mergeUnit}, \
+        {"splitUnit",        type##_splitUnit}, \
         {nullptr,            nullptr}, \
 };
 DEF_V_METHODS(SkMemory)
@@ -939,6 +1011,9 @@ const static luaL_Reg sSkMemoryMatrix_Methods[] = {
         {"remainderMat",      SkMemoryMatrix_remainderMat},
         {"algRemainderMat",   SkMemoryMatrix_algebraicRemainderMat},
         {"adjointMat",        SkMemoryMatrix_adjointMat},
+
+        {"mergeUnit",        SkMemoryMatrix_mergeUnit},
+        {"splitUnit",        SkMemoryMatrix_splitUnit},
         {NULL, NULL},
 };
 
