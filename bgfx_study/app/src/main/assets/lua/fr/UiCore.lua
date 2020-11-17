@@ -31,6 +31,12 @@ m.LINE_CAP_NVG_ROUND  = 3;
 m.LINE_JOIN_ROUND  = 3;
 m.LINE_JOIN_BEVEL  = 4;
 m.LINE_JOIN_MITER  = 5;
+-- image flags
+m.IMAGE_FLAG_GenerateMipmaps = 1;
+m.IMAGE_FLAG_RepeatX         = 2;
+m.IMAGE_FLAG_RepeatY         = 4;
+m.IMAGE_FLAG_FlipY           = 8;
+m.IMAGE_FLAG_PreMultiplied   = 16;
 
 --(viewId, width, height, [scaleRatio])
 function m.newCanvas(viewId, width, height, scaleRatio)

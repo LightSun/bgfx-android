@@ -403,8 +403,9 @@ namespace NanoCanvas {
             if (height <= 0)
                 height = sheight;
 
-            resetClip();
-            clip(x, y, width, height);
+            //cause when draw two same image, will never draw second
+            /* resetClip();
+            clip(x, y, width, height); */
 
             float sw = width / swidth;
             float sh = height / sheight;
@@ -415,10 +416,12 @@ namespace NanoCanvas {
             ry = y - sy * sh;
 
             Gradient* pattern = createImageGradient(image, rx, ry, rw, rh, 0, 1.0f);
-            fillGradient(*pattern);
-            rect(rx, ry, rw, rh).fill();
-            restore();
+            beginPath()
+                .fillGradient(*pattern)
+                .rect(rx, ry, rw, rh)
+                .fill();
             delete pattern;
+            restore();
         }
         return *this;
     }

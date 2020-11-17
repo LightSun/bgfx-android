@@ -68,6 +68,7 @@ public class LuaUnitTestsAc extends AppCompatActivity {
         luaItems.add(new LuaItem("lua/tests/fr/ArcTester.lua", "test Arcs' (canvas)", true));
         luaItems.add(new LuaItem("lua/tests/fr/BezierTester.lua", "test Beziers' (canvas)", true));
         luaItems.add(new LuaItem("lua/tests/fr/TextTester.lua", "test Texts' (canvas)", true));
+        luaItems.add(new LuaItem("lua/tests/fr/ImageTester.lua", "test Images' (canvas)", true));
         return luaItems;
     }
     public void runTest(LuaItem luaItem){

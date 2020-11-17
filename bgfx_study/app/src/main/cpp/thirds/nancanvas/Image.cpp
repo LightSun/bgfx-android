@@ -24,18 +24,21 @@ namespace NanoCanvas {
 
     Image::~Image() {
         if (_ctx) {
-            nvgDeleteImage(_ctx, imageID);
+            if(imageID != 0){
+                nvgDeleteImage(_ctx, imageID);
+                imageID = 0;
+            }
         }
     }
 
     void Image::update(const SkMemory &memory) {
-        if (_ctx) {
+        if (_ctx && isValid()) {
             nvgUpdateImage(_ctx, imageID, (const unsigned char *) (memory.data));
         }
     }
 
     void Image::size(int &width, int &height) {
-        if (_ctx) {
+        if (_ctx && isValid()) {
             nvgImageSize(_ctx, imageID, &width, &height);
         }
     }
