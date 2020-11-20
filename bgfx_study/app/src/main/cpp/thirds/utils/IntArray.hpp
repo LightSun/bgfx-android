@@ -138,33 +138,41 @@ namespace h7{
             *((T*)addr1) = *((T*)addr2)
             *((T*)addr2) = t1;
         }
-        inline bool contains(const T& val, Comparator<T>& com){
+        inline bool contains(const T& val, Comparator<T>* com){
             return indexOf(val, com) >= 0;
         }
-        int indexOf(const T& val, Comparator<T>& com){
+        int indexOf(const T& val, Comparator<T>* com){
             int unit = sizeof(data) / malCount;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             for (int i = 0; i < size; ++i) {
-                if(com.compare(*((T*)addr), val) == 0){
+                if(com == NULL){
+                    if( (*((T*)addr) == val)){
+                        return i;
+                    }
+                } else if(com->compare(*((T*)addr), val) == 0){
                     return i;
                 }
                 addr += unit;
             }
             return -1;
         }
-        int lastIndexOf(const T& val, Comparator<T>& com){
+        int lastIndexOf(const T& val, Comparator<T>* com){
             int unit = sizeof(data) / malCount;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += unit * (size - 1);
             for (int i = size - 1; i >= 0; i--) {
-                if(com.compare(*((T*)addr), val) == 0){
+                if(com == NULL){
+                    if( (*((T*)addr) == val)){
+                        return i;
+                    }
+                } else if(com->compare(*((T*)addr), val) == 0){
                     return i;
                 }
                 addr -= unit;
             }
             return -1;
         }
-        bool remove(const T& val, Comparator<T>& com){
+        bool remove(const T& val, Comparator<T>* com){
             auto i = indexOf(val, com);
             removeAt(i);
             return i >= 0;
@@ -189,7 +197,7 @@ namespace h7{
             size -- ;
             return val;
         }
-        bool removeAll(Array<T>* array, Comparator<T>& com){
+        bool removeAll(Array<T>* array, Comparator<T>* com){
             bool changed = false;
             for (int i = 0; i < array->size; ++i) {
                 changed |= remove(array->get((size_t)i), com);
