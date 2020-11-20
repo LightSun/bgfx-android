@@ -478,11 +478,11 @@ namespace NanoCanvas
          * @brief Scales the current drawing, bigger or smaller.
          * @note If you scale a drawing, all future drawings will also be scaled. The positioning will also be scaled. 
          * If you scale(2,2); drawings will be positioned twice as far from the left and top of the canvas as you specify.
-         * @param scalewidth Scales the width of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)
-         * @param scaleheight Scales the height of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)
+         * @param sx Scales the width of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)
+         * @param sy Scales the height of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)
          * @return The canvas to scale with
          */
-        Canvas& scale(float scalewidth , float scaleheight);
+        Canvas& scale(float sx , float sy);
         
         /**
          * @brief Rotates the current drawing

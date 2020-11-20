@@ -21,6 +21,10 @@ public:
     static int inverse(int n, const std::function<void(int,int,double)>& func_set,const std::function<double(int,int)>& func_get);
 
     static bool doubleEqual(double x1, double x2);
+
+    inline static int max(int v1,int v2){
+        return v1 > v2 ? v1 : v2;
+    }
 };
 
 

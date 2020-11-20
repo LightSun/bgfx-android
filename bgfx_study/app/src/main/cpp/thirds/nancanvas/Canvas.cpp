@@ -445,8 +445,8 @@ namespace NanoCanvas {
 
 /*--------------------- Transformations ----------------*/
 
-    Canvas &Canvas::scale(float scalewidth, float scaleheight) {
-        nvgScale(m_nvgCtx, scalewidth, scaleheight);
+    Canvas &Canvas::scale(float sx, float sy) {
+        nvgScale(m_nvgCtx, sx, sy);
         return *this;
     }
 

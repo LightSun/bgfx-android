@@ -53,6 +53,7 @@ aux_source_directory(src/main/cpp/thirds/stb SRC_stb)
 
 aux_source_directory(src/main/cpp/android SRC_android)
 aux_source_directory(src/main/cpp/core SRC_core)
+aux_source_directory(src/main/cpp/thirds/utils SRC_h7_utils)
 
 add_library(
         bgfx_core
@@ -60,6 +61,7 @@ add_library(
         ${SRC_android}
         ${SRC_core}
         ${SRC_meshoptimizer}
+        ${SRC_h7_utils}
 )
 add_library(
         bgfx_study
