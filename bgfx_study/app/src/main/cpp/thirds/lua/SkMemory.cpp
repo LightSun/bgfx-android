@@ -42,15 +42,17 @@ for (int i = start; i < start + tableCount; ++i) { \
 #define ARRAY_INIT(type) \
 type* arr = static_cast<type *>(data); \
 for (int i = 0; i < len; ++i) { \
-arr[i] = 0; \
+    arr[i] = 0; \
 }
 
 #define COPY_SINGLE_DATA(type) \
-{ auto pData = (type *) (dstMem->data); \
+do{\
+auto pData = (type *) (dstMem->data); \
 auto srcData = (type *) (data); \
 pData += dstIndex; \
 srcData += srcIndex; \
-*pData = *srcData; }
+*pData = *srcData; }\
+while(0);
 
 //---------------------------------------------------------------------------------
 SkMemory::SkMemory(): SimpleMemory(){

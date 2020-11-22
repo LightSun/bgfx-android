@@ -14,7 +14,7 @@
 #include "../lua/SkMemory.h"
 #include "Canvas_lua.h"
 #include "nanovg/nanovg_bgfx.h"
-#include "../utils/IntArray.hpp"
+#include "utils/Array.hpp"
 
 #define CANVAS_M0(name)\
 static int Canvas_##name(lua_State *L) {\

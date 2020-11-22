@@ -9,7 +9,7 @@ namespace h7{
     template<typename T>
     class Comparator{
     public:
-        Comparator() = default;
+        Comparator(){}
         int compare(T& t1, T& t2){
             return t1 == t2;
         }
@@ -19,32 +19,25 @@ namespace h7{
             return MathUtils::doubleEqual(t1, t2);
         }
     };
-
-#define COM_BASE(type)\
-    static const Comparator<unsigned type> COM_U_##type = Comparator<unsigned type>();\
-    static const Comparator<type> COM_##type = Comparator<type>();
-
-    COM_BASE(int);
-    COM_BASE(char);
-    COM_BASE(short);
-    static const Comparator<float> COM_float = Comparator<float>();
-    static const Comparator<bool> COM_bool = Comparator<bool>();
     static const Comparator<double> COM_double = DoubleComparator();
-    static const Comparator<long long> COM_long_long = Comparator<long long>();
-    static const Comparator<unsigned long long> COM_un_long_long = Comparator<unsigned long long>();
 
     template<typename T>
     class Array{
     private:
+        size_t unitSize; // data size as bytes
         void * data;
+
         size_t malCount; // memory alloc count
         size_t size;     // element count
 
+        const Comparator<T>* _com;
+
     public:
-        Array(size_t unitSize, bool ordered, size_t capacity): malCount(capacity){
+        Array(size_t unitSize,  size_t capacity, const Comparator<T>* com): unitSize(unitSize),malCount(capacity), _com(com){
             data = malloc(unitSize * capacity);
             size = 0;
         }
+        Array(size_t unitSize, const Comparator<T>* com): Array(unitSize, 16, com){}
         ~Array(){
             if(data){
                 free(data);
@@ -63,10 +56,9 @@ namespace h7{
                     return false;
                 }
             }
-            int unit = sizeof(data) / malCount;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += index * unit;
-            memcpy(addr, &val, unit);
+            addr += index * unitSize;
+            memcpy(addr, &val, unitSize);
             size ++;
             return true;
         }
@@ -77,7 +69,7 @@ namespace h7{
                     return false;
                 }
             }
-            int unit = sizeof(data) / malCount;
+            int unit = unitSize;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += size * unit;
             memcpy(addr, &val1, unit);
@@ -92,7 +84,7 @@ namespace h7{
                     return false;
                 }
             }
-            int unit = sizeof(data) / malCount;
+            int unit = unitSize;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += size * unit;
             memcpy(addr, val1, unit);
@@ -109,7 +101,7 @@ namespace h7{
                     return false;
                 }
             }
-            int unit = sizeof(data) / malCount;
+            int unit = unitSize;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += size * unit;
             memcpy(addr, array->data, unit * array->size);
@@ -117,19 +109,19 @@ namespace h7{
             return true;
         }
         const T& get(size_t index){
-            int unit = sizeof(data) / malCount;
+            int unit = unitSize;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += size * unit;
             return *((T*)addr);
         }
         void set(size_t index, const T& val){
-            int unit = sizeof(data) / malCount;
+            int unit = unitSize;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += size * unit;
             *((T*)addr) = val;
         }
         void swap(size_t first, size_t second){
-            int unit = sizeof(data) / malCount;
+            int unit = unitSize;
             unsigned char* addr1 = reinterpret_cast<unsigned char*>(data);
             unsigned char* addr2 = reinterpret_cast<unsigned char*>(data);
             addr1 += unit * first;
@@ -138,42 +130,42 @@ namespace h7{
             *((T*)addr1) = *((T*)addr2)
             *((T*)addr2) = t1;
         }
-        inline bool contains(const T& val, Comparator<T>* com){
-            return indexOf(val, com) >= 0;
+        inline bool contains(const T& val){
+            return indexOf(val) >= 0;
         }
-        int indexOf(const T& val, Comparator<T>* com){
-            int unit = sizeof(data) / malCount;
+        int indexOf(const T& val){
+            int unit = unitSize;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             for (int i = 0; i < size; ++i) {
-                if(com == NULL){
+                if(_com == NULL){
                     if( (*((T*)addr) == val)){
                         return i;
                     }
-                } else if(com->compare(*((T*)addr), val) == 0){
+                } else if(_com->compare(*((T*)addr), val) == 0){
                     return i;
                 }
                 addr += unit;
             }
             return -1;
         }
-        int lastIndexOf(const T& val, Comparator<T>* com){
-            int unit = sizeof(data) / malCount;
+        int lastIndexOf(const T& val){
+            int unit = unitSize;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += unit * (size - 1);
             for (int i = size - 1; i >= 0; i--) {
-                if(com == NULL){
+                if(_com == NULL){
                     if( (*((T*)addr) == val)){
                         return i;
                     }
-                } else if(com->compare(*((T*)addr), val) == 0){
+                } else if(_com->compare(*((T*)addr), val) == 0){
                     return i;
                 }
                 addr -= unit;
             }
             return -1;
         }
-        bool remove(const T& val, Comparator<T>* com){
-            auto i = indexOf(val, com);
+        bool remove(const T& val){
+            auto i = indexOf(val, _com);
             removeAt(i);
             return i >= 0;
         }
@@ -182,7 +174,7 @@ namespace h7{
             if(index >= size || index < 0){
                 return NULL;
             }
-            int unit = sizeof(data) / malCount;
+            int unit = unitSize;
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += index * unit;
             T val = *((T*)addr);
@@ -197,10 +189,10 @@ namespace h7{
             size -- ;
             return val;
         }
-        bool removeAll(Array<T>* array, Comparator<T>* com){
+        bool removeAll(Array<T>* array){
             bool changed = false;
             for (int i = 0; i < array->size; ++i) {
-                changed |= remove(array->get((size_t)i), com);
+                changed |= remove(array->get((size_t)i));
             }
             return changed;
         }
@@ -246,16 +238,18 @@ namespace h7{
         /** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items
  * have been removed, or if it is known that more items will not be added.
          * */
-        void shrink(){
+        bool shrink(){
             if(size > 0 && malCount != size){
-                resize(size);
+                return resize(size);
             }
+            return true;
         }
-        void ensureCapacity(int additionalCapacity){
+        bool ensureCapacity(int additionalCapacity){
             int sizeNeeded = size + additionalCapacity;
             if(sizeNeeded > malCount){
-                resize(sizeNeeded);
+                return resize(sizeNeeded);
             }
+            return true;
         }
         void setSize(int newSize){
             size = newSize;
@@ -264,7 +258,7 @@ namespace h7{
     protected:
 
         inline bool resize(size_t newSize) {
-            void * d = malloc(newSize * (sizeof(data) / malCount));
+            void * d = malloc(newSize * unitSize);
             if(d == NULL){
                 return false;
             }
@@ -275,4 +269,23 @@ namespace h7{
             return true;
         }
     };
+
+#define TYPE_ARRAY(cn, type, com)\
+    class cn: public Array<type>{\
+    public:\
+        cn(size_t unitSize, size_t capacity): Array(unitSize, capacity, com) {}\
+        cn(size_t unitSize) : Array(unitSize, com) {}\
+    };
+    TYPE_ARRAY(IntArray, int, NULL)
+    TYPE_ARRAY(UnSignedIntArray, unsigned int, NULL)
+    TYPE_ARRAY(ShortArray, short, NULL)
+    TYPE_ARRAY(UnSignedShortArray, unsigned short, NULL)
+    TYPE_ARRAY(UnSignedCharArray, unsigned char, NULL)
+    TYPE_ARRAY(CharArray, char, NULL)
+
+    TYPE_ARRAY(UnSignedLongArray, unsigned long long, NULL)
+    TYPE_ARRAY(LongArray, long long, NULL)
+    TYPE_ARRAY(FloatArray, float, NULL)
+    TYPE_ARRAY(DoubleArray, double, &COM_double)
+    TYPE_ARRAY(BoolArray, bool, NULL)
 }
