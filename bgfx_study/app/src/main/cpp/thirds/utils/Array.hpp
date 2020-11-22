@@ -10,7 +10,7 @@ namespace h7{
     class Comparator{
     public:
         Comparator(){}
-        int compare(T& t1, T& t2){
+        virtual int compare(T& t1, T& t2){
             return t1 == t2;
         }
     };
@@ -270,22 +270,22 @@ namespace h7{
         }
     };
 
-#define TYPE_ARRAY(cn, type, com)\
+#define BTYPE_ARRAY(cn, type, com)\
     class cn: public Array<type>{\
     public:\
-        cn(size_t unitSize, size_t capacity): Array(unitSize, capacity, com) {}\
-        cn(size_t unitSize) : Array(unitSize, com) {}\
+        cn(size_t capacity): Array(sizeof(type), capacity, com) {}\
+        cn() : Array(sizeof(type), com) {}\
     };
-    TYPE_ARRAY(IntArray, int, NULL)
-    TYPE_ARRAY(UnSignedIntArray, unsigned int, NULL)
-    TYPE_ARRAY(ShortArray, short, NULL)
-    TYPE_ARRAY(UnSignedShortArray, unsigned short, NULL)
-    TYPE_ARRAY(UnSignedCharArray, unsigned char, NULL)
-    TYPE_ARRAY(CharArray, char, NULL)
+    BTYPE_ARRAY(IntArray, int, NULL)
+    BTYPE_ARRAY(UnSignedIntArray, unsigned int, NULL)
+    BTYPE_ARRAY(ShortArray, short, NULL)
+    BTYPE_ARRAY(UnSignedShortArray, unsigned short, NULL)
+    BTYPE_ARRAY(UnSignedCharArray, unsigned char, NULL)
+    BTYPE_ARRAY(CharArray, char, NULL)
 
-    TYPE_ARRAY(UnSignedLongArray, unsigned long long, NULL)
-    TYPE_ARRAY(LongArray, long long, NULL)
-    TYPE_ARRAY(FloatArray, float, NULL)
-    TYPE_ARRAY(DoubleArray, double, &COM_double)
-    TYPE_ARRAY(BoolArray, bool, NULL)
+    BTYPE_ARRAY(UnSignedLongArray, unsigned long long, NULL)
+    BTYPE_ARRAY(LongArray, long long, NULL)
+    BTYPE_ARRAY(FloatArray, float, NULL)
+    BTYPE_ARRAY(DoubleArray, double, &COM_double)
+    BTYPE_ARRAY(BoolArray, bool, NULL)
 }
