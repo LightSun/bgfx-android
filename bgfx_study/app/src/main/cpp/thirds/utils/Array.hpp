@@ -24,7 +24,6 @@ namespace h7{
     template<typename T>
     class Array{
     private:
-        size_t unitSize; // data size as bytes
         void * data;
 
         size_t malCount; // memory alloc count
@@ -33,11 +32,11 @@ namespace h7{
         const Comparator<T>* _com;
 
     public:
-        Array(size_t unitSize,  size_t capacity, const Comparator<T>* com): unitSize(unitSize),malCount(capacity), _com(com){
-            data = malloc(unitSize * capacity);
+        Array(size_t capacity, const Comparator<T>* com):malCount(capacity), _com(com){
+            data = malloc(sizeof(T) * capacity);
             size = 0;
         }
-        Array(size_t unitSize, const Comparator<T>* com): Array(unitSize, 16, com){}
+        Array(const Comparator<T>* com): Array(16, com){}
         ~Array(){
             if(data){
                 free(data);
@@ -56,9 +55,10 @@ namespace h7{
                     return false;
                 }
             }
+            int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += index * unitSize;
-            memcpy(addr, &val, unitSize);
+            addr += index * unit;
+            memcpy(addr, &val, unit);
             size ++;
             return true;
         }
@@ -69,7 +69,7 @@ namespace h7{
                     return false;
                 }
             }
-            int unit = unitSize;
+            int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += size * unit;
             memcpy(addr, &val1, unit);
@@ -84,7 +84,7 @@ namespace h7{
                     return false;
                 }
             }
-            int unit = unitSize;
+            int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += size * unit;
             memcpy(addr, val1, unit);
@@ -101,7 +101,7 @@ namespace h7{
                     return false;
                 }
             }
-            int unit = unitSize;
+            int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += size * unit;
             memcpy(addr, array->data, unit * array->size);
@@ -109,19 +109,19 @@ namespace h7{
             return true;
         }
         const T& get(size_t index){
-            int unit = unitSize;
+            int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += size * unit;
             return *((T*)addr);
         }
         void set(size_t index, const T& val){
-            int unit = unitSize;
+            int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += size * unit;
             *((T*)addr) = val;
         }
         void swap(size_t first, size_t second){
-            int unit = unitSize;
+            int unit = sizeof(T);
             unsigned char* addr1 = reinterpret_cast<unsigned char*>(data);
             unsigned char* addr2 = reinterpret_cast<unsigned char*>(data);
             addr1 += unit * first;
@@ -134,7 +134,7 @@ namespace h7{
             return indexOf(val) >= 0;
         }
         int indexOf(const T& val){
-            int unit = unitSize;
+            int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             for (int i = 0; i < size; ++i) {
                 if(_com == NULL){
@@ -149,7 +149,7 @@ namespace h7{
             return -1;
         }
         int lastIndexOf(const T& val){
-            int unit = unitSize;
+            int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += unit * (size - 1);
             for (int i = size - 1; i >= 0; i--) {
@@ -174,7 +174,7 @@ namespace h7{
             if(index >= size || index < 0){
                 return NULL;
             }
-            int unit = unitSize;
+            int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += index * unit;
             T val = *((T*)addr);
@@ -258,7 +258,7 @@ namespace h7{
     protected:
 
         inline bool resize(size_t newSize) {
-            void * d = malloc(newSize * unitSize);
+            void * d = malloc(newSize * sizeof(T));
             if(d == NULL){
                 return false;
             }
@@ -273,8 +273,8 @@ namespace h7{
 #define BTYPE_ARRAY(cn, type, com)\
     class cn: public Array<type>{\
     public:\
-        cn(size_t capacity): Array(sizeof(type), capacity, com) {}\
-        cn() : Array(sizeof(type), com) {}\
+        cn(size_t capacity): Array(capacity, com) {}\
+        cn() : Array(com) {}\
     };
     BTYPE_ARRAY(IntArray, int, NULL)
     BTYPE_ARRAY(UnSignedIntArray, unsigned int, NULL)
