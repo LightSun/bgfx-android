@@ -256,13 +256,12 @@ namespace h7{
         }
 
     protected:
-
         inline bool resize(size_t newSize) {
             void * d = malloc(newSize * sizeof(T));
             if(d == NULL){
                 return false;
             }
-            memcpy(d, data, sizeof(data));
+            memcpy(d, data, sizeof(T)*size);
             free(data);
             this->data = d;
             this->malCount = newSize;
