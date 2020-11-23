@@ -38,7 +38,7 @@ namespace h7 {
         Vector2f initialPointer1;
         Vector2f initialPointer2;
 
-        Task longPressTask;
+        SchedulerTask longPressTask;
     public:
         /** Creates a new GestureDetector with default values: halfTapSquareSize=20, tapCountInterval=0.4f, longPressDuration=1.1f,
 	 * maxFlingDelay=Integer.MAX_VALUE. */
@@ -84,7 +84,7 @@ namespace h7 {
         void reset ();
 
         /** The tap square will no longer be used for the current touch. */
-         void invalidateTapSquare ();
+        void invalidateTapSquare ();
         void setTapSquareSize (float halfTapSquareSize);
         void setTapRectangleSize (float halfTapRectangleWidth, float halfTapRectangleHeight);
         /** @param tapCountInterval time in seconds that must pass for two touch down/up sequences to be detected as consecutive

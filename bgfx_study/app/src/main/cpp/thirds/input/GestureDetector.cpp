@@ -33,11 +33,12 @@ namespace h7 {
         this->maxFlingDelay = (uint64_t) (maxFlingDelay * 1000000000l);
         this->listener = listener;
 
-        auto task = [&]() {
+        auto task = [&](SchedulerTask* task, void* userData) {
             if (!longPressFired) longPressFired = listener->longPress(pointer1.x, pointer1.y);
             return NULL;
         };
-        longPressTask.set(task);
+        longPressTask.set(
+                reinterpret_cast<std::function<void *(SchedulerTask *, void *)>&>(task));
     }
 
     bool GestureDetector::touchDown(int x, int y, int pointer, int button) {
@@ -66,7 +67,7 @@ namespace h7 {
                 tapRectangleCenterX = x;
                 tapRectangleCenterY = y;
                 // if (!longPressTask.isScheduled()) Timer.schedule(longPressTask, longPressSeconds);
-                if (!longPressTask.isScheduled()) longPressTask.schedule(longPressSeconds);
+                if (!longPressTask.isScheduled()) longPressTask.schedule(longPressSeconds, NULL);
             }
         } else {
             // Start pinch.
