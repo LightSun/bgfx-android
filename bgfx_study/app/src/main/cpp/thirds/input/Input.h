@@ -7,6 +7,7 @@
 
 //#include "map2.h"
 #include "../../include/map2.h"
+#include "InputProcessor.h"
 
 namespace h7 {
     /** <p>
@@ -46,6 +47,24 @@ namespace h7 {
             MIDDLE = 2,
             BACK = 3,
             FORWARD = 4
+        };
+
+        enum Peripheral {
+            HardwareKeyboard,
+            OnscreenKeyboard,
+            MultitouchScreen,
+            Accelerometer,
+            Compass,
+            Vibrator,
+            Gyroscope,
+            RotationVector,
+            Pressure
+        };
+        enum OnscreenKeyboardType {
+            Default, NumberPad, PhonePad, Email, Password, URI
+        };
+        enum Orientation {
+            Landscape, Portrait
         };
 
         class Keys {
@@ -230,7 +249,7 @@ namespace h7 {
 
             /** @return a human readable representation of the keycode. The returned value can be used in
              *         {@link Input.Keys#valueOf(const char *)} */
-            inline static const char *toconst char *(int keycode) {
+            inline static const char *toString(int keycode) {
                 //if (keycode < 0) throw new IllegalArgumentException("keycode cannot be negative, keycode: " + keycode);
                 //if (keycode > MAX_KEYCODE) throw new IllegalArgumentException("keycode cannot be greater than 255, keycode: " + keycode);
                 if (keycode < 0 || keycode > MAX_KEYCODE) return nullptr;
@@ -538,46 +557,37 @@ namespace h7 {
                 if (keyNames == nullptr) {
                     keyNames = new h7::Map<const char *, int>();
                     for (int i = 0; i < 256; i++) {
-                        const char *name = toconst char *(i);
+                        const char *name = toString(i);
                         if (name != nullptr) keyNames->put(name, i);
                     }
                 }
             }
         };
 
-        enum Peripheral {
-            HardwareKeyboard, OnscreenKeyboard, MultitouchScreen, Accelerometer, Compass, Vibrator, Gyroscope, RotationVector, Pressure
-        };
-        enum OnscreenKeyboardType {
-            Default, NumberPad, PhonePad, Email, Password, URI
-        };
-        enum Orientation {
-            Landscape, Portrait
-        };
         /** @return The acceleration force in m/s^2 applied to the device in the X axis, including the force of gravity */
-     float getAccelerometerX ();
+        virtual float getAccelerometerX() = 0;
 
         /** @return The acceleration force in m/s^2 applied to the device in the Y axis, including the force of gravity */
-     float getAccelerometerY ();
+        virtual float getAccelerometerY() = 0;
 
         /** @return The acceleration force in m/s^2 applied to the device in the Z axis, including the force of gravity */
-     float getAccelerometerZ ();
+        virtual float getAccelerometerZ() = 0;
 
         /** @return The rate of rotation in rad/s around the X axis */
-     float getGyroscopeX ();
+        virtual float getGyroscopeX() = 0;
 
         /** @return The rate of rotation in rad/s around the Y axis */
-     float getGyroscopeY ();
+        virtual float getGyroscopeY() = 0;
 
         /** @return The rate of rotation in rad/s around the Z axis */
-     float getGyroscopeZ ();
+        virtual float getGyroscopeZ() = 0;
 
         /** @return The maximum number of pointers supported */
-     int getMaxPointers ();
+        virtual int getMaxPointers() = 0;
 
         /** @return The x coordinate of the last touch on touch screen devices and the current mouse position on desktop for the first
          *         pointer in screen coordinates. The screen origin is the top left corner. */
-     int getX ();
+        virtual int getX() = 0;
 
         /** Returns the x coordinate in screen coordinates of the given pointer. Pointers are indexed from 0 to n. The pointer id
          * identifies the order in which the fingers went down on the screen, e.g. 0 is the first finger, 1 is the second and so on.
@@ -586,17 +596,17 @@ namespace h7 {
          *
          * @param pointer the pointer id.
          * @return the x coordinate */
-     int getX (int pointer);
+        virtual int getX(int pointer) = 0;
 
         /** @return the different between the current pointer location and the last pointer location on the x-axis. */
-     int getDeltaX ();
+        virtual int getDeltaX() = 0;
 
         /** @return the different between the current pointer location and the last pointer location on the x-axis. */
-     int getDeltaX (int pointer);
+        virtual int getDeltaX(int pointer) = 0;
 
         /** @return The y coordinate of the last touch on touch screen devices and the current mouse position on desktop for the first
          *         pointer in screen coordinates. The screen origin is the top left corner. */
-     int getY ();
+        virtual int getY() = 0;
 
         /** Returns the y coordinate in screen coordinates of the given pointer. Pointers are indexed from 0 to n. The pointer id
          * identifies the order in which the fingers went down on the screen, e.g. 0 is the first finger, 1 is the second and so on.
@@ -605,19 +615,19 @@ namespace h7 {
          *
          * @param pointer the pointer id.
          * @return the y coordinate */
-     int getY (int pointer);
+        virtual int getY(int pointer) = 0;
 
         /** @return the different between the current pointer location and the last pointer location on the y-axis. */
-     int getDeltaY ();
+        virtual int getDeltaY() = 0;
 
         /** @return the different between the current pointer location and the last pointer location on the y-axis. */
-     int getDeltaY (int pointer);
+        virtual int getDeltaY(int pointer) = 0;
 
         /** @return whether the screen is currently touched. */
-     bool isTouched ();
+        virtual bool isTouched() = 0;
 
         /** @return whether a new touch down event just occurred. */
-     bool justTouched ();
+        virtual bool justTouched() = 0;
 
         /** Whether the screen is currently touched by the pointer with the given index. Pointers are indexed from 0 to n. The pointer
          * id identifies the order in which the fingers went down on the screen, e.g. 0 is the first finger, 1 is the second and so on.
@@ -626,10 +636,10 @@ namespace h7 {
          *
          * @param pointer the pointer
          * @return whether the screen is touched by the pointer */
-     bool isTouched (int pointer);
+        virtual bool isTouched(int pointer) = 0;
 
         /** @return the pressure of the first pointer */
-     float getPressure ();
+        virtual float getPressure() = 0;
 
         /** Returns the pressure of the given pointer, where 0 is untouched. On Android it should be
          * up to 1.0, but it can go above that slightly and its not consistent between devices. On iOS 1.0 is the normal touch
@@ -638,32 +648,32 @@ namespace h7 {
          *
          * @param pointer the pointer id.
          * @return the pressure */
-     float getPressure (int pointer);
+        virtual float getPressure(int pointer) = 0;
 
         /** Whether a given button is pressed or not. Button constants can be found in {@link Buttons}. On Android only the Buttons#LEFT
          * constant is meaningful before version 4.0.
          * @param button the button to check.
          * @return whether the button is down or not. */
-     bool isButtonPressed (int button);
+        virtual bool isButtonPressed(int button) = 0;
 
         /** Returns whether a given button has just been pressed. Button constants can be found in {@link Buttons}. On Android only the Buttons#LEFT
          * constant is meaningful before version 4.0. On WebGL (GWT), only LEFT, RIGHT and MIDDLE buttons are supported.
          *
          * @param button the button to check.
          * @return true or false. */
-     bool isButtonJustPressed (int button);
+        virtual bool isButtonJustPressed(int button) = 0;
 
         /** Returns whether the key is pressed.
          *
          * @param key The key code as found in {@link Input.Keys}.
          * @return true or false. */
-     bool isKeyPressed (int key);
+        virtual bool isKeyPressed(int key) = 0;
 
         /** Returns whether the key has just been pressed.
          *
          * @param key The key code as found in {@link Input.Keys}.
          * @return true or false. */
-     bool isKeyJustPressed (int key);
+        virtual bool isKeyJustPressed(int key) = 0;
 
         /** System dependent method to input a string of text. A dialog box will be created with the given title and the given text as a
          * message for the user. Will use the Default keyboard type.
@@ -672,7 +682,8 @@ namespace h7 {
          * @param listener The TextInputListener.
          * @param title The title of the text input dialog.
          * @param text The message presented to the user. */
-     void getTextInput (TextInputListener listener, const char * title, const char * text, const char * hint);
+        virtual void getTextInput(TextInputListener listener, const char *title, const char *text,
+                          const char *hint) = 0;
 
         /** System dependent method to input a string of text. A dialog box will be created with the given title and the given text as a
          * message for the user. Once the dialog has been closed the provided {@link TextInputListener} will be called on the rendering
@@ -682,34 +693,35 @@ namespace h7 {
          * @param title The title of the text input dialog.
          * @param text The message presented to the user.
          * @param type which type of keyboard we wish to display */
-     void getTextInput (TextInputListener listener, const char * title, const char * text, const char * hint, OnscreenKeyboardType type);
+        virtual void getTextInput(TextInputListener listener, const char *title, const char *text,
+                          const char *hint, OnscreenKeyboardType type) = 0;
 
         /** Sets the on-screen keyboard visible if available. Will use the Default keyboard type.
          *
          * @param visible visible or not */
-     void setOnscreenKeyboardVisible (bool visible);
+        virtual void setOnscreenKeyboardVisible(bool visible) = 0;
 
         /** Sets the on-screen keyboard visible if available.
          *
          * @param visible visible or not
          * @param type which type of keyboard we wish to display. Can be null when hiding */
-     void setOnscreenKeyboardVisible (bool visible, OnscreenKeyboardType type);
+        virtual void setOnscreenKeyboardVisible(bool visible, OnscreenKeyboardType type) = 0;
 
         /** Vibrates for the given amount of time. Note that you'll need the permission
          * <code> <uses-permission android:name="android.permission.VIBRATE" /></code> in your manifest file in order for this to work.
          *
          * @param milliseconds the number of milliseconds to vibrate. */
-     void vibrate (int milliseconds);
+        virtual void vibrate(int milliseconds) = 0;
 
         /** Vibrate with a given pattern. Pass in an array of ints that are the times at which to turn on or off the vibrator. The first
          * one is how long to wait before turning it on, and then after that it alternates. If you want to repeat, pass the index into
          * the pattern at which to start the repeat.
          * @param pattern an array of longs of times to turn the vibrator on or off.
          * @param repeat the index into pattern at which to repeat, or -1 if you don't want to repeat. */
-     void vibrate (long[] pattern, int repeat);
+        virtual void vibrate(long *pattern, int patLen, int repeat) = 0;
 
         /** Stops the vibrator */
-     void cancelVibrate ();
+        virtual void cancelVibrate() = 0;
 
         /** The azimuth is the angle of the device's orientation around the z-axis. The positive z-axis points towards the earths
          * center.
@@ -717,63 +729,63 @@ namespace h7 {
          * @see <a
          *      href="http://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[], float[], float[], float[])">http://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[], float[], float[], float[])</a>
          * @return the azimuth in degrees */
-     float getAzimuth ();
+        virtual float getAzimuth() = 0;
 
         /** The pitch is the angle of the device's orientation around the x-axis. The positive x-axis roughly points to the west and is
          * orthogonal to the z- and y-axis.
          * @see <a
          *      href="http://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[], float[], float[], float[])">http://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[], float[], float[], float[])</a>
          * @return the pitch in degrees */
-     float getPitch ();
+        virtual float getPitch() = 0;
 
         /** The roll is the angle of the device's orientation around the y-axis. The positive y-axis points to the magnetic north pole
          * of the earth.
          * @see <a
          *      href="http://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[], float[], float[], float[])">http://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[], float[], float[], float[])</a>
          * @return the roll in degrees */
-     float getRoll ();
+        virtual float getRoll() = 0;
 
         /** Returns the rotation matrix describing the devices rotation as per <a href=
          * "http://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[], float[], float[], float[])"
          * >SensorManager#getRotationMatrix(float[], float[], float[], float[])</a>. Does not manipulate the matrix if the platform
          * does not have an accelerometer.
          * @param matrix */
-     void getRotationMatrix (float[] matrix);
+        virtual void getRotationMatrix(float *matrix, int matLen) = 0;
 
         /** @return the time of the event currently reported to the {@link InputProcessor}. */
-     long getCurrentEventTime ();
+        virtual long getCurrentEventTime() = 0;
 
         /**
-         * @deprecated use {@link Input#setCatchKey(int keycode, bool catchKey)} instead
+         * //@Deprecated use {@link Input#setCatchKey(int keycode, bool catchKey)} instead
          *
          * Sets whether the BACK button on Android should be caught. This will prevent the app from being paused. Will have no effect
          * on the desktop.
          *
          * @param catchBack whether to catch the back button */
-        @Deprecated
-     void setCatchBackKey (bool catchBack);
+        //@Deprecated
+        virtual void setCatchBackKey(bool catchBack) = 0;
 
         /**
-         * @deprecated use {@link Input#isCatchKey(int keycode)} instead
+         * //@Deprecated use {@link Input#isCatchKey(int keycode)} instead
          * @return whether the back button is currently being caught */
-        @Deprecated
-     bool isCatchBackKey ();
+        //@Deprecated
+        virtual bool isCatchBackKey() = 0;
 
         /**
-         * @deprecated use {@link Input#setCatchKey(int keycode, bool catchKey)} instead
+         * //@Deprecated use {@link Input#setCatchKey(int keycode, bool catchKey)} instead
          *
          * Sets whether the MENU button on Android should be caught. This will prevent the onscreen keyboard to show up. Will have no
          * effect on the desktop.
          *
          * @param catchMenu whether to catch the menu button */
-        @Deprecated
-     void setCatchMenuKey (bool catchMenu);
+        //@Deprecated
+        virtual void setCatchMenuKey(bool catchMenu) = 0;
 
         /**
-         * @deprecated use {@link Input#isCatchKey(int keycode)} instead
+         * //@Deprecated use {@link Input#isCatchKey(int keycode)} instead
          * @return whether the menu button is currently being caught */
-        @Deprecated
-     bool isCatchMenuKey ();
+        //@Deprecated
+        virtual bool isCatchMenuKey() = 0;
 
         /**
          * Sets whether the given key on Android should be caught. No effect on other platforms.
@@ -784,49 +796,49 @@ namespace h7 {
          * @param keycode  keycode to catch
          * @param catchKey whether to catch the given keycode
          */
-     void setCatchKey (int keycode, bool catchKey);
+        virtual void setCatchKey(int keycode, bool catchKey) = 0;
 
         /**
          *
          * @param keycode keycode to check if caught
          * @return true if the given keycode is configured to be caught
          */
-     bool isCatchKey (int keycode);
+        virtual bool isCatchKey(int keycode) = 0;
 
         /** Sets the {@link InputProcessor} that will receive all touch and key input events. It will be called before the
          * {@link ApplicationListener#render()} method each frame.
          *
          * @param processor the InputProcessor */
-     void setInputProcessor (InputProcessor processor);
+        virtual void setInputProcessor(InputProcessor processor) = 0;
 
         /** @return the currently set {@link InputProcessor} or null. */
-     InputProcessor getInputProcessor ();
+        virtual InputProcessor getInputProcessor() = 0;
 
         /** Queries whether a {@link Peripheral} is currently available. In case of Android and the {@link Peripheral#HardwareKeyboard}
          * this returns the whether the keyboard is currently slid out or not.
          *
          * @param peripheral the {@link Peripheral}
          * @return whether the peripheral is available or not. */
-     bool isPeripheralAvailable (Peripheral peripheral);
+        virtual bool isPeripheralAvailable(Peripheral peripheral) = 0;
 
         /** @return the rotation of the device with respect to its native orientation. */
-     int getRotation ();
+        virtual int getRotation() = 0;
 
         /** @return the native orientation of the device. */
-     Orientation getNativeOrientation ();
+        virtual Orientation getNativeOrientation() = 0;
 
         /** Only viable on the desktop. Will confine the mouse cursor location to the window and hide the mouse cursor. X and y
          * coordinates are still reported as if the mouse was not catched.
          * @param catched whether to catch or not to catch the mouse cursor */
-     void setCursorCatched (bool catched);
+        virtual void setCursorCatched(bool catched) = 0;
 
         /** @return whether the mouse cursor is catched. */
-     bool isCursorCatched ();
+        virtual bool isCursorCatched() = 0;
 
         /** Only viable on the desktop. Will set the mouse cursor location to the given window coordinates (origin top-left corner).
          * @param x the x-position
          * @param y the y-position */
-     void setCursorPosition (int x, int y);
+        virtual void setCursorPosition(int x, int y) = 0;
     };
 }
 

@@ -32,7 +32,7 @@ namespace h7{
         SchedulerTask();
         ~SchedulerTask(){};
 
-        void set(std::function<void*(SchedulerTask*,void*)>& func);
+        void set(std::function<void*(SchedulerTask*,void*)> func);
 
         void cancel();
         bool isScheduled();

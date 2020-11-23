@@ -37,8 +37,7 @@ namespace h7 {
             if (!longPressFired) longPressFired = listener->longPress(pointer1.x, pointer1.y);
             return NULL;
         };
-        longPressTask.set(
-                reinterpret_cast<std::function<void *(SchedulerTask *, void *)>&>(task));
+        longPressTask.set(task);
     }
 
     bool GestureDetector::touchDown(int x, int y, int pointer, int button) {
