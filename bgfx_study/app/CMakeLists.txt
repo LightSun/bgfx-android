@@ -55,7 +55,7 @@ aux_source_directory(src/main/cpp/thirds/nanovg SRC_nanovg)
 aux_source_directory(src/main/cpp/thirds/nancanvas SRC_nancanvas)
 aux_source_directory(src/main/cpp/thirds/stb SRC_stb)
 
-aux_source_directory(src/main/cpp/android SRC_android)
+aux_source_directory(src/main/cpp/platform SRC_platform)
 aux_source_directory(src/main/cpp/core SRC_core)
 aux_source_directory(src/main/cpp/core/math SRC_math)
 aux_source_directory(src/main/cpp/thirds/input SRC_input)
@@ -64,7 +64,7 @@ aux_source_directory(src/main/cpp/thirds/utils SRC_h7_utils)
 add_library(
         bgfx_core
         SHARED
-        ${SRC_android}
+        ${SRC_platform}
         ${SRC_core}
         ${SRC_meshoptimizer}
         ${SRC_h7_utils}
@@ -101,6 +101,7 @@ target_link_libraries(
         bimg_decode
         bimg
         bx
+        timer
         ${OPENGL_LIB}
         android
         EGL
@@ -108,7 +109,6 @@ target_link_libraries(
 )
 target_link_libraries(
         bgfx_study
-        timer
         bgfx_core
         luajava
         native_app_glue

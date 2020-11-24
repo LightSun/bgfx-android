@@ -16,7 +16,7 @@
 #include "LuaUtils.h"
 #include "bx/debug.h"
 
-#include "android_pri.h"
+#include "../platform/android_pri.h"
 
 using namespace h7;
 

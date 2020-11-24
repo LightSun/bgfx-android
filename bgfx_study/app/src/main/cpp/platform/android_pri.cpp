@@ -13,7 +13,9 @@
 namespace Platforms{
 
     void releaseWindow(void* window){
+#ifdef ANDROID
         ANativeWindow* anw = static_cast<ANativeWindow *>(window);
         ANativeWindow_release(anw);
+#endif
     }
 }

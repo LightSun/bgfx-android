@@ -52,8 +52,7 @@ namespace h7 {
 	 * @param maxFlingDelay no fling event is fired when the time in seconds the finger was dragged is larger than this, 	see
 	 *           {@link GestureListener#fling(float, float, int)} */
         GestureDetector(float halfTapSquareSize, float tapCountInterval, float longPressDuration,
-                        float maxFlingDelay,
-                        GestureListener* listener);
+                        float maxFlingDelay, GestureListener* listener);
 
         /**
          * @param halfTapRectangleWidth half width in pixels of the rectangle around an initial touch event, see
@@ -65,8 +64,7 @@ namespace h7 {
         *           {@link GestureListener#longPress(float, float)} event.
         * @param maxFlingDelay no fling event is fired when the time in seconds the finger was dragged is larger than this, see
         *           {@link GestureListener#fling(float, float, int)} */
-        GestureDetector(float halfTapRectangleWidth, float halfTapRectangleHeight,
-                        float tapCountInterval,
+        GestureDetector(float halfTapRectangleWidth, float halfTapRectangleHeight, float tapCountInterval,
                         float longPressDuration, float maxFlingDelay, GestureListener* listener);
 
         bool touchDown (int x, int y, int pointer, int button) ;

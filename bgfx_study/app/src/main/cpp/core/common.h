@@ -13,7 +13,7 @@
 #include <bx/thread.h>
 #include <bx/file.h>
 
-#include "android_pri.h"
+#include "../platform/android_pri.h"
 
 /* C interface */
 #ifdef __cplusplus
