@@ -10,6 +10,60 @@
 #include "InputProcessor.h"
 
 namespace h7 {
+
+    class KeyEvent {
+    public:
+        static const int KEY_DOWN  = 0;
+        static const int KEY_UP    = 1;
+        static const int KEY_TYPED = 2;
+
+        long long timeStamp;
+        int type;
+        int keyCode;
+        char keyChar;
+    };
+    class TouchEvent {
+    public:
+        static const int TOUCH_DOWN = 0;
+        static const int TOUCH_UP = 1;
+        static const int TOUCH_DRAGGED = 2;
+        static const int TOUCH_SCROLLED = 3;
+        static const int TOUCH_MOVED = 4;
+
+        long long timeStamp;
+        int type;
+        int x;
+        int y;
+        int scrollAmountX;
+        int scrollAmountY;
+        int button;
+        int pointer;
+    };
+    enum Buttons {
+        LEFT = 0,
+        RIGHT = 1,
+        MIDDLE = 2,
+        BACK = 3,
+        FORWARD = 4
+    };
+
+    enum Peripheral {
+        HardwareKeyboard,
+        OnscreenKeyboard,
+        MultitouchScreen,
+        Accelerometer,
+        Compass,
+        Vibrator,
+        Gyroscope,
+        RotationVector,
+        Pressure
+    };
+    enum OnscreenKeyboardType {
+        Default, NumberPad, PhonePad, Email, Password, URI
+    };
+    enum Orientation {
+        Landscape, Portrait
+    };
     /** <p>
  * Interface to the input facilities. This allows polling the state of the keyboard, the touch screen and the accelerometer. On
  * some backends (desktop, gwt, etc) the touch screen is replaced by mouse input. The accelerometer is of course not available on
@@ -40,33 +94,6 @@ namespace h7 {
 
             virtual void canceled() = 0;
         };
-
-        enum Buttons {
-            LEFT = 0,
-            RIGHT = 1,
-            MIDDLE = 2,
-            BACK = 3,
-            FORWARD = 4
-        };
-
-        enum Peripheral {
-            HardwareKeyboard,
-            OnscreenKeyboard,
-            MultitouchScreen,
-            Accelerometer,
-            Compass,
-            Vibrator,
-            Gyroscope,
-            RotationVector,
-            Pressure
-        };
-        enum OnscreenKeyboardType {
-            Default, NumberPad, PhonePad, Email, Password, URI
-        };
-        enum Orientation {
-            Landscape, Portrait
-        };
-
         class Keys {
         public:
             const static int ANY_KEY = -1;

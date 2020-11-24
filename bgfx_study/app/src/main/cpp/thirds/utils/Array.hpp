@@ -29,19 +29,24 @@ namespace h7{
         size_t malCount; // memory alloc count
         size_t size;     // element count
 
-        const Comparator<T>* _com;
+        Comparator<T>* _com;
 
     public:
-        Array(size_t capacity, const Comparator<T>* com):malCount(capacity), _com(com){
+        Array(size_t capacity, const Comparator<T>* com):malCount(capacity), _com(
+                const_cast<Comparator <T> *>(com)){
             data = malloc(sizeof(T) * capacity);
             size = 0;
         }
         Array(const Comparator<T>* com): Array(16, com){}
+        Array():Array(16, NULL){}
         ~Array(){
             if(data){
                 free(data);
                 data = NULL;
             }
+        }
+        inline int getSize(){
+            return size;
         }
         inline bool add(const T& val){
             return add(size, val);

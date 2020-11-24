@@ -59,6 +59,7 @@ aux_source_directory(src/main/cpp/platform SRC_platform)
 aux_source_directory(src/main/cpp/core SRC_core)
 aux_source_directory(src/main/cpp/core/math SRC_math)
 aux_source_directory(src/main/cpp/thirds/input SRC_input)
+aux_source_directory(src/main/cpp/thirds/input/android SRC_input_and)
 aux_source_directory(src/main/cpp/thirds/utils SRC_h7_utils)
 
 add_library(
@@ -82,6 +83,7 @@ add_library(
         ${SRC_nanovg}
         ${SRC_nancanvas}
         ${SRC_input}
+        ${SRC_input_and}
 )
 find_library( # Sets the name of the path variable.
         log-lib
