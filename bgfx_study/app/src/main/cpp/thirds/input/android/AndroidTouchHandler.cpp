@@ -2,6 +2,7 @@
 // Created by Administrator on 2020/11/24 0024.
 //
 
+#include "AndroidTouchHandler.h"
 #include "AndroidInput.h"
 #include "AndroidInputJni.h"
 

@@ -5,12 +5,13 @@
 #ifndef BGFX_STUDY_ANDROIDINPUTJNI_H
 #define BGFX_STUDY_ANDROIDINPUTJNI_H
 
+#include "WeakObjectM.hpp"
+
 namespace h7{
     class KeyEventWrapper{
 
     };
-
-    class MotionEventWrapper{
+    class MotionEventWrapper:public WeakObjectM{
     public:
         static const int ACTION_DOWN = 0;
         static const int ACTION_UP = 1;
@@ -30,11 +31,11 @@ namespace h7{
         int x, y;
         int buttonState;
         float pressure;
-//TODO MotionEventWrapper impl
+
+        MotionEventWrapper();
+
         int getPointerId(int pointerIndex);
-
         float getPressure(int pointerIndex);
-
         float getX(int pointerIndex);
         float getY(int pointerIndex);
     };

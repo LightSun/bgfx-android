@@ -12,6 +12,8 @@ namespace h7 {
     class OnKeyListener{
 
     };
+
+    //TODO latter impl Input
     class AndroidInput : public Input {
 
     public:
@@ -37,8 +39,8 @@ namespace h7 {
         bool justPressedKeys[SUPPORTED_KEYS];
         bool justPressedButtons[NUM_TOUCHES];
 
-        Pool<KeyEvent*> usedKeyEvents = Pool(16, 100);
-        Pool<TouchEvent*> usedTouchEvents = Pool(16, 100);
+        Pool<KeyEvent*> usedKeyEvents = Pool<KeyEvent*>(16, 100);
+        Pool<TouchEvent*> usedTouchEvents = Pool<TouchEvent*>(16, 100);
 
         Array<OnKeyListener*> keyListeners;
         Array<KeyEvent*> keyEvents;

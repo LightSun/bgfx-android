@@ -18,20 +18,38 @@ namespace h7{
         if(button) free(button);
     }
     void AndroidInput::ensureSize(int expect) {
-        release();
-        realId = (int*)malloc(sizeof(int) * expect);
-        touchX = (int*)malloc(sizeof(int) * expect);
-        touchY = (int*)malloc(sizeof(int) * expect);
-        deltaX = (int*)malloc(sizeof(int) * expect);
-        deltaY = (int*)malloc(sizeof(int) * expect);
-        button = (int*)malloc(sizeof(int) * expect);
+        int oldLen = len_realId;
+        int* realId = (int*)malloc(sizeof(int) * expect);
+        int* touchX = (int*)malloc(sizeof(int) * expect);
+        int* touchY = (int*)malloc(sizeof(int) * expect);
+        int* deltaX = (int*)malloc(sizeof(int) * expect);
+        int* deltaY = (int*)malloc(sizeof(int) * expect);
+        int* button = (int*)malloc(sizeof(int) * expect);
 
-        pressure = (float*)malloc(sizeof(float) * expect);
-        touched = (bool*)malloc(sizeof(bool) * expect);
+        float* pressure = (float*)malloc(sizeof(float) * expect);
+        bool* touched = (bool*)malloc(sizeof(bool) * expect);
+#define RESET_FIELD(x, unitType)\
+if(this->x){\
+    memcpy(x, this->x, oldLen * sizeof(unitType));\
+    free(this->x);\
+    this->x = x;\
+}
+        //copy value and release old
+        RESET_FIELD(realId, int)
+        RESET_FIELD(touchX, int)
+        RESET_FIELD(touchY, int)
+        RESET_FIELD(deltaX, int)
+        RESET_FIELD(deltaY, int)
+        RESET_FIELD(button, int)
+        RESET_FIELD(pressure, float)
+        RESET_FIELD(touched, bool)
+
         len_realId = expect;
     }
     AndroidInput::AndroidInput() {
         ensureSize(NUM_TOUCHES);
+        for (int i = 0; i < len_realId; i++)
+            realId[i] = -1;
     }
     AndroidInput::~AndroidInput() {
         release();

@@ -2,6 +2,10 @@ package com.heaven7.android.hbmdx.input;
 
 import android.view.MotionEvent;
 
+import androidx.annotation.Keep;
+
+import com.heaven7.java.base.anno.CalledInternal;
+
 public final class MotionEventWrapper {
 
     private MotionEvent event;
@@ -25,6 +29,27 @@ public final class MotionEventWrapper {
         int buttonState = event.getButtonState();
         float pressure = event.getPressure(pointerIndex);
         nSet(nativePtr, action, x, y, pointerIndex, pointerId, pointerCount, buttonState, pressure, timeStamp);
+    }
+
+    @CalledInternal
+    @Keep
+    public static int getPointerId(MotionEventWrapper wrapper, int pointerIndex){
+        return wrapper.event != null ? wrapper.event.getPointerId(pointerIndex) : -1;
+    }
+    @CalledInternal
+    @Keep
+    public static float getPressure(MotionEventWrapper wrapper, int pointerIndex){
+        return wrapper.event != null ? wrapper.event.getPressure(pointerIndex) : 0;
+    }
+    @CalledInternal
+    @Keep
+    public static float getX(MotionEventWrapper wrapper, int pointerIndex){
+        return wrapper.event != null ? wrapper.event.getX(pointerIndex) : 0;
+    }
+    @Keep
+    @CalledInternal
+    public static float getY(MotionEventWrapper wrapper, int pointerIndex){
+        return wrapper.event != null ? wrapper.event.getY(pointerIndex) : 0;
     }
 
     public MotionEventWrapper() {

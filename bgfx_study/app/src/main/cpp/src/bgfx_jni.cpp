@@ -127,4 +127,3 @@ extern "C" JNIEXPORT void JNICALL Java_com_heaven7_android_bgfx_study_demo_Nativ
     lua_State *L = reinterpret_cast<lua_State *>(luaPtr);
     luaL_openlibs2(L, bgfx_libs);
 }
-

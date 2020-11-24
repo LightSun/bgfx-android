@@ -9,10 +9,10 @@ public final class AndroidInput {
 
     public void onTouch(MotionEvent event) {
         mWrapper.setEvent(event);
-        nOnTouch(getNativePtr(), mWrapper.getNativePtr());
+        nOnTouch(getNativePtr(), mWrapper.getNativePtr(), mWrapper);
     }
 
-    private static native void nOnTouch(long inputPtr, long mePtr);
+    private static native void nOnTouch(long inputPtr, long mePtr, MotionEventWrapper wrapper);
 
     public AndroidInput() {
         nativePtr = nAlloc();
