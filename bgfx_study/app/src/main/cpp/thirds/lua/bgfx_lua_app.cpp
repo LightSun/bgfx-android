@@ -2,11 +2,23 @@
 // Created by Administrator on 2020/8/22 0022.
 //
 
-#include "LuaUtils.h"
-#include "bgfx_lua_app.h"
-#include "bx/debug.h"
-#include "android_pri.h"
+#include <mutex>
 #include <atomic>
+#include <stdatomic.h>
+
+#include "bgfx_lua_app.h"
+//#include "bgfx_app.h"
+#include "bgfx_wrapper.h"
+
+#include "../core/common.h"
+
+#include "log.h"
+#include "LuaUtils.h"
+#include "bx/debug.h"
+
+#include "android_pri.h"
+
+using namespace h7;
 
 //#include <memory>
 namespace Bgfx_lua_app {
@@ -154,22 +166,7 @@ LuaApp::LuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME f
     this->func_destroy = func_destroy;
 }
 
-void LuaApp::init(LuaAppHolder *holder) {
-    auto pConfig = holder->config;
-    bgfx::Init *pInit = holder->bgfx_init;
-    //LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);
-    //LOGD("init config, w = %d, h = %d", pConfig->win_width, pConfig->win_height);
-    pInit->resolution.width = pConfig->win_width;
-    pInit->resolution.height = pConfig->win_height;
-
-    pInit->platformData.nwh = pConfig->window;
-    pInit->platformData.ndt = NULL;
-    pInit->platformData.context = NULL;
-    pInit->platformData.backBuffer = NULL;
-    pInit->platformData.backBufferDS = NULL;
-    bgfx::init(*pInit);
-    LOGD("bgfx init is called. holder = %p,func_init= %s ", holder, func_init);
-
+void LuaApp::onInit(){
     if (func_init) {
         lua_getglobal(L, func_init);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
@@ -180,7 +177,7 @@ void LuaApp::init(LuaAppHolder *holder) {
     }
 }
 
-void LuaApp::draw() {
+void LuaApp::onDraw() {
     if (func_draw) {
         lua_getglobal(L, func_draw);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
@@ -191,7 +188,7 @@ void LuaApp::draw() {
     }
 }
 
-void LuaApp::doPreInit() {
+void LuaApp::onPreInit() {
     if (func_preInit) {
         lua_getglobal(L, func_preInit);
         //LOGD("doPreInit");
@@ -204,61 +201,22 @@ void LuaApp::doPreInit() {
     }
 }
 
-void LuaApp::actDestroy(bool lightly) {
-    if(lightly){
-        _callLuaDestroy();
-        bgfx::shutdown();
-    } else{
-        if (getState() != APP_STATE_DESTROYED) {
-            setState(APP_STATE_DESTROYED);
-            ext_println("destroy");
-            //call destroy for lua
-            _callLuaDestroy();
+void LuaApp::onDestroy(bool lightly) {
+    _callLuaDestroy();
+    ext_println("onDestroy");
+    if(!lightly){
+        lua_pushnil(L);
+        lua_setglobal(L, func_preInit);
 
-            lua_pushnil(L);
-            lua_setglobal(L, func_preInit);
+        lua_pushnil(L);
+        lua_setglobal(L, func_init);
 
-            lua_pushnil(L);
-            lua_setglobal(L, func_init);
+        lua_pushnil(L);
+        lua_setglobal(L, func_draw);
 
-            lua_pushnil(L);
-            lua_setglobal(L, func_draw);
-
-            lua_pushnil(L);
-            lua_setglobal(L, func_destroy);
-            //destroy thread. window , and bgfx
-            //m_thread.shutdown();
-            bgfx::shutdown();
-        }
+        lua_pushnil(L);
+        lua_setglobal(L, func_destroy);
     }
-}
-
-bool LuaApp::isDestroyed() {
-    return getState() == APP_STATE_DESTROYED;
-}
-
-void LuaApp::quit() {
-    LOGD("LuaApp quit:...");
-    setState(APP_STATE_TO_QUIT);
-}
-
-bool LuaApp::isRunning() {
-    return state.load(std::memory_order_relaxed) == APP_STATE_RUNNING;
-}
-void LuaApp::markRunning() {
-    setState(APP_STATE_RUNNING);
-}
-unsigned char LuaApp::getState() {
-    return state.load(std::memory_order_relaxed);
-}
-void LuaApp::pause() {
-    setState(APP_STATE_PAUSED);
-}
-void LuaApp::setState(unsigned char s) {
-    state.store(s, std::memory_order_release);//对读线程可见
-}
-bool LuaApp::isPaused() {
-    return getState() == APP_STATE_PAUSED;
 }
 
 void LuaApp::onPause() {
@@ -294,7 +252,7 @@ static inline void performApp(LuaAppHolder *holder){
 
             case APP_STATE_RUNNING:
                 LOGD("APP_STATE_RUNNING");
-                demo->draw();
+                demo->onDraw();
                 //bx::debugPrintf("loop draw >>> %d", ++i);
                 break;
             case APP_STATE_NONE:
@@ -340,8 +298,7 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
                     LuaApp *demo = holder->app = static_cast<LuaApp *>(data->data);
                     LOGD("TYPE_LUA_APP_INIT , start LuaApp : %p", demo);
                     demo->markRunning();
-                    demo->doPreInit();
-                    demo->init(holder);
+                    demo->doInit(holder->bgfx_init, holder->config);
                     performApp(holder);
                     break;
                 }
@@ -354,8 +311,7 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
                     if(pApp != nullptr && !pApp->isDestroyed()){
                         //as bgfx should destroy onPause, we should reinit here
                         pApp->markRunning();
-                        pApp->doPreInit();
-                        pApp->init(holder);
+                        pApp->doInit(holder->bgfx_init, holder->config);
                         pApp->onResume();
                         //restart loop for draw
                         LOGD("resume: restart for draw.");

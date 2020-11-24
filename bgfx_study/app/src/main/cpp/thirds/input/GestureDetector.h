@@ -5,10 +5,10 @@
 #ifndef BGFX_STUDY_GESTUREDETECTOR_H
 #define BGFX_STUDY_GESTUREDETECTOR_H
 
-#include <Task.h>
+#include <math.h>
+#include "Task.h"
 #include "InputProcessor.h"
 #include "VelocityTracker.h"
-#include <math.h>
 
 namespace h7 {
     class GestureDetector : public InputProcessor {
@@ -93,8 +93,8 @@ namespace h7 {
         void setLongPressSeconds (float longPressSeconds);
         void setMaxFlingDelay (long maxFlingDelay);
     private:
-        bool isWithinTapRectangle (float x, float y, float centerX, float centerY) {
-            return fabsf(x - centerX) < tapRectangleWidth && fabsf(y - centerY) < tapRectangleHeight;
+        inline bool isWithinTapRectangle (float x, float y, float centerX, float centerY) {
+            return ::fabsf(x - centerX) < tapRectangleWidth && ::fabsf(y - centerY) < tapRectangleHeight;
         }
     };
 }

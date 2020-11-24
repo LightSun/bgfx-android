@@ -8,14 +8,12 @@
 #include <vector>
 #include <sstream>
 
-using namespace std;
-
 namespace h7 {
     template<typename T>
     class List {
 
     private:
-        vector <T> array;
+        std::vector <T> array;
 
     public:
         typedef int (*TravelFunc)(int, const T &);
@@ -28,7 +26,7 @@ namespace h7 {
             return array.size();
         }
 
-        inline const vector <T> getVector() {
+        inline const std::vector& <T> getVector() {
             return array;
         }
 
@@ -88,11 +86,11 @@ namespace h7 {
             return false;
         }
 
-        const T set(int index, const T &newT) {
+        const T& set(int index, const T &newT) {
             if (index >= size()) {
                 return nullptr;
             }
-            T old = array[index];
+            T& old = array[index];
             array[index] = newT;
             return old;
         }
@@ -101,7 +99,7 @@ namespace h7 {
             array.clear();
         }
 
-        const T removeAt(int index) {
+        const T& removeAt(int index) {
             if (index >= size()) {
                 std::string str = "";
                 str += "index out of range. index = ";
@@ -145,7 +143,7 @@ namespace h7 {
             }
         }
 
-        void map(MapFunc tl, List<void *> out) {
+        void map(MapFunc tl, List<void *>& out) {
             const size_t s = size();
             for (int i = 0; i < s; ++i) {
                 void *const result = tl(i, getAt(i));

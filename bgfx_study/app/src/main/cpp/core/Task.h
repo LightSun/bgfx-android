@@ -30,9 +30,9 @@ namespace h7{
     public:
         SchedulerTask(gn::TimerWrapper* timer);
         SchedulerTask();
-        ~SchedulerTask(){};
+        ~SchedulerTask();
 
-        void set(std::function<void*(SchedulerTask*,void*)> func);
+        void set(std::function<void*(SchedulerTask*,void*)>& func);
 
         void cancel();
         bool isScheduled();

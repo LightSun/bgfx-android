@@ -15,6 +15,7 @@
 
 #include "bgfx_wrapper.h"
 #include "bgfx_lua_app.h"
+#include "../core/common.h"
 #include "SkMemory.h"
 #include "bgfx_utils.h"
 
@@ -154,7 +155,7 @@ static int bgfx_startApp(lua_State *L) {
     const char *fn_init = lua_tostring(L, -3);
     const char *fn_draw = luaL_checkstring(L, -2);
     const char *fn_destroy = lua_tostring(L, -1);
-    auto pApp = new LuaApp(L, fn_pre_init, fn_init, fn_draw, fn_destroy);
+    auto pApp = new h7::LuaApp(L, fn_pre_init, fn_init, fn_draw, fn_destroy);
    // LuaUtils::push_new<LuaApp>(L, L, fn_pre_init, fn_init, fn_draw, fn_destroy);
     holder->start(pApp);
     return 0;
@@ -1002,7 +1003,7 @@ DEF_MTNAME(bgfx::Stats)
 DEF_MTNAME(bgfx::Caps)
 DEF_MTNAME(bgfx::VertexLayout)
 
-DEF_MTNAME(LuaApp)
+DEF_MTNAME(h7::LuaApp)
 //----------- only get_mtname ------
 DEF_MTNAME(bgfx::Memory)
 DEF_MTNAME(bgfx::VertexBufferHandle)
@@ -1021,7 +1022,7 @@ void SkLua::Load(lua_State *L) {
     REG_CLASS(L, bgfx::Caps);
     REG_CLASS(L, bgfx::VertexLayout);
 
-    REG_EMPTY_CLASS(L, LuaApp);
+    REG_EMPTY_CLASS(L, h7::LuaApp);
 
     REG_CLASS(L, bgfx::Memory);
     REG_CLASS(L, bgfx::VertexBufferHandle);

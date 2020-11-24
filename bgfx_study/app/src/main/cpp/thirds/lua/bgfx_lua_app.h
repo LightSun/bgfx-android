@@ -4,34 +4,22 @@
 
 #ifndef BGFX_STUDY_BGFX_LUA_APP_H
 #define BGFX_STUDY_BGFX_LUA_APP_H
-
-#include "bgfx_wrapper.h"
-#include "bgfx/bgfx.h"
+/*
 #include <bx/bx.h>
 #include <bx/thread.h>
 #include "../core/common.h"
-
-#include <atomic>
+*/
+/*
+ #include <atomic>
 #include <stdatomic.h>
 #include <mutex>
+ */
 
-#define TYPE_NONE 0;
-#define TYPE_LUA_APP_INIT    1
-#define TYPE_LUA_APP_PAUSE   2
-#define TYPE_QUIT_ALL        10
+#include <mutex>
 
-#define APP_STATE_NONE    1
-#define APP_STATE_RUNNING 2
-#define APP_STATE_PAUSED  3
-#define APP_STATE_TO_QUIT 4
-#define APP_STATE_DESTROYED 5
+#include "bgfx_app.h"
+#include <bx/thread.h>
 
-class LuaApp;
-class LuaAppHolder;
-class CmdData;
-
-typedef const char* FUNC_NAME;
-typedef void (*EndTask)(LuaAppHolder * holder);
 
 //防止指令重排. linux 内核可用 cpu_relax函数（效果相同）
 //#define barrier() __asm__ __volatile__("": : :"memory")
@@ -39,126 +27,104 @@ typedef void (*EndTask)(LuaAppHolder * holder);
 /*#define lua_runMain(L) \
     LuaAppHolder *pHolder = Bgfx_lua_app::getAppHolder(L); \
     pHolder->config->RunMain(reinterpret_cast<long>(L));*/
-
+namespace h7{
+    class LuaAppHolder;
+}
+struct lua_State;
 
 namespace Bgfx_lua_app{
 
     bool startApp(long ptr, entry::InitConfig *pConfig);
     bgfx::Init* requireInit(lua_State* L);
-    LuaAppHolder* getAppHolder(lua_State* L);
+    h7::LuaAppHolder* getAppHolder(lua_State* L);
 
     /**
      * release platform window.
      */
     void releaseWindow(long ptr);
 
-    void onLifecycle(long luaPtr, jint mark);
+    void onLifecycle(long luaPtr, int mark);
 }
 
-class LuaAppHolder{
-public:
-    LuaApp* app;
-    bgfx::Init* bgfx_init;
-    entry::InitConfig* config;
+namespace h7{
+    class LuaApp;
+    class LuaAppHolder;
 
-    ~LuaAppHolder();
-    LuaAppHolder();
+    typedef void (*EndTask)(LuaAppHolder * holder);
+    typedef const char* FUNC_NAME;
 
-    void quitApp();
-    void destroyApp();
+    class LuaAppHolder{
+    public:
+        LuaApp* app;
+        bgfx::Init* bgfx_init;
+        entry::InitConfig* config;
 
-    void startLoop(entry::InitConfig *pConfig);
-    void quitAll(EndTask task = NULL);
-    void start(LuaApp * app);
+        ~LuaAppHolder();
+        LuaAppHolder();
 
-    void pause();
-    void resume();
+        void quitApp();
+        void destroyApp();
 
-    bool isRunning();
+        void startLoop(entry::InitConfig *pConfig);
+        void quitAll(EndTask task = NULL);
+        void start(LuaApp * app);
 
-private:
-    static int32_t threadFunc(bx::Thread* _thread, void* _userData);
-    //bx thread can't be static
-    bx::Thread m_thread;
-    //can't use static
-    std::mutex _mutex;
-    std::condition_variable _condition;
-};
+        void pause();
+        void resume();
 
-class CmdData{
-public:
-    void * data;
-    uint8_t type = TYPE_NONE;
-    EndTask task;
+        bool isRunning();
 
-    CmdData(uint8_t type, void * data);
-    CmdData(uint8_t type, EndTask task);
-};
+    private:
+        static int32_t threadFunc(bx::Thread* _thread, void* _userData);
+        //bx thread can't be static
+        bx::Thread m_thread;
+        //can't use static
+        std::mutex _mutex;
+        std::condition_variable _condition;
+    };
 
-class LuaApp{
+    class CmdData{
+    public:
+        void * data;
+        uint8_t type = TYPE_NONE;
+        EndTask task;
 
-public:
-    /**
-     * init success means will draw after this.
-     * @param pConfig  the config
-     * @return  true if init success.
-     */
-    void init(LuaAppHolder *pConfig);
+        CmdData(uint8_t type, void * data);
+        CmdData(uint8_t type, EndTask task);
+    };
 
-    //called in sub-thread.
-    void draw();
+    class LuaApp: public h7::BgfxApp{
 
-    /** real destroy. not change state
-     * @param lightly if it light , it means just call onDestroy and never change state. also not clean lua ref.
-     * */
-    void actDestroy(bool lightly = false);
+    public:
+        /**
+          * create lua app with init, draw, destroy function.
+          * @param L the lua state
+          * @param preInit the pre init function name ,must be global stack
+          * @param func_init the init function name ,must be global stack
+          * @param func_draw the draw function name ,must be global stack
+          * @param func_destroy the draw destroy name ,must be global stack
+          */
+        LuaApp(lua_State* L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy);
 
-    bool isDestroyed();
+        //called in sub-thread.
+        void onDraw();
 
-    void quit();
+        void onPreInit();
+        void onInit();
+        void onDestroy(bool lightly);
 
-    void doPreInit();
+        void onPause();
 
-    void markRunning();
+        void onResume();
 
-    bool isRunning();
-
-    void pause();
-
-    inline unsigned char getState();
-
-    inline void setState(unsigned char s);
-    /**
-    * create lua app with init, draw, destroy function.
-    * @param L the lua state
-    * @param preInit the pre init function name ,must be global stack
-    * @param func_init the init function name ,must be global stack
-    * @param func_draw the draw function name ,must be global stack
-    * @param func_destroy the draw destroy name ,must be global stack
-    */
-    LuaApp(lua_State* L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy);
-
-    bool isPaused();
-
-    /**
-     * called on lifecycle 'onPause'
-     */
-    void onPause();
-    /**
-     * called on lifecycle 'onResume'
-     */
-    void onResume();
-
-private:
-    inline void _callLuaDestroy();
-    lua_State* L;
-    FUNC_NAME func_preInit;
-    FUNC_NAME func_init;
-    FUNC_NAME func_draw;
-    FUNC_NAME func_destroy;
-
-    std::atomic<uint8_t> state{APP_STATE_NONE};
-};
-
+    private:
+        inline void _callLuaDestroy();
+        lua_State* L;
+        FUNC_NAME func_preInit;
+        FUNC_NAME func_init;
+        FUNC_NAME func_draw;
+        FUNC_NAME func_destroy;
+    };
+}
 
 #endif //BGFX_STUDY_BGFX_LUA_APP_H

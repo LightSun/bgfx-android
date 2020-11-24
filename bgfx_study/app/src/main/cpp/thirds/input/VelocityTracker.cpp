@@ -35,15 +35,15 @@ using namespace h7;
 }
 
  float VelocityTracker::getVelocityX () {
-    float meanX = getAverage(this.meanX, numSamples);
-    float meanTime = getAverage(this.meanTime, numSamples) / 1000000000.0f;
+    float meanX = getAverage(this->meanX, numSamples);
+    float meanTime = getAverage(this->meanTime, numSamples) / 1000000000.0f;
     if (meanTime == 0) return 0;
     return meanX / meanTime;
 }
 
  float VelocityTracker::getVelocityY () {
-    float meanY = getAverage(this.meanY, numSamples);
-    float meanTime = getAverage(this.meanTime, numSamples) / 1000000000.0f;
+    float meanY = getAverage(this->meanY, numSamples);
+    float meanTime = getAverage(this->meanTime, numSamples) / 1000000000.0f;
     if (meanTime == 0) return 0;
     return meanY / meanTime;
 }

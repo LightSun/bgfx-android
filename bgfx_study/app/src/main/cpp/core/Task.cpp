@@ -22,7 +22,8 @@ namespace h7{
             _ctx = NULL;
         }
     }
-    void SchedulerTask::set(std::function<void *(SchedulerTask* task,void *userData)> func) {
+    //must use & for function,  or else doesn't support lambda.
+    void SchedulerTask::set(std::function<void *(SchedulerTask* task,void *userData)>& func) {
         this->func = func;
     }
     void SchedulerTask::cancel() {
