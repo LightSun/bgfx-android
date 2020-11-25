@@ -23,7 +23,7 @@ do{\
 
 namespace h7{
     static jclass _mew_class = nullptr;
-    MotionEventWrapper::MotionEventWrapper():WeakObjectM() {
+    MotionEventWrapper::MotionEventWrapper(){
         if(_mew_class == nullptr){
             _mew_class = getGlobalClass(getJNIEnv(), MEW_CLASS);
         }

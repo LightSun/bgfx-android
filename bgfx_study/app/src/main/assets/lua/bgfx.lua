@@ -34,6 +34,16 @@ function m.startApp(func_pre_init, func_init, func_draw, func_destroy)
     );
 end
 
+--- start app and render self. that means the render method called self'
+function m.startAppLoop(func_pre_init, func_init, func_draw, func_destroy)
+    return bgfx_lua.startApp(true,
+            func_wrap.wrapEasy(func_pre_init, "app_pre_init"),
+            func_wrap.wrapEasy(func_init, "app_init"),
+            func_wrap.wrapEasy(func_draw, "app_draw"),
+            func_wrap.wrapEasy(func_destroy, "app_destroy")
+    );
+end
+
 function m.setDebug(debugFlags)
     return bgfx_lua.setDebug(debugFlags);
 end

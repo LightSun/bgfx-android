@@ -7,21 +7,24 @@
 #include <stdio.h>
 
 #include "Array.hpp"
-#include "bx/bx.h"
+//#include "bx/bx.h"
 
 namespace h7 {
 
-    //must use pointer
+    /**
+     * a pool used to manage multi object.
+     * @tparam T the type
+     */
     template<typename T>
-    class Pool<T> {
+    class Pool {
 
     private:
         /** The maximum number of objects that will be pooled. */
         int _max;
-        /** The highest number of free objects. Can be reset any time. */
-        int peak;
+        /* The highest number of free objects. Can be reset any time. */
+        //int peak;
 
-        Array<T> *freeObjects;
+        Array<T*> *freeObjects;
     public:
         /** Creates a pool with an initial capacity of 16 and no maximum. */
         Pool():Pool(16, INT_MAX) {
@@ -35,7 +38,7 @@ namespace h7 {
          *           {@link #fill(int)} after instantiation if needed.
          * @param max The maximum number of free objects to store in this pool. */
         Pool(int initialCapacity, int max) {
-            freeObjects = new Array<T>(initialCapacity, nullptr);
+            freeObjects = new Array<T*>(initialCapacity, nullptr);
             this->_max = max;
         }
 
@@ -49,7 +52,7 @@ namespace h7 {
 
         /** Returns an object from this pool. The object may be new (from {@link #newObject()}) or reused (previously
 	 * {@link #free(Object) freed}). */
-        T& obtain() {
+        T* obtain() {
             return freeObjects->getSize() == 0 ? newObject() : freeObjects->pop();
         }
 
@@ -57,13 +60,13 @@ namespace h7 {
          * {@link #max} free objects, the specified object is reset but not added to the pool.
          * <p>
          * The pool does not check if an object is already freed, so the same object must not be freed multiple times. */
-        void free(T& object, bool reset = false) {
+        void free(T* object, bool _reset = false) {
             if (object != nullptr){
                 if (freeObjects->getSize() < _max) {
                     freeObjects->add(object);
-                    peak = bx::max(peak, freeObjects->getSize());
+                    //peak = bx::max(peak, freeObjects->getSize());
                 }
-                if(reset){
+                if(_reset){
                     reset(object);
                 }
             }
@@ -76,12 +79,12 @@ namespace h7 {
         void fill(int size) {
             for (int i = 0; i < size; i++)
                 if (freeObjects->getSize() < _max) freeObjects->add(newObject());
-            peak = bx::max(peak, freeObjects->getSize());
+            //peak = bx::max(peak, freeObjects->getSize());
         }
 
         /** Called when an object is freed to clear the state of the object for possible later reuse. The default implementation calls
          * {@link Poolable#reset()} if the object is {@link Poolable}. */
-        void reset(T& object) {
+        void reset(T* object) {
             Poolable* p = object;
             p->reset();
         }
@@ -90,19 +93,19 @@ namespace h7 {
          * <p>
          * The pool does not check if an object is already freed, so the same object must not be freed multiple times.
          * @see #free(Object) */
-        void freeAll(Array<T>* objects, bool _reset = false) {
+        void freeAll(Array<T*>* objects, bool _reset = false) {
             if(objects != nullptr){
-                Array<T>* freeObjects = this->freeObjects;
+                Array<T*>* freeObjects = this->freeObjects;
                 int _max = this->_max;
                 for (int i = 0, n = objects->getSize(); i < n; i++) {
-                    T& object = objects->get(i);
+                    T* object = objects->get(i);
                     if (object == nullptr) continue;
                     if (freeObjects->getSize() < _max) freeObjects->add(object);
                     if(_reset){
                         reset(object);
                     }
                 }
-                peak = bx::max(peak, freeObjects->getSize());
+                //peak = bx::max(peak, freeObjects->getSize());
             }
         }
 
@@ -131,7 +134,7 @@ namespace h7 {
         };
 
     protected:
-        virtual T newObject(){
+        virtual T* newObject(){
             return new T();
         }
     };

@@ -72,3 +72,7 @@ NVGcontext: add ref count.
    width和pitch的单位不同：width是像素，pitch是字节byte.因此一个640*480*8的位图和640*480*24的位图的width相同但pitch不同。
    pitch可能大于width个像素所占字节。有时为了高效处理，会将每个图形都对齐存储bgfx_calc_texture_size，这样pitch就包括了对齐使用的填充字节。
 
+=============== todo =====================
+-- do on config change, like surface-changed, redraw
+--
+

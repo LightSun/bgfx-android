@@ -29,11 +29,11 @@ namespace h7 {
 
         const V& get(const K &key, const V& defVal) {
             auto it = _map.find(key);
-            return it!= nullptr ? it->second: defVal;
+            return it->second;
         }
         const V& get(const K &key) {
             auto it = _map.find(key);
-            return it!= nullptr ? it->second: nullptr;
+            return it->second;
         }
 
         const V& remove(const K &key) {

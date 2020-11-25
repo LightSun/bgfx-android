@@ -107,9 +107,9 @@ namespace h7 {
                 for (int i = 0; i < pointerCount; i++) {
                     // pointerIndex = i;
                     event->getEventInfo(i);
-                    pointerId = event->getPointerId(pointerIndex);
-                    x = (int) event->getX(pointerIndex);
-                    y = (int) event->getY(pointerIndex);
+                    pointerId = event->getPointerId();
+                    x = (int) event->getX();
+                    y = (int) event->getY();
                     realPointerIndex = input.lookUpPointerIndex(pointerId);
                     if (realPointerIndex == -1) continue;
                     if (realPointerIndex >= AndroidInput::NUM_TOUCHES) break;
@@ -124,7 +124,7 @@ namespace h7 {
                     input.deltaY[realPointerIndex] = y - input.touchY[realPointerIndex];
                     input.touchX[realPointerIndex] = x;
                     input.touchY[realPointerIndex] = y;
-                    input.pressure[realPointerIndex] = event->getPressure(pointerIndex);
+                    input.pressure[realPointerIndex] = event->getPressure();
                 }
                 break;
         }

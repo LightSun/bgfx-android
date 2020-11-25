@@ -39,10 +39,10 @@ namespace h7{
 
         MotionEventWrapper();
 
-        inline int getPointerId(int pointerIndex){ return (int)(tmpArr[0]);}
-        inline float getX(int pointerIndex){ return tmpArr[1];}
-        inline float getY(int pointerIndex){ return tmpArr[2];}
-        inline float getPressure(int pointerIndex){ return tmpArr[3];}
+        inline int getPointerId(){ return (int)(tmpArr[0]);}
+        inline float getX(){ return tmpArr[1];}
+        inline float getY(){ return tmpArr[2];}
+        inline float getPressure(){ return tmpArr[3];}
         /**
          * recycle java object
          */

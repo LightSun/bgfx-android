@@ -78,4 +78,5 @@ if(this->x){\
         LOGW("lookUpPointerIndex: can't find pointer index for pointerId = %d", pointerId);
         return -1;
     }
+
 }

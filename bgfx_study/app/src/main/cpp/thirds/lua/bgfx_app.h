@@ -7,11 +7,16 @@
 
 #include <atomic>
 #include <stdatomic.h>
+#include <mutex>
+
+#include <bx/thread.h>
 
 #define TYPE_NONE 0
-#define TYPE_LUA_APP_INIT    1
-#define TYPE_LUA_APP_PAUSE   2
-#define TYPE_QUIT_ALL        10
+#define TYPE_APP_INIT    1         /* init app */
+#define TYPE_APP_PAUSE   2         /* pause app  not manul. eg: android's onPause */
+#define TYPE_APP_PAUSE_MANULLY   3 /* pause app manul */
+#define TYPE_APP_RENDER  4
+#define TYPE_QUIT_ALL    10
 
 #define APP_STATE_NONE    1
 #define APP_STATE_RUNNING 2
@@ -27,11 +32,14 @@ namespace bgfx{
 }
 
 namespace h7{
+    class AppController;
+    class BgfxApp;
 
     class BgfxApp{
 
     public:
-
+        /** there are two work mode:  render self and render trigger by events. */
+        bool renderSelf = false;
         /**
          * init success means will draw after this.
          * @param pConfig  the config
@@ -97,6 +105,46 @@ namespace h7{
 
     private:
         std::atomic<uint8_t> state{APP_STATE_NONE};
+    };
+
+    typedef void (*EndTask)(AppController * holder);
+    class AppController{
+    public:
+        BgfxApp* app;
+        bgfx::Init* bgfx_init;
+        entry::InitConfig* config;
+
+        ~AppController();
+        AppController();
+
+        void quitApp();
+        void destroyApp();
+
+        void startLoop(entry::InitConfig *pConfig);
+        void quitAll(EndTask task = NULL);
+        void start(BgfxApp * app);
+
+        void pause(bool manul = false);
+        void resume();
+
+        bool isRunning();
+
+    private:
+        static int32_t threadFunc(bx::Thread* _thread, void* _userData);
+        //bx thread can't be static
+        bx::Thread m_thread;
+        //can't use static
+        std::mutex _mutex;
+        std::condition_variable _condition;
+    };
+    class CmdData{
+    public:
+        void * data;
+        uint8_t type = TYPE_NONE;
+        EndTask task;
+
+        CmdData(uint8_t type, void * data);
+        CmdData(uint8_t type, EndTask task);
     };
 }
 
