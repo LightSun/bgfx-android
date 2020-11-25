@@ -18,23 +18,49 @@ namespace h7{
             deleteWeakObject();
         }
         /** set the object to weak reference */
-        void setRefObject(jobject obj) {
+        inline void setRefObject(jobject obj) {
             weak = getJNIEnv()->NewWeakGlobalRef(obj);
         }
         /**
          * after call this you should call env->DeleteLocalRef().
          * */
-        jobject getRefObject() {
+        inline jobject getRefObject() {
             if (weak == NULL) {
                 return NULL;
             }
             return getJNIEnv()->NewLocalRef(weak);
         }
 
-        void deleteWeakObject() {
+        inline void deleteWeakObject() {
             if (weak != NULL) {
                 getJNIEnv()->DeleteWeakGlobalRef(weak);
                 weak = NULL;
+            }
+        }
+    };
+
+    class GlobalObjectM{
+    private:
+        jobject ref;
+    public:
+        /** set the object to weak reference */
+        inline void setRefObject(jobject obj) {
+            ref = getJNIEnv()->NewGlobalRef(obj);
+        }
+        /**
+         * after call this you should call env->DeleteLocalRef().
+         * */
+        inline jobject getRefObject() {
+            if (ref == NULL) {
+                return NULL;
+            }
+            return getJNIEnv()->NewLocalRef(ref);
+        }
+
+        inline void deleteRefObject() {
+            if (ref != NULL) {
+                getJNIEnv()->DeleteGlobalRef(ref);
+                ref = NULL;
             }
         }
     };

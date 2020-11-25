@@ -7,11 +7,14 @@
 
 #include "WeakObjectM.hpp"
 
+#define LEN_MOTION_INFO 4
+
 namespace h7{
     class KeyEventWrapper{
 
     };
-    class MotionEventWrapper:public WeakObjectM{
+
+    class MotionEventWrapper:public GlobalObjectM{
     public:
         static const int ACTION_DOWN = 0;
         static const int ACTION_UP = 1;
@@ -32,12 +35,19 @@ namespace h7{
         int buttonState;
         float pressure;
 
+        float tmpArr[LEN_MOTION_INFO];
+
         MotionEventWrapper();
 
-        int getPointerId(int pointerIndex);
-        float getPressure(int pointerIndex);
-        float getX(int pointerIndex);
-        float getY(int pointerIndex);
+        inline int getPointerId(int pointerIndex){ return (int)(tmpArr[0]);}
+        inline float getX(int pointerIndex){ return tmpArr[1];}
+        inline float getY(int pointerIndex){ return tmpArr[2];}
+        inline float getPressure(int pointerIndex){ return tmpArr[3];}
+        /**
+         * recycle java object
+         */
+        void jRecycle();
+        void getEventInfo(int pointerIndex);
     };
 }
 

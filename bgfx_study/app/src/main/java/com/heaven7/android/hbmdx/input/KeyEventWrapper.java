@@ -2,10 +2,26 @@ package com.heaven7.android.hbmdx.input;
 
 import android.view.KeyEvent;
 
-public class KeyEventWrapper {
+import java.util.LinkedList;
+
+public final class KeyEventWrapper {
 
     private KeyEvent event;
     private long nativePtr;
+
+    private static final LinkedList<KeyEventWrapper> sPool = new LinkedList<>();
+    static {
+        for (int i = 0; i < InputConfig.POOL_COUNT_KEY; i++) {
+            sPool.addLast(new KeyEventWrapper());
+        }
+    }
+    public static KeyEventWrapper obtain(){
+        KeyEventWrapper wrapper = sPool.pollFirst();
+        return wrapper != null ? wrapper : new KeyEventWrapper();
+    }
+    public static void recycle(KeyEventWrapper wrapper){
+        sPool.addLast(wrapper);
+    }
 
     public KeyEvent getEvent() {
         return event;

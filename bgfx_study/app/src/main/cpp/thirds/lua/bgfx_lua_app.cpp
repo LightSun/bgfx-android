@@ -241,7 +241,7 @@ void LuaApp::_callLuaDestroy() {
 //---------------------------------------------------------------------
 
 static inline void performApp(LuaAppHolder *holder){
-    LuaApp *demo = holder->app;
+    BgfxApp *demo = holder->app;
     bgfx::frame();
     LOGD("loop draw >>> start. app = %p", demo);
     for(;; ){
@@ -295,7 +295,7 @@ int32_t LuaAppHolder::threadFunc(bx::Thread *_thread, void *_userData) {
             data = static_cast<CmdData *>(pVoid);
             switch (data->type) {
                 case TYPE_LUA_APP_INIT: {
-                    LuaApp *demo = holder->app = static_cast<LuaApp *>(data->data);
+                    BgfxApp *demo = holder->app = static_cast<BgfxApp *>(data->data);
                     LOGD("TYPE_LUA_APP_INIT , start LuaApp : %p", demo);
                     demo->markRunning();
                     demo->doInit(holder->bgfx_init, holder->config);
@@ -356,7 +356,7 @@ void LuaAppHolder::quitAll(EndTask task) {
     }
 }
 
-void LuaAppHolder::start(LuaApp *app) {
+void LuaAppHolder::start(BgfxApp *app) {
     if(this->app != nullptr){
         LOGW("start LuaApp failed: last app exists,ptr = %p. you should quit first", this->app);
         return;

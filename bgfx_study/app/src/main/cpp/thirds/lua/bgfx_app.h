@@ -85,6 +85,7 @@ namespace h7{
         }
         uint8_t getState();
         void setState(uint8_t s);
+
         /**
          * called on lifecycle 'onPause'. this is called outside. eg: android activity's onPause
          */

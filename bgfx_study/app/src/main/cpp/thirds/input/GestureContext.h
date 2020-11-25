@@ -8,7 +8,10 @@
 namespace h7{
 
     unsigned long long getCurrentEventTime();
+
     bool isTouched(int button);
+
+    void requestRender();
 }
 
 #endif //BGFX_STUDY_GESTURECONTEXT_H

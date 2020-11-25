@@ -6,10 +6,29 @@ import androidx.annotation.Keep;
 
 import com.heaven7.java.base.anno.CalledInternal;
 
+import java.util.LinkedList;
+
+@Keep
 public final class MotionEventWrapper {
 
     private MotionEvent event;
     private long nativePtr;
+
+    private static final LinkedList<MotionEventWrapper> sPool = new LinkedList<>();
+
+    static {
+        for (int i = 0; i < InputConfig.POOL_COUNT_MOTION; i++) {
+            sPool.addLast(new MotionEventWrapper());
+        }
+    }
+
+    public static MotionEventWrapper obtain(){
+        MotionEventWrapper wrapper = sPool.pollFirst();
+        return wrapper != null ? wrapper : new MotionEventWrapper();
+    }
+    public static void recycle(MotionEventWrapper wrapper){
+        sPool.addLast(wrapper);
+    }
 
     public MotionEvent getEvent() {
         return event;
@@ -31,25 +50,21 @@ public final class MotionEventWrapper {
         nSet(nativePtr, action, x, y, pointerIndex, pointerId, pointerCount, buttonState, pressure, timeStamp);
     }
 
-    @CalledInternal
-    @Keep
-    public static int getPointerId(MotionEventWrapper wrapper, int pointerIndex){
-        return wrapper.event != null ? wrapper.event.getPointerId(pointerIndex) : -1;
-    }
-    @CalledInternal
-    @Keep
-    public static float getPressure(MotionEventWrapper wrapper, int pointerIndex){
-        return wrapper.event != null ? wrapper.event.getPressure(pointerIndex) : 0;
-    }
-    @CalledInternal
-    @Keep
-    public static float getX(MotionEventWrapper wrapper, int pointerIndex){
-        return wrapper.event != null ? wrapper.event.getX(pointerIndex) : 0;
-    }
     @Keep
     @CalledInternal
-    public static float getY(MotionEventWrapper wrapper, int pointerIndex){
-        return wrapper.event != null ? wrapper.event.getY(pointerIndex) : 0;
+    public static void getInfo(MotionEventWrapper wrapper, int pointerIndex, float[] out){
+        MotionEvent event = wrapper.event;
+        if(event != null){
+            out[0] = event.getPointerId(pointerIndex);
+            out[1] = event.getX(pointerIndex);
+            out[2] = event.getY(pointerIndex);
+            out[3] = event.getPressure(pointerIndex);
+        }else {
+            out[0] = -1;
+            out[1] = 0;
+            out[2] = 0;
+            out[3] = 0;
+        }
     }
 
     public MotionEventWrapper() {

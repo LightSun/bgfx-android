@@ -4,12 +4,12 @@ import android.view.MotionEvent;
 
 public final class AndroidInput {
 
-    private final MotionEventWrapper mWrapper = new MotionEventWrapper();
     private long nativePtr;
 
     public void onTouch(MotionEvent event) {
-        mWrapper.setEvent(event);
-        nOnTouch(getNativePtr(), mWrapper.getNativePtr(), mWrapper);
+        MotionEventWrapper wrapper = MotionEventWrapper.obtain();
+        wrapper.setEvent(event);
+        nOnTouch(getNativePtr(), wrapper.getNativePtr(), wrapper);
     }
 
     private static native void nOnTouch(long inputPtr, long mePtr, MotionEventWrapper wrapper);

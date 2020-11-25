@@ -4,16 +4,6 @@
 
 #ifndef BGFX_STUDY_BGFX_LUA_APP_H
 #define BGFX_STUDY_BGFX_LUA_APP_H
-/*
-#include <bx/bx.h>
-#include <bx/thread.h>
-#include "../core/common.h"
-*/
-/*
- #include <atomic>
-#include <stdatomic.h>
-#include <mutex>
- */
 
 #include <mutex>
 
@@ -55,7 +45,7 @@ namespace h7{
 
     class LuaAppHolder{
     public:
-        LuaApp* app;
+        BgfxApp* app;
         bgfx::Init* bgfx_init;
         entry::InitConfig* config;
 
@@ -67,7 +57,7 @@ namespace h7{
 
         void startLoop(entry::InitConfig *pConfig);
         void quitAll(EndTask task = NULL);
-        void start(LuaApp * app);
+        void start(BgfxApp * app);
 
         void pause();
         void resume();

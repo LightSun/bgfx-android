@@ -170,7 +170,7 @@ namespace h7{
             return -1;
         }
         bool remove(const T& val){
-            auto i = indexOf(val, _com);
+            auto i = indexOf(val);
             removeAt(i);
             return i >= 0;
         }

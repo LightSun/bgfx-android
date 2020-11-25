@@ -5,6 +5,7 @@
 #ifndef BGFX_STUDY_ANDROIDINPUT_H
 #define BGFX_STUDY_ANDROIDINPUT_H
 
+#include <mutex>
 #include "../Input.h"
 #include "../../utils/Pool.hpp"
 
@@ -52,7 +53,15 @@ namespace h7 {
         int getFreePointerIndex();
         int lookUpPointerIndex(int pointerId);
 
+        inline void lockTouch(){
+            _mutex.lock();
+        }
+        inline void unlockTouch(){
+            _mutex.unlock();
+        }
+
     private:
+        std::mutex _mutex;
         void release();
         void ensureSize(int expect);
     };

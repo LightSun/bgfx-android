@@ -9,15 +9,15 @@
 
 #define MEW_CLASS  "com/heaven7/android/hbmdx/input/MotionEventWrapper"
 #define MEW_CLASS_SIG "L" MEW_CLASS ";"
-#define SIG_GET_F "(" MEW_CLASS_SIG "I)F"
-#define SIG_GET_I "(" MEW_CLASS_SIG "I)I"
+
+#define SIG_MEV_RECYCLE "(" MEW_CLASS_SIG ")V"
+#define SIG_MEV_INFO "(" MEW_CLASS_SIG "I[F)V"
 
 #define USE_REF_OBJECT(x) \
 do{\
  auto ref = getRefObject();\
- auto result = x;\
+ x;\
  pEnv->DeleteLocalRef(ref);\
- return result; \
 } while(0);
 
 
@@ -28,25 +28,18 @@ namespace h7{
             _mew_class = getGlobalClass(getJNIEnv(), MEW_CLASS);
         }
     }
-    float MotionEventWrapper::getX(int pointerIndex) {
+    void MotionEventWrapper::jRecycle() {
         auto pEnv = getJNIEnv();
-        auto mid = pEnv->GetMethodID(_mew_class, "getX", SIG_GET_F);
-        USE_REF_OBJECT(pEnv->CallStaticFloatMethod(_mew_class, mid, ref, pointerIndex))
+        auto mid = pEnv->GetMethodID(_mew_class, "recycle", SIG_MEV_RECYCLE);
+        USE_REF_OBJECT(pEnv->CallStaticVoidMethod(_mew_class, mid, ref))
+        deleteRefObject();
     }
-    float MotionEventWrapper::getY(int pointerIndex) {
+    void MotionEventWrapper::getEventInfo(int pointerIndex) {
         auto pEnv = getJNIEnv();
-        auto mid = pEnv->GetMethodID(_mew_class, "getY", SIG_GET_F);
-        USE_REF_OBJECT(pEnv->CallStaticFloatMethod(_mew_class, mid, ref, pointerIndex))
-    }
-    float MotionEventWrapper::getPressure(int pointerIndex) {
-        auto pEnv = getJNIEnv();
-        auto mid = pEnv->GetMethodID(_mew_class, "getPressure", SIG_GET_F);
-        USE_REF_OBJECT(pEnv->CallStaticFloatMethod(_mew_class, mid, ref, pointerIndex))
-    }
-    int MotionEventWrapper::getPointerId(int pointerIndex) {
-        auto pEnv = getJNIEnv();
-        auto mid = pEnv->GetMethodID(_mew_class, "getPointerId", SIG_GET_I);
-        USE_REF_OBJECT(pEnv->CallStaticIntMethod(_mew_class, mid, ref, pointerIndex))
+        auto pArray = pEnv->NewFloatArray(LEN_MOTION_INFO);
+        auto mid = pEnv->GetMethodID(_mew_class, "getInfo", SIG_MEV_INFO);
+        USE_REF_OBJECT(pEnv->CallStaticVoidMethod(_mew_class, mid, ref, pointerIndex, pArray))
+        pEnv->GetFloatArrayRegion(pArray, 0, LEN_MOTION_INFO, tmpArr);
     }
     extern "C"
     JNIEXPORT jlong JNICALL
