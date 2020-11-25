@@ -26,7 +26,9 @@ public final class MotionEventWrapper {
         MotionEventWrapper wrapper = sPool.pollFirst();
         return wrapper != null ? wrapper : new MotionEventWrapper();
     }
+    @Keep
     public static void recycle(MotionEventWrapper wrapper){
+        wrapper.recycleEvent();
         sPool.addLast(wrapper);
     }
 
@@ -81,11 +83,14 @@ public final class MotionEventWrapper {
             nDealloc(nativePtr);
             nativePtr = 0;
         }
+        recycleEvent();
+        super.finalize();
+    }
+    private void recycleEvent(){
         if(event != null){
             event.recycle();
             event = null;
         }
-        super.finalize();
     }
 
     private static native long nAlloc();

@@ -142,10 +142,6 @@ if(this->x){\
             keysToCatch.add(keycode);
         }
     }
-    bool AndroidInput::isCatchKey(int keycode) {
-        return keysToCatch.contains(keycode);
-    }
-
     bool AndroidInput::isTouched() {
         lockTouch();
         if (hasMultitouch) {

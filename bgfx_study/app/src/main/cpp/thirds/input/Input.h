@@ -760,8 +760,7 @@ namespace h7 {
         virtual void getRotationMatrix(float *matrix, int matLen) = 0;
 
         /** @return the time of the event currently reported to the {@link InputProcessor}. */
-        virtual long getCurrentEventTime() = 0;
-
+        virtual long long getCurrentEventTime() = 0;
         /**
          * //@Deprecated use {@link Input#setCatchKey(int keycode, bool catchKey)} instead
          *

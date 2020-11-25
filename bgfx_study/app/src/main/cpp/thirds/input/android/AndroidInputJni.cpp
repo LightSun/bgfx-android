@@ -116,4 +116,26 @@ namespace h7{
         KeyEventWrapper* k = reinterpret_cast<KeyEventWrapper *>(ptr);
         delete k;
     }
+    extern "C"
+    JNIEXPORT void JNICALL
+    Java_com_heaven7_android_hbmdx_input_KeyEventWrapper_nSet(JNIEnv *env, jclass clazz, jlong ptr,
+                                                              jint action, jint repeat_count,
+                                                              jint key_code, jstring chars,
+                                                              jlong time_stamp, jint unicode_char,
+                                                              jboolean alt_pressed) {
+        KeyEventWrapper* kew = rCast(KeyEventWrapper*, ptr);
+        kew->action = action;
+        kew->repeatCount = repeat_count;
+        kew->keyCode = key_code;
+        kew->timeStamp = time_stamp;
+        kew->unicodeChar = unicode_char;
+        kew->altPressed = alt_pressed;
+        if(chars != nullptr){
+            auto len = env->GetStringLength(chars);
+            kew->allocateChars(len);
+            env->GetStringUTFRegion(chars, 0, len, kew->chars);
+        } else{
+            kew->allocateChars(0);
+        }
+    }
 }

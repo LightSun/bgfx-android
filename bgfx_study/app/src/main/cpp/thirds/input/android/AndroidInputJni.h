@@ -16,10 +16,27 @@ namespace h7{
         int action;
         int repeatCount;
         int keyCode;
-        const char* chars;
+        char* chars = NULL;
         long long timeStamp;
         int unicodeChar;
         bool altPressed;
+
+        ~KeyEventWrapper(){
+            if(chars){
+                free(chars);
+                chars = NULL;
+            }
+        }
+        inline void allocateChars(int len){
+            if(chars != nullptr){
+                free(chars);
+                chars = NULL;
+            }
+            if(len > 0){
+                chars = static_cast<char *>(malloc(len + 1));
+                chars[len- 1] = '\0';
+            }
+        }
     };
 
     class MotionEventWrapper:public GlobalObjectM{

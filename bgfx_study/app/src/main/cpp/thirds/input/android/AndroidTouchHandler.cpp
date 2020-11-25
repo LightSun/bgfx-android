@@ -150,7 +150,7 @@ namespace h7 {
         KeyEvent* event = NULL;
 
         if (e.keyCode == KeyEvent::KEYCODE_UNKNOWN && e.action == KeyEvent::ACTION_MULTIPLE) {
-            const char* chars = e.chars;
+            char* chars = e.chars;
             for (int i = 0; i < strlen(chars); i++) {
                 event = input.usedKeyEvents.obtain();
                 event->timeStamp = e.timeStamp;

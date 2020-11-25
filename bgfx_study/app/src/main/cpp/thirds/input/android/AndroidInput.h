@@ -9,6 +9,7 @@
 #include "../Input.h"
 #include "../../utils/Pool.hpp"
 #include "IAndroidInput.h"
+#include "WeakObjectM.hpp"
 
 #define LOCK_UNTIL_RESULT(x)\
         do{\
@@ -20,7 +21,7 @@
 
 namespace h7 {
     //TODO latter impl Input
-    class AndroidInput : public Input,IAndroidInput {
+    class AndroidInput: public Input,IAndroidInput,WeakObjectM {
 
     public:
         const static int NUM_TOUCHES = 20;
@@ -52,7 +53,9 @@ namespace h7 {
         Array<OnKeyListener *> keyListeners;
         Array<KeyEvent *> keyEvents;
         Array<TouchEvent *> touchEvents;
+
         InputProcessor* _inputProcessor;
+        Array<OnGenericMotionListener*> genericMotionListeners;
 
         bool gyroscopeAvailable = false;
         bool accelerometerAvailable = false;
@@ -129,7 +132,12 @@ namespace h7 {
         inline void setOnscreenKeyboardVisible (bool visible){
             setOnscreenKeyboardVisible(visible, OnscreenKeyboardType::Default);
         }
-
+        inline void addKeyListener(OnKeyListener* listener) {
+            keyListeners.add(listener);
+        }
+        inline void addGenericMotionListener (OnGenericMotionListener* listener){
+            genericMotionListeners.add(listener);
+        }
         inline void setInputProcessor(InputProcessor* processor){
             this->_inputProcessor = processor;
         }
@@ -181,6 +189,28 @@ namespace h7 {
         }
         inline float getGyroscopeZ() {
             return gyroscopeValues[2];
+        }
+        inline int getDeltaX(){
+            return deltaX[0];
+        }
+        inline int getDeltaX(int pointerIndex){
+            return deltaX[pointerIndex];
+        }
+        inline int getDeltaY(){
+            return deltaY[0];
+        }
+        inline int getDeltaY(int pointerIndex){
+            return deltaY[pointerIndex];
+        }
+        inline long long getCurrentEventTime () {
+            return currentEventTimeStamp;
+        }
+        inline void setCursorCatched(bool catched){
+        }
+        inline bool isCursorCatched(){
+            return false;
+        }
+        void setCursorPosition(int x, int y){
         }
         inline void lockTouch() {
             _mutex.lock();

@@ -12,55 +12,55 @@
 namespace h7{
     class WeakObjectM {
     private:
-        jweak weak;
+        jweak _weak;
     public:
         ~WeakObjectM(){
             deleteWeakObject();
         }
         /** set the object to weak reference */
         inline void setRefObject(jobject obj) {
-            weak = getJNIEnv()->NewWeakGlobalRef(obj);
+            _weak = getJNIEnv()->NewWeakGlobalRef(obj);
         }
         /**
          * after call this you should call env->DeleteLocalRef().
          * */
         inline jobject getRefObject() {
-            if (weak == NULL) {
+            if (_weak == NULL) {
                 return NULL;
             }
-            return getJNIEnv()->NewLocalRef(weak);
+            return getJNIEnv()->NewLocalRef(_weak);
         }
 
         inline void deleteWeakObject() {
-            if (weak != NULL) {
-                getJNIEnv()->DeleteWeakGlobalRef(weak);
-                weak = NULL;
+            if (_weak != NULL) {
+                getJNIEnv()->DeleteWeakGlobalRef(_weak);
+                _weak = NULL;
             }
         }
     };
 
     class GlobalObjectM{
     private:
-        jobject ref;
+        jobject _ref;
     public:
         /** set the object to weak reference */
         inline void setRefObject(jobject obj) {
-            ref = getJNIEnv()->NewGlobalRef(obj);
+            _ref = getJNIEnv()->NewGlobalRef(obj);
         }
         /**
          * after call this you should call env->DeleteLocalRef().
          * */
         inline jobject getRefObject() {
-            if (ref == NULL) {
+            if (_ref == NULL) {
                 return NULL;
             }
-            return getJNIEnv()->NewLocalRef(ref);
+            return getJNIEnv()->NewLocalRef(_ref);
         }
 
         inline void deleteRefObject() {
-            if (ref != NULL) {
-                getJNIEnv()->DeleteGlobalRef(ref);
-                ref = NULL;
+            if (_ref != NULL) {
+                getJNIEnv()->DeleteGlobalRef(_ref);
+                _ref = NULL;
             }
         }
     };
