@@ -16,6 +16,12 @@ namespace h7 {
         static const int KEY_DOWN  = 0;
         static const int KEY_UP    = 1;
         static const int KEY_TYPED = 2;
+        //relative android
+        static const int KEYCODE_BACK  = 4;
+        static const int KEYCODE_UNKNOWN   = 0;
+        static const int ACTION_MULTIPLE  = 2;
+        static const int ACTION_DOWN      = 0;
+        static const int ACTION_UP        = 1;
 
         long long timeStamp;
         int type;
@@ -59,7 +65,7 @@ namespace h7 {
         Pressure
     };
     enum OnscreenKeyboardType {
-        Default, NumberPad, PhonePad, Email, Password, URI
+        Default = 0, NumberPad = 1, PhonePad = 2, Email = 3, Password = 4, URI = 5
     };
     enum Orientation {
         Landscape, Portrait
@@ -89,11 +95,6 @@ namespace h7 {
   * */
     class Input {
     public:
-        class TextInputListener {
-            virtual void input(const char *text) = 0;
-
-            virtual void canceled() = 0;
-        };
         class Keys {
         public:
             const static int ANY_KEY = -1;
@@ -702,27 +703,6 @@ namespace h7 {
          * @return true or false. */
         virtual bool isKeyJustPressed(int key) = 0;
 
-        /** System dependent method to input a string of text. A dialog box will be created with the given title and the given text as a
-         * message for the user. Will use the Default keyboard type.
-         * Once the dialog has been closed the provided {@link TextInputListener} will be called on the rendering thread.
-         *
-         * @param listener The TextInputListener.
-         * @param title The title of the text input dialog.
-         * @param text The message presented to the user. */
-        virtual void getTextInput(TextInputListener listener, const char *title, const char *text,
-                          const char *hint) = 0;
-
-        /** System dependent method to input a string of text. A dialog box will be created with the given title and the given text as a
-         * message for the user. Once the dialog has been closed the provided {@link TextInputListener} will be called on the rendering
-         * thread.
-         *
-         * @param listener The TextInputListener.
-         * @param title The title of the text input dialog.
-         * @param text The message presented to the user.
-         * @param type which type of keyboard we wish to display */
-        virtual void getTextInput(TextInputListener listener, const char *title, const char *text,
-                          const char *hint, OnscreenKeyboardType type) = 0;
-
         /** Sets the on-screen keyboard visible if available. Will use the Default keyboard type.
          *
          * @param visible visible or not */
@@ -745,7 +725,7 @@ namespace h7 {
          * the pattern at which to start the repeat.
          * @param pattern an array of longs of times to turn the vibrator on or off.
          * @param repeat the index into pattern at which to repeat, or -1 if you don't want to repeat. */
-        virtual void vibrate(long *pattern, int patLen, int repeat) = 0;
+        virtual void vibrate(long long *pattern, int patLen, int repeat) = 0;
 
         /** Stops the vibrator */
         virtual void cancelVibrate() = 0;
@@ -824,7 +804,6 @@ namespace h7 {
          * @param catchKey whether to catch the given keycode
          */
         virtual void setCatchKey(int keycode, bool catchKey) = 0;
-
         /**
          *
          * @param keycode keycode to check if caught
@@ -836,10 +815,10 @@ namespace h7 {
          * {@link ApplicationListener#render()} method each frame.
          *
          * @param processor the InputProcessor */
-        virtual void setInputProcessor(InputProcessor processor) = 0;
+        virtual void setInputProcessor(InputProcessor* processor) = 0;
 
         /** @return the currently set {@link InputProcessor} or null. */
-        virtual InputProcessor getInputProcessor() = 0;
+        virtual InputProcessor* getInputProcessor() = 0;
 
         /** Queries whether a {@link Peripheral} is currently available. In case of Android and the {@link Peripheral#HardwareKeyboard}
          * this returns the whether the keyboard is currently slid out or not.

@@ -127,6 +127,10 @@ namespace h7{
     bool AppController::isRunning() {
         return app != nullptr && m_thread.isRunning();
     }
+    void AppController::requestRender() {
+        m_thread.push(new CmdData(TYPE_APP_RENDER, app));
+        LOGD("AppController >>> requestRender");
+    }
 
     CmdData::CmdData(uint8_t type, void *data) : type(type), data(data) {
 

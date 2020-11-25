@@ -11,6 +11,8 @@
 #define SkDebugf(fmt, ...)  bx::debugPrintf(fmt, __VA_ARGS__)
 #define s_char signed char
 
+#define sCast(type, x) static_cast<type>(x)
+#define rCast(type, x) reinterpret_cast<type>(x)
 
 #define FREE_POINTER(q) if(q){ \
     free(q);  \

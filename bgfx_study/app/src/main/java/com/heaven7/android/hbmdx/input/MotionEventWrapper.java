@@ -17,7 +17,7 @@ public final class MotionEventWrapper {
     private static final LinkedList<MotionEventWrapper> sPool = new LinkedList<>();
 
     static {
-        for (int i = 0; i < InputConfig.POOL_COUNT_MOTION; i++) {
+        for (int i = 0; i < InputCons.POOL_COUNT_MOTION; i++) {
             sPool.addLast(new MotionEventWrapper());
         }
     }
@@ -80,6 +80,10 @@ public final class MotionEventWrapper {
         if (nativePtr != 0) {
             nDealloc(nativePtr);
             nativePtr = 0;
+        }
+        if(event != null){
+            event.recycle();
+            event = null;
         }
         super.finalize();
     }

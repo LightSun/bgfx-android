@@ -11,7 +11,7 @@ public final class KeyEventWrapper {
 
     private static final LinkedList<KeyEventWrapper> sPool = new LinkedList<>();
     static {
-        for (int i = 0; i < InputConfig.POOL_COUNT_KEY; i++) {
+        for (int i = 0; i < InputCons.POOL_COUNT_KEY; i++) {
             sPool.addLast(new KeyEventWrapper());
         }
     }

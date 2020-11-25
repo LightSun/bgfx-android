@@ -53,7 +53,7 @@ namespace h7 {
         /** Returns an object from this pool. The object may be new (from {@link #newObject()}) or reused (previously
 	 * {@link #free(Object) freed}). */
         T* obtain() {
-            return freeObjects->getSize() == 0 ? newObject() : freeObjects->pop();
+            return freeObjects->size() == 0 ? newObject() : freeObjects->pop();
         }
 
         /** Puts the specified object in the pool, making it eligible to be returned by {@link #obtain()}. If the pool already contains
@@ -62,7 +62,7 @@ namespace h7 {
          * The pool does not check if an object is already freed, so the same object must not be freed multiple times. */
         void free(T* object, bool _reset = false) {
             if (object != nullptr){
-                if (freeObjects->getSize() < _max) {
+                if (freeObjects->size() < _max) {
                     freeObjects->add(object);
                     //peak = bx::max(peak, freeObjects->getSize());
                 }
@@ -78,7 +78,7 @@ namespace h7 {
          * @param size the number of objects to be added */
         void fill(int size) {
             for (int i = 0; i < size; i++)
-                if (freeObjects->getSize() < _max) freeObjects->add(newObject());
+                if (freeObjects->size() < _max) freeObjects->add(newObject());
             //peak = bx::max(peak, freeObjects->getSize());
         }
 
@@ -97,10 +97,10 @@ namespace h7 {
             if(objects != nullptr){
                 Array<T*>* freeObjects = this->freeObjects;
                 int _max = this->_max;
-                for (int i = 0, n = objects->getSize(); i < n; i++) {
+                for (int i = 0, n = objects->size(); i < n; i++) {
                     T* object = objects->get(i);
                     if (object == nullptr) continue;
-                    if (freeObjects->getSize() < _max) freeObjects->add(object);
+                    if (freeObjects->size() < _max) freeObjects->add(object);
                     if(_reset){
                         reset(object);
                     }
@@ -111,7 +111,7 @@ namespace h7 {
 
         /** Removes all free objects from this pool. */
         void clear() {
-            auto size = freeObjects->getSize();
+            auto size = freeObjects->size();
             for (int i = 0; i < size; ++i) {
                 auto t = freeObjects->get(i);
                 if(t){
@@ -123,7 +123,7 @@ namespace h7 {
 
         /** The number of objects available to be obtained. */
         int getFree() {
-            return freeObjects->getSize();
+            return freeObjects->size();
         }
 
         /** Objects implementing this interface will have {@link #reset()} called when passed to {@link Pool#free(Object)}. */

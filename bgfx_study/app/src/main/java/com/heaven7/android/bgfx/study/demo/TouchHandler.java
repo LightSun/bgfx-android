@@ -21,8 +21,7 @@ public class TouchHandler implements View.OnTouchListener,View.OnKeyListener{
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
-        //input.onKey();
-        return false;
+        return input.onKey(keyCode, event);
     }
 
     public boolean supportsMultitouch (Context activity) {

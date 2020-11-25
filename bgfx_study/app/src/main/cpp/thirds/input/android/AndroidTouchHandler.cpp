@@ -133,4 +133,99 @@ namespace h7 {
         requestRender();
         // Gdx.app.getGraphics().requestRendering();
     }
+
+    bool android_onKey(AndroidInput* ainput, int keyCode, KeyEventWrapper* ev){
+        AndroidInput& input = *ainput;
+        KeyEventWrapper& e = *ev;
+        for (int i = 0, n = input.keyListeners.size(); i < n; i++){
+            if (input.keyListeners.get(i)->onKey(keyCode, ev)) return true;
+        }
+        // If the key is held sufficiently long that it repeats, then the initial down is followed
+        // additional key events with ACTION_DOWN and a non-zero value for getRepeatCount().
+        // We are only interested in the first key down event here and must ignore all others
+        if (e.action == KeyEvent::ACTION_DOWN && e.repeatCount > 0)
+            return input.keysToCatch.contains(keyCode);
+
+        input.lockTouch();
+        KeyEvent* event = NULL;
+
+        if (e.keyCode == KeyEvent::KEYCODE_UNKNOWN && e.action == KeyEvent::ACTION_MULTIPLE) {
+            const char* chars = e.chars;
+            for (int i = 0; i < strlen(chars); i++) {
+                event = input.usedKeyEvents.obtain();
+                event->timeStamp = e.timeStamp;
+                event->keyCode = 0;
+                event->keyChar = chars[i];
+                event->type = KeyEvent::KEY_TYPED;
+                input.keyEvents.add(event);
+            }
+            input.unlockTouch();
+            return false;
+        }
+
+        char character = (char)e.unicodeChar;
+        // Android doesn't report a unicode char for back space. hrm...
+        if (keyCode == 67) character = '\b';
+        if (e.keyCode < 0 || e.keyCode >= AndroidInput::SUPPORTED_KEYS) {
+            input.unlockTouch();
+            return false;
+        }
+
+        switch (e.action) {
+            case KeyEvent::ACTION_DOWN:
+                event = input.usedKeyEvents.obtain();
+                event->timeStamp = e.timeStamp;
+                event->keyChar = 0;
+                event->keyCode = e.keyCode;
+                event->type = KeyEvent::KEY_DOWN;
+
+                // Xperia hack for circle key. gah...
+                if (keyCode == KeyEvent::KEYCODE_BACK && e.altPressed) {
+                    keyCode = Input::Keys::BUTTON_CIRCLE;
+                    event->keyCode = keyCode;
+                }
+
+                input.keyEvents.add(event);
+                if (!input.keys[event->keyCode]) {
+                    input.keyCount++;
+                    input.keys[event->keyCode] = true;
+                }
+                break;
+            case KeyEvent::ACTION_UP:
+                long long timeStamp = e.timeStamp;
+                event = input.usedKeyEvents.obtain();
+                event->timeStamp = timeStamp;
+                event->keyChar = 0;
+                event->keyCode = e.keyCode;
+                event->type = KeyEvent::KEY_UP;
+                // Xperia hack for circle key. gah...
+                if (keyCode == KeyEvent::KEYCODE_BACK && e.altPressed) {
+                    keyCode = Input::Keys::BUTTON_CIRCLE;
+                    event->keyCode = keyCode;
+                }
+                input.keyEvents.add(event);
+
+                event = input.usedKeyEvents.obtain();
+                event->timeStamp = timeStamp;
+                event->keyChar = character;
+                event->keyCode = 0;
+                event->type = KeyEvent::KEY_TYPED;
+                input.keyEvents.add(event);
+
+                if (keyCode == Input::Keys::BUTTON_CIRCLE) {
+                    if (input.keys[Input::Keys::BUTTON_CIRCLE]) {
+                        input.keyCount--;
+                        input.keys[Input::Keys::BUTTON_CIRCLE] = false;
+                    }
+                } else {
+                    if (input.keys[e.keyCode]) {
+                        input.keyCount--;
+                        input.keys[e.keyCode] = false;
+                    }
+                }
+        }
+        requestRender();
+        input.unlockTouch();
+        return input.keysToCatch.contains(keyCode);
+    }
 }

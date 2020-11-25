@@ -82,6 +82,16 @@ namespace h7{
         android_onTouch(input, mev);
     }
     extern "C"
+    JNIEXPORT jboolean JNICALL
+    Java_com_heaven7_android_hbmdx_input_AndroidInput_nOnKey(JNIEnv *env, jclass clazz, jlong input_ptr,
+                                                             jlong ke_ptr, jint key_code,
+                                                             jobject wrapper) {
+        AndroidInput* input = reinterpret_cast<AndroidInput *>(input_ptr);
+        KeyEventWrapper* mev = reinterpret_cast<KeyEventWrapper *>(ke_ptr);
+        mev->setRefObject(wrapper);
+        return sCast(jboolean, android_onKey(input, key_code, mev));
+    }
+    extern "C"
     JNIEXPORT jlong JNICALL
     Java_com_heaven7_android_hbmdx_input_AndroidInput_nAlloc(JNIEnv *env, jclass clazz) {
         AndroidInput* mev = new AndroidInput();

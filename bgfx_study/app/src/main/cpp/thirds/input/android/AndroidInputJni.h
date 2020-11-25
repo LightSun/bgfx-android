@@ -10,8 +10,16 @@
 #define LEN_MOTION_INFO 4
 
 namespace h7{
-    class KeyEventWrapper{
 
+    class KeyEventWrapper:public GlobalObjectM{
+    public:
+        int action;
+        int repeatCount;
+        int keyCode;
+        const char* chars;
+        long long timeStamp;
+        int unicodeChar;
+        bool altPressed;
     };
 
     class MotionEventWrapper:public GlobalObjectM{

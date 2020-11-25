@@ -128,6 +128,7 @@ namespace h7{
         void resume();
 
         bool isRunning();
+        void requestRender();
 
     private:
         static int32_t threadFunc(bx::Thread* _thread, void* _userData);
