@@ -169,7 +169,7 @@ public:
     SimpleMemory();
     ~SimpleMemory();
 
-    void destroyData();
+    virtual void destroyData();
     bool isValid();
 
     /**
@@ -179,12 +179,12 @@ public:
      * @param ts: the types of memory. like 'f', 'fff', 'df'...etc.
      * @return a new memory of target type. may be SkMemory/SkAnyMemory
      */
-    int convert(lua_State* L, const char* ts){ return 0; }
+    virtual int convert(lua_State* L, const char* ts){ return 0; }
 
-    int foreach(lua_State* L){ return 0;}
+    virtual int foreach(lua_State* L){ return 0;}
 
-    int getLength(){ return  0;}
-    void toString(SB::StringBuilder& sb){}
+    virtual int getLength(){ return  0;}
+    virtual void toString(SB::StringBuilder& sb){}
 
 public:
     void *data;
