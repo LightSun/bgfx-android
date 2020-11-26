@@ -939,7 +939,7 @@ namespace gbgfx {
 
 
 inline bgfx::Init *getBgfxInit(lua_State *L) {
-    return Bgfx_lua_app::requireInit(L);
+    return h7::requireInit(L);
 }
 
 // here we direct load bgfx_lua.

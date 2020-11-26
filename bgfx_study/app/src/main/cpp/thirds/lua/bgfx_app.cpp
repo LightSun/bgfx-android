@@ -10,8 +10,10 @@
 
 #include <log.h>
 #include "../core/common.h"
+#include "../GestureContext.h"
 
 namespace h7{
+
     void BgfxApp::doInit(bgfx::Init *pInit, entry::InitConfig *pConfig) {
         onPreInit();
         //LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);

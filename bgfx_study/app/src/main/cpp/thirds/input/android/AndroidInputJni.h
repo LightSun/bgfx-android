@@ -5,7 +5,7 @@
 #ifndef BGFX_STUDY_ANDROIDINPUTJNI_H
 #define BGFX_STUDY_ANDROIDINPUTJNI_H
 
-#include "WeakObjectM.hpp"
+#include "jni_base.hpp"
 
 #define LEN_MOTION_INFO 4
 

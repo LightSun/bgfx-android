@@ -13,14 +13,6 @@
 #define SIG_MEV_RECYCLE "(" MEW_CLASS_SIG ")V"
 #define SIG_MEV_INFO "(" MEW_CLASS_SIG "I[F)V"
 
-#define USE_REF_OBJECT(x) \
-do{\
- auto ref = getRefObject();\
- x;\
- pEnv->DeleteLocalRef(ref);\
-} while(0);
-
-
 namespace h7{
     static jclass _mew_class = nullptr;
     MotionEventWrapper::MotionEventWrapper(){
@@ -93,8 +85,9 @@ namespace h7{
     }
     extern "C"
     JNIEXPORT jlong JNICALL
-    Java_com_heaven7_android_hbmdx_input_AndroidInput_nAlloc(JNIEnv *env, jclass clazz) {
+    Java_com_heaven7_android_hbmdx_input_AndroidInput_nAlloc(JNIEnv *env, jclass clazz, jobject obj) {
         AndroidInput* mev = new AndroidInput();
+        mev->setRefObject(obj);
         return reinterpret_cast<jlong>(mev);
     }
     extern "C"

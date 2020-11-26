@@ -9,7 +9,7 @@
 #include "../Input.h"
 #include "../../utils/Pool.hpp"
 #include "IAndroidInput.h"
-#include "WeakObjectM.hpp"
+#include "jni_base.hpp"
 
 #define LOCK_UNTIL_RESULT(x)\
         do{\
@@ -67,17 +67,26 @@ namespace h7 {
          // the key to catch
         IntArray keysToCatch;
 
+        Orientation nativeOrientation = Orientation::Count;
         bool _justTouched = false;
         long long currentEventTimeStamp = 0;
 
+        float orientation[3];
         float azimuth = 0;
         float pitch = 0;
         float roll = 0;
+
+        float magneticFieldValues[3];
+        float rotationVectorValues[3];
+        float R[9];
 
         AndroidInput();
 
         ~AndroidInput();
 
+        inline void setRefObject(jobject obj){
+            WeakObjectM::setRefObject(obj);
+        }
         void processEvents ();
         int getFreePointerIndex();
 
@@ -92,7 +101,7 @@ namespace h7 {
             setCatchKey(Keys::BACK, catchBack);
         }
         inline bool isCatchBackKey() {
-            return keysToCatch.contains(Keys::BACK);
+            return keysToCatch.contains(cCast_ref(int, Keys::BACK));
         }
         inline bool isCatchKey (int keycode){
             return keysToCatch.contains(keycode);
@@ -101,11 +110,14 @@ namespace h7 {
             setCatchKey(Keys::MENU, catchMenu);
         }
         inline bool isCatchMenuKey () {
-            return keysToCatch.contains(Keys::MENU);
+            return keysToCatch.contains(cCast_ref(int, Keys::MENU));
         }
         inline bool justTouched () {
             return _justTouched;
         }
+        int getRotation();
+        Orientation getNativeOrientation();
+
         void vibrate (int milliseconds);
         void vibrate (long long* pattern, int len,int repeat);
         void cancelVibrate();
@@ -114,8 +126,9 @@ namespace h7 {
 	 * "http://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[], float[], float[], float[])"
 	 * >SensorManager#getRotationMatrix(float[], float[], float[], float[])</a>. Does not manipulate the matrix if the platform
 	 * does not have an accelerometer and compass, or a rotation vector sensor.
+         * the len of matrix must be 9.
 	 * @param matrix */
-       void getRotationMatrix (float* matrix, int len);
+       void getRotationMatrix(float* matrix);
 
         float getAzimuth ();
         float getPitch ();
@@ -127,8 +140,8 @@ namespace h7 {
             if(button < 0 || button > NUM_TOUCHES) return false;
             return justPressedButtons[button];
         }
-
         void setOnscreenKeyboardVisible(bool visible, OnscreenKeyboardType type);
+
         inline void setOnscreenKeyboardVisible (bool visible){
             setOnscreenKeyboardVisible(visible, OnscreenKeyboardType::Default);
         }
@@ -227,6 +240,8 @@ namespace h7 {
         inline void ensureSize(int expect);
 
         inline void updateOrientation();
+
+        inline bool getRotationMatrix0(jfloatArray _R, float *mat_outR);
     };
 
 

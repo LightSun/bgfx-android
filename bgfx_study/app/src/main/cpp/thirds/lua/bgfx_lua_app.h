@@ -18,7 +18,7 @@ namespace h7{
 }
 struct lua_State;
 
-namespace Bgfx_lua_app{
+namespace h7{
 
     bool startApp(long ptr, entry::InitConfig *pConfig);
     bgfx::Init* requireInit(lua_State* L);
@@ -37,7 +37,7 @@ namespace h7{
     class AppController;
 
     typedef const char* FUNC_NAME;
-    class LuaApp: public h7::BgfxApp{
+    class LuaApp: public BgfxApp{
 
     public:
         /**

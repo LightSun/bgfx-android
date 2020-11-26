@@ -6,14 +6,70 @@
 #include "AndroidInput.h"
 #include "../../../core/log.h"
 #include <luaext_java/java_env.h>
+#include "bx/math.h"
+#include "../GestureContext.h"
 
 #define AND_INPUT_CLASS  "com/heaven7/android/hbmdx/input/AndroidInput"
 #define AND_INPUT_SIG "L" AND_INPUT_CLASS ";"
 #define SIG_KEYBOARD "(" AND_INPUT_SIG "ZI)V"
+#define SIG_getRotationMatrixFromVector "([F[F)V"
+#define SIG_getRotationMatrix "([F[F[F[F)Z"
+#define SIG_getOrientation "([F[F)V"
+#define SIG_getRotation "(" AND_INPUT_SIG ")I"
+
+#define LEN_R 9
+#define LEN_rotationVector 3
 
 static jclass _andInputClazz;
 
 namespace h7{
+    bool AndroidInput::getRotationMatrix0(jfloatArray _R, float *outR) {
+        auto pEnv = ensureJniEnv();
+        if (rotationVectorAvailable){
+            auto mid = pEnv->GetStaticMethodID(_andInputClazz, "getRotationMatrixFromVector",
+                                               SIG_getRotationMatrixFromVector);
+            auto _rotationVectorValues = pEnv->NewFloatArray(LEN_rotationVector);
+            pEnv->CallStaticVoidMethod(_andInputClazz, mid, _R, _rotationVectorValues);
+            pEnv->GetFloatArrayRegion(_R, 0, LEN_R, outR);
+            pEnv->GetFloatArrayRegion(_rotationVectorValues, 0, LEN_rotationVector, rotationVectorValues);
+            //SensorManager.getRotationMatrixFromVector(R, rotationVectorValues);
+            return true;
+        } else {
+            //if (!SensorManager.getRotationMatrix(R, null, accelerometerValues, magneticFieldValues)) {
+            auto mid = pEnv->GetStaticMethodID(_andInputClazz, "getRotationMatrix",SIG_getRotationMatrix);
+            auto _accelerometerValues = pEnv->NewFloatArray(3);
+            auto _magneticFieldValues = pEnv->NewFloatArray(3);
+            auto _I = pEnv->NewFloatArray(0);
+
+            auto result = pEnv->CallStaticBooleanMethod(_andInputClazz, mid, _R, _I, _accelerometerValues, _magneticFieldValues);
+            pEnv->GetFloatArrayRegion(_R, 0, LEN_R, outR);
+            pEnv->GetFloatArrayRegion(_accelerometerValues, 0, 3, accelerometerValues);
+            pEnv->GetFloatArrayRegion(_magneticFieldValues, 0, 3, magneticFieldValues);
+            //if !result:  // compass + accelerometer in free fall
+            return result;
+        }
+    }
+    void AndroidInput::getRotationMatrix(float *matrix) {
+        auto pEnv = ensureJniEnv();
+        auto _R = pEnv->NewFloatArray(LEN_R);
+        getRotationMatrix0(_R, matrix);
+    }
+    void AndroidInput::updateOrientation() {
+        auto pEnv = ensureJniEnv();
+        auto _R = pEnv->NewFloatArray(LEN_R);
+        //false means: compass + accelerometer in free fall
+        if(getRotationMatrix0(_R, R)){
+            auto mid = pEnv->GetStaticMethodID(_andInputClazz, "getOrientation", SIG_getOrientation);
+            auto _orientation = pEnv->NewFloatArray(3);
+            pEnv->CallStaticVoidMethod(_andInputClazz, mid, _R, _orientation);
+            pEnv->GetFloatArrayRegion(_R, 0, LEN_R, R);
+            pEnv->GetFloatArrayRegion(_orientation, 0, 3, orientation);
+            //SensorManager.getOrientation(R, orientation);
+            azimuth = bx::toDeg(orientation[0]);
+            pitch = bx::toDeg(orientation[1]);
+            roll = bx::toDeg(orientation[2]);
+        }
+    }
     void AndroidInput::release() {
         if(pressure) free(pressure);
         if(realId) free(realId);
@@ -64,9 +120,9 @@ if(this->x){\
         }
         // this is for backward compatibility: libGDX always caught the circle button, original comment:
         // circle button on Xperia Play shouldn't need catchBack == true
-        keysToCatch.add(Keys::BUTTON_CIRCLE);
+        keysToCatch.add(cCast_ref(int, Keys::BUTTON_CIRCLE));
     }
-    AndroidInput::~AndroidInput() {
+    AndroidInput::~AndroidInput():~WeakObjectM() {
         release();
     }
     int AndroidInput::getFreePointerIndex() {
@@ -255,30 +311,57 @@ if(this->x){\
         unlockTouch();
         return result;
     }
-    float AndroidInput::getAzimuth () {
+    float AndroidInput::getAzimuth(){
         if (!compassAvailable && !rotationVectorAvailable) return 0;
         updateOrientation();
         return azimuth;
     }
-    float AndroidInput::getPitch () {
+    float AndroidInput::getPitch() {
         if (!compassAvailable && !rotationVectorAvailable) return 0;
         updateOrientation();
         return pitch;
     }
-    float AndroidInput::getRoll () {
+    float AndroidInput::getRoll() {
         if (!compassAvailable && !rotationVectorAvailable) return 0;
 
         updateOrientation();
         return roll;
     }
     void AndroidInput::setOnscreenKeyboardVisible(bool visible, h7::OnscreenKeyboardType type) {
-       //TODO  setOnscreenKeyboardVisible
-        auto pEnv = getJNIEnv();
-        if(pEnv == NULL){
-            pEnv = attachJNIEnv();
-        }
+        auto pEnv = ensureJniEnv();
         auto mid = pEnv->GetStaticMethodID(_andInputClazz, "setOnscreenKeyboardVisible",
                                            SIG_KEYBOARD);
-        //pEnv->CallStaticVoidMethod(_andInputClazz, mid, )
+        int tType = type;
+        USE_REF_OBJECT(pEnv->CallStaticVoidMethod(_andInputClazz, mid, ref, visible, tType))
+    }
+    Orientation AndroidInput::getNativeOrientation(){
+        if(nativeOrientation == Orientation::Count){
+            int rotation = getRotation();
+            auto width = getDisplayWidth();
+            auto height = getDisplayHeight();
+            if (((rotation == 0 || rotation == 180) && (width >= height))
+                || ((rotation == 90 || rotation == 270) && (width <= height))) {
+                nativeOrientation = Orientation::Landscape;
+            } else {
+                nativeOrientation = Orientation::Portrait;
+            }
+        }
+        return nativeOrientation;
+    }
+    int AndroidInput::getRotation() {
+        auto pEnv = ensureJniEnv();
+        auto mid = pEnv->GetStaticMethodID(_andInputClazz, "getRotation", SIG_getRotation);
+        int result;
+        USE_REF_OBJECT(result = pEnv->CallStaticIntMethod(_andInputClazz, mid, ref))
+        return result;
+    }
+    void AndroidInput::vibrate(int milliseconds) {
+
+    }
+    void AndroidInput::vibrate(long long *pattern, int len, int repeat) {
+
+    }
+    void AndroidInput::cancelVibrate() {
+
     }
 }

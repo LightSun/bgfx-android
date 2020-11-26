@@ -48,10 +48,10 @@ namespace h7{
         inline int size(){
             return _size;
         }
-        inline bool add(const T& val){
+        inline bool add(T& val){
             return add(_size, val);
         }
-        bool add(int index, const T& val){
+        bool add(int index, T& val){
             if(index < 0){
                 return false;
             }
@@ -68,7 +68,7 @@ namespace h7{
             return true;
         }
 
-        bool add(const T& val1, const T& val2){
+        bool add(T& val1, T& val2){
             if(_size >= malCount - 1){
                 if(!resize(MathUtils::max(8, (int)(malCount * 1.75f)))){
                     return false;
@@ -83,7 +83,7 @@ namespace h7{
             _size += 2;
             return true;
         }
-        bool add(const T& val1, const T& val2, const T& val3){
+        bool add(T& val1, T& val2, T& val3){
             if(_size >= malCount - 2){
                 if(!resize(MathUtils::max(8, (int)(malCount * 1.75f)))){
                     return false;
@@ -100,7 +100,7 @@ namespace h7{
             _size += 3;
             return true;
         }
-        bool addAll(const Array<T>* array){
+        bool addAll(Array<T>* array){
             if(_size >= malCount - array->_size){
                 if(!resize(MathUtils::max(8, (int)((malCount + array->_size) * 1.75f)))){
                     return false;
@@ -119,7 +119,7 @@ namespace h7{
             addr += _size * unit;
             return *((T*)addr);
         }
-        void set(size_t index, const T& val){
+        void set(size_t index, T& val){
             int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += _size * unit;
@@ -135,10 +135,10 @@ namespace h7{
             *((T*)addr1) = *((T*)addr2)
             *((T*)addr2) = t1;
         }
-        inline bool contains(const T& val){
+        inline bool contains(T& val){
             return indexOf(val) >= 0;
         }
-        int indexOf(const T& val){
+        int indexOf(T& val){
             int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             for (int i = 0; i < _size; ++i) {
@@ -153,7 +153,7 @@ namespace h7{
             }
             return -1;
         }
-        int lastIndexOf(const T& val){
+        int lastIndexOf(T& val){
             int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += unit * (_size - 1);
@@ -169,7 +169,7 @@ namespace h7{
             }
             return -1;
         }
-        bool remove(const T& val){
+        bool remove(T& val){
             auto i = indexOf(val);
             removeAt(i);
             return i >= 0;
@@ -216,19 +216,19 @@ namespace h7{
         inline bool addLast(const T& val){
             return add(_size, val);
         }
-        inline const T& removeFirst(){
+        inline T& removeFirst(){
             return removeAt(0);
         }
-        inline const T& removeLast(){
+        inline T& removeLast(){
             return removeAt(_size - 1);
         }
-        inline const T& pollFirst(){
+        inline T& pollFirst(){
             return removeAt(0);
         }
-        inline const T& pollLast(){
+        inline T& pollLast(){
             return removeAt(_size - 1);
         }
-        inline const T& peek(){
+        inline T& peek(){
             return _size > 0 ? get(_size - 1) : NULL;
         }
         inline const T& peekFirst(){

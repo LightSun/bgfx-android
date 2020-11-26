@@ -85,7 +85,7 @@ namespace h7 {
         /** Called when an object is freed to clear the state of the object for possible later reuse. The default implementation calls
          * {@link Poolable#reset()} if the object is {@link Poolable}. */
         void reset(T* object) {
-            Poolable* p = object;
+            Poolable* p = reinterpret_cast<Poolable*>(object);
             p->reset();
         }
 

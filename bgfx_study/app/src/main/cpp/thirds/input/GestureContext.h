@@ -12,6 +12,10 @@ namespace h7{
     bool isTouched(int button);
 
     void requestRender();
+
+    int getDisplayWidth();
+
+    int getDisplayHeight();
 }
 
 #endif //BGFX_STUDY_GESTURECONTEXT_H

@@ -15,15 +15,28 @@
 #include "log.h"
 #include "LuaUtils.h"
 #include "bx/debug.h"
+#include "bgfx/bgfx.h"
 
 #include "../platform/android_pri.h"
 
 using namespace h7;
 
 //#include <memory>
-namespace Bgfx_lua_app {
+namespace h7 {
 #define KEY_APP_HOLDER "$_LuaAppHolder_"
+    static int _win_width;
+    static int _win_height;
 
+    void requestRender(){
+//TODO
+    }
+
+    int getDisplayWidth(){
+        return _win_width;
+    }
+    int getDisplayHeight(){
+        return _win_height;
+    }
     static inline void androidSetWindow(::ANativeWindow* _window){
         bgfx::PlatformData pd;
         pd.ndt          = NULL;
@@ -81,6 +94,8 @@ namespace Bgfx_lua_app {
         if(pHolder->isRunning()){
             delete pHolder->config;
             pHolder->config = pConfig;
+            _win_width = pConfig->win_width;
+            _win_height = pConfig->win_height;
             LOGD("startApp >>> reset InitConfig >>> ");
         } else{
             pHolder->startLoop(pConfig);

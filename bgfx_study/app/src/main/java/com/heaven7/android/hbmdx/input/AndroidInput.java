@@ -1,10 +1,12 @@
 package com.heaven7.android.hbmdx.input;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.SensorManager;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.View;
+import android.view.Surface;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.Keep;
@@ -61,15 +63,47 @@ public final class AndroidInput {
             }
         });
     }
+    @Keep
     public static void getRotationMatrixFromVector(float[] r, float[] rotationVectorValues){
         SensorManager.getRotationMatrixFromVector(r, rotationVectorValues);
     }
-    public static void getRotationMatrix(float[] R, float[] I, float[] gravity, float[] geomagnetic){
-        SensorManager.getRotationMatrix(R, I, gravity, geomagnetic);
+    @Keep
+    public static boolean getRotationMatrix(float[] R, float[] I, float[] gravity, float[] geomagnetic){
+        return SensorManager.getRotationMatrix(R, I, gravity, geomagnetic);
+    }
+    @Keep
+    public static void getOrientation(float[] R, float[] orientation){
+        SensorManager.getOrientation(R, orientation);
+    }
+    @Keep
+    public static int getRotation(AndroidInput input) {
+        BgfxLuaView luaView = input.mWeakView.get();
+        if(luaView == null){
+            return 0;
+        }
+        Context context = luaView.getContext();
+        int orientation = 0;
+        if (context instanceof Activity) {
+            orientation = ((Activity)context).getWindowManager().getDefaultDisplay().getRotation();
+        } else {
+            orientation = ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+        }
+        switch (orientation) {
+            case Surface.ROTATION_0:
+                return 0;
+            case Surface.ROTATION_90:
+                return 90;
+            case Surface.ROTATION_180:
+                return 180;
+            case Surface.ROTATION_270:
+                return 270;
+            default:
+                return 0;
+        }
     }
 
     public AndroidInput() {
-        nativePtr = nAlloc();
+        nativePtr = nAlloc(this);
     }
 
     public long getNativePtr() {
@@ -84,7 +118,7 @@ public final class AndroidInput {
         super.finalize();
     }
 
-    private static native long nAlloc();
+    private static native long nAlloc(AndroidInput input);
     private static native void nDealloc(long ptr);
     private static native void nOnTouch(long inputPtr, long mePtr, MotionEventWrapper wrapper);
     private static native boolean nOnKey(long inputPtr, long kePtr, int keyCode, KeyEventWrapper wrapper);

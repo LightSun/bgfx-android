@@ -81,7 +81,7 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,
         config->win_height = ANativeWindow_getHeight(mWindow);
         config->RunMain = java_runMain;
         config->OnExitRenderThread = java_onExitRenderThread;
-        if(!Bgfx_lua_app::startApp(ptr, config)){
+        if(!h7::startApp(ptr, config)){
             delete config;
         }
     } else{
@@ -97,7 +97,7 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,
 }
 EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src, jlong luaPtr){
     if(_useLua){
-        Bgfx_lua_app::releaseWindow(luaPtr);
+        h7::releaseWindow(luaPtr);
     } else{
         if(demo){
             demo->destroy();
@@ -108,7 +108,7 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src, jl
 }
 extern "C" JNIEXPORT void JNICALL Java_com_heaven7_android_bgfx_study_demo_NativeApi_onLifeCycle(
         JNIEnv* env, jclass clazz, long luaPtr, jint mark){
-    Bgfx_lua_app::onLifecycle(luaPtr, mark);
+    h7::onLifecycle(luaPtr, mark);
 }
 
 static const luaL_Reg bgfx_libs[] = {

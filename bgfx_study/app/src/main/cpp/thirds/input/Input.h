@@ -68,7 +68,7 @@ namespace h7 {
         Default = 0, NumberPad = 1, PhonePad = 2, Email = 3, Password = 4, URI = 5
     };
     enum Orientation {
-        Landscape, Portrait
+        Landscape = 0, Portrait = 1, Count = 2
     };
     /** <p>
  * Interface to the input facilities. This allows polling the state of the keyboard, the touch screen and the accelerometer. On
@@ -756,8 +756,9 @@ namespace h7 {
          * "http://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[], float[], float[], float[])"
          * >SensorManager#getRotationMatrix(float[], float[], float[], float[])</a>. Does not manipulate the matrix if the platform
          * does not have an accelerometer.
+         * the len of matrix must be 9.
          * @param matrix */
-        virtual void getRotationMatrix(float *matrix, int matLen) = 0;
+        virtual void getRotationMatrix(float *matrix) = 0;
 
         /** @return the time of the event currently reported to the {@link InputProcessor}. */
         virtual long long getCurrentEventTime() = 0;
