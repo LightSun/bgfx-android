@@ -13,7 +13,9 @@
 #include "../input/GestureContext.h"
 
 namespace h7{
-
+    Input* getInput(){
+        return _input;
+    }
     void BgfxApp::doInit(bgfx::Init *pInit, entry::InitConfig *pConfig) {
         onPreInit();
         //LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);

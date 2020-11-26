@@ -5,19 +5,53 @@
 #include "AndroidInputJni.h"
 #include "AndroidInput.h"
 #include "AndroidTouchHandler.h"
+#include "../GestureContext.h"
 #include "../../luaext_java/java_env.h"
+#include "../../lua/bgfx_app.h"
 
 #define MEW_CLASS  "com/heaven7/android/hbmdx/input/MotionEventWrapper"
 #define MEW_CLASS_SIG "L" MEW_CLASS ";"
-
 #define SIG_MEV_RECYCLE "(" MEW_CLASS_SIG ")V"
 #define SIG_MEV_INFO "(" MEW_CLASS_SIG "I[F)V"
 
+#define KEY_EVENT_CLASS  "com/heaven7/android/hbmdx/input/KeyEventWrapper"
+#define SIG_KEY_EVENT_RECYCLE "(" KEY_EVENT_CLASS ")V"
+
 namespace h7{
     static jclass _mew_class = nullptr;
+    static jclass _keyEvent_class = nullptr;
+
+    KeyEventWrapper::~KeyEventWrapper() {
+        if(chars){
+            free(chars);
+            chars = NULL;
+        }
+    }
+    void KeyEventWrapper::allocateChars(int len){
+        if(chars != nullptr){
+            free(chars);
+            chars = NULL;
+        }
+        if(len > 0){
+            chars = static_cast<char *>(malloc(len + 1));
+            chars[len- 1] = '\0';
+        }
+    }
+
+    void KeyEventWrapper::jRecycle() {
+        auto pEnv = getJNIEnv();
+        auto mid = pEnv->GetMethodID(_keyEvent_class, "recycle", SIG_KEY_EVENT_RECYCLE);
+        USE_REF_OBJECT(pEnv->CallStaticVoidMethod(_keyEvent_class, mid, ref))
+        deleteRefObject();
+    }
+
     MotionEventWrapper::MotionEventWrapper(){
+        auto pEnv = ensureJniEnv();
         if(_mew_class == nullptr){
-            _mew_class = getGlobalClass(getJNIEnv(), MEW_CLASS);
+            _mew_class = getGlobalClass(pEnv, MEW_CLASS);
+        }
+        if(_keyEvent_class == nullptr){
+            _keyEvent_class = getGlobalClass(pEnv, KEY_EVENT_CLASS);
         }
     }
     void MotionEventWrapper::jRecycle() {
@@ -51,8 +85,7 @@ namespace h7{
     Java_com_heaven7_android_hbmdx_input_MotionEventWrapper_nSet(JNIEnv *env, jclass clazz, jlong ptr, jint action,
                                                                  jint x, jint y, jint pointer_index,
                                                                  jint pointer_id, jint pointer_count,
-                                                                 jint button_state, jfloat pressure,
-                                                                 jlong time_stamp) {
+                                                                 jint button_state, jfloat pressure) {
         MotionEventWrapper* mev = reinterpret_cast<MotionEventWrapper *>(ptr);
         mev->action = action;
         mev->x = x;
@@ -62,7 +95,7 @@ namespace h7{
         mev->pointerCount = pointer_count;
         mev->buttonState = button_state;
         mev->pressure = pressure;
-        mev->timeStamp = time_stamp;
+        mev->timeStamp = getCurrentEventTime();
     }
     extern "C"
     JNIEXPORT void JNICALL
@@ -89,6 +122,7 @@ namespace h7{
         AndroidInput* mev = new AndroidInput();
         mev->luaPtr = luaPtr;
         mev->setRefObject(obj);
+        h7::_input = mev;
         return reinterpret_cast<jlong>(mev);
     }
     extern "C"
@@ -115,13 +149,13 @@ namespace h7{
     Java_com_heaven7_android_hbmdx_input_KeyEventWrapper_nSet(JNIEnv *env, jclass clazz, jlong ptr,
                                                               jint action, jint repeat_count,
                                                               jint key_code, jstring chars,
-                                                              jlong time_stamp, jint unicode_char,
+                                                              jint unicode_char,
                                                               jboolean alt_pressed) {
         KeyEventWrapper* kew = rCast(KeyEventWrapper*, ptr);
         kew->action = action;
         kew->repeatCount = repeat_count;
         kew->keyCode = key_code;
-        kew->timeStamp = time_stamp;
+        kew->timeStamp = getCurrentEventTime();
         kew->unicodeChar = unicode_char;
         kew->altPressed = alt_pressed;
         if(chars != nullptr){

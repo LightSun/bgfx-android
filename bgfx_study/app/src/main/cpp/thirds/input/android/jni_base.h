@@ -2,8 +2,8 @@
 // Created by Administrator on 2020/11/24 0024.
 //
 
-#ifndef BGFX_STUDY_JNI_BASE_HPP
-#define BGFX_STUDY_JNI_BASE_HPP
+#ifndef BGFX_STUDY_JNI_BASE_H
+#define BGFX_STUDY_JNI_BASE_H
 
 #include "jni.h"
 #include "../../luaext_java/java_env.h"
@@ -72,13 +72,8 @@ namespace h7{
             }
         }
     };
-    JNIEnv* ensureJniEnv(){
-        auto pEnv = getJNIEnv();
-        if(pEnv == NULL){
-            pEnv = attachJNIEnv();
-        }
-        return pEnv;
-    }
+
+    JNIEnv* ensureJniEnv();
 }
 
-#endif //BGFX_STUDY_JNI_BASE_HPP
+#endif //BGFX_STUDY_JNI_BASE_H

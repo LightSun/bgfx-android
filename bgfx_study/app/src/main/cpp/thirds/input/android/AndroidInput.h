@@ -9,7 +9,7 @@
 #include "../Input.h"
 #include "../../utils/Pool.hpp"
 #include "IAndroidInput.h"
-#include "jni_base.hpp"
+#include "jni_base.h"
 
 #define LOCK_UNTIL_RESULT(x)\
         do{\
@@ -80,7 +80,7 @@ namespace h7 {
         float rotationVectorValues[3];
         float R[9];
 
-        long luaPtr;
+        long long luaPtr;
 
         AndroidInput();
 

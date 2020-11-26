@@ -46,10 +46,9 @@ public final class MotionEventWrapper {
 
         int x = (int) event.getX(pointerIndex);
         int y = (int) event.getY(pointerIndex);
-        long timeStamp = System.nanoTime();
         int buttonState = event.getButtonState();
         float pressure = event.getPressure(pointerIndex);
-        nSet(nativePtr, action, x, y, pointerIndex, pointerId, pointerCount, buttonState, pressure, timeStamp);
+        nSet(nativePtr, action, x, y, pointerIndex, pointerId, pointerCount, buttonState, pressure);
     }
 
     @Keep
@@ -99,6 +98,6 @@ public final class MotionEventWrapper {
 
     private static native void nSet(long ptr, int action, int x, int y,
                                     int pointerIndex, int pointerId, int pointerCount,
-                                    int buttonState, float pressure, long timeStamp);
+                                    int buttonState, float pressure);
 }
 

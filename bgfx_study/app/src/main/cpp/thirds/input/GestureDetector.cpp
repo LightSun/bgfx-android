@@ -6,6 +6,7 @@
 #include <limits.h>
 #include "GestureContext.h"
 #include "utils/TimeUtils.hpp"
+#include "input.h"
 
 namespace h7 {
     GestureDetector::GestureDetector(h7::GestureListener *listener) : GestureDetector(20, 0.4f,
@@ -52,7 +53,7 @@ namespace h7 {
             pointer1.set(x, y);
             touchDownTime = getCurrentEventTime();
             tracker.start(x, y, touchDownTime);
-            if (isTouched(1)) {
+            if (getInput()->isTouched(1)) {
                 // Start pinch.
                 inTapRectangle = false;
                 pinching = true;

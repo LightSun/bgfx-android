@@ -6,16 +6,15 @@
 #define BGFX_STUDY_GESTURECONTEXT_H
 
 namespace h7{
+    class Input;
 
     unsigned long long getCurrentEventTime();
 
-    bool isTouched(int button);
+    Input* getInput();
 
-    void requestRender();
+    void requestRender(long long luaPtr);
 
-    int getDisplayWidth();
-
-    int getDisplayHeight();
+    void getDisplayInfo(long long luaPtr, int* out);
 }
 
 #endif //BGFX_STUDY_GESTURECONTEXT_H

@@ -34,9 +34,11 @@ namespace bgfx{
 namespace h7{
     class AppController;
     class BgfxApp;
+    class Input;
+
+    static Input* _input = NULL;
 
     class BgfxApp{
-
     public:
         /** there are two work mode:  render self and render trigger by events. */
         bool renderSelf = false;

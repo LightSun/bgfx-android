@@ -5,7 +5,7 @@
 #ifndef BGFX_STUDY_ANDROIDINPUTJNI_H
 #define BGFX_STUDY_ANDROIDINPUTJNI_H
 
-#include "jni_base.hpp"
+#include "jni_base.h"
 
 #define LEN_MOTION_INFO 4
 
@@ -21,22 +21,13 @@ namespace h7{
         int unicodeChar;
         bool altPressed;
 
-        ~KeyEventWrapper(){
-            if(chars){
-                free(chars);
-                chars = NULL;
-            }
-        }
-        inline void allocateChars(int len){
-            if(chars != nullptr){
-                free(chars);
-                chars = NULL;
-            }
-            if(len > 0){
-                chars = static_cast<char *>(malloc(len + 1));
-                chars[len- 1] = '\0';
-            }
-        }
+        ~KeyEventWrapper();
+        //len >= 0
+        void allocateChars(int len);
+        /**
+        * recycle java object
+        */
+        void jRecycle();
     };
 
     class MotionEventWrapper:public GlobalObjectM{

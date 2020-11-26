@@ -24,36 +24,24 @@ using namespace h7;
 //#include <memory>
 namespace h7 {
 #define KEY_APP_HOLDER "$_LuaAppHolder_"
-    static int _win_width;
-    static int _win_height;
 
-    void requestRender(){
 
+    void requestRender(long long luaPtr){
+        auto L = reinterpret_cast<lua_State *>(luaPtr);
+        getAppHolder(L)->requestRender();
     }
-
-    int getDisplayWidth(){
-        return _win_width;
+    void getDisplayInfo(long long luaPtr, int* out){
+        auto L = reinterpret_cast<lua_State *>(luaPtr);
+        auto pInit = requireInit(L);
+        out[0] = pInit->resolution.width;
+        out[1] = pInit->resolution.height;
     }
-    int getDisplayHeight(){
-        return _win_height;
-    }
-    static inline void androidSetWindow(::ANativeWindow* _window){
-        bgfx::PlatformData pd;
-        pd.ndt          = NULL;
-        pd.nwh          = _window;
-        pd.context      = NULL;
-        pd.backBuffer   = NULL;
-        pd.backBufferDS = NULL;
-        bgfx::setPlatformData(pd);
-    }
-
     void releaseWindow(long ptr){
         if(ptr != 0){
             auto L = reinterpret_cast<lua_State *>(ptr);
             Platforms::releaseWindow(getAppHolder(L)->bgfx_init->platformData.nwh);
         }
     }
-
     void onLifecycle(long ptr, jint mark) {
         if(ptr == 0){
             return;
@@ -85,7 +73,7 @@ namespace h7 {
         }
     }
 
-    bool startApp(long ptr, entry::InitConfig *pConfig) {
+    bool startApp(long long ptr, entry::InitConfig *pConfig) {
         if(ptr == 0){
             return false;
         }
@@ -94,8 +82,6 @@ namespace h7 {
         if(pHolder->isRunning()){
             delete pHolder->config;
             pHolder->config = pConfig;
-            _win_width = pConfig->win_width;
-            _win_height = pConfig->win_height;
             LOGD("startApp >>> reset InitConfig >>> ");
         } else{
             pHolder->startLoop(pConfig);

@@ -15,7 +15,7 @@ namespace h7 {
         int numSamples;
         float meanX[sampleSize];
         float meanY[sampleSize];
-        float meanTime[sampleSize];
+        long long meanTime[sampleSize];
     public:
 
         void start(float x, float y, unsigned long long timeStamp);
@@ -28,7 +28,7 @@ namespace h7 {
 
         float getAverage(float *values, int numSamples);
 
-        long getAverage(long *values, int numSamples);
+        long getAverage(long long *values, int numSamples);
 
         float getSum(float *values, int numSamples);
     };

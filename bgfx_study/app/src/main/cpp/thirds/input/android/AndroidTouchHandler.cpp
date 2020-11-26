@@ -130,7 +130,7 @@ namespace h7 {
         }
         event->jRecycle();
         ainput->unlockTouch();
-        requestRender();
+        requestRender(ainput->luaPtr);
         // Gdx.app.getGraphics().requestRendering();
     }
 
@@ -153,7 +153,7 @@ namespace h7 {
             char* chars = e.chars;
             for (int i = 0; i < strlen(chars); i++) {
                 event = input.usedKeyEvents.obtain();
-                event->timeStamp = e.timeStamp;
+                event->timeStamp = getCurrentEventTime();
                 event->keyCode = 0;
                 event->keyChar = chars[i];
                 event->type = KeyEvent::KEY_TYPED;
@@ -174,7 +174,7 @@ namespace h7 {
         switch (e.action) {
             case KeyEvent::ACTION_DOWN:
                 event = input.usedKeyEvents.obtain();
-                event->timeStamp = e.timeStamp;
+                event->timeStamp = getCurrentEventTime();
                 event->keyChar = 0;
                 event->keyCode = e.keyCode;
                 event->type = KeyEvent::KEY_DOWN;
@@ -192,7 +192,7 @@ namespace h7 {
                 }
                 break;
             case KeyEvent::ACTION_UP:
-                long long timeStamp = e.timeStamp;
+                long long timeStamp = getCurrentEventTime();
                 event = input.usedKeyEvents.obtain();
                 event->timeStamp = timeStamp;
                 event->keyChar = 0;
@@ -224,8 +224,9 @@ namespace h7 {
                     }
                 }
         }
-        requestRender();
+        ev->jRecycle();
         input.unlockTouch();
+        requestRender(ainput->luaPtr);
         return input.keysToCatch.contains(keyCode);
     }
 }

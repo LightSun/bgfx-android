@@ -341,8 +341,10 @@ if(this->x){\
     Orientation AndroidInput::getNativeOrientation(){
         if(nativeOrientation == Orientation::Count){
             int rotation = getRotation();
-            auto width = getDisplayWidth();
-            auto height = getDisplayHeight();
+            int info[2];
+            getDisplayInfo(luaPtr, info);
+            auto width = info[0];
+            auto height = info[1];
             if (((rotation == 0 || rotation == 180) && (width >= height))
                 || ((rotation == 90 || rotation == 270) && (width <= height))) {
                 nativeOrientation = Orientation::Landscape;

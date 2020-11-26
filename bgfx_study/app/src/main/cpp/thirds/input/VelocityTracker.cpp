@@ -2,11 +2,15 @@
 // Created by Administrator on 2020/11/22 0022.
 //
 
-#include "VelocityTracker.h"
 #include <math.h>
+#include "VelocityTracker.h"
+#include <bx/bx.h>
+
 using namespace h7;
 
- void VelocityTracker::start (float x, float y, unsigned long long timeStamp) {
+const int VelocityTracker::sampleSize; //allcate space
+
+void VelocityTracker::start(float x, float y, unsigned long long timeStamp) {
     lastX = x;
     lastY = y;
     deltaX = 0;
@@ -20,12 +24,12 @@ using namespace h7;
     lastTime = timeStamp;
 }
 
- void VelocityTracker::update (float x, float y, unsigned long long currTime) {
+void VelocityTracker::update(float x, float y, unsigned long long currTime) {
     deltaX = x - lastX;
     deltaY = y - lastY;
     lastX = x;
     lastY = y;
-    long deltaTime = currTime - lastTime;
+    long long deltaTime = currTime - lastTime;
     lastTime = currTime;
     int index = numSamples % sampleSize;
     meanX[index] = deltaX;
@@ -34,22 +38,22 @@ using namespace h7;
     numSamples++;
 }
 
- float VelocityTracker::getVelocityX () {
+float VelocityTracker::getVelocityX() {
     float meanX = getAverage(this->meanX, numSamples);
     float meanTime = getAverage(this->meanTime, numSamples) / 1000000000.0f;
     if (meanTime == 0) return 0;
     return meanX / meanTime;
 }
 
- float VelocityTracker::getVelocityY () {
+float VelocityTracker::getVelocityY() {
     float meanY = getAverage(this->meanY, numSamples);
     float meanTime = getAverage(this->meanTime, numSamples) / 1000000000.0f;
     if (meanTime == 0) return 0;
     return meanY / meanTime;
 }
 
- float VelocityTracker::getAverage (float* values, int numSamples) {
-    numSamples = fminf(sampleSize, numSamples);
+float VelocityTracker::getAverage(float *values, int numSamples) {
+    numSamples = bx::min(sampleSize, numSamples);
     float sum = 0;
     for (int i = 0; i < numSamples; i++) {
         sum += values[i];
@@ -57,8 +61,8 @@ using namespace h7;
     return sum / numSamples;
 }
 
- long VelocityTracker::getAverage (long* values, int numSamples) {
-    numSamples = fminf(sampleSize, numSamples);
+long VelocityTracker::getAverage(long long *values, int numSamples) {
+    numSamples = bx::min(sampleSize, numSamples);
     long sum = 0;
     for (int i = 0; i < numSamples; i++) {
         sum += values[i];
@@ -67,8 +71,8 @@ using namespace h7;
     return sum / numSamples;
 }
 
- float VelocityTracker::getSum (float* values, int numSamples) {
-    numSamples = fminf(sampleSize, numSamples);
+float VelocityTracker::getSum(float *values, int numSamples) {
+    numSamples = bx::min(sampleSize, numSamples);
     float sum = 0;
     for (int i = 0; i < numSamples; i++) {
         sum += values[i];

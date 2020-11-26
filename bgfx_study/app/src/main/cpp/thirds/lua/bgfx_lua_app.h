@@ -20,10 +20,9 @@ struct lua_State;
 
 namespace h7{
 
-    bool startApp(long ptr, entry::InitConfig *pConfig);
+    bool startApp(long long ptr, entry::InitConfig *pConfig);
     bgfx::Init* requireInit(lua_State* L);
     h7::AppController* getAppHolder(lua_State* L);
-
     /**
      * release platform window.
      */

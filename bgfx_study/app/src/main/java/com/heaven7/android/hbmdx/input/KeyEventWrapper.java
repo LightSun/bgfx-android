@@ -33,10 +33,9 @@ public final class KeyEventWrapper {
         int repeatCount = event.getRepeatCount();
         int keyCode = event.getKeyCode();
         String chars = event.getCharacters();
-        long timeStamp = System.nanoTime();
         int unicodeChar = event.getUnicodeChar();
         boolean altPressed = event.isAltPressed();
-        nSet(getNativePtr(), action, repeatCount, keyCode, chars, timeStamp, unicodeChar, altPressed);
+        nSet(getNativePtr(), action, repeatCount, keyCode, chars, unicodeChar, altPressed);
     }
 
     public KeyEventWrapper() {
@@ -57,5 +56,5 @@ public final class KeyEventWrapper {
 
     private static native long nAlloc();
     private static native void nDealloc(long ptr);
-    private static native void nSet(long ptr, int action, int repeatCount, int keyCode, String chars, long timeStamp, int unicodeChar, boolean altPressed);
+    private static native void nSet(long ptr, int action, int repeatCount, int keyCode, String chars, int unicodeChar, boolean altPressed);
 }
