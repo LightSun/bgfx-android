@@ -19,11 +19,11 @@ namespace h7{
 
     class IAndroidInput{
     public:
-        /** Called when the {@link App} is about to pause */
-        virtual void onPause() = 0;
+        /* Called when the {@link App} is about to pause */
+       // virtual void onPause() = 0;
 
-        /** Called when the {@link App} is about to resume */
-        virtual void onResume() = 0;
+        /* Called when the {@link App} is about to resume */
+       // virtual void onResume() = 0;
 
         /** Add a custom {@link OnKeyListener} */
         virtual void addKeyListener(OnKeyListener* listener) = 0;

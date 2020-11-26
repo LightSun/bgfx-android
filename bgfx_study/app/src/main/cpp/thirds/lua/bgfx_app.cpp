@@ -10,7 +10,7 @@
 
 #include <log.h>
 #include "../core/common.h"
-#include "../GestureContext.h"
+#include "../input/GestureContext.h"
 
 namespace h7{
 

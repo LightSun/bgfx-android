@@ -85,8 +85,9 @@ namespace h7{
     }
     extern "C"
     JNIEXPORT jlong JNICALL
-    Java_com_heaven7_android_hbmdx_input_AndroidInput_nAlloc(JNIEnv *env, jclass clazz, jobject obj) {
+    Java_com_heaven7_android_hbmdx_input_AndroidInput_nAlloc(JNIEnv *env, jclass clazz, jlong luaPtr,jobject obj) {
         AndroidInput* mev = new AndroidInput();
+        mev->luaPtr = luaPtr;
         mev->setRefObject(obj);
         return reinterpret_cast<jlong>(mev);
     }
@@ -129,6 +130,82 @@ namespace h7{
             env->GetStringUTFRegion(chars, 0, len, kew->chars);
         } else{
             kew->allocateChars(0);
+        }
+    }
+
+    extern "C"
+    JNIEXPORT void JNICALL
+    Java_com_heaven7_android_hbmdx_input_AndroidInput_nSetSensorAvailables(JNIEnv *env, jclass clazz,
+                                                                           jlong ptr,
+                                                                           jboolean accelerometer,
+                                                                           jboolean gyroscope,
+                                                                           jboolean rotation_vector,
+                                                                           jboolean compass) {
+        AndroidInput* input = rCast(AndroidInput*, ptr);
+        input->accelerometerAvailable = accelerometer;
+        input->gyroscopeAvailable = gyroscope;
+        input->rotationVectorAvailable = rotation_vector;
+        input->compassAvailable = compass;
+    }
+
+    extern "C"
+    JNIEXPORT void JNICALL
+    Java_com_heaven7_android_hbmdx_input_AndroidInput_nAccelerometer_1Changed(JNIEnv *env, jclass clazz,
+                                                                              jlong ptr,
+                                                                              jfloatArray values) {
+        AndroidInput* input = rCast(AndroidInput*, ptr);
+        auto len = env->GetArrayLength(values);
+        if(input->getNativeOrientation() == Orientation::Portrait){
+             env->GetFloatArrayRegion(values, 0, len, input->accelerometerValues);
+        } else{
+            float arr[len];
+            env->GetFloatArrayRegion(values, 0, len, arr);
+            input->accelerometerValues[0] = arr[1];
+            input->accelerometerValues[1] = -arr[0];
+            input->accelerometerValues[2] = arr[2];
+        }
+    }
+    extern "C"
+    JNIEXPORT void JNICALL
+    Java_com_heaven7_android_hbmdx_input_AndroidInput_nMagnetic_1field_1Changed(JNIEnv *env,
+                                                                                jclass clazz, jlong ptr,
+                                                                                jfloatArray values) {
+        AndroidInput* input = rCast(AndroidInput*, ptr);
+        auto len = env->GetArrayLength(values);
+        env->GetFloatArrayRegion(values, 0, len, input->magneticFieldValues);
+    }
+    extern "C"
+    JNIEXPORT void JNICALL
+    Java_com_heaven7_android_hbmdx_input_AndroidInput_nGyroscope_1Changed(JNIEnv *env, jclass clazz,
+                                                                          jlong ptr,
+                                                                          jfloatArray values) {
+        AndroidInput* input = rCast(AndroidInput*, ptr);
+        auto len = env->GetArrayLength(values);
+        if(input->getNativeOrientation() == Orientation::Portrait){
+            env->GetFloatArrayRegion(values, 0, len, input->gyroscopeValues);
+        } else{
+            float arr[len];
+            env->GetFloatArrayRegion(values, 0, len, arr);
+            input->gyroscopeValues[0] = arr[1];
+            input->gyroscopeValues[1] = -arr[0];
+            input->gyroscopeValues[2] = arr[2];
+        }
+    }
+    extern "C"
+    JNIEXPORT void JNICALL
+    Java_com_heaven7_android_hbmdx_input_AndroidInput_nRotation_1vector_1Changed(JNIEnv *env,
+                                                                                jclass clazz, jlong ptr,
+                                                                                jfloatArray values) {
+        AndroidInput* input = rCast(AndroidInput*, ptr);
+        auto len = env->GetArrayLength(values);
+        if(input->getNativeOrientation() == Orientation::Portrait){
+            env->GetFloatArrayRegion(values, 0, len, input->rotationVectorValues);
+        } else{
+            float arr[len];
+            env->GetFloatArrayRegion(values, 0, len, arr);
+            input->rotationVectorValues[0] = arr[1];
+            input->rotationVectorValues[1] = -arr[0];
+            input->rotationVectorValues[2] = arr[2];
         }
     }
 }

@@ -28,7 +28,7 @@ namespace h7 {
     static int _win_height;
 
     void requestRender(){
-//TODO
+
     }
 
     int getDisplayWidth(){

@@ -146,7 +146,7 @@ static int bgfx_setDebug(lua_State *L) {
 
 //new app. this should only be called only once.
 static int bgfx_startApp(lua_State *L) {
-    auto holder = Bgfx_lua_app::getAppHolder(L);
+    auto holder = h7::getAppHolder(L);
     if(holder->app != nullptr){
         //TODO switch app / jump another activity and return ?
         return luaL_error(L, "already exit app, you should call bgfx.destroyApp() first.");
@@ -171,7 +171,7 @@ static int bgfx_startApp(lua_State *L) {
     return 0;
 }
 static int bgfx_destroyApp(lua_State *L) {
-    Bgfx_lua_app::getAppHolder(L)->quitAll();
+    h7::getAppHolder(L)->quitAll();
     return 0;
 }
 

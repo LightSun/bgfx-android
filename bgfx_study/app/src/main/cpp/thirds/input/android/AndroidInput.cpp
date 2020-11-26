@@ -17,6 +17,10 @@
 #define SIG_getOrientation "([F[F)V"
 #define SIG_getRotation "(" AND_INPUT_SIG ")I"
 
+#define SIG_vibrate_INT "(I)V"
+#define SIG_vibrate "([JI)V"
+#define SIG_vibrateCancel "()V"
+
 #define LEN_R 9
 #define LEN_rotationVector 3
 
@@ -122,7 +126,7 @@ if(this->x){\
         // circle button on Xperia Play shouldn't need catchBack == true
         keysToCatch.add(cCast_ref(int, Keys::BUTTON_CIRCLE));
     }
-    AndroidInput::~AndroidInput():~WeakObjectM() {
+    AndroidInput::~AndroidInput(){
         release();
     }
     int AndroidInput::getFreePointerIndex() {
@@ -356,12 +360,20 @@ if(this->x){\
         return result;
     }
     void AndroidInput::vibrate(int milliseconds) {
-
+        auto pEnv = ensureJniEnv();
+        auto mid = pEnv->GetMethodID(_andInputClazz, "vibrate", SIG_vibrate_INT);
+        USE_REF_OBJECT(pEnv->CallVoidMethod(ref, mid, milliseconds));
     }
     void AndroidInput::vibrate(long long *pattern, int len, int repeat) {
-
+        auto pEnv = ensureJniEnv();
+        auto pArray = pEnv->NewLongArray(len);
+        pEnv->SetLongArrayRegion(pArray, 0, len, reinterpret_cast<const jlong *>(pattern));
+        auto mid = pEnv->GetMethodID(_andInputClazz, "vibrate", SIG_vibrate);
+        USE_REF_OBJECT(pEnv->CallVoidMethod(ref, mid, pArray, repeat));
     }
     void AndroidInput::cancelVibrate() {
-
+        auto pEnv = ensureJniEnv();
+        auto mid = pEnv->GetMethodID(_andInputClazz, "cancelVibrate", SIG_vibrateCancel);
+        USE_REF_OBJECT(pEnv->CallVoidMethod(ref, mid))
     }
 }

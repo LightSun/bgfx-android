@@ -45,7 +45,7 @@ public final class Luaer {
 
     public static synchronized void init(Context context){
         if(sInstance == null){
-            sInstance = new Luaer(context);
+            sInstance = new Luaer(context.getApplicationContext());
             sInstance.initLuaState();
             sInstance.initEnv(true);
 
