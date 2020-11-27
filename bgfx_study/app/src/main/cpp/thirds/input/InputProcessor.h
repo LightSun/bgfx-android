@@ -11,6 +11,16 @@
 namespace h7 {
     class InputProcessor : public RefObject {
     public:
+        virtual int ref(){
+            return RefObject::ref();
+        }
+        virtual int unRef(){
+            return RefObject::unRef();
+        }
+        virtual void unRefAndDestroy(){
+            RefObject::unRefAndDestroy();
+        }
+        virtual void onDestroy(){}
         /** Called when a key was pressed
 	 *
 	 * @param keycode one of the constants in {@link Input.Keys}

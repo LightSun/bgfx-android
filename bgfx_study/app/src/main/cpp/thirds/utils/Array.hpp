@@ -32,6 +32,12 @@ namespace h7{
 
         Comparator<T>* _com;
 
+        Array(Array<T>* in){
+            this->malCount = in->malCount;
+            this->_com_com = in->_com;
+            this->data = malloc(sizeof(T) * in->malCount);
+            this->_size = in->_size;
+        }
     public:
         Array(size_t capacity, const Comparator<T>* com):malCount(capacity), _com(
                 const_cast<Comparator <T> *>(com)){
@@ -102,15 +108,37 @@ namespace h7{
             return true;
         }
         bool addAll(Array<T>* array){
+            return addAll(_size, array);
+        }
+        bool addAll(int index, Array<T>* array){
+            if(index > _size){
+                return false;
+            }
             if(_size >= malCount - array->_size){
                 if(!resize(MathUtils::max(8, (int)((malCount + array->_size) * 1.75f)))){
                     return false;
                 }
             }
+            //copy old elements, then cpy array's
             int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += _size * unit;
-            memcpy(addr, array->data, unit * array->_size);
+            addr += index * unit;
+            //old need offset
+            int offsetSize = _size - index;
+            if(offsetSize > 0){
+                int actLen = offsetSize * unit;
+                unsigned char* offsetAddr = static_cast<unsigned char *>(malloc(actLen));
+                //move to tmp array
+                memcpy(offsetAddr, addr, actLen);
+                //copy array
+                memcpy(addr, array->data, unit * array->_size);
+                addr += unit * array->_size;
+                //copy old
+                memcpy(addr, offsetAddr, actLen);
+                free(offsetAddr);
+            } else{
+                memcpy(addr, array->data, unit * array->_size);
+            }
             _size += array->_size;
             return true;
         }
@@ -280,6 +308,9 @@ namespace h7{
         inline void setSize(int newSize){
             _size = newSize;
         }
+        inline Array<T>& copy(){
+            return Array<T>(this);
+        }
         inline T&operator[](int index){
             return get(index);
         }
@@ -301,7 +332,7 @@ namespace h7{
     class cn: public Array<type>{\
     public:\
         cn(size_t capacity): Array(capacity, com) {}\
-        cn() : Array(com) {}\
+        cn() : Array(reinterpret_cast<const Comparator<type>*>(com)) {}\
     };
     BTYPE_ARRAY(IntArray, int, NULL)
     BTYPE_ARRAY(UnSignedIntArray, unsigned int, NULL)

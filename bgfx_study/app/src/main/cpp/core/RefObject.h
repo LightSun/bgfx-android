@@ -18,13 +18,13 @@ namespace h7{
         ~RefObject(){
             onDestroy();
         }
-        int ref(){
+        virtual int ref(){
             return _ref.fetch_add(1);
         }
-        int unRef(){
+        virtual int unRef(){
             return _ref.fetch_add(-1);
         }
-        void unRefAndDestroy(){
+        virtual void unRefAndDestroy(){
             if(unRef() == 0){
                 onDestroy();
                 delete this;
