@@ -5,17 +5,24 @@
 #ifndef BGFX_STUDY_IANDROIDINPUT_H
 #define BGFX_STUDY_IANDROIDINPUT_H
 
+#include "RefObject.h"
+
+
 namespace h7{
     class KeyEventWrapper;
     class MotionEventWrapper;
 
-    class OnKeyListener {
+    class OnKeyListener: public RefObject{
     public:
         virtual bool onKey(int keyCode, KeyEventWrapper* event) = 0;
     };
-    class OnGenericMotionListener{
+    class OnGenericMotionListener: public RefObject{
     public:
+        virtual bool onGenericMotion(MotionEventWrapper* wrapper);
     };
+    namespace InputDevice{
+        static const int SOURCE_CLASS_POINTER = 2;
+    }
 
     class IAndroidInput{
     public:

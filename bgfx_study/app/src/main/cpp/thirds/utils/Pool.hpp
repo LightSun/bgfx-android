@@ -12,7 +12,7 @@
 namespace h7 {
 
     /**
-     * a pool used to manage multi object.
+     * a pool used to manage multi pointer object.
      * @tparam T the type
      */
     template<typename T>

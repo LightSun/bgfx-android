@@ -128,6 +128,25 @@ if(this->x){\
     }
     AndroidInput::~AndroidInput(){
         release();
+        lockTouch();
+        usedKeyEvents.clear();
+        usedTouchEvents.clear();
+        unlockTouch();
+        //listeners
+        _inputProcessor->unRefAndDestroy();
+        auto func = [&](Array<OnKeyListener*>* arr, int index, OnKeyListener*& ele){
+            ele->unRefAndDestroy();
+            return false;
+        };
+        keyListeners.travel(reinterpret_cast<std::function<bool(Array<OnKeyListener*>*, int, OnKeyListener*&)> &>(func));
+        keyListeners.clear();
+        //
+        auto func_mo = [&](Array<OnGenericMotionListener*>* arr, int index, OnGenericMotionListener*& ele){
+            ele->unRefAndDestroy();
+            return false;
+        };
+        genericMotionListeners.travel(reinterpret_cast<std::function<bool(Array<OnGenericMotionListener*>*, int, OnGenericMotionListener*&)> &>(func_mo));
+        genericMotionListeners.clear();
     }
     int AndroidInput::getFreePointerIndex() {
         int len = len_realId;
@@ -297,6 +316,17 @@ if(this->x){\
                 deltaY[i] = 0;
             }
         }
+        //recycle event
+        auto func_key = [&](Array<KeyEvent*>* arr, int index, KeyEvent*& ele){
+            usedKeyEvents.free(ele);
+            return false;
+        };
+        auto func_touch = [&](Array<TouchEvent*>* arr, int index, TouchEvent*& ele){
+            usedTouchEvents.free(ele);
+            return false;
+        };
+        keyEvents.travel(reinterpret_cast<std::function<bool(Array<KeyEvent*>* arr, int index, KeyEvent*& ele)> &>(func_key));
+        touchEvents.travel(reinterpret_cast<std::function<bool(Array<TouchEvent*>* arr, int index, TouchEvent*& ele)> &>(func_touch));
         keyEvents.clear();
         touchEvents.clear();
         unlockTouch();

@@ -20,7 +20,7 @@
         }while(0);
 
 namespace h7 {
-    //TODO latter impl Input
+    //TODO handle lifecycle of c++ objects
     class AndroidInput: public Input,IAndroidInput,WeakObjectM {
 
     public:
@@ -50,12 +50,12 @@ namespace h7 {
         Pool<KeyEvent> usedKeyEvents = Pool<KeyEvent>(16, 100);
         Pool<TouchEvent> usedTouchEvents = Pool<TouchEvent>(16, 100);;
 
-        Array<OnKeyListener *> keyListeners;
         Array<KeyEvent *> keyEvents;
         Array<TouchEvent *> touchEvents;
 
-        InputProcessor* _inputProcessor;
+        Array<OnKeyListener *> keyListeners;
         Array<OnGenericMotionListener*> genericMotionListeners;
+        InputProcessor* _inputProcessor;
 
         bool gyroscopeAvailable = false;
         bool accelerometerAvailable = false;

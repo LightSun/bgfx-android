@@ -51,6 +51,14 @@ namespace h7{
         int buttonState;
         float pressure;
 
+        int source; //event source
+
+        //mouse
+        int scrollAmountX;
+        int scrollAmountY;
+        int deltaX;
+        int deltaY;
+
         float tmpArr[LEN_MOTION_INFO];
 
         MotionEventWrapper();

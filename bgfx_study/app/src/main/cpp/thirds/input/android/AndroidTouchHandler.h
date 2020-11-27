@@ -27,6 +27,8 @@ namespace h7{
      * @return true if handled.
      */
     bool android_onKey(AndroidInput* ainput, int keyCode, KeyEventWrapper* event);
+
+    bool android_onGenericMotion(AndroidInput* ainput, MotionEventWrapper* event);
 }
 
 #endif //BGFX_STUDY_ANDROIDTOUCHHANDLER_H

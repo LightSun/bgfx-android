@@ -9,6 +9,7 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -41,6 +42,12 @@ public final class AndroidInput {
     private SensorListener gyroscopeListener;
     private SensorListener rotationVectorListener;
     private SensorListener compassListener;
+
+    public boolean onGenericMotion(MotionEvent event) {
+        MotionEventWrapper wrapper = MotionEventWrapper.obtain();
+        wrapper.setEvent(MotionEvent.obtain(event));
+        return nOnGenericMotion(getNativePtr(), wrapper.getNativePtr(), wrapper);
+    }
 
     public void onTouch(MotionEvent event) {
         MotionEventWrapper wrapper = MotionEventWrapper.obtain();
@@ -289,6 +296,7 @@ public final class AndroidInput {
     private static native long nAlloc(long luaPtr,AndroidInput input);
     private static native void nDealloc(long ptr);
     private static native void nOnTouch(long inputPtr, long mePtr, MotionEventWrapper wrapper);
+    private static native boolean nOnGenericMotion(long inputPtr, long mePtr, MotionEventWrapper wrapper);
     private static native boolean nOnKey(long inputPtr, long kePtr, int keyCode, KeyEventWrapper wrapper);
 
     private static native void nSetSensorAvailables(long ptr, boolean accelerometer, boolean gyroscope,

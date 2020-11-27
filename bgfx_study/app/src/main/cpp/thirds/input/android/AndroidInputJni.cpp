@@ -85,7 +85,8 @@ namespace h7{
     Java_com_heaven7_android_hbmdx_input_MotionEventWrapper_nSet(JNIEnv *env, jclass clazz, jlong ptr, jint action,
                                                                  jint x, jint y, jint pointer_index,
                                                                  jint pointer_id, jint pointer_count,
-                                                                 jint button_state, jfloat pressure) {
+                                                                 jint button_state, jfloat pressure,
+                                                                 jint source, jint mouseDx, jint mouseDy) {
         MotionEventWrapper* mev = reinterpret_cast<MotionEventWrapper *>(ptr);
         mev->action = action;
         mev->x = x;
@@ -96,6 +97,10 @@ namespace h7{
         mev->buttonState = button_state;
         mev->pressure = pressure;
         mev->timeStamp = getCurrentEventTime();
+        //often for mouse
+        mev->scrollAmountX = mouseDx;
+        mev->scrollAmountY = mouseDy;
+        mev->source = source;
     }
     extern "C"
     JNIEXPORT void JNICALL
@@ -115,6 +120,16 @@ namespace h7{
         KeyEventWrapper* mev = reinterpret_cast<KeyEventWrapper *>(ke_ptr);
         mev->setRefObject(wrapper);
         return sCast(jboolean, android_onKey(input, key_code, mev));
+    }
+    extern "C"
+    JNIEXPORT jboolean JNICALL
+    Java_com_heaven7_android_hbmdx_input_AndroidInput_nOnGenericMotion(JNIEnv *env, jclass clazz,
+                                                                       jlong inputPtr, jlong me_ptr,
+                                                                       jobject wrapper) {
+        AndroidInput* input = reinterpret_cast<AndroidInput *>(inputPtr);
+        MotionEventWrapper* mev = reinterpret_cast<MotionEventWrapper *>(me_ptr);
+        mev->setRefObject(wrapper);
+        return sCast(jboolean, android_onGenericMotion(input, mev));
     }
     extern "C"
     JNIEXPORT jlong JNICALL

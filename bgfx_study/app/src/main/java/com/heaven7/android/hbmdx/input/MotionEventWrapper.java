@@ -48,7 +48,17 @@ public final class MotionEventWrapper {
         int y = (int) event.getY(pointerIndex);
         int buttonState = event.getButtonState();
         float pressure = event.getPressure(pointerIndex);
-        nSet(nativePtr, action, x, y, pointerIndex, pointerId, pointerCount, buttonState, pressure);
+        //mouse
+        int scrollAmountY, scrollAmountX;
+        if(event.getAction() == MotionEvent.ACTION_SCROLL){
+            scrollAmountY = (int)-Math.signum(event.getAxisValue(MotionEvent.AXIS_VSCROLL));
+            scrollAmountX = (int)-Math.signum(event.getAxisValue(MotionEvent.AXIS_HSCROLL));
+        }else {
+            scrollAmountY = 0;
+            scrollAmountX = 0;
+        }
+        nSet(nativePtr, action, x, y, pointerIndex, pointerId, pointerCount, buttonState, pressure,
+                event.getSource(), scrollAmountX, scrollAmountY);
     }
 
     @Keep
@@ -98,6 +108,6 @@ public final class MotionEventWrapper {
 
     private static native void nSet(long ptr, int action, int x, int y,
                                     int pointerIndex, int pointerId, int pointerCount,
-                                    int buttonState, float pressure);
+                                    int buttonState, float pressure, int source, int mouseDx, int mouseDy);
 }
 

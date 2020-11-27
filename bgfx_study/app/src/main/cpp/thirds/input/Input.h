@@ -8,27 +8,29 @@
 //#include "map2.h"
 #include "../../include/map2.h"
 #include "InputProcessor.h"
+#include "RefObject.h"
 
 namespace h7 {
 
-    class KeyEvent {
+    class KeyEvent : public RefObject {
     public:
-        static const int KEY_DOWN  = 0;
-        static const int KEY_UP    = 1;
+        static const int KEY_DOWN = 0;
+        static const int KEY_UP = 1;
         static const int KEY_TYPED = 2;
         //relative android
-        static const int KEYCODE_BACK  = 4;
-        static const int KEYCODE_UNKNOWN   = 0;
-        static const int ACTION_MULTIPLE  = 2;
-        static const int ACTION_DOWN      = 0;
-        static const int ACTION_UP        = 1;
+        static const int KEYCODE_BACK = 4;
+        static const int KEYCODE_UNKNOWN = 0;
+        static const int ACTION_MULTIPLE = 2;
+        static const int ACTION_DOWN = 0;
+        static const int ACTION_UP = 1;
 
         long long timeStamp;
         int type;
         int keyCode;
         char keyChar;
     };
-    class TouchEvent {
+
+    class TouchEvent :public RefObject {
     public:
         static const int TOUCH_DOWN = 0;
         static const int TOUCH_UP = 1;
@@ -45,6 +47,7 @@ namespace h7 {
         int button;
         int pointer;
     };
+
     enum Buttons {
         LEFT = 0,
         RIGHT = 1,
@@ -70,29 +73,30 @@ namespace h7 {
     enum Orientation {
         Landscape = 0, Portrait = 1, Count = 2
     };
-    /** <p>
- * Interface to the input facilities. This allows polling the state of the keyboard, the touch screen and the accelerometer. On
- * some backends (desktop, gwt, etc) the touch screen is replaced by mouse input. The accelerometer is of course not available on
- * all backends.
- * </p>
- *
- * <p>
- * Instead of polling for events, one can process all input events with an {@link InputProcessor}. You can set the InputProcessor
- * via the {@link #setInputProcessor(InputProcessor)} method. It will be called before the {@link ApplicationListener#render()}
- * method in each frame.
- * </p>
- *
- * <p>
- * Keyboard keys are translated to the constants in {@link Keys} transparently on all systems. Do not use system specific key
- * constants.
- * </p>
- *
- * <p>
- * The class also offers methods to use (and test for the presence of) other input systems like vibration, compass, on-screen
- * keyboards, and cursor capture. Support for simple input dialogs is also provided.
- * </p>
-     * @author mzechner
-  * */
+
+/** <p>
+* Interface to the input facilities. This allows polling the state of the keyboard, the touch screen and the accelerometer. On
+* some backends (desktop, gwt, etc) the touch screen is replaced by mouse input. The accelerometer is of course not available on
+* all backends.
+* </p>
+*
+* <p>
+* Instead of polling for events, one can process all input events with an {@link InputProcessor}. You can set the InputProcessor
+* via the {@link #setInputProcessor(InputProcessor)} method. It will be called before the {@link ApplicationListener#render()}
+* method in each frame.
+* </p>
+*
+* <p>
+* Keyboard keys are translated to the constants in {@link Keys} transparently on all systems. Do not use system specific key
+* constants.
+* </p>
+*
+* <p>
+* The class also offers methods to use (and test for the presence of) other input systems like vibration, compass, on-screen
+* keyboards, and cursor capture. Support for simple input dialogs is also provided.
+* </p>
+ * @author mzechner
+* */
     class Input {
     public:
         class Keys {
@@ -804,6 +808,7 @@ namespace h7 {
          * @param catchKey whether to catch the given keycode
          */
         virtual void setCatchKey(int keycode, bool catchKey) = 0;
+
         /**
          *
          * @param keycode keycode to check if caught
@@ -815,10 +820,10 @@ namespace h7 {
          * {@link ApplicationListener#render()} method each frame.
          *
          * @param processor the InputProcessor */
-        virtual void setInputProcessor(InputProcessor* processor) = 0;
+        virtual void setInputProcessor(InputProcessor *processor) = 0;
 
         /** @return the currently set {@link InputProcessor} or null. */
-        virtual InputProcessor* getInputProcessor() = 0;
+        virtual InputProcessor *getInputProcessor() = 0;
 
         /** Queries whether a {@link Peripheral} is currently available. In case of Android and the {@link Peripheral#HardwareKeyboard}
          * this returns the whether the keyboard is currently slid out or not.
@@ -846,6 +851,7 @@ namespace h7 {
          * @param y the y-position */
         virtual void setCursorPosition(int x, int y) = 0;
     };
+
 }
 
 #endif //BGFX_STUDY_INPUT_H

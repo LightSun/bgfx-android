@@ -28,6 +28,16 @@ namespace h7 {
         event->button = button;
         input->touchEvents.add(event);
     }
+    static void postTouchEvent_mouse(AndroidInput* input, int type, int x, int y, int scrollAmountX, int scrollAmountY, long timeStamp) {
+        TouchEvent* event = input->usedTouchEvents.obtain();
+        event->timeStamp = timeStamp;
+        event->x = x;
+        event->y = y;
+        event->type = type;
+        event->scrollAmountX = scrollAmountX;
+        event->scrollAmountY = scrollAmountY;
+        input->touchEvents.add(event);
+    }
 
     void android_onTouch(AndroidInput *ainput, MotionEventWrapper *event) {
         AndroidInput &input = *ainput;
@@ -228,5 +238,45 @@ namespace h7 {
         input.unlockTouch();
         requestRender(ainput->luaPtr);
         return input.keysToCatch.contains(keyCode);
+    }
+    static bool mouse_handle(AndroidInput* ainput, MotionEventWrapper* event);
+
+    bool android_onGenericMotion(AndroidInput* ainput, MotionEventWrapper* event){
+        //handle mouse
+        if (mouse_handle(ainput, event)) return true;
+        for (int i = 0, n = ainput->genericMotionListeners.size(); i < n; i++){
+            if (ainput->genericMotionListeners.get(i)->onGenericMotion(event)) return true;
+        }
+        return false;
+    }
+
+    static bool mouse_handle(AndroidInput* ainput, MotionEventWrapper* event){
+        //see android: InputDevice.SOURCE_CLASS_POINTER
+        if ((event->source & h7::InputDevice::SOURCE_CLASS_POINTER) == 0) return false;
+
+        int x = 0, y = 0;
+        long timeStamp = getCurrentEventTime();
+        ainput->lockTouch();
+        switch (event->action) {
+            case MotionEventWrapper::ACTION_HOVER_MOVE:
+                x = event->x;
+                y = event->y;
+                if ((x != event->deltaX) || (y != event->deltaY)) { // Avoid garbage events
+                    postTouchEvent_mouse(ainput, TouchEvent::TOUCH_MOVED, x, y, 0, 0, timeStamp);
+                    event->deltaX = x;
+                    event->deltaY = y;
+                }
+                break;
+
+            case MotionEventWrapper::ACTION_SCROLL:
+                //scrollAmountY = (int)-Math.signum(event.getAxisValue(MotionEvent.AXIS_VSCROLL));
+                //scrollAmountX = (int)-Math.signum(event.getAxisValue(MotionEvent.AXIS_HSCROLL));
+                postTouchEvent_mouse(ainput, TouchEvent::TOUCH_SCROLLED, 0, 0, event->scrollAmountX, event->scrollAmountY, timeStamp);
+
+        }
+        ainput->unlockTouch();
+        event->jRecycle();
+        requestRender(ainput->luaPtr);
+        return true;
     }
 }

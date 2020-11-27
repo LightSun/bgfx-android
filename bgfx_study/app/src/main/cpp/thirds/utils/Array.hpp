@@ -3,6 +3,7 @@
 //
 
 #include <malloc.h>
+#include <functional>
 #include <lua/MathUtils.h>
 
 namespace h7{
@@ -237,6 +238,26 @@ namespace h7{
         inline const T& peekLast(){
             return _size > 0 ? get(_size - 1) : NULL;
         }
+        //return true to break travel.
+        inline void travel(std::function<bool(Array<T>* arr, int index, T& ele)>& func){
+            auto c = size();
+            for (int i = 0; i < c; ++i) {
+                if(func(this, i, const_cast<T&>(get(i)))){
+                    return;
+                }
+            }
+        }
+        inline void travel(bool(*Func)(Array<T>* arr, int index, T& ele, void* ud), void* ud){
+            auto c = size();
+            for (int i = 0; i < c; ++i) {
+                if(Func(this, i, const_cast<T&>(get(i)), ud)){
+                    return;
+                }
+            }
+        }
+        /**
+         * clear elements
+         */
         inline void clear(){
             _size = 0;
         }
