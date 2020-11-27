@@ -13,6 +13,7 @@
 
 #define sCast(type, x) static_cast<type>(x)
 #define rCast(type, x) reinterpret_cast<type>(x)
+#define rCast_ref(type, x) reinterpret_cast<type &>(x)
 #define cCast_ref(type, x) const_cast<type &>(x)
 #define cCast(type, x) const_cast<type>(x)
 

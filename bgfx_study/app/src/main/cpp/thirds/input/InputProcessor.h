@@ -15,19 +15,19 @@ namespace h7 {
 	 *
 	 * @param keycode one of the constants in {@link Input.Keys}
 	 * @return whether the input was processed */
-        virtual bool keyDown(int keycode) = 0;
+        virtual bool keyDown(int keycode){ return false;}
 
         /** Called when a key was released
          *
          * @param keycode one of the constants in {@link Input.Keys}
          * @return whether the input was processed */
-        virtual bool keyUp(int keycode) = 0;
+        virtual bool keyUp(int keycode){ return false;}
 
         /** Called when a key was typed
          *
          * @param character The character
          * @return whether the input was processed */
-        virtual bool keyTyped(char character) = 0;
+        virtual bool keyTyped(char character){ return false;}
 
         /** Called when the screen was touched or a mouse button was pressed. The button parameter will be {@link Buttons#LEFT} on iOS.
          * @param screenX The x coordinate, origin is in the upper left corner

@@ -114,7 +114,7 @@ namespace h7{
             _size += array->_size;
             return true;
         }
-        const T& get(size_t index){
+        T& get(size_t index){
             int unit = sizeof(T);
             unsigned char* addr = reinterpret_cast<unsigned char*>(data);
             addr += _size * unit;
@@ -264,23 +264,25 @@ namespace h7{
         /** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items
  * have been removed, or if it is known that more items will not be added.
          * */
-        bool shrink(){
+        inline bool shrink(){
             if(_size > 0 && malCount != _size){
                 return resize(_size);
             }
             return true;
         }
-        bool ensureCapacity(int additionalCapacity){
+        inline bool ensureCapacity(int additionalCapacity){
             int sizeNeeded = _size + additionalCapacity;
             if(sizeNeeded > malCount){
                 return resize(sizeNeeded);
             }
             return true;
         }
-        void setSize(int newSize){
+        inline void setSize(int newSize){
             _size = newSize;
         }
-
+        inline T&operator[](int index){
+            return get(index);
+        }
     protected:
         inline bool resize(size_t newSize) {
             void * d = malloc(newSize * sizeof(T));
