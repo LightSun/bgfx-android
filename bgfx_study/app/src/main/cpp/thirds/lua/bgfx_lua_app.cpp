@@ -125,46 +125,48 @@ namespace h7 {
 
 //-----------------------------------------------------------------------------------------
 
-LuaApp::LuaApp(lua_State *L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw,
-               FUNC_NAME func_destroy) {
+LuaApp::~LuaApp() {
+    _release();
+}
+//preinit, init, draw, destroy
+LuaApp::LuaApp(lua_State *L) {
     this->L = L;
-    this->func_preInit = preInit;
-    this->func_init = func_init;
-    this->func_draw = func_draw;
-    this->func_destroy = func_destroy;
+    ref_destroy = luaL_ref(L,LUA_REGISTRYINDEX);
+    ref_draw = luaL_ref(L,LUA_REGISTRYINDEX);
+    ref_init = luaL_ref(L,LUA_REGISTRYINDEX);
+    ref_preInit = luaL_ref(L,LUA_REGISTRYINDEX);
 }
 
 void LuaApp::onInit(){
-    if (func_init) {
-        lua_getglobal(L, func_init);
+    if (ref_init != LUA_NOREF) {
+        lua_rawgeti(L,LUA_REGISTRYINDEX, ref_init);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
             LOGE("%s", msg);
-            luaL_error(L, "call LuaApp init failed. func = %s, msg = %s", func_init, msg);
+            luaL_error(L, "call LuaApp init failed. func = %d, msg = %s", ref_init, msg);
         }
     }
 }
 
 void LuaApp::onDraw() {
-    if (func_draw) {
-        lua_getglobal(L, func_draw);
+    if (ref_draw != LUA_NOREF) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, ref_draw);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
             LOGE("%s", msg);
-            luaL_error(L, "call LuaApp draw failed. func = %s, msg = %s", func_draw, msg);
+            luaL_error(L, "call LuaApp draw failed. func = %d, msg = %s", ref_draw, msg);
         }
     }
 }
 
 void LuaApp::onPreInit() {
-    if (func_preInit) {
-        lua_getglobal(L, func_preInit);
-        //LOGD("doPreInit");
+    if (ref_preInit != LUA_NOREF) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, ref_preInit);
         //luaB_dumpStack(L);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
             LOGE("%s", msg);
-            luaL_error(L, "call LuaApp pre-init failed. func = %s, msg = %s", func_preInit, msg);
+            luaL_error(L, "call LuaApp pre-init failed. func = %d, msg = %s", ref_preInit, msg);
         } 
     }
 }
@@ -173,17 +175,7 @@ void LuaApp::onDestroy(bool lightly) {
     _callLuaDestroy();
     ext_println("onDestroy");
     if(!lightly){
-        lua_pushnil(L);
-        lua_setglobal(L, func_preInit);
-
-        lua_pushnil(L);
-        lua_setglobal(L, func_init);
-
-        lua_pushnil(L);
-        lua_setglobal(L, func_draw);
-
-        lua_pushnil(L);
-        lua_setglobal(L, func_destroy);
+        _release();
     }
 }
 
@@ -197,13 +189,31 @@ void LuaApp::onResume() {
     LOGW("onResume");
 }
 void LuaApp::_callLuaDestroy() {
-    if (func_destroy) {
-        lua_getglobal(L, func_destroy);
+    if (ref_destroy != LUA_NOREF) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, ref_destroy);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
             LOGE("%s", msg);
-            luaL_error(L, "call LuaApp destroy failed. func = %s, msg = %s", func_destroy, msg);
+            luaL_error(L, "call LuaApp destroy failed. func = %d, msg = %s", ref_destroy, msg);
         }
+    }
+}
+void LuaApp::_release() {
+    if (ref_preInit != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, ref_preInit);
+        ref_preInit = LUA_NOREF;
+    }
+    if (ref_init != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, ref_init);
+        ref_init = LUA_NOREF;
+    }
+    if (ref_draw != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, ref_draw);
+        ref_draw = LUA_NOREF;
+    }
+    if (ref_destroy != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, ref_destroy);
+        ref_destroy = LUA_NOREF;
     }
 }
 

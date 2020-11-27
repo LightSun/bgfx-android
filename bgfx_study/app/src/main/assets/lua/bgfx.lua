@@ -5,7 +5,6 @@
 ---
 local m = {};
 --require("bgfx_lua");
-local func_wrap = require("func_wrap");
 local ud_wrap = require("ud_wrap");
 
 local function dumpInit(init_wrapper, out)
@@ -26,22 +25,12 @@ function m.getInit()
 end
 
 function m.startApp(func_pre_init, func_init, func_draw, func_destroy)
-    return bgfx_lua.startApp(
-            func_wrap.wrapEasy(func_pre_init, "app_pre_init"),
-            func_wrap.wrapEasy(func_init, "app_init"),
-            func_wrap.wrapEasy(func_draw, "app_draw"),
-            func_wrap.wrapEasy(func_destroy, "app_destroy")
-    );
+    return bgfx_lua.startApp(func_pre_init, func_init, func_draw, func_destroy);
 end
 
 --- start app and render self. that means the render method called self'
 function m.startAppLoop(func_pre_init, func_init, func_draw, func_destroy)
-    return bgfx_lua.startApp(true,
-            func_wrap.wrapEasy(func_pre_init, "app_pre_init"),
-            func_wrap.wrapEasy(func_init, "app_init"),
-            func_wrap.wrapEasy(func_draw, "app_draw"),
-            func_wrap.wrapEasy(func_destroy, "app_destroy")
-    );
+    return bgfx_lua.startApp(true, func_pre_init, func_init, func_draw, func_destroy);
 end
 
 function m.setDebug(debugFlags)

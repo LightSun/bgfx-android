@@ -151,21 +151,18 @@ static int bgfx_startApp(lua_State *L) {
         //TODO switch app / jump another activity and return ?
         return luaL_error(L, "already exit app, you should call bgfx.destroyApp() first.");
     }
-    int idx = 1;
     bool renderSelf = false;
+    int check = 1;
     if(lua_type(L, 1) == LUA_TBOOLEAN){
-        idx += 1;
         renderSelf = lua_toboolean(L, 1) == 1;
+        check++;
     }
-    const char *fn_pre_init = lua_tostring(L, idx);
-    idx++;
-    const char *fn_init = lua_tostring(L, idx);
-    idx++;
-    const char *fn_draw = luaL_checkstring(L, idx);
-    idx++;
-    const char *fn_destroy = lua_tostring(L, idx);
+    luaL_checktype(L, check++, LUA_TFUNCTION);
+    luaL_checktype(L, check++, LUA_TFUNCTION);
+    luaL_checktype(L, check++, LUA_TFUNCTION);
+    luaL_checktype(L, check, LUA_TFUNCTION);
     //create and start
-    auto pApp = new h7::LuaApp(L, fn_pre_init, fn_init, fn_draw, fn_destroy);
+    auto pApp = new h7::LuaApp(L);
     pApp->renderSelf = renderSelf;
     holder->start(pApp);
     return 0;

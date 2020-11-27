@@ -35,19 +35,16 @@ namespace h7{
     class LuaApp;
     class AppController;
 
-    typedef const char* FUNC_NAME;
     class LuaApp: public BgfxApp{
 
     public:
         /**
           * create lua app with init, draw, destroy function.
+          * order: preinit, init, draw, destroy
           * @param L the lua state
-          * @param preInit the pre init function name ,must be global stack
-          * @param func_init the init function name ,must be global stack
-          * @param func_draw the draw function name ,must be global stack
-          * @param func_destroy the draw destroy name ,must be global stack
           */
-        LuaApp(lua_State* L, FUNC_NAME preInit, FUNC_NAME func_init, FUNC_NAME func_draw, FUNC_NAME func_destroy);
+        LuaApp(lua_State* L);
+        ~LuaApp();
 
         //called in sub-thread.
         void onDraw();
@@ -62,11 +59,13 @@ namespace h7{
 
     private:
         inline void _callLuaDestroy();
+        inline void _release();
         lua_State* L;
-        FUNC_NAME func_preInit;
-        FUNC_NAME func_init;
-        FUNC_NAME func_draw;
-        FUNC_NAME func_destroy;
+
+        int ref_destroy;
+        int ref_draw;
+        int ref_init;
+        int ref_preInit;
     };
 }
 
