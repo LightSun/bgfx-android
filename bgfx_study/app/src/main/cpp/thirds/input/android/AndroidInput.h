@@ -86,9 +86,6 @@ namespace h7 {
 
         ~AndroidInput();
 
-        inline void setRefObject(jobject obj){
-            WeakObjectM::setRefObject(obj);
-        }
         void processEvents ();
         int getFreePointerIndex();
 
