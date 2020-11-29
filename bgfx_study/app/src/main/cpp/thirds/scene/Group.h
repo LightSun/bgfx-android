@@ -12,7 +12,7 @@ namespace h7{
 
     class Group: public Actor, public SkWeakRefCnt{
     public:
-        sk_sp<Group> parent;
+        Group* parent;
     };
 }
 

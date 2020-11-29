@@ -55,9 +55,10 @@ namespace h7 {
 
         // Collect ascendants so event propagation is unaffected by hierarchy changes.
         Array<sk_sp<Group>> ascendants;
-        sk_sp<Group> _parent = this->parent;
-        while (_parent.get() != NULL) {
-            ascendants.add(_parent);
+        Group* _parent = this->parent;
+        while (_parent != NULL) {
+            sk_sp<Group> sp_parent = sk_ref_sp(_parent);
+            ascendants.add(sp_parent);
             _parent = _parent->parent;
         }
 
