@@ -10,7 +10,7 @@
 
 namespace h7{
 
-    class Group: public Actor, public SkWeakRefCnt{
+    class Group: public Actor{
     public:
         Group* parent;
     };

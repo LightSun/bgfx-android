@@ -7,6 +7,7 @@
 
 #include <lua/SkRefCnt.h>
 #include <math/Vector2f.h>
+#include <lua/SkWeakRefCnt.h>
 #include "utils/Array.hpp"
 #include "Color.h"
 #include "Event.h"
@@ -35,7 +36,7 @@ namespace h7 {
         childrenOnly = 2
     };
 
-    class Actor : public SkRefCnt {
+    class Actor : public SkWeakRefCnt {
     public:
         Stage* stage;
         Group* parent;

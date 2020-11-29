@@ -55,12 +55,24 @@ namespace h7 {
 
         // Collect ascendants so event propagation is unaffected by hierarchy changes.
         Array<sk_sp<Group>> ascendants;
-        Group* _parent = this->parent;
-        while (_parent != NULL) {
-            sk_sp<Group> sp_parent = sk_ref_sp(_parent);
-            ascendants.add(sp_parent);
-            _parent = _parent->parent;
+        parent->weak_ref();
+        if(parent->try_ref()){
+            Group* _parent = this->parent;
+            while (_parent != NULL) {
+                sk_sp<Group> sp_parent = sk_ref_sp(_parent);
+                ascendants.add(sp_parent);
+                //
+                auto pGroup = _parent->parent;
+                pGroup->weak_ref();
+                if(pGroup->try_ref()){
+                    _parent = pGroup;
+                    pGroup->unref();
+                }
+                pGroup->weak_unref();
+            }
+            parent->unref();
         }
+        parent->weak_unref();
 
         // Notify ascendants' capture listeners, starting at the root. Ascendants may stop an event before children receive it.
         // Array<sk_sp<Group>>& ascendantsArray = ascendants.copy();
@@ -124,6 +136,7 @@ namespace h7 {
             parent->weak_ref();
             if(parent->try_ref()){
                 parent->stageToLocalCoordinates(stageCoords);
+                parent->unref();
             }
             parent->weak_unref();
         }
