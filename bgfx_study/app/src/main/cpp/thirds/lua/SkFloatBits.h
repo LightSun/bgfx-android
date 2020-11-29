@@ -90,4 +90,9 @@ static inline int32_t SkFloatAs2sCompliment(float x) {
 
 //#define SkScalarAs2sCompliment(x)    SkFloatAs2sCompliment(x)
 
+//heaven7
+static inline float skf_mod(float a, float b){
+    return SkBits2Float(SkFloat2Bits(a) % SkFloat2Bits(b));
+}
+
 #endif

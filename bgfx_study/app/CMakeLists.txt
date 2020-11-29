@@ -61,6 +61,7 @@ aux_source_directory(src/main/cpp/core/math SRC_math)
 aux_source_directory(src/main/cpp/thirds/input SRC_input)
 aux_source_directory(src/main/cpp/thirds/input/android SRC_input_and)
 aux_source_directory(src/main/cpp/thirds/utils SRC_h7_utils)
+aux_source_directory(src/main/cpp/thirds/scene SRC_scene)
 
 add_library(
         bgfx_core
@@ -84,6 +85,7 @@ add_library(
         ${SRC_nancanvas}
         ${SRC_input}
         ${SRC_input_and}
+        ${SRC_scene}
 )
 find_library( # Sets the name of the path variable.
         log-lib

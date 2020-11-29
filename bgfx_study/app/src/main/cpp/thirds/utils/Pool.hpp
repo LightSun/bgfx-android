@@ -11,6 +11,12 @@
 
 namespace h7 {
 
+    /** Objects implementing this interface will have {@link #reset()} called when passed to {@link Pool#free(Object)}. */
+    class Poolable {
+        /** Resets the object for reuse. Object references should be nulled and fields may be set to default values. */
+    public:
+        virtual void reset() = 0;
+    };
     /**
      * a pool used to manage multi pointer object.
      * @tparam T the type
@@ -125,14 +131,6 @@ namespace h7 {
         int getFree() {
             return freeObjects->size();
         }
-
-        /** Objects implementing this interface will have {@link #reset()} called when passed to {@link Pool#free(Object)}. */
-        class Poolable {
-            /** Resets the object for reuse. Object references should be nulled and fields may be set to default values. */
-        public:
-            virtual void reset() = 0;
-        };
-
     protected:
         virtual T* newObject(){
             return new T();

@@ -26,7 +26,6 @@ namespace h7{
         }
         virtual void unRefAndDestroy(){
             if(unRef() == 0){
-                onDestroy();
                 delete this;
             }
         }

@@ -21,7 +21,7 @@
 
 namespace h7 {
     //TODO handle lifecycle of c++ objects
-    class AndroidInput: public Input,IAndroidInput,WeakObjectM {
+    class AndroidInput: public Input,public IAndroidInput,public WeakObjectM {
 
     public:
         const static int NUM_TOUCHES = 20;
