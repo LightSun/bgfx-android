@@ -108,8 +108,7 @@ namespace h7 {
             return keyCode;
         }
 
-        inline
-        void setKeyCode(int _keyCode) {
+        inline void setKeyCode(int _keyCode) {
             this->keyCode = _keyCode;
         }
 
@@ -120,10 +119,8 @@ namespace h7 {
             return character;
         }
 
-        inline
-
-        void setCharacter(char character) {
-            this.character = character;
+        inline void setCharacter(char _character) {
+            this->character = _character;
         }
 
         /** The amount the mouse was scrolled horizontally. Valid for: scrolled. */
@@ -139,16 +136,13 @@ namespace h7 {
             return scrollAmountY;
         }
 
-        inline
-
-        void setScrollAmountX(float scrollAmount) {
-            this.scrollAmountX = scrollAmount;
+        inline void setScrollAmountX(float _scrollAmount) {
+            this->scrollAmountX = _scrollAmount;
         }
 
         inline
-
-        void setScrollAmountY(float scrollAmount) {
-            this.scrollAmountY = scrollAmount;
+        void setScrollAmountY(float _scrollAmount) {
+            this->scrollAmountY = _scrollAmount;
         }
 
         /** The actor related to the event. Valid for: enter and exit. For enter, this is the actor being exited, or null. For exit,
@@ -165,12 +159,7 @@ namespace h7 {
 
         /** Sets actorCoords to this event's coordinates relative to the specified actor.
          * @param actorCoords Output for resulting coordinates. */
-        inline
-        Vector2f& toCoordinates(sk_sp<Actor> actor, Vector2f actorCoords) {
-            actorCoords.set(stageX, stageY);
-            actor.stageToLocalCoordinates(actorCoords);
-            return actorCoords;
-        }
+        Vector2f& toCoordinates(sk_sp<Actor> actor, Vector2f actorCoords);
 
         /** Returns true if this event is a touchUp triggered by {@link Stage#cancelTouchFocus()}. */
         inline bool isTouchFocusCancel() {
