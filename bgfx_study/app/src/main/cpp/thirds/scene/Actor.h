@@ -5,12 +5,14 @@
 #ifndef BGFX_STUDY_ACTOR_H
 #define BGFX_STUDY_ACTOR_H
 
+#include "limits.h"
 #include <lua/SkRefCnt.h>
 #include <math/Vector2f.h>
 #include <lua/SkWeakRefCnt.h>
 #include "utils/Array.h"
 #include "Color.h"
-#include "Event.h"
+#include "Align.h"
+#include "lua/SkFloatBits.h"
 
 namespace NanoCanvas {
     class Canvas;
@@ -26,6 +28,8 @@ namespace h7 {
 
     class EventListener;
 
+    class Event;
+
     enum Touchable {
         /** All touch input events will be received by the actor and any children. */
         enabled = 0,
@@ -38,8 +42,8 @@ namespace h7 {
 
     class Actor : public SkWeakRefCnt {
     private:
-        Stage* stage;
-        Group* parent;
+        Stage *stage;
+        Group *parent;
     public:
         Array<sk_sp<EventListener>> listeners;
         Array<sk_sp<EventListener>> captureListeners = Array<sk_sp<EventListener>>(0, NULL);
@@ -54,19 +58,20 @@ namespace h7 {
         float rotation = 0;
         float transX = 0, transY = 0;
         Color color;
-        sk_sp<SkRefCnt> userObject;
+        void *userObject;
 
-        inline bool isVisible() {
-            return visible;
-        }
-        inline void setParent(Group* _g){
+        inline void setParent(Group *_g) {
             this->parent = _g;
         }
-        inline void setStage(Stage* _g){
+
+        inline void setStage(Stage *_g) {
             this->stage = _g;
         }
-        Stage* getStage();
-        Group* getParent();
+
+        Stage *getStage();
+
+        Group *getParent();
+
         /** Draws the actor. The batch is configured to draw in the parent's coordinate system.
 	 * {@link Batch#draw(com.badlogic.gdx.graphics.g2d.TextureRegion, float, float, float, float, float, float, float, float, float)
 	 * This draw method} is convenient to draw a rotated and scaled TextureRegion. {@link Batch#begin()} has already been called on
@@ -127,54 +132,367 @@ namespace h7 {
         Vector2f &stageToLocalCoordinates(Vector2f &stageCoords);
 
         /** Transforms the specified point in the actor's coordinates to be in the parent's coordinates. */
-        Vector2f& localToParentCoordinates (Vector2f& localCoords);
-        /** Converts the coordinates given in the parent's coordinate system to this actor's coordinate system. */
-        Vector2f& parentToLocalCoordinates (Vector2f& parentCoords);
+        Vector2f &localToParentCoordinates(Vector2f &localCoords);
 
-        inline void addAction(sk_sp<Action> action){
+        /** Converts the coordinates given in the parent's coordinate system to this actor's coordinate system. */
+        Vector2f &parentToLocalCoordinates(Vector2f &parentCoords);
+
+        inline void addAction(sk_sp<Action>& action) {
             actions.add(action);
         }
-        inline void removeAction (sk_sp<Action> action){
+        inline void removeAction(sk_sp<Action>& action) {
             actions.remove(action);
         }
-        inline Array<sk_sp<Action>>& getActions(){
+        inline Array<sk_sp<Action>> &getActions() {
             return actions;
         }
-        inline bool hasActions(){
+
+        inline bool hasActions() {
             return actions.size() > 0;
         }
+
         bool removeFromParent();
+
         /** Add a listener to receive events that {@link #hit(float, float, boolean) hit} this actor. See {@link #fire(Event)}.
 	 * @see InputListener
 	 * @see ClickListener */
-       bool addListener (sk_sp<EventListener> listener){
+        bool addListener(sk_sp<EventListener>& listener) {
             return listeners.add(listener);
-       }
-       bool removeListener (sk_sp<EventListener> listener){
-           return listeners.remove(listener);
-       }
+        }
+
+        bool removeListener(sk_sp<EventListener>& listener) {
+            return listeners.remove(listener);
+        }
+
 /** Adds a listener that is only notified during the capture phase.
 	 * @see #fire(Event) */
-        bool addCaptureListener(sk_sp<EventListener> listener){
+        bool addCaptureListener(sk_sp<EventListener>& listener) {
             return captureListeners.add(listener);
         }
-        bool removeCaptureListener(sk_sp<EventListener> listener){
+
+        bool removeCaptureListener(sk_sp<EventListener>& listener) {
             return captureListeners.remove(listener);
         }
 
-        void clearActions ();
+        void clearActions();
 
-        void clearListeners ();
+        void clearListeners();
+
 /** Removes all actions and listeners on this actor. */
-        virtual void clear (){
+        virtual void clear() {
             clearActions();
             clearListeners();
         }
+
         /** Returns true if this actor is the same as or is the descendant of the specified actor. */
-        bool isDescendantOf(sk_sp<Actor> actor);
+        bool isDescendantOf(Actor *actor);
 
 /** Returns true if this actor is the same as or is the ascendant of the specified actor. */
-        bool isAscendantOf(sk_sp<Actor> actor);
+        bool isAscendantOf(Actor *actor);
+
+        /** Returns true if input events are processed by this actor. */
+        inline bool isTouchable() {
+            return touchable == Touchable::enabled;
+        }
+
+        /** Returns true if this actor is the {@link Stage#getKeyboardFocus() keyboard focus} actor. */
+        bool hasKeyboardFocus();
+
+        /** Returns true if this actor is the {@link Stage#getScrollFocus() scroll focus} actor. */
+        bool hasScrollFocus();
+
+        /** Returns true if this actor is a target actor for touch focus.
+	 * @see Stage#addTouchFocus(EventListener, Actor, Actor, int, int) */
+        bool isTouchFocusTarget();
+
+        /** Returns true if this actor is a listener actor for touch focus.
+    * @see Stage#addTouchFocus(EventListener, Actor, Actor, int, int) */
+        bool isTouchFocusListener();
+
+        /** Returns true if this actor and all ascendants are visible. */
+        inline bool ascendantsVisible () {
+            Actor* actor = this;
+            do {
+                if (!actor->isVisible()) return false;
+                actor = reinterpret_cast<Actor *>(actor->getParent());
+            } while (actor != nullptr);
+            return true;
+        }
+        //--------------------------------------
+        inline void *getUserObject() {
+            return userObject;
+        }
+
+        inline void setUserObject(void *_userObject) {
+            this->userObject = _userObject;
+        }
+        inline bool isVisible () {
+            return visible;
+        }
+        /** If false, the actor will not be drawn and will not receive touch events. Default is true. */
+        inline void setVisible(bool _visible) {
+            this->visible = _visible;
+        }
+        /** Returns the X position of the actor's left edge. */
+        inline float getX() {
+            return x;
+        }
+        /** Returns the X position of the specified {@link Align alignment}. */
+        inline float getX(int alignment) {
+            float x = this->x;
+            if ((alignment & Align::right) != 0)
+                x += width;
+            else if ((alignment & Align::left) == 0) //
+                x += width / 2;
+            return x;
+        }
+        inline void setX(float x) {
+            if (this->x != x) {
+                this->x = x;
+                positionChanged();
+            }
+        }
+        /** Returns the Y position of the actor's bottom edge. */
+        inline float getY() {
+            return y;
+        }
+        inline void setY(float y) {
+            if (this->y != y) {
+                this->y = y;
+                positionChanged();
+            }
+        }
+        /** Sets the y position using the specified {@link Align alignment}. Note this may set the position to non-integer
+         * coordinates. */
+        inline void setY(float y, int alignment) {
+        /*    if ((alignment & Align::top) != 0)
+                y -= height;
+            else if ((alignment & Align::bottom) == 0)
+                y -= height / 2;*/
+
+            if ((alignment & Align::bottom) != 0)
+                y += height;
+            else if ((alignment & Align::top) == 0)
+                y += height / 2;
+
+            if (this->y != y) {
+                this->y = y;
+                positionChanged();
+            }
+        }
+
+        /** Returns the Y position of the specified {@link Align alignment}. */
+        inline float getY(int alignment) {
+            float y = this->y;
+            /*if ((alignment & Align::top) != 0)
+                y += height;
+            else if ((alignment & Align::bottom) == 0)
+                y += height / 2;*/
+
+            if ((alignment & Align::bottom) != 0)
+                y += height;
+            else if ((alignment & Align::top) == 0)
+                y += height / 2;
+            return y;
+        }
+        /** Sets the position of the actor's bottom left corner. */
+        inline void setPosition (float x, float y) {
+            if (this->x != x || this->y != y) {
+                this->x = x;
+                this->y = y;
+                positionChanged();
+            }
+        }
+
+        /** Sets the position using the specified {@link Align alignment}. Note this may set the position to non-integer
+         * coordinates. */
+        inline void setPosition(float x, float y, int alignment) {
+            if ((alignment & Align::right) != 0)
+                x -= width;
+            else if ((alignment & Align::left) == 0)
+                x -= width / 2;
+
+           /* if ((alignment & Align::top) != 0)
+                y -= height;
+            else if ((alignment & Align::bottom) == 0)
+                y -= height / 2;*/
+            if ((alignment & Align::bottom) != 0)
+                y += height;
+            else if ((alignment & Align::top) == 0)
+                y += height / 2;
+            if (this->x != x || this->y != y) {
+                this->x = x;
+                this->y = y;
+                positionChanged();
+            }
+        }
+        /** Add x and y to current position */
+        inline void moveBy(float x, float y) {
+            if (x != 0 || y != 0) {
+                this->x += x;
+                this->y += y;
+                positionChanged();
+            }
+        }
+        inline float getWidth() {
+            return width;
+        }
+        inline void setWidth(float width) {
+            if (this->width != width) {
+                this->width = width;
+                sizeChanged();
+            }
+        }
+        inline float getHeight () {
+            return height;
+        }
+        inline void setHeight (float height) {
+            if (this->height != height) {
+                this->height = height;
+                sizeChanged();
+            }
+        }
+        /** Returns x plus width. */
+        inline float getRight () {
+            return x + width;
+        }
+        inline float getBottom(){
+            return y + height;
+        }
+        inline float getTop(){
+            return y;
+        }
+        inline float getLeft(){
+            return x;
+        }
+        inline void getBounds(float out[4]){
+            out[0] = getLeft();
+            out[1] = getTop();
+            out[2] = getRight();
+            out[3] = getBottom();
+        }
+        inline float getScaleX () {
+            return scaleX;
+        }
+        inline void setScaleX (float scaleX) {
+            if (this->scaleX != scaleX) {
+                this->scaleX = scaleX;
+                scaleChanged();
+            }
+        }
+
+        inline float getScaleY () {
+            return scaleY;
+        }
+
+        inline void setScaleY (float scaleY) {
+            if (this->scaleY != scaleY) {
+                this->scaleY = scaleY;
+                scaleChanged();
+            }
+        }
+
+        /** Sets the scale for both X and Y */
+        inline void setScale (float scaleXY) {
+            if (this->scaleX != scaleXY || this->scaleY != scaleXY) {
+                this->scaleX = scaleXY;
+                this->scaleY = scaleXY;
+                scaleChanged();
+            }
+        }
+
+        /** Sets the scale X and scale Y. */
+        inline void setScale (float scaleX, float scaleY) {
+            if (this->scaleX != scaleX || this->scaleY != scaleY) {
+                this->scaleX = scaleX;
+                this->scaleY = scaleY;
+                scaleChanged();
+            }
+        }
+
+        /** Adds the specified scale to the current scale. */
+        inline void scaleBy (float scale) {
+            if (scale != 0) {
+                scaleX += scale;
+                scaleY += scale;
+                scaleChanged();
+            }
+        }
+
+        /** Adds the specified scale to the current scale. */
+        inline void scaleBy (float scaleX, float scaleY) {
+            if (scaleX != 0 || scaleY != 0) {
+                this->scaleX += scaleX;
+                this->scaleY += scaleY;
+                scaleChanged();
+            }
+        }
+        inline float getRotation () {
+            return rotation;
+        }
+
+        inline void setRotation (float degrees) {
+            if (this->rotation != degrees) {
+                this->rotation = degrees;
+                rotationChanged();
+            }
+        }
+        /** Adds the specified rotation to the current rotation. */
+        inline void rotateBy (float amountInDegrees) {
+            if (amountInDegrees != 0) {
+                rotation = skf_mod(rotation + amountInDegrees, 360.0f);
+                rotationChanged();
+            }
+        }
+        inline void setColor (Color& color) {
+            this->color.set(color);
+        }
+        inline void setColor (float r, float g, float b, float a) {
+            color.set(r, g, b, a);
+        }
+        /** Returns the color the actor will be tinted when drawn. The returned instance can be modified to change the color. */
+        inline Color& getColor () {
+            return color;
+        }
+        /** @see #setName(String)
+         * @return May be null. */
+        inline const char* getName () {
+            return name;
+        }
+        /** Set the actor's name, which is used for identification convenience and by {@link #toString()}.
+         * @param name May be null.
+         * @see Group#findActor(String) */
+        inline void setName (const char* name) {
+            this->name = name;
+        }
+        /** Changes the z-order for this actor so it is in front of all siblings. */
+        inline void toFront () {
+            setZIndex(INT_MAX);
+        }
+        /** Changes the z-order for this actor so it is in back of all siblings. */
+        inline void toBack () {
+            setZIndex(0);
+        }
+        /** Sets the z-index of this actor. The z-index is the index into the parent's {@link Group#getChildren() children}, where a
+         * lower index is below a higher index. Setting a z-index higher than the number of children will move the child to the front.
+         * Setting a z-index less than zero is invalid.
+         * @return true if the z-index changed. */
+        bool setZIndex (int index);
+
+        /** Returns the z-index of this actor, or -1 if the actor is not in a group.
+         * @see #setZIndex(int) */
+        int getZIndex ();
+
+        /** Called when the actor's position has been changed. */
+        virtual void positionChanged() {
+        }
+        /** Called when the actor's size has been changed. */
+        virtual void sizeChanged() {
+        }
+        virtual void scaleChanged() {
+        }
+        virtual void rotationChanged() {
+        }
     };
 }
 #endif //BGFX_STUDY_ACTOR_H

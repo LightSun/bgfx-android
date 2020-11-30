@@ -238,7 +238,8 @@ namespace h7{
     }
 
 
-    void Stage::addTouchFocus(sk_sp<EventListener> listener, sk_sp<Actor> listenerActor, sk_sp<Actor> target, int pointer, int button) {
+    void Stage::addTouchFocus(const EventListener* listener, const Actor* listenerActor,
+                              const Actor* target, int pointer, int button) {
         sk_sp<TouchFocus> focus = sk_make_sp<TouchFocus>();
         focus->listenerActor = listenerActor;
         focus->target = target;
@@ -247,10 +248,11 @@ namespace h7{
         focus->button = button;
         touchFocuses.add(focus);
     }
-    void Stage::removeTouchFocus(sk_sp<EventListener> listener, sk_sp<Actor> listenerActor, sk_sp<Actor> target, int pointer, int button) {
+    void Stage::removeTouchFocus(const EventListener* listener, const Actor* listenerActor,
+                                 const Actor* target, int pointer, int button) {
         for (int i = touchFocuses.size() - 1; i >= 0; i--) {
             sk_sp<TouchFocus> focus = touchFocuses.get(i);
-            if (focus->listener == listener && focus->listenerActor == listenerActor && focus->target == target
+            if (focus->listener.get() == listener && focus->listenerActor.get() == listenerActor && focus->target.get() == target
                 && focus->pointer == pointer && focus->button == button) {
                 auto sp = touchFocuses.removeAt(i);
                 if(sp != nullptr){
@@ -259,7 +261,7 @@ namespace h7{
             }
         }
     }
-    void Stage::cancelTouchFocus(sk_sp<Actor> listenerActor) {
+    void Stage::cancelTouchFocus(const Actor* listenerActor) {
 // Cancel all current touch focuses for the specified listener, allowing for concurrent modification, and never cancel the
         // same focus twice.
         sk_sp<InputEvent> event;
@@ -267,7 +269,7 @@ namespace h7{
         
         for (int i = 0, n = array.size(); i < n; i++) {
             sk_sp<TouchFocus> focus = array[i];
-            if (focus->listenerActor != listenerActor) continue;
+            if (focus->listenerActor.get() != listenerActor) continue;
             if (!touchFocuses.remove(focus)) continue; // Touch focus already gone.
 
             if (event.get() == nullptr) {
@@ -288,8 +290,9 @@ namespace h7{
         event.reset();
     }
 
-    void Stage::addAction(sk_sp<Actor> action) {
-        root->addAction(action);
+    void Stage::addAction(const Action* action) {
+        auto sp = sk_ref_sp(action);
+        root->addAction(sp);
     }
 
 }

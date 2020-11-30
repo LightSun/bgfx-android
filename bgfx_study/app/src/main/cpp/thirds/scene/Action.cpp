@@ -6,13 +6,13 @@
 #include "Action.h"
 
 namespace h7{
-    void Action::setActor(sk_sp<Actor> _actor) {
+    void Action::setActor(const Actor* _actor) {
         this->actor = _actor;
         if (target.get() == nullptr){
             setTarget(_actor);
         }
     }
-    void Action::setTarget(sk_sp<Actor> _target) {
+    void Action::setTarget(const Actor* _target) {
         this->target = _target;
     }
     void Action::reset () {

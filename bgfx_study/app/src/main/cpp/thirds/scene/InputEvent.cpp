@@ -7,7 +7,7 @@
 
 namespace h7{
 
-    Vector2f & InputEvent::toCoordinates(sk_sp<Actor> actor, Vector2f actorCoords) {
+    Vector2f & InputEvent::toCoordinates(sk_sp<Actor>& actor, Vector2f actorCoords) {
         actorCoords.set(stageX, stageY);
         actor->stageToLocalCoordinates(actorCoords);
         return actorCoords;

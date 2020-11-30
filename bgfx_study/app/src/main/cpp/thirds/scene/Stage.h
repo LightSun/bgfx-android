@@ -14,6 +14,8 @@
 namespace h7 {
     class Actor;
 
+    class Action;
+
     class Group;
 
     class EventListener;
@@ -38,6 +40,7 @@ namespace h7 {
         sk_sp<Actor> keyboardFocus, scrollFocus;
         sk_sp<Group> root;
 
+    public:
         Array<sk_sp<TouchFocus>> touchFocuses = Array<sk_sp<TouchFocus>>(16, nullptr);
 
     public:
@@ -105,33 +108,41 @@ namespace h7 {
 	 * is added automatically when true is returned from {@link InputListener#touchDown(InputEvent, float, float, int, int)
 	 * touchDown}. The specified actors will be used as the {@link Event#getListenerActor() listener actor} and
 	 * {@link Event#getTarget() target} for the touchDragged and touchUp events. */
-        void addTouchFocus(sk_sp<EventListener> listener, sk_sp<Actor> listenerActor,
-                           sk_sp<Actor> target, int pointer, int button);
+        void addTouchFocus(const EventListener* listener, const Actor* listenerActor,
+                           const Actor* target, int pointer, int button);
 
         /** Removes touch focus for the specified listener, pointer, and button. Note the listener will not receive a touchUp event
        * when this method is used. */
-        void removeTouchFocus(sk_sp<EventListener> listener, sk_sp<Actor> listenerActor,
-                              sk_sp<Actor> target, int pointer, int button);
+        void removeTouchFocus(const EventListener* listener, const Actor* listenerActor,
+                              const Actor* target, int pointer, int button);
 
 /** Cancels touch focus for all listeners with the specified listener actor.
 	 * @see #cancelTouchFocus() */
-        void cancelTouchFocus(sk_sp<Actor> listenerActor);
+        void cancelTouchFocus(const Actor* listenerActor);
 
         /** Adds an actor to the root of the stage.
 	 * @see Group#addActor(Actor) */
-        void addActor(sk_sp<Actor> actor);
+        void addActor(const Actor* actor);
 
         /** Adds an action to the root of the stage.
          * @see Group#addAction(Action) */
-        void addAction(sk_sp<Actor> action);
+        void addAction(const Action* action);
 
         /** Returns the root's child actors.
          * @see Group#getChildren() */
         Array<Actor> getActors();
 
         /** Removes the touch, keyboard, and scroll focus for the specified actor and any descendants. */
-        void unfocus(Actor &actor);
+        void unfocus(Actor* actor);
 
+        /** Gets the actor that will receive key events.
+	 * @return May be null. */
+        sk_sp<Actor>& getKeyboardFocus() {
+             return keyboardFocus;
+        }
+        sk_sp<Actor>& getScrollFocus() {
+             return scrollFocus;
+        }
         /** currently not change*/
         Vector2f &screenToStageCoordinates(Vector2f &f);
 

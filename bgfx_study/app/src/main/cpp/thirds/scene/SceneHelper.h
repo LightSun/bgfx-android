@@ -8,7 +8,7 @@
 #include "lua/SkRefCnt.h"
 
 #define DEFINE_GET_WEAK_REF_METHOD(prefix, type, in) \
-type* prefix##::get##type(){\
+type* prefix##get##type(){\
 if(in == nullptr) return nullptr; \
 in->weak_ref();\
 type* result; \
@@ -23,7 +23,7 @@ return result;\
 }
 
 #define DEFINE_GET_WEAK_REF_METHOD2(prefix, type, name,in) \
-type* prefix##::get##name(){\
+type* prefix##get##name(){\
 if(in == nullptr) return nullptr; \
 in->weak_ref();\
 type* result; \

@@ -9,21 +9,23 @@
 
 namespace h7{
 
-    void Group::addActorAt(int index, sk_sp<Actor> actor) {
+    void Group::addActorAt(int index, Actor* actor) {
         Group* _tparent = actor->getParent();
         if (_tparent != nullptr) {
             if (_tparent == this) return;
             _tparent->removeActor(actor, false);
         }
+
+        auto sp = sk_ref_sp(actor);
         if (index >= children.size())
-            children.add(actor);
+            children.add(sp);
         else
-            children.add(index, actor);
+            children.add(index, sp);
         actor->setParent(this);
         actor->setStage(getStage());
         childrenChanged();
     }
-    void Group::addActorBefore(sk_sp<Actor> actorBefore, sk_sp<Actor> actor) {
+    void Group::addActorBefore(Actor* actorBefore, Actor*  actor) {
         Group* _tparent = actor->getParent();
         if (_tparent != nullptr) {
             if (_tparent == this) return;
@@ -33,45 +35,50 @@ namespace h7{
         if(actorBefore == nullptr){
             index = 0;
         } else{
-            index = children.indexOf(actorBefore);
+            auto sp = sk_ref_sp(actorBefore);
+            index = children.indexOf(sp);
         }
         if(index >= 0){
-            children.add(index, actor);
+            auto sp = sk_ref_sp(actor);
+            children.add(index, sp);
             actor->setParent(this);
             actor->setStage(getStage());
             childrenChanged();
         }
     }
 
-    void Group::addActorAfter(sk_sp<Actor> actorBefore, sk_sp<Actor> actor) {
+    void Group::addActorAfter(Actor* actorBefore, Actor* actor) {
         Group* _tparent = actor->getParent();
         if (_tparent != nullptr) {
             if (_tparent == this) return;
             _tparent->removeActor(actor, false);
         }
-        int index = children.indexOf(actorBefore);
+        auto sp_before = sk_ref_sp(actorBefore);
+        auto sp = sk_ref_sp(actor);
+        int index = children.indexOf(sp_before);
         if(index >= 0){
-            children.add(index + 1, actor);
+            children.add(index + 1, sp);
         } else{
-            children.add(actor);
+            children.add(sp);
         }
         actor->setParent(this);
         actor->setStage(getStage());
         childrenChanged();
     }
 
-    bool Group::removeActor (sk_sp<Actor> actor, bool unfocus) {
-        int index = children.indexOf(actor);
+    bool Group::removeActor (Actor* actor, bool unfocus) {
+        auto sp = sk_ref_sp(actor);
+        int index = children.indexOf(sp);
         if (index == -1) return false;
         removeActorAt(index, unfocus);
         return true;
     }
 
-    sk_sp<Actor> Group::removeActorAt(int index, bool unfocus) {
+    sk_sp<Actor>& Group::removeActorAt(int index, bool unfocus) {
         sk_sp<Actor> actor = children.removeAt(index);
         if (unfocus) {
             Stage* stage = getStage();
-            if (stage != NULL) stage->unfocus(*actor);
+            if (stage != NULL) stage->unfocus(actor.get());
         }
         actor->setParent(NULL);
         actor->setStage(NULL);

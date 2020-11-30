@@ -8,6 +8,7 @@
 #include "Stage.h"
 #include "Action.h"
 #include "Group.h"
+#include "Event.h"
 #include "EventListener.h"
 #include "lua/SkWeakRefCnt.h"
 #include "../input/GestureContext.h"
@@ -15,9 +16,31 @@
 #include "SceneHelper.h"
 
 namespace h7 {
-
-    DEFINE_GET_WEAK_REF_METHOD(Actor, Stage, stage)
-    DEFINE_GET_WEAK_REF_METHOD2(Actor, Group, Parent, parent)
+    Stage *Actor::getStage() {
+        if (stage == nullptr)return nullptr;
+        stage->weak_ref();
+        Stage *result;
+        if (stage->try_ref()) {
+            result = stage;
+            stage->unref();
+        }
+        else { result = nullptr; }
+        stage->weak_unref();
+        return result;
+    }
+    Group *Actor::getParent() {
+        if (parent == nullptr)return nullptr;
+        parent->weak_ref();
+        Group *result;
+        if (parent->try_ref()) {
+            result = parent;
+            parent->unref();
+        }
+        else { result = nullptr; }
+        parent->weak_unref();
+        return result;
+    }
+   // DEFINE_GET_WEAK_REF_METHOD2(Actor::, Group, Parent, parent)
 
     void Actor::act(float delta) {
         if (actions.size() == 0) return;
@@ -215,24 +238,67 @@ namespace h7 {
         listeners.clear(func);
         captureListeners.clear(func);
     }
-    bool Actor::isDescendantOf(sk_sp<Actor> actor) {
+    bool Actor::isDescendantOf(Actor* actor) {
         if(actor != nullptr){
-            Actor* parent = this;
+            Actor* _parent = this;
             do {
-                if (parent == actor.get()) return true;
-                parent = parent->getParent();
-            } while (parent != nullptr);
+                if (_parent == actor) return true;
+                _parent = _parent->getParent();
+            } while (_parent != nullptr);
         }
         return false;
     }
-    bool Actor::isAscendantOf(sk_sp<Actor> actor) {
+    bool Actor::isAscendantOf(Actor* actor) {
         if(actor != nullptr){
-            Actor* act = actor.get();
+            Actor* act = actor;
             do {
                 if (act == this) return true;
-                actor = actor->getParent();
-            } while (actor != nullptr);
+                act = act->getParent();
+            } while (act != nullptr);
         }
         return false;
+    }
+    bool Actor::hasKeyboardFocus() {
+        Stage* stage = getStage();
+        return stage != nullptr && stage->getKeyboardFocus().get() == this;
+    }
+    bool Actor::hasScrollFocus() {
+        Stage* stage = getStage();
+        return stage != nullptr && stage->getScrollFocus().get() == this;
+    }
+    bool Actor::isTouchFocusTarget() {
+        Stage* stage = getStage();
+        if (stage == nullptr) return false;
+        for (int i = 0, n = stage->touchFocuses.size(); i < n; i++)
+            if (stage->touchFocuses.get(i)->target.get() == this) return true;
+        return false;
+    }
+     bool Actor::isTouchFocusListener () {
+         Stage* stage = getStage();
+         if (stage == nullptr) return false;
+         for (int i = 0, n = stage->touchFocuses.size(); i < n; i++)
+             if (stage->touchFocuses.get(i)->listenerActor.get() == this) return true;
+         return false;
+    }
+    bool Actor::setZIndex(int index) {
+        if (index < 0) return false;
+        Group* parent = getParent();
+        if (parent == nullptr) return false;
+        Array<sk_sp<Actor>> children = parent->children;
+        if (children.size() == 1) return false;
+        index = bx::min(index, children.size() - 1);
+        if (children.get(index).get() == this) return false;
+
+        auto sp = sk_ref_sp<Actor>(this);
+        if (!children.remove(sp)) return false;
+        children.add(index, sp);
+        return true;
+    }
+
+    int Actor::getZIndex() {
+        Group* parent = getParent();
+        if (parent == nullptr) return -1;
+        auto sp = sk_ref_sp<Actor>(this);
+        return parent->children.indexOf(sp);
     }
 }

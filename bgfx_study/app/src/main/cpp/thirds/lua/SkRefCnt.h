@@ -270,6 +270,13 @@ public:
         return *this;
     }
 
+    //add heaven7
+    sk_sp<T> &operator=(const T *that){
+        if(get() != that){
+            reset(SkSafeRef(that));
+        }
+        return *this;
+    }
     /**
      *  Shares the underlying object referenced by the argument by calling ref() on it. If this
      *  sk_sp previously had a reference to an object (i.e. not null) it will call unref() on that
@@ -476,15 +483,15 @@ sk_sp<T> sk_ref_sp(const T *obj) {
 }
 
 //heaven7  weak sp
-/**
+/*
  * weak reference for an pointer.
  * @tparam T the type
  * @param obj the object
  * @return the sp
  */
-template<typename T>
+/*template<typename T>
 sk_sp<T> sk_ref_weak_sp(const T *obj) {
     return sk_sp<T>(const_cast<T *>(obj));
-}
+}*/
 
 #endif

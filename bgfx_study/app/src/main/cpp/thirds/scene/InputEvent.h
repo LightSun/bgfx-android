@@ -153,13 +153,13 @@ namespace h7 {
 
         /** @param relatedActor May be null. */
         inline
-        void setRelatedActor(sk_sp<Actor> _relatedActor) {
+        void setRelatedActor(sk_sp<Actor>& _relatedActor) {
             this->relatedActor = _relatedActor;
         }
 
         /** Sets actorCoords to this event's coordinates relative to the specified actor.
          * @param actorCoords Output for resulting coordinates. */
-        Vector2f& toCoordinates(sk_sp<Actor> actor, Vector2f actorCoords);
+        Vector2f& toCoordinates(sk_sp<Actor>& actor, Vector2f actorCoords);
 
         /** Returns true if this event is a touchUp triggered by {@link Stage#cancelTouchFocus()}. */
         inline bool isTouchFocusCancel() {
