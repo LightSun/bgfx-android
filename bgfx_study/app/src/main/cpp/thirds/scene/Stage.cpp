@@ -241,9 +241,9 @@ namespace h7{
     void Stage::addTouchFocus(const EventListener* listener, const Actor* listenerActor,
                               const Actor* target, int pointer, int button) {
         sk_sp<TouchFocus> focus = sk_make_sp<TouchFocus>();
-        focus->listenerActor = listenerActor;
-        focus->target = target;
-        focus->listener = listener;
+        focus->listenerActor = sk_ref_sp(listenerActor);
+        focus->target = sk_ref_sp(target);
+        focus->listener = sk_ref_sp(listener);
         focus->pointer = pointer;
         focus->button = button;
         touchFocuses.add(focus);

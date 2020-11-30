@@ -270,13 +270,6 @@ public:
         return *this;
     }
 
-    //add heaven7
-    sk_sp<T> &operator=(const T *that){
-        if(get() != that){
-            reset(SkSafeRef(that));
-        }
-        return *this;
-    }
     /**
      *  Shares the underlying object referenced by the argument by calling ref() on it. If this
      *  sk_sp previously had a reference to an object (i.e. not null) it will call unref() on that
