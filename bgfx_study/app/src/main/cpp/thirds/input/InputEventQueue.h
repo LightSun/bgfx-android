@@ -7,7 +7,7 @@
 
 #include <mutex>
 #include "InputProcessor.h"
-#include "../utils/Array.hpp"
+#include "utils/Array.h"
 
 namespace h7 {
     class InputEventQueue : public InputProcessor {

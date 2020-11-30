@@ -1,7 +1,7 @@
 //
 // Created by Administrator on 2020/11/20 0020.
 //
-
+#pragma once
 #include <malloc.h>
 #include <functional>
 #include <lua/MathUtils.h>
@@ -11,12 +11,12 @@ namespace h7{
     class Comparator{
     public:
         Comparator(){}
-        virtual int compare(T& t1, T& t2){
+        inline virtual int compare(T& t1, T& t2){
             return t1 == t2;
         }
     };
     class DoubleComparator: public Comparator<double>{
-        int compare(double& t1, double& t2){
+        inline int compare(double& t1, double& t2){
             return MathUtils::doubleEqual(t1, t2);
         }
     };
@@ -32,12 +32,6 @@ namespace h7{
 
         Comparator<T>* _com;
 
-        Array(Array<T>* in){
-            this->malCount = in->malCount;
-            this->_com_com = in->_com;
-            this->data = malloc(sizeof(T) * in->malCount);
-            this->_size = in->_size;
-        }
     public:
         Array(size_t capacity, const Comparator<T>* com):malCount(capacity), _com(
                 const_cast<Comparator <T> *>(com)){
@@ -51,6 +45,22 @@ namespace h7{
                 free(data);
                 data = NULL;
             }
+        }
+        inline Array<T>& set(Array<T>& in){
+            //malloc new data if need.
+            if(malCount != in.malCount){
+                if(data != nullptr){
+                    free(data);
+                    this->data = malloc(sizeof(T) * in.malCount);
+                }
+            }
+            this->malCount = in.malCount;
+            this->_com = in._com;
+            this->_size = in._size;
+
+            //copy data.
+            memcpy(data, in.data, sizeof(T) * in.malCount);
+            return *this;
         }
         inline int size(){
             return _size;
@@ -286,7 +296,10 @@ namespace h7{
         /**
          * clear elements
          */
-        inline void clear(){
+        inline void clear(std::function<bool(Array<T>* arr, int index, T& ele)> func = nullptr){
+            if(func != nullptr){
+                travel(func);
+            }
             _size = 0;
         }
         /** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items
@@ -309,7 +322,8 @@ namespace h7{
             _size = newSize;
         }
         inline Array<T>& copy(){
-            return Array<T>(this);
+            Array<T> arr;
+            return arr.set(*this);
         }
         inline T&operator[](int index){
             return get(index);

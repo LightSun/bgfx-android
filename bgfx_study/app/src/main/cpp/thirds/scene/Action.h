@@ -6,7 +6,7 @@
 #define BGFX_STUDY_ACTION_H
 
 #include <lua/SkRefCnt.h>
-#include "../utils/Pool.hpp"
+#include "utils/Pool.h"
 
 namespace h7 {
     class Actor;

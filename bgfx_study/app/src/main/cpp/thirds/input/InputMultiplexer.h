@@ -2,11 +2,11 @@
 // Created by Administrator on 2020/11/27 0027.
 //
 
-#ifndef BGFX_STUDY_INPUTMULTIPLEXER_HPP
-#define BGFX_STUDY_INPUTMULTIPLEXER_HPP
+#ifndef BGFX_STUDY_INPUTMULTIPLEXER_H
+#define BGFX_STUDY_INPUTMULTIPLEXER_H
 
 #include "InputProcessor.h"
-#include "../utils/Array.hpp"
+#include "../utils/Array.h"
 
 namespace h7 {
     class InputMultiplexer : public InputProcessor {
@@ -133,4 +133,4 @@ namespace h7 {
     };
 }
 
-#endif //BGFX_STUDY_INPUTMULTIPLEXER_HPP
+#endif //BGFX_STUDY_INPUTMULTIPLEXER_H

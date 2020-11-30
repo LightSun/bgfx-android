@@ -12,5 +12,4 @@ namespace h7{
         actor->stageToLocalCoordinates(actorCoords);
         return actorCoords;
     }
-    }
 }

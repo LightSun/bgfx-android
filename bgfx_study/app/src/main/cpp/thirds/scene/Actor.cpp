@@ -10,28 +10,23 @@
 #include "Group.h"
 #include "EventListener.h"
 #include "lua/SkWeakRefCnt.h"
+#include "../input/GestureContext.h"
 
-#ifndef PI
-#define PI 3.14159265358979323846264338327
-#endif
+#include "SceneHelper.h"
 
 namespace h7 {
+
+    DEFINE_GET_WEAK_REF_METHOD(Actor, Stage, stage)
+    DEFINE_GET_WEAK_REF_METHOD2(Actor, Group, Parent, parent)
 
     void Actor::act(float delta) {
         if (actions.size() == 0) return;
 
-        if (stage != NULL){
-            stage->weak_ref();
-            if(stage->try_ref()){
-                if (stage->getActionsRequestRendering()) {
-                    //TODO requestRendering
-                }
-                stage->unref();
-            } else{
-                // in the disposed state.
-                LOGE("stage is in the disposed state");
+        auto pStage = getStage();
+        if (pStage != NULL){
+            if (pStage->getActionsRequestRendering()) {
+                requestRender();
             }
-            stage->weak_unref();
         }
         for (int i = 0; i < actions.size(); i++) {
             sk_sp<Action> action = actions.get(i);
@@ -195,5 +190,49 @@ namespace h7 {
             parentCoords.y = (tox * -sin + toy * cos) / scaleY + originY;
         }
         return parentCoords;
+    }
+    bool Actor::removeFromParent() {
+        auto pGroup = getParent();
+        if(pGroup != nullptr){
+            return pGroup->removeActor(this, true);
+        }
+        return false;
+    }
+
+    void Actor::clearActions() {
+        auto func = [&](Array<sk_sp<Action>>* arr, int index, sk_sp<Action>& ele){
+            ele->setActor(nullptr);
+            ele.reset();
+            return false;
+        };
+        actions.clear(func);
+    }
+    void Actor::clearListeners() {
+        auto func = [&](Array<sk_sp<EventListener>>* arr, int index, sk_sp<EventListener>& ele){
+            ele.reset();
+            return false;
+        };
+        listeners.clear(func);
+        captureListeners.clear(func);
+    }
+    bool Actor::isDescendantOf(sk_sp<Actor> actor) {
+        if(actor != nullptr){
+            Actor* parent = this;
+            do {
+                if (parent == actor.get()) return true;
+                parent = parent->getParent();
+            } while (parent != nullptr);
+        }
+        return false;
+    }
+    bool Actor::isAscendantOf(sk_sp<Actor> actor) {
+        if(actor != nullptr){
+            Actor* act = actor.get();
+            do {
+                if (act == this) return true;
+                actor = actor->getParent();
+            } while (actor != nullptr);
+        }
+        return false;
     }
 }

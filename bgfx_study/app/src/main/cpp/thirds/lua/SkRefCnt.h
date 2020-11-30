@@ -193,7 +193,7 @@ public:
     void unref() const {
         if (1 == fRefCnt.fetch_add(-1, std::memory_order_acq_rel)) {
             // restore the 1 for our destructor's assert
-            SkDEBUGCODE(fRefCnt.store(1, std::memory_order_relaxed));
+            //SkDEBUGCODE(fRefCnt.store(1, std::memory_order_relaxed));
             delete (const Derived *) this;
         }
     }
@@ -262,7 +262,7 @@ public:
      */
     ~sk_sp() {
         SkSafeUnref(fPtr);
-        SkDEBUGCODE(fPtr = nullptr);
+        SkASSERT(fPtr = nullptr);
     }
 
     sk_sp<T> &operator=(std::nullptr_t) {
@@ -377,6 +377,7 @@ inline bool operator!=(const sk_sp<T> &a, const sk_sp<U> &b) {
 
 template<typename T>
 inline bool operator!=(const sk_sp<T> &a, std::nullptr_t) /*noexcept*/ {
+    //combile with:  explicit operator bool() const { return this->get() != nullptr; }
     return static_cast<bool>(a);
 }
 
@@ -472,6 +473,18 @@ sk_sp<T> sk_ref_sp(T *obj) {
 template<typename T>
 sk_sp<T> sk_ref_sp(const T *obj) {
     return sk_sp<T>(const_cast<T *>(SkSafeRef(obj)));
+}
+
+//heaven7  weak sp
+/**
+ * weak reference for an pointer.
+ * @tparam T the type
+ * @param obj the object
+ * @return the sp
+ */
+template<typename T>
+sk_sp<T> sk_ref_weak_sp(const T *obj) {
+    return sk_sp<T>(const_cast<T *>(obj));
 }
 
 #endif

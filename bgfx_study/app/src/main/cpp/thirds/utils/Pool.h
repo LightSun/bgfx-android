@@ -1,12 +1,12 @@
 //
 // Created by Administrator on 2020/11/24 0024.
 //
-
+#pragma once
 #include <limits.h> // INT_MAX
 #include <math.h>
 #include <stdio.h>
 
-#include "Array.hpp"
+#include "Array.h"
 //#include "bx/bx.h"
 
 namespace h7 {
@@ -84,7 +84,8 @@ namespace h7 {
          * @param size the number of objects to be added */
         void fill(int size) {
             for (int i = 0; i < size; i++)
-                if (freeObjects->size() < _max) freeObjects->add(newObject());
+                if (freeObjects->size() < _max) freeObjects->add(
+                            reinterpret_cast<T *&>(newObject()));
             //peak = bx::max(peak, freeObjects->getSize());
         }
 

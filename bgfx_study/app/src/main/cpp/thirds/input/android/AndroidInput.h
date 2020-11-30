@@ -7,7 +7,7 @@
 
 #include <mutex>
 #include "../Input.h"
-#include "../../utils/Pool.hpp"
+#include "utils/Pool.h"
 #include "IAndroidInput.h"
 #include "jni_base.h"
 

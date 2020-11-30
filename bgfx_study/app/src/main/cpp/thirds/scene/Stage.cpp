@@ -184,7 +184,7 @@ namespace h7{
 
         InputEvent event;
         event.setStage(this);
-        event.setType(InputEvent::Type.mouseMoved);
+        event.setType(InputEvent::Type::mouseMoved);
         event.setStageX(tempCoords.x);
         event.setStageY(tempCoords.y);
 
@@ -287,4 +287,9 @@ namespace h7{
         }
         event.reset();
     }
+
+    void Stage::addAction(sk_sp<Actor> action) {
+        root->addAction(action);
+    }
+
 }

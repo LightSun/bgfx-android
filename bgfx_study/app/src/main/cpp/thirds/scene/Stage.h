@@ -7,7 +7,7 @@
 
 #include <lua/SkWeakRefCnt.h>
 #include "../input/Input.h"
-#include "utils/Array.hpp"
+#include "utils/Array.h"
 #include "math/Vector2f.h"
 #include "Viewport.h"
 
@@ -117,6 +117,21 @@ namespace h7 {
 	 * @see #cancelTouchFocus() */
         void cancelTouchFocus(sk_sp<Actor> listenerActor);
 
+        /** Adds an actor to the root of the stage.
+	 * @see Group#addActor(Actor) */
+        void addActor(sk_sp<Actor> actor);
+
+        /** Adds an action to the root of the stage.
+         * @see Group#addAction(Action) */
+        void addAction(sk_sp<Actor> action);
+
+        /** Returns the root's child actors.
+         * @see Group#getChildren() */
+        Array<Actor> getActors();
+
+        /** Removes the touch, keyboard, and scroll focus for the specified actor and any descendants. */
+        void unfocus(Actor &actor);
+
         /** currently not change*/
         Vector2f &screenToStageCoordinates(Vector2f &f);
 
@@ -124,7 +139,7 @@ namespace h7 {
         sk_sp<Actor> fireEnterAndExit(sk_sp<Actor> overLast, int screenX, int screenY, int pointer);
     };
 
-    class TouchFocus {
+    class TouchFocus : public SkRefCnt {
     public:
         sk_sp<EventListener> listener;
         sk_sp<Actor> listenerActor, target;

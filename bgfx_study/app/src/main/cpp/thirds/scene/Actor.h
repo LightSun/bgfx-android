@@ -8,7 +8,7 @@
 #include <lua/SkRefCnt.h>
 #include <math/Vector2f.h>
 #include <lua/SkWeakRefCnt.h>
-#include "utils/Array.hpp"
+#include "utils/Array.h"
 #include "Color.h"
 #include "Event.h"
 
@@ -37,9 +37,10 @@ namespace h7 {
     };
 
     class Actor : public SkWeakRefCnt {
-    public:
+    private:
         Stage* stage;
         Group* parent;
+    public:
         Array<sk_sp<EventListener>> listeners;
         Array<sk_sp<EventListener>> captureListeners = Array<sk_sp<EventListener>>(0, NULL);
         Array<sk_sp<Action>> actions = Array<sk_sp<Action>>(0, NULL);
@@ -58,7 +59,14 @@ namespace h7 {
         inline bool isVisible() {
             return visible;
         }
-
+        inline void setParent(Group* _g){
+            this->parent = _g;
+        }
+        inline void setStage(Stage* _g){
+            this->stage = _g;
+        }
+        Stage* getStage();
+        Group* getParent();
         /** Draws the actor. The batch is configured to draw in the parent's coordinate system.
 	 * {@link Batch#draw(com.badlogic.gdx.graphics.g2d.TextureRegion, float, float, float, float, float, float, float, float, float)
 	 * This draw method} is convenient to draw a rotated and scaled TextureRegion. {@link Batch#begin()} has already been called on
@@ -122,6 +130,51 @@ namespace h7 {
         Vector2f& localToParentCoordinates (Vector2f& localCoords);
         /** Converts the coordinates given in the parent's coordinate system to this actor's coordinate system. */
         Vector2f& parentToLocalCoordinates (Vector2f& parentCoords);
+
+        inline void addAction(sk_sp<Action> action){
+            actions.add(action);
+        }
+        inline void removeAction (sk_sp<Action> action){
+            actions.remove(action);
+        }
+        inline Array<sk_sp<Action>>& getActions(){
+            return actions;
+        }
+        inline bool hasActions(){
+            return actions.size() > 0;
+        }
+        bool removeFromParent();
+        /** Add a listener to receive events that {@link #hit(float, float, boolean) hit} this actor. See {@link #fire(Event)}.
+	 * @see InputListener
+	 * @see ClickListener */
+       bool addListener (sk_sp<EventListener> listener){
+            return listeners.add(listener);
+       }
+       bool removeListener (sk_sp<EventListener> listener){
+           return listeners.remove(listener);
+       }
+/** Adds a listener that is only notified during the capture phase.
+	 * @see #fire(Event) */
+        bool addCaptureListener(sk_sp<EventListener> listener){
+            return captureListeners.add(listener);
+        }
+        bool removeCaptureListener(sk_sp<EventListener> listener){
+            return captureListeners.remove(listener);
+        }
+
+        void clearActions ();
+
+        void clearListeners ();
+/** Removes all actions and listeners on this actor. */
+        virtual void clear (){
+            clearActions();
+            clearListeners();
+        }
+        /** Returns true if this actor is the same as or is the descendant of the specified actor. */
+        bool isDescendantOf(sk_sp<Actor> actor);
+
+/** Returns true if this actor is the same as or is the ascendant of the specified actor. */
+        bool isAscendantOf(sk_sp<Actor> actor);
     };
 }
 #endif //BGFX_STUDY_ACTOR_H

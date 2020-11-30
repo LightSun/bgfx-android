@@ -14,6 +14,8 @@ namespace h7{
 
     void requestRender(long long luaPtr);
 
+    void requestRender();
+
     void getDisplayInfo(long long luaPtr, int* out);
 }
 
