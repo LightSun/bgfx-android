@@ -3,7 +3,6 @@
 //
 
 #include <limits.h>
-#include <opencl-c.h>
 #include "Stage.h"
 #include "Event.h"
 #include "Actor.h"

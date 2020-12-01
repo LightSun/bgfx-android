@@ -31,8 +31,11 @@ namespace h7{
         if(chars != nullptr){
             free(chars);
             chars = NULL;
+        } else if(strlen(chars) == len){
+            //no need malloc
+            return;
         }
-        if(len > 0){
+        if(len > 0 ){
             chars = static_cast<char *>(malloc(len + 1));
             chars[len- 1] = '\0';
         }

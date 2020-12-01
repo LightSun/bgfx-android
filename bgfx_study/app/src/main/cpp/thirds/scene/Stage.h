@@ -165,12 +165,12 @@ namespace h7 {
 
         /** The viewport's world width. */
         inline float getWidth() {
-            return viewport.width;
+            return viewport->width;
         }
 
         /** The viewport's world height. */
         inline float getHeight() {
-            return viewport.height;
+            return viewport->height;
         }
 
         /** Returns the root group which holds all actors in the stage. */
