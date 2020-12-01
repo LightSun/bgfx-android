@@ -22,15 +22,15 @@ namespace h7 {
 
     class TouchFocus;
 
-#define TOUCH_NUM 20
+#define STAGE_TOUCH_NUM 20
 
     class Stage : public Input, public SkWeakRefCnt {
     private:
         bool actionsRequestRendering;
-        sk_sp<Actor> pointerOverActors[TOUCH_NUM];
-        bool pointerTouched[TOUCH_NUM];
-        int pointerScreenX[TOUCH_NUM];
-        int pointerScreenY[TOUCH_NUM];
+        sk_sp<Actor> pointerOverActors[STAGE_TOUCH_NUM];
+        bool pointerTouched[STAGE_TOUCH_NUM];
+        int pointerScreenX[STAGE_TOUCH_NUM];
+        int pointerScreenY[STAGE_TOUCH_NUM];
         int mouseScreenX, mouseScreenY;
         Viewport viewport; //TODO set
 
@@ -48,7 +48,6 @@ namespace h7 {
         inline Viewport &getViewport() {
             return viewport;
         }
-
         /** If true, any actions executed during a call to {@link #act()}) will result in a call to
 	 * {@link Graphics#requestRendering()}. Widgets that animate or otherwise require additional rendering may check this setting
 	 * before calling {@link Graphics#requestRendering()}. Default is true. */
@@ -65,12 +64,16 @@ namespace h7 {
 	 * {@link #screenToStageCoordinates(Vector2)}.
 	 * @param touchable If true, the hit detection will respect the {@link Actor#setTouchable(Touchable) touchability}.
 	 * @return May be null if no actor was hit. */
-        sk_sp<Actor> hit(float stageX, float stageY, bool touchable);
+        const Actor *hit(float stageX, float stageY, bool touchable);
 
         /** Calls the {@link Actor#act(float)} method on each actor in the stage. Typically called each frame. This method also fires
          * enter and exit events.
          * @param delta Time in seconds since the last frame. */
         void act(float delta);
+
+        void draw(){
+
+        }
 
         /** Applies a touch down event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the
 	 * event. */
@@ -108,50 +111,72 @@ namespace h7 {
 	 * is added automatically when true is returned from {@link InputListener#touchDown(InputEvent, float, float, int, int)
 	 * touchDown}. The specified actors will be used as the {@link Event#getListenerActor() listener actor} and
 	 * {@link Event#getTarget() target} for the touchDragged and touchUp events. */
-        void addTouchFocus(const EventListener* listener, const Actor* listenerActor,
-                           const Actor* target, int pointer, int button);
+        void addTouchFocus(const EventListener *listener, const Actor *listenerActor,
+                           const Actor *target, int pointer, int button);
 
         /** Removes touch focus for the specified listener, pointer, and button. Note the listener will not receive a touchUp event
        * when this method is used. */
-        void removeTouchFocus(const EventListener* listener, const Actor* listenerActor,
-                              const Actor* target, int pointer, int button);
+        void removeTouchFocus(const EventListener *listener, const Actor *listenerActor,
+                              const Actor *target, int pointer, int button);
 
-/** Cancels touch focus for all listeners with the specified listener actor.
-	 * @see #cancelTouchFocus() */
-        void cancelTouchFocus(const Actor* listenerActor);
+        /** Cancels touch focus for all listeners with the specified listener actor.
+         * @see #cancelTouchFocus() */
+        void cancelTouchFocus(const Actor *listenerActor);
 
         /** Adds an actor to the root of the stage.
 	 * @see Group#addActor(Actor) */
-        void addActor(Actor* actor);
+        void addActor(Actor *actor);
 
         /** Adds an action to the root of the stage.
          * @see Group#addAction(Action) */
-        void addAction(Action* action);
+        void addAction(Action *action);
 
         /** Returns the root's child actors.
          * @see Group#getChildren() */
-        Array<sk_sp<Actor>>& getActors();
+        Array<sk_sp<Actor>> &getActors();
 
         /** Removes the touch, keyboard, and scroll focus for the specified actor and any descendants. */
-        void unfocus(Actor* actor);
+        void unfocus(Actor *actor);
 
-        bool setScrollFocus (Actor* actor);
+        bool setScrollFocus(Actor *actor);
 
-        bool setKeyboardFocus (Actor* actor);
+        bool setKeyboardFocus(Actor *actor);
 
         /** Gets the actor that will receive key events.
 	 * @return May be null. */
-        sk_sp<Actor>& getKeyboardFocus() {
-             return keyboardFocus;
+        inline Actor *getKeyboardFocus() {
+            return keyboardFocus.get();
         }
-        sk_sp<Actor>& getScrollFocus() {
-             return scrollFocus;
+
+        inline Actor *getScrollFocus() {
+            return scrollFocus.get();
         }
-        /** currently not change*/
+
+        /** The viewport's world width. */
+        inline float getWidth() {
+            return viewport.width;
+        }
+
+        /** The viewport's world height. */
+        inline float getHeight() {
+            return viewport.height;
+        }
+
+        /** Returns the root group which holds all actors in the stage. */
+        inline Group *getRoot() {
+            return root.get();
+        }
+
+        /** Replaces the root group. This can be useful, for example, to subclass the root group to be notified by
+         * {@link Group#childrenChanged()}. */
+        void setRoot(Group *root);
+
         Vector2f &screenToStageCoordinates(Vector2f &f);
 
+        Vector2f &stageToScreenCoordinates(Vector2f &f);
+
     private:
-        sk_sp<Actor> fireEnterAndExit(sk_sp<Actor> overLast, int screenX, int screenY, int pointer);
+        sk_sp<Actor> fireEnterAndExit(sk_sp<Actor>& overLast, int screenX, int screenY, int pointer);
     };
 
     class TouchFocus : public SkRefCnt {

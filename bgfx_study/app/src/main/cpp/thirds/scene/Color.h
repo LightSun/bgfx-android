@@ -8,10 +8,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include "../lua/SkFloatBits.h"
-#include "../../include/bx/bx.h"
+#include "bx/bx.h"
 
 namespace h7 {
     using Byte = unsigned char;
+#define h7_COLOR_CAST(a) static_cast<Byte>(clamp(static_cast<int>(a)))
 
     class Color {
         union {
@@ -24,11 +25,16 @@ namespace h7 {
             Byte mem[4];
         };
     public:
-        Color():Color(0xffffffff){
+        Color() : Color(0xffffffff) {
         }
-        /** @see #rgba8888ToColor(Color, int) */
-        Color(int rgba8888) {
-            rgba8888ToColor(*this, rgba8888);
+
+        /** rgba or argb */
+        Color(int val, bool _argb = false) {
+            if (_argb) {
+                argb8888ToColor(*this, val);
+            } else {
+                rgba8888ToColor(*this, val);
+            }
         }
 
         Color(Color &in) {
@@ -39,13 +45,13 @@ namespace h7 {
         }
 
         Color(float r, float g, float b, float a) {
-            _r = clamp(r) * 255;
-            _g = clamp(g) * 255;
-            _b = clamp(b) * 255;
-            _a = clamp(a) * 255;
+            _r = h7_COLOR_CAST(r * 255);
+            _g = h7_COLOR_CAST(g * 255);
+            _b = h7_COLOR_CAST(b * 255);
+            _a = h7_COLOR_CAST(a * 255);
         }
 
-        inline Color& set(Color &in) {
+        inline Color &set(Color &in) {
             _r = in._r;
             _g = in._g;
             _b = in._b;
@@ -59,9 +65,9 @@ namespace h7 {
 	 * @param color The Color to be modified.
 	 * @param value An integer color value in RGB565 format. */
         static inline void rgb565ToColor(Color &color, int value) {
-            color._r = ((value & 0x0000F800) >> 11) * 255.0f / 31.0f;
-            color._g = ((value & 0x000007E0) >> 5) * 255.0f / 63.0f;
-            color._b = ((value & 0x0000001F) >> 0) * 255.0f / 31.0f;
+            color._r = h7_COLOR_CAST(((value & 0x0000F800) >> 11) * 255.0f / 31.0f);
+            color._g = h7_COLOR_CAST(((value & 0x000007E0) >> 5) * 255.0f / 63.0f);
+            color._b = h7_COLOR_CAST(((value & 0x0000001F) >> 0) * 255.0f / 31.0f);
             //color._a = 1;
         }
 
@@ -71,10 +77,10 @@ namespace h7 {
          * @param color The Color to be modified.
          * @param value An integer color value in RGBA4444 format. */
         static inline void rgba4444ToColor(Color &color, int value) {
-            color._r = ((value & 0x0000f000) >> 12) * 255.0f / 15.0f;
-            color._g = ((value & 0x00000f00) >> 8) * 255.0f / 15.0f;
-            color._b = ((value & 0x000000f0) >> 4) * 255.0f / 15.0f;
-            color._a = ((value & 0x0000000f)) * 255.0f / 15.0f;
+            color._r = h7_COLOR_CAST(((value & 0x0000f000) >> 12) * 255.0f / 15.0f);
+            color._g = h7_COLOR_CAST(((value & 0x00000f00) >> 8) * 255.0f / 15.0f);
+            color._b = h7_COLOR_CAST(((value & 0x000000f0) >> 4) * 255.0f / 15.0f);
+            color._a = h7_COLOR_CAST(((value & 0x0000000f)) * 255.0f / 15.0f);
         }
 
         /** Sets the Color components using the specified integer value in the format RGB888. This is inverse to the rgb888(r, g, b)
@@ -83,9 +89,9 @@ namespace h7 {
          * @param color The Color to be modified.
          * @param value An integer color value in RGB888 format. */
         static inline void rgb888ToColor(Color &color, int value) {
-            color._r = ((value & 0x00ff0000) >> 16);
-            color._g = ((value & 0x0000ff00) >> 8);
-            color._b = ((value & 0x000000ff));
+            color._r = h7_COLOR_CAST((value & 0x00ff0000) >> 16);
+            color._g = h7_COLOR_CAST((value & 0x0000ff00) >> 8);
+            color._b = h7_COLOR_CAST((value & 0x000000ff));
             //color._a = 0;
         }
 
@@ -95,10 +101,10 @@ namespace h7 {
  * @param color The Color to be modified.
  * @param value An integer color value in RGBA8888 format. */
         static inline void rgba8888ToColor(Color &color, int value) {
-            color._r = ((value & 0xff000000) >> 24);
-            color._g = ((value & 0x00ff0000) >> 16);
-            color._b = ((value & 0x0000ff00) >> 8);
-            color._a = ((value & 0x000000ff));
+            color._r = h7_COLOR_CAST((value & 0xff000000) >> 24);
+            color._g = h7_COLOR_CAST((value & 0x00ff0000) >> 16);
+            color._b = h7_COLOR_CAST((value & 0x0000ff00) >> 8);
+            color._a = h7_COLOR_CAST((value & 0x000000ff));
         }
 
 /** Sets the Color components using the specified integer value in the format ARGB8888. This is the inverse to the argb8888(a,
@@ -107,20 +113,20 @@ namespace h7 {
 	 * @param color The Color to be modified.
 	 * @param value An integer color value in ARGB8888 format. */
         static inline void argb8888ToColor(Color &color, int value) {
-            color._a = ((value & 0xff000000) >> 24);
-            color._r = ((value & 0x00ff0000) >> 16);
-            color._g = ((value & 0x0000ff00) >> 8);
-            color._b = ((value & 0x000000ff));
+            color._a = h7_COLOR_CAST((value & 0xff000000) >> 24);
+            color._r = h7_COLOR_CAST((value & 0x00ff0000) >> 16);
+            color._g = h7_COLOR_CAST((value & 0x0000ff00) >> 8);
+            color._b = h7_COLOR_CAST((value & 0x000000ff));
         }
 
         /** Sets the Color components using the specified float value in the format ABGR8888.
          * @param color The Color to be modified. */
         static inline void abgr8888ToColor(Color &color, float value) {
             int c = SkFloat2Bits(value);
-            color._a = ((c & 0xff000000) >> 24);
-            color._b = ((c & 0x00ff0000) >> 16);
-            color._g = ((c & 0x0000ff00) >> 8);
-            color._r = ((c & 0x000000ff));
+            color._a = h7_COLOR_CAST((c & 0xff000000) >> 24);
+            color._b = h7_COLOR_CAST((c & 0x00ff0000) >> 16);
+            color._g = h7_COLOR_CAST((c & 0x0000ff00) >> 8);
+            color._r = h7_COLOR_CAST((c & 0x000000ff));
         }
 
         static inline int alpha(float alpha) {
@@ -176,14 +182,6 @@ namespace h7 {
         static inline int argb8888(Color &color) {
             return ((int) (color._a) << 24) | ((int) (color._r) << 16) | ((int) (color._g) << 8) |
                    (int) (color._b);
-        }
-
-        inline Color &set(unsigned int color) {
-            _a = (Byte) (color >> 24U);
-            _r = (Byte) ((color >> 16U) & 0x00ffU);
-            _g = (Byte) ((color >> 8U) & 0x0000ffU);
-            _b = (Byte) (color % 0x100U);
-            return *this;
         }
 
         inline Color &set(const char *color) {
@@ -250,11 +248,11 @@ namespace h7 {
 	 * @param a Alpha component
 	 *
 	 * @return this Color for chaining */
-        inline Color  &set(float r, float g, float b, float a) {
-            _r = clamp(r * 255);
-            _g = clamp(g * 255);
-            _b = clamp(b * 255);
-            _a = clamp(a * 255);
+        inline Color &set(float r, float g, float b, float a) {
+            _r = h7_COLOR_CAST(r * 255);
+            _g = h7_COLOR_CAST(g * 255);
+            _b = h7_COLOR_CAST(b * 255);
+            _a = h7_COLOR_CAST(a * 255);
             return *this;
         }
 
@@ -262,22 +260,33 @@ namespace h7 {
 	 *
 	 * @return this Color for chaining
 	 * @see #rgba8888ToColor(Color, int) */
-        inline Color &set(int rgba) {
-            rgba8888ToColor(*this, rgba);
+        inline Color &set(int val, bool _argb = false) {
+            if (_argb) {
+                argb8888ToColor(*this, val);
+            } else {
+                rgba8888ToColor(*this, val);
+            }
             return *this;
         }
 
 #define COLOR_OP_f_rgba(op) \
-        _r = clamp(_r op r * 255);\
-        _g = clamp(_g op g * 255);\
-        _b = clamp(_b op b * 255);\
-        _a = clamp(_a op a * 255);
+        _r = h7_COLOR_CAST(_r op r * 255);\
+        _g = h7_COLOR_CAST(_g op g * 255);\
+        _b = h7_COLOR_CAST(_b op b * 255);\
+        _a = h7_COLOR_CAST(_a op a * 255);
 
 #define COLOR_OP_COLOR(op) \
-        _r = clamp(_r op c._r);\
-        _g = clamp(_g op c._g);\
-        _b = clamp(_b op c._b);\
-        _a = clamp(_a op c._a);
+        _r = h7_COLOR_CAST(_r op c._r);\
+        _g = h7_COLOR_CAST(_g op c._g);\
+        _b = h7_COLOR_CAST(_b op c._b);\
+        _a = h7_COLOR_CAST(_a op c._a);
+
+#define COLOR_OP_VAL(op, val)\
+        _r = h7_COLOR_CAST(_r op val);\
+        _g = h7_COLOR_CAST(_g op val);\
+        _b = h7_COLOR_CAST(_b op val);\
+        _a = h7_COLOR_CAST(_a op val);
+
 
         /** Adds the given color component values to this Color's values.
          *
@@ -325,10 +334,10 @@ namespace h7 {
          * @param t The interpolation coefficient
          * @return This color for chaining. */
         inline Color &lerp(Color &target, float t) {
-            _r = clamp(_r + (int) (t * (target._r - _r)));
-            _g = clamp(_g + (int) (t * (target._g - _g)));
-            _b = clamp(_b + (int) (t * (target._b - _b)));
-            _a = clamp(_a + (int) (t * (target._a - _a)));
+            _r = h7_COLOR_CAST(_r + (int) (t * (target._r - _r)));
+            _g = h7_COLOR_CAST(_g + (int) (t * (target._g - _g)));
+            _b = h7_COLOR_CAST(_b + (int) (t * (target._b - _b)));
+            _a = h7_COLOR_CAST(_a + (int) (t * (target._a - _a)));
             return *this;
         }
 
@@ -341,10 +350,10 @@ namespace h7 {
 	 * @param t The interpolation coefficient
 	 * @return This color for chaining. */
         inline Color &lerp(float r, float g, float b, float a, float t) {
-            _r = clamp(_r + (int) (t * (r * 255 - _r)));
-            _g = clamp(_g + (int) (t * (g * 255 - _g)));
-            _b = clamp(_b + (int) (t * (b * 255 - _b)));
-            _a = clamp(_a + (int) (t * (a * 255 - _a)));
+            _r = h7_COLOR_CAST(_r + (int) (t * (r * 255 - _r)));
+            _g = h7_COLOR_CAST(_g + (int) (t * (g * 255 - _g)));
+            _b = h7_COLOR_CAST(_b + (int) (t * (b * 255 - _b)));
+            _a = h7_COLOR_CAST(_a + (int) (t * (a * 255 - _a)));
             return *this;
         }
 
@@ -370,10 +379,7 @@ namespace h7 {
       * @param value the value
       * @return this color */
         inline Color &mul(float value) {
-            _r *= value;
-            _g *= value;
-            _b *= value;
-            _a *= value;
+            COLOR_OP_VAL(*, value);
             return *this;
         }
 
@@ -403,10 +409,14 @@ namespace h7 {
             return SkBits2Float(toIntBits() & 0xfeffffff);
         }
 
-        /** Packs the color components into a 32-bit integer with the format ARGB.
+        /** Packs the color components into a 32-bit integer with the format RGBA.
 	 * @return the packed color as a 32-bit int. */
-        inline int toIntBits() {
-            return ((int) (_a) << 24) | ((int) (_r) << 16) | ((int) (_g) << 8) | ((int) (_b));
+        inline int toIntBits(bool argb = false) {
+            if (argb) {
+                return ((int) (_a) << 24) | ((int) (_r) << 16) | ((int) (_g) << 8) | ((int) (_b));
+            } else {
+                return ((int) (_r) << 24) | ((int) (_g) << 16) | ((int) (_b) << 8) | ((int) (_a));
+            }
         }
 
         /** Sets the RGB Color components using the specified Hue-Saturation-Value. Note that HSV components are voluntary not clamped
@@ -424,43 +434,43 @@ namespace h7 {
             float q = v * (1 - s * f);
             float t = v * (1 - s * (1 - f));
 
-            int r;
-            int g;
-            int b;
+            Byte r;
+            Byte g;
+            Byte b;
             switch (i) {
                 case 0:
-                    r = v * 255;
-                    g = t * 255;
-                    b = p * 255;
+                    r = h7_COLOR_CAST(v * 255);
+                    g = h7_COLOR_CAST(t * 255);
+                    b = h7_COLOR_CAST(p * 255);
                     break;
                 case 1:
-                    r = q * 255;
-                    g = v * 255;
-                    b = p * 255;
+                    r = h7_COLOR_CAST(q * 255);
+                    g = h7_COLOR_CAST(v * 255);
+                    b = h7_COLOR_CAST(p * 255);
                     break;
                 case 2:
-                    r = p * 255;
-                    g = v * 255;
-                    b = t * 255;
+                    r = h7_COLOR_CAST(p * 255);
+                    g = h7_COLOR_CAST(v * 255);
+                    b = h7_COLOR_CAST(t * 255);
                     break;
                 case 3:
-                    r = p * 255;
-                    g = q * 255;
-                    b = v * 255;
+                    r = h7_COLOR_CAST(p * 255);
+                    g = h7_COLOR_CAST(q * 255);
+                    b = h7_COLOR_CAST(v * 255);
                     break;
                 case 4:
-                    r = t * 255;
-                    g = p * 255;
-                    b = v * 255;
+                    r = h7_COLOR_CAST(t * 255);
+                    g = h7_COLOR_CAST(p * 255);
+                    b = h7_COLOR_CAST(v * 255);
                     break;
                 default:
-                    r = v * 255;
-                    g = p * 255;
-                    b = q * 255;
+                    r = h7_COLOR_CAST(v * 255);
+                    g = h7_COLOR_CAST(p * 255);
+                    b = h7_COLOR_CAST(q * 255);
             }
-            _r = sCast(Byte, clamp(r));
-            _g = sCast(Byte, clamp(g));
-            _b = sCast(Byte, clamp(b));
+            _r = r;
+            _g = g;
+            _b = b;
             return *this;
         }
 
@@ -496,7 +506,58 @@ namespace h7 {
             }
             hsv[2] = max;
         }
-    };
-}
 
+        //===================== operators ============
+        inline Byte& operator[](int index){ return mem[index]; }
+        inline const Byte operator[](int index) const {return mem[index]; }
+        inline bool operator==(const Color& color){  return toIntBits() == const_cast<Color&>(color).toIntBits(); }
+        //inline bool operator<(const Color& color){ return toIntBits() < color.toIntBits(); }
+
+        inline Color& operator = (const unsigned int color){ return set(color); }
+
+        Color& operator += (const Color& c)
+        {
+            return add(const_cast<Color &>(c));
+        }
+        Color& operator -= (const Color& color)
+        {
+            return sub(const_cast<Color &>(color));
+        }
+
+        Color& operator *= (const Color& color)
+        {
+            return mul(const_cast<Color &>(color));
+        }
+        Color operator + (const Color& color)
+        {
+            Color ret(*this);
+            ret += color;
+            return ret;
+        }
+        Color operator - (const Color& color)
+        {
+            Color ret(*this);
+            ret -= color;
+            return ret;
+        }
+        Color operator * (const Color& color)
+        {
+            Color ret(*this);
+            ret *= color;
+            return ret;
+        }
+
+    };
+
+    //rgba 8888
+    static constexpr int COLOR_WHITE = 0xffffffff;
+    static constexpr int COLOR_LIGHT_GRAY = 0xbfbfbfff;
+    static constexpr int COLOR_GRAY = 0x7f7f7fff;
+    static constexpr int COLOR_DARK_GRAY = 0x3f3f3fff;
+    static constexpr int COLOR_BLACK = 0x000000ff;
+
+    static constexpr int COLOR_CLEAR = 0x00000000;
+    static constexpr int COLOR_BLUE = 0x0000ffff;
+    static constexpr int COLOR_NAVY = 0x00007fff;
+}
 #endif //BGFX_STUDY_COLOR_H

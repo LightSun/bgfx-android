@@ -138,10 +138,10 @@ namespace h7 {
         return event.isCancelled();
     }
 
-    sk_sp<Actor> Actor::hit(float x, float y, bool touchable) {
+    const Actor* Actor::hit(float x, float y, bool touchable) {
         if (touchable && this->touchable != Touchable::enabled) return NULL;
         if (!isVisible()) return NULL;
-        return sk_ref_sp<Actor>(x >= 0 && x < width && y >= 0 && y < height ? this : NULL);
+        return (x >= 0 && x < width && y >= 0 && y < height ? this : NULL);
     }
 
     Vector2f &Actor::screenToLocalCoordinates(Vector2f &screenCoords) {

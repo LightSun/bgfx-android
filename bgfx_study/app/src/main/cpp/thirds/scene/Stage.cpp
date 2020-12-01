@@ -10,13 +10,14 @@
 #include "Group.h"
 #include "InputEvent.h"
 #include "EventListener.h"
+#include "FocusListener.h"
 
 
 namespace h7{
 
     void Stage::act(float delta) {
 // Update over actors. Done in act() because actors may change position, which can fire enter/exit without an input event.
-        for (int pointer = 0, n = TOUCH_NUM; pointer < n; pointer++) {
+        for (int pointer = 0, n = STAGE_TOUCH_NUM; pointer < n; pointer++) {
             sk_sp<Actor> overLast = pointerOverActors[pointer];
             // Check if pointer is gone.
             if (!pointerTouched[pointer]) {
@@ -39,24 +40,25 @@ namespace h7{
             pointerOverActors[pointer] = fireEnterAndExit(overLast, pointerScreenX[pointer], pointerScreenY[pointer], pointer);
         }
         // Update over actor for the mouse on the desktop.
-        //TODO
-        /*ApplicationType type = Gdx.app.getType();
-        if (type == ApplicationType.Desktop || type == ApplicationType.Applet || type == ApplicationType.WebGL) {
-            // if (mouseOverActor != null) mouseOverActor.setDebug(false);
-            mouseOverActor = fireEnterAndExit(mouseOverActor, mouseScreenX, mouseScreenY, -1);
-            // if (mouseOverActor != null) mouseOverActor.setDebug(true);
-        }*/
+#if defined(_WIN32) or defined(CCORE_MAC) or defined(CCORE_LINUX)
+         //if (mouseOverActor != null) mouseOverActor.setDebug(false);
+         mouseOverActor = fireEnterAndExit(mouseOverActor, mouseScreenX, mouseScreenY, -1);
+         //if (mouseOverActor != null) mouseOverActor.setDebug(true);
+#endif
         root->act(delta);
     }
 
     Vector2f &Stage::screenToStageCoordinates(Vector2f &f) {
-        return f;
+        return f.add(viewport.x, viewport.y);
     }
-    sk_sp<Actor> Stage::fireEnterAndExit(sk_sp<Actor> overLast, int screenX, int screenY,
+    Vector2f& Stage::stageToScreenCoordinates(h7::Vector2f &f) {
+        return f.sub(viewport.x, viewport.y);
+    }
+    sk_sp<Actor> Stage::fireEnterAndExit(sk_sp<Actor>& overLast, int screenX, int screenY,
                                          int pointer) {
 // Find the actor under the point.
         screenToStageCoordinates(tempCoords.set(screenX, screenY));
-        sk_sp<Actor> over = hit(tempCoords.x, tempCoords.y, true);
+        sk_sp<Actor> over = sk_ref_sp(hit(tempCoords.x, tempCoords.y, true));
         if (over == overLast) return overLast;
 
         // Exit overLast.
@@ -83,7 +85,7 @@ namespace h7{
         }
         return over;
     }
-    sk_sp<Actor> Stage::hit(float stageX, float stageY, bool touchable) {
+    const Actor* Stage::hit(float stageX, float stageY, bool touchable) {
         root->parentToLocalCoordinates(tempCoords.set(stageX, stageY));
         return root->hit(tempCoords.x, tempCoords.y, touchable);
     }
@@ -105,8 +107,8 @@ namespace h7{
         event.setPointer(pointer);
         event.setButton(button);
 
-        sk_sp<Actor> target = hit(tempCoords.x, tempCoords.y, true);
-        if (target.get() == nullptr) {
+        Actor* target = const_cast<Actor *>(hit(tempCoords.x, tempCoords.y, true));
+        if (target == nullptr) {
             if (root->touchable == Touchable::enabled){
                 root->fire(event);
             }
@@ -189,9 +191,8 @@ namespace h7{
         event.setStageX(tempCoords.x);
         event.setStageY(tempCoords.y);
 
-        sk_sp<Actor> target = hit(tempCoords.x, tempCoords.y, true);
+        sk_sp<Actor> target = sk_ref_sp(hit(tempCoords.x, tempCoords.y, true));
         if (target.get() == nullptr) target = root;
-
         target->fire(event);
         return event.isHandled();
     }
@@ -302,34 +303,72 @@ namespace h7{
     }
     void Stage::unfocus(Actor *actor) {
         cancelTouchFocus(actor);
-        if (scrollFocus != nullptr && scrollFocus->isDescendantOf(actor)) setScrollFocus(null);
-        if (keyboardFocus != nullptr && keyboardFocus->isDescendantOf(actor)) setKeyboardFocus(null);
+        if (scrollFocus != nullptr && scrollFocus->isDescendantOf(actor)) setScrollFocus(nullptr);
+        if (keyboardFocus != nullptr && keyboardFocus->isDescendantOf(actor)) setKeyboardFocus(nullptr);
     }
-    bool Stage::setScrollFocus(h7::Actor *actor) {
-        if (scrollFocus == actor) return true;
-        FocusEvent
-        FocusEvent event = Pools.obtain(FocusEvent.class);
+    bool Stage::setScrollFocus(Actor *actor) {
+        if (scrollFocus.get() == actor) return true;
+        FocusEvent event;
         event.setStage(this);
-        event.setType(FocusEvent.Type.scroll);
-        Actor oldScrollFocus = scrollFocus;
-        if (oldScrollFocus != null) {
+        event.setType(FocusEvent::Type::scroll);
+        Actor* oldScrollFocus = scrollFocus.get();
+        if (oldScrollFocus != nullptr) {
             event.setFocused(false);
             event.setRelatedActor(actor);
-            oldScrollFocus.fire(event);
+            oldScrollFocus->fire(event);
         }
-        boolean success = !event.isCancelled();
+        bool success = !event.isCancelled();
         if (success) {
-            scrollFocus = actor;
-            if (actor != null) {
+            auto sp = sk_ref_sp(oldScrollFocus);
+            scrollFocus.reset(actor);
+            if (actor != nullptr) {
                 event.setFocused(true);
                 event.setRelatedActor(oldScrollFocus);
-                actor.fire(event);
+                actor->fire(event);
                 success = !event.isCancelled();
-                if (!success) scrollFocus = oldScrollFocus;
+                if (!success){
+                    scrollFocus = sp;
+                }
             }
         }
-        Pools.free(event);
         return success;
+    }
+    bool Stage::setKeyboardFocus(h7::Actor *actor) {
+        if (keyboardFocus.get() == actor) return true;
+        FocusEvent event;
+        event.setStage(this);
+        event.setType(FocusEvent::Type::keyboard);
+        Actor* oldKeyboardFocus = keyboardFocus.get();
+        if (oldKeyboardFocus != nullptr) {
+            event.setFocused(false);
+            event.setRelatedActor(actor);
+            oldKeyboardFocus->fire(event);
+        }
+        bool success = !event.isCancelled();
+        if (success) {
+            auto sp = sk_ref_sp(oldKeyboardFocus);
+            keyboardFocus.reset(actor);
+            if (actor != nullptr) {
+                event.setFocused(true);
+                event.setRelatedActor(oldKeyboardFocus);
+                actor->fire(event);
+                success = !event.isCancelled();
+                if (!success) {
+                    keyboardFocus = oldKeyboardFocus;
+                }
+            }
+        }
+        return success;
+    }
+
+    void Stage::setRoot(h7::Group *root) {
+        auto parent = root->getParent();
+        if (parent != nullptr){
+            parent->removeActor(root, false);
+        }
+        this->root.reset(root);
+        root->setParent(nullptr);
+        root->setStage(this);
     }
 
 }

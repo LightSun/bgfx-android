@@ -40,10 +40,14 @@ namespace h7 {
         childrenOnly = 2
     };
 
+    /**
+     * the actor : (0, 0) is at the left-bottom.
+     */
     class Actor : public SkWeakRefCnt {
     private:
         Stage *stage;
         Group *parent;
+        bool debug;
     public:
         Array<sk_sp<EventListener>> listeners;
         Array<sk_sp<EventListener>> captureListeners = Array<sk_sp<EventListener>>(0, NULL);
@@ -60,11 +64,19 @@ namespace h7 {
         Color color;
         void *userObject;
 
+        virtual bool isGroup(){
+            return false;
+        }
+        inline void setDebug(bool debug){
+            this->debug = debug;
+        }
+        inline bool isDebug(){
+            return debug;
+        }
         inline void setParent(Group *_g) {
             this->parent = _g;
         }
-
-        inline void setStage(Stage *_g) {
+        virtual void setStage(Stage *_g) {
             this->stage = _g;
         }
 
@@ -122,7 +134,7 @@ namespace h7 {
        * The default implementation returns this actor if the point is within this actor's bounds and this actor is visible.
        * @param touchable If true, hit detection will respect the {@link #setTouchable(Touchable) touchability}.
        * @see Touchable */
-        sk_sp<Actor> hit(float x, float y, bool touchable);
+        const Actor* hit(float x, float y, bool touchable);
 
         /** Transforms the specified point in screen coordinates to the actor's local coordinate system.
  * @see Stage#screenToStageCoordinates(Vector2) */
