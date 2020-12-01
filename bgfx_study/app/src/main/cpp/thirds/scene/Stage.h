@@ -10,6 +10,7 @@
 #include "utils/Array.h"
 #include "math/Vector2f.h"
 #include "Viewport.h"
+#include "../input/InputProcessor.h"
 
 namespace NanoCanvas{
     class Canvas;
@@ -29,7 +30,7 @@ namespace h7 {
 
 #define STAGE_TOUCH_NUM 20
 
-    class Stage : public Input, public SkWeakRefCnt {
+    class Stage : public InputProcessor, public SkWeakRefCnt {
     private:
         bool actionsRequestRendering;
         sk_sp<Actor> pointerOverActors[STAGE_TOUCH_NUM];
@@ -88,35 +89,35 @@ namespace h7 {
 
         /** Applies a touch down event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the
 	 * event. */
-        bool touchDown(int screenX, int screenY, int pointer, int button);
+        bool touchDown(int screenX, int screenY, int pointer, int button) override ;
 
         /** Applies a touch up event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the event.
         * Only {@link InputListener listeners} that returned true for touchDown will receive this event. */
-        bool touchUp(int screenX, int screenY, int pointer, int button);
+        bool touchUp(int screenX, int screenY, int pointer, int button) override;
 
         /** Applies a touch moved event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the
  * event. Only {@link InputListener listeners} that returned true for touchDown will receive this event. */
-        bool touchDragged(int screenX, int screenY, int pointer);
+        bool touchDragged(int screenX, int screenY, int pointer) override;
 
         /** Applies a mouse moved event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the
        * event. This event only occurs on the desktop. */
-        bool mouseMoved(int screenX, int screenY);
+        bool mouseMoved(int screenX, int screenY) override;
 
         /** Applies a mouse scroll event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the
 	 * event. This event only occurs on the desktop. */
-        bool scrolled(float amountX, float amountY);
+        bool scrolled(float amountX, float amountY) override;
 
         /** Applies a key down event to the actor that has {@link Stage#setKeyboardFocus(Actor) keyboard focus}, if any, and returns
 	 * true if the event was {@link Event#handle() handled}. */
-        bool keyDown(int keyCode);
+        bool keyDown(int keyCode) override;
 
         /** Applies a key up event to the actor that has {@link Stage#setKeyboardFocus(Actor) keyboard focus}, if any, and returns true
         * if the event was {@link Event#handle() handled}. */
-        bool keyUp(int keyCode);
+        bool keyUp(int keyCode) override;
 
         /** Applies a key typed event to the actor that has {@link Stage#setKeyboardFocus(Actor) keyboard focus}, if any, and returns
         * true if the event was {@link Event#handle() handled}. */
-        bool keyTyped(char character);
+        bool keyTyped(char character) override;
 
         /** Adds the listener to be notified for all touchDragged and touchUp events for the specified pointer and button. Touch focus
 	 * is added automatically when true is returned from {@link InputListener#touchDown(InputEvent, float, float, int, int)

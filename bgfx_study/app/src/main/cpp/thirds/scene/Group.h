@@ -74,25 +74,10 @@ namespace h7 {
         }
 
         /** Swaps two actors by index. Returns false if the swap did not occur because the indexes were out of bounds. */
-        inline bool swapActor(int first, int second) {
-            int maxIndex = children.size();
-            if (first < 0 || first >= maxIndex) return false;
-            if (second < 0 || second >= maxIndex) return false;
-            children.get(first).swap(children.get(second));
-            return true;
-        }
+        bool swapActor(int first, int second);
 
         /** Swaps two actors. Returns false if the swap did not occur because the actors are not children of this group. */
-        inline bool swapActor(Actor *first, Actor *second) {
-            auto sp1 = sk_ref_sp(first);
-            auto sp2 = sk_ref_sp(second);
-            int firstIndex = children.indexOf(sp1);
-            int secondIndex = children.indexOf(sp2);
-            if (firstIndex == -1 || secondIndex == -1) return false;
-            children.get(firstIndex).swap(children.get(secondIndex));
-            return true;
-        }
-
+        bool swapActor(Actor *first, Actor *second);
 
         /** Adds an actor as a child of this group at a specific index, removing it from its previous parent. If the actor is already a
          * child of this group, no changes are made.

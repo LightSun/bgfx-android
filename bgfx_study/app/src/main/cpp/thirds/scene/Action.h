@@ -57,7 +57,7 @@ namespace h7 {
 	 * The default implementation calls {@link #restart()}.
 	 * <p>
 	 * If a subclass has optional state, it must override this method, call super, and reset the optional state. */
-        virtual void reset() ;
+        virtual void reset() override ;
     };
 }
 

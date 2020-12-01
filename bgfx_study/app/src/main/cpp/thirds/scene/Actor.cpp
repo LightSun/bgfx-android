@@ -259,11 +259,11 @@ namespace h7 {
     }
     bool Actor::hasKeyboardFocus() {
         Stage* stage = getStage();
-        return stage != nullptr && stage->getKeyboardFocus().get() == this;
+        return stage != nullptr && stage->getKeyboardFocus() == this;
     }
     bool Actor::hasScrollFocus() {
         Stage* stage = getStage();
-        return stage != nullptr && stage->getScrollFocus().get() == this;
+        return stage != nullptr && stage->getScrollFocus() == this;
     }
     bool Actor::isTouchFocusTarget() {
         Stage* stage = getStage();

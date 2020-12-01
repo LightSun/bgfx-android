@@ -99,4 +99,21 @@ namespace h7{
         children.clear(func);
         childrenChanged();
     }
+
+    bool Group::swapActor(int first, int second) {
+        int maxIndex = children.size();
+        if (first < 0 || first >= maxIndex) return false;
+        if (second < 0 || second >= maxIndex) return false;
+        children.get(first).swap(children.get(second));
+        return true;
+    }
+    bool Group::swapActor(Actor *first, Actor *second) {
+        auto sp1 = sk_ref_sp(first);
+        auto sp2 = sk_ref_sp(second);
+        int firstIndex = children.indexOf(sp1);
+        int secondIndex = children.indexOf(sp2);
+        if (firstIndex == -1 || secondIndex == -1) return false;
+        children.get(firstIndex).swap(children.get(secondIndex));
+        return true;
+    }
 }
