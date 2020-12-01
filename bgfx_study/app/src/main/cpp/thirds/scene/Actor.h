@@ -49,7 +49,7 @@ namespace h7 {
         Array<sk_sp<EventListener>> captureListeners = Array<sk_sp<EventListener>>(0, NULL);
         Array<sk_sp<Action>> actions = Array<sk_sp<Action>>(0, NULL);
 
-        const char *name;
+        const char *name = "h7_Actor";
         Touchable touchable = Touchable::enabled;
         bool visible = true;
         float x, y;
@@ -137,11 +137,13 @@ namespace h7 {
         /** Converts the coordinates given in the parent's coordinate system to this actor's coordinate system. */
         Vector2f &parentToLocalCoordinates(Vector2f &parentCoords);
 
-        inline void addAction(sk_sp<Action>& action) {
-            actions.add(action);
+        inline void addAction(Action* action) {
+            auto sp = sk_ref_sp(action);
+            actions.add(sp);
         }
-        inline void removeAction(sk_sp<Action>& action) {
-            actions.remove(action);
+        inline void removeAction(Action* action) {
+            auto sp = sk_ref_sp(action);
+            actions.remove(sp);
         }
         inline Array<sk_sp<Action>> &getActions() {
             return actions;
@@ -156,22 +158,24 @@ namespace h7 {
         /** Add a listener to receive events that {@link #hit(float, float, boolean) hit} this actor. See {@link #fire(Event)}.
 	 * @see InputListener
 	 * @see ClickListener */
-        bool addListener(sk_sp<EventListener>& listener) {
-            return listeners.add(listener);
+        bool addListener(EventListener* listener){
+            auto sp = sk_ref_sp(listener);
+            return listeners.add(sp);
         }
 
-        bool removeListener(sk_sp<EventListener>& listener) {
-            return listeners.remove(listener);
+        bool removeListener(EventListener* listener) {
+            auto sp = sk_ref_sp(listener);
+            return listeners.remove(sp);
         }
-
 /** Adds a listener that is only notified during the capture phase.
 	 * @see #fire(Event) */
-        bool addCaptureListener(sk_sp<EventListener>& listener) {
-            return captureListeners.add(listener);
+        bool addCaptureListener(EventListener* listener) {
+            auto sp = sk_ref_sp(listener);
+            return captureListeners.add(sp);
         }
-
-        bool removeCaptureListener(sk_sp<EventListener>& listener) {
-            return captureListeners.remove(listener);
+        bool removeCaptureListener(EventListener* listener) {
+            auto sp = sk_ref_sp(listener);
+            return captureListeners.remove(sp);
         }
 
         void clearActions();
@@ -265,15 +269,16 @@ namespace h7 {
         /** Sets the y position using the specified {@link Align alignment}. Note this may set the position to non-integer
          * coordinates. */
         inline void setY(float y, int alignment) {
-        /*    if ((alignment & Align::top) != 0)
+            if ((alignment & Align::top) != 0)
                 y -= height;
             else if ((alignment & Align::bottom) == 0)
-                y -= height / 2;*/
+                y -= height / 2;
 
-            if ((alignment & Align::bottom) != 0)
+            //below: (0,0) is in left-top
+           /* if ((alignment & Align::bottom) != 0)
                 y += height;
             else if ((alignment & Align::top) == 0)
-                y += height / 2;
+                y += height / 2;*/
 
             if (this->y != y) {
                 this->y = y;
@@ -284,15 +289,15 @@ namespace h7 {
         /** Returns the Y position of the specified {@link Align alignment}. */
         inline float getY(int alignment) {
             float y = this->y;
-            /*if ((alignment & Align::top) != 0)
+            if ((alignment & Align::top) != 0)
                 y += height;
             else if ((alignment & Align::bottom) == 0)
-                y += height / 2;*/
-
-            if ((alignment & Align::bottom) != 0)
+                y += height / 2;
+            //below: (0,0) is in left-top
+           /* if ((alignment & Align::bottom) != 0)
                 y += height;
             else if ((alignment & Align::top) == 0)
-                y += height / 2;
+                y += height / 2;*/
             return y;
         }
         /** Sets the position of the actor's bottom left corner. */
@@ -312,14 +317,15 @@ namespace h7 {
             else if ((alignment & Align::left) == 0)
                 x -= width / 2;
 
-           /* if ((alignment & Align::top) != 0)
+            if ((alignment & Align::top) != 0)
                 y -= height;
             else if ((alignment & Align::bottom) == 0)
-                y -= height / 2;*/
-            if ((alignment & Align::bottom) != 0)
+                y -= height / 2;
+            //below: (0,0) is in left-top
+          /*  if ((alignment & Align::bottom) != 0)
                 y += height;
             else if ((alignment & Align::top) == 0)
-                y += height / 2;
+                y += height / 2;*/
             if (this->x != x || this->y != y) {
                 this->x = x;
                 this->y = y;

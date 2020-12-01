@@ -8,6 +8,9 @@
 #include "lua/SkRefCnt.h"
 #include "utils/Pool.h"
 
+#define EVENT_RAW static_cast<unsigned char>(0)
+#define EVENT_FOCUS static_cast<unsigned char>(1)
+
 namespace h7 {
 
     class Stage;
@@ -24,8 +27,15 @@ namespace h7 {
         bool handled; // true means the event was handled (the stage will eat the input)
         bool stopped; // true means event propagation was stopped
         bool cancelled; // true means propagation was stopped and any action that this event would cause should not happen
+        unsigned char _eventType = EVENT_RAW;
 
     public:
+        unsigned char getEventType() const {
+            return _eventType;
+        }
+        void setEventType(unsigned char eventType) {
+            _eventType = eventType;
+        }
         /** Marks this event as handled. This does not affect event propagation inside scene2d, but causes the {@link Stage}
 	 * {@link InputProcessor} methods to return true, which will eat the event so it is not passed on to the application under the
 	 * stage. */
@@ -45,7 +55,7 @@ namespace h7 {
         inline void stop() {
             stopped = true;
         }
-        virtual void reset();
+        virtual void reset(){}
 
         /** Returns the actor that the event originated from. */
         inline sk_sp<Actor> getTarget () {
@@ -55,7 +65,7 @@ namespace h7 {
         inline void setTarget (Actor* targetActor) {
             sp_targetActor.reset(targetActor);
         }
-        inline void setTarget (sk_sp<Actor> targetActor) {
+        inline void setTarget (sk_sp<Actor>& targetActor) {
             sp_targetActor = targetActor;
         }
 
@@ -67,7 +77,7 @@ namespace h7 {
         inline void setListenerActor (Actor* listenerActor) {
             this->sp_listenerActor.reset(listenerActor);
         }
-        inline void setListenerActor(sk_sp<Actor> listenerActor) {
+        inline void setListenerActor(sk_sp<Actor>& listenerActor) {
             this->sp_listenerActor = listenerActor;
         }
 
@@ -102,7 +112,7 @@ namespace h7 {
         inline void setStage (Stage* stage) {
             this->sp_stage.reset(stage);
         }
-        inline void setStage (sk_sp<Stage> sp) {
+        inline void setStage (sk_sp<Stage>& sp) {
             this->sp_stage = sp;
         }
         /** The stage for the actor the event was fired on. */

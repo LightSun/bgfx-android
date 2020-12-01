@@ -122,18 +122,22 @@ namespace h7 {
 
         /** Adds an actor to the root of the stage.
 	 * @see Group#addActor(Actor) */
-        void addActor(const Actor* actor);
+        void addActor(Actor* actor);
 
         /** Adds an action to the root of the stage.
          * @see Group#addAction(Action) */
-        void addAction(const Action* action);
+        void addAction(Action* action);
 
         /** Returns the root's child actors.
          * @see Group#getChildren() */
-        Array<Actor> getActors();
+        Array<sk_sp<Actor>>& getActors();
 
         /** Removes the touch, keyboard, and scroll focus for the specified actor and any descendants. */
         void unfocus(Actor* actor);
+
+        bool setScrollFocus (Actor* actor);
+
+        bool setKeyboardFocus (Actor* actor);
 
         /** Gets the actor that will receive key events.
 	 * @return May be null. */

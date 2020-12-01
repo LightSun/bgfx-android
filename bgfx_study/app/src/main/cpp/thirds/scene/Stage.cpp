@@ -3,6 +3,7 @@
 //
 
 #include <limits.h>
+#include <opencl-c.h>
 #include "Stage.h"
 #include "Event.h"
 #include "Actor.h"
@@ -290,9 +291,45 @@ namespace h7{
         event.reset();
     }
 
-    void Stage::addAction(const Action* action) {
-        auto sp = sk_ref_sp(action);
-        root->addAction(sp);
+    void Stage::addAction(Action* action) {
+        root->addAction(action);
+    }
+    void Stage::addActor(h7::Actor *actor) {
+        root->addActor(actor);
+    }
+    Array<sk_sp<Actor>>& Stage::getActors() {
+        return root->children;
+    }
+    void Stage::unfocus(Actor *actor) {
+        cancelTouchFocus(actor);
+        if (scrollFocus != nullptr && scrollFocus->isDescendantOf(actor)) setScrollFocus(null);
+        if (keyboardFocus != nullptr && keyboardFocus->isDescendantOf(actor)) setKeyboardFocus(null);
+    }
+    bool Stage::setScrollFocus(h7::Actor *actor) {
+        if (scrollFocus == actor) return true;
+        FocusEvent
+        FocusEvent event = Pools.obtain(FocusEvent.class);
+        event.setStage(this);
+        event.setType(FocusEvent.Type.scroll);
+        Actor oldScrollFocus = scrollFocus;
+        if (oldScrollFocus != null) {
+            event.setFocused(false);
+            event.setRelatedActor(actor);
+            oldScrollFocus.fire(event);
+        }
+        boolean success = !event.isCancelled();
+        if (success) {
+            scrollFocus = actor;
+            if (actor != null) {
+                event.setFocused(true);
+                event.setRelatedActor(oldScrollFocus);
+                actor.fire(event);
+                success = !event.isCancelled();
+                if (!success) scrollFocus = oldScrollFocus;
+            }
+        }
+        Pools.free(event);
+        return success;
     }
 
 }
