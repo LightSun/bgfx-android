@@ -13,12 +13,11 @@
 #include "FocusListener.h"
 #include "../nancanvas/Canvas.h"
 
-
 namespace h7{
 
     Stage::Stage(h7::Viewport *vp, NVGcontext *context) {
         viewport.reset(vp);
-        _canvas.reset((new NanoCanvas::Canvas(context, vp->width, vp->height));
+        _canvas.reset(new NanoCanvas::Canvas(context, vp->width, vp->height));
     }
 
     void Stage::draw() {
@@ -61,10 +60,10 @@ namespace h7{
     }
 
     Vector2f &Stage::screenToStageCoordinates(Vector2f &f) {
-        return f.add(viewport.x, viewport.y);
+        return f.add(viewport->x, viewport->y);
     }
     Vector2f& Stage::stageToScreenCoordinates(h7::Vector2f &f) {
-        return f.sub(viewport.x, viewport.y);
+        return f.sub(viewport->x, viewport->y);
     }
     sk_sp<Actor> Stage::fireEnterAndExit(sk_sp<Actor>& overLast, int screenX, int screenY,
                                          int pointer) {
@@ -102,7 +101,7 @@ namespace h7{
         return root->hit(tempCoords.x, tempCoords.y, touchable);
     }
     bool Stage::touchDown(int screenX, int screenY, int pointer, int button) {
-        if(!viewport.isInside(screenX, screenY)){
+        if(!viewport->isInside(screenX, screenY)){
             return false;
         }
         pointerTouched[pointer] = true;
@@ -193,7 +192,7 @@ namespace h7{
         mouseScreenX = screenX;
         mouseScreenY = screenY;
 
-        if (!viewport.isInside(screenX, screenY)) return false;
+        if (!viewport->isInside(screenX, screenY)) return false;
 
         screenToStageCoordinates(tempCoords.set(screenX, screenY));
 
@@ -366,7 +365,7 @@ namespace h7{
                 actor->fire(event);
                 success = !event.isCancelled();
                 if (!success) {
-                    keyboardFocus = oldKeyboardFocus;
+                    keyboardFocus = sp;
                 }
             }
         }
