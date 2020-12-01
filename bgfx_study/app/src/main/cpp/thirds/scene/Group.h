@@ -21,12 +21,24 @@ namespace h7 {
         bool isGroup() override {
             return true;
         }
-
+        virtual void act(float delta) override {
+            Actor::act(delta);
+            auto array = children.copy();
+            for (int i = 0, n = array.size(); i < n; i++){
+                array.get(i)->act(delta);
+            }
+        }
+        virtual void draw(NanoCanvas::Canvas &canvas, float parentAlpha) override {
+            Actor::draw(canvas, parentAlpha);
+            auto array = children.copy();
+            for (int i = 0, n = array.size(); i < n; i++){
+                array.get(i)->draw(canvas, parentAlpha);
+            }
+        }
         inline void addActor(Actor *actor) {
             auto sp = sk_ref_sp(actor);
             children.add(sp);
         }
-
         inline void setDebug(bool enabled, bool recursively) {
             Actor::setDebug(enabled);
             if (recursively) {
@@ -41,15 +53,29 @@ namespace h7 {
                 }
             }
         }
-        void setStage(Stage* _s) override {
+
+        virtual void setStage(Stage *_s) override {
             Actor::setStage(_s);
             for (int i = 0; i < children.size(); ++i) {
                 children.get(i)->setStage(_s);
             }
         }
+       /** Returns the child at the specified index. */
+        inline Actor * getChild(int index) {
+            return children.get(index).get();
+        }
+        inline Array<sk_sp<Actor>>& getChildren(){
+            return children;
+        }
+        /** Removes all children, actions, and listeners from this group. */
+        virtual void clear() override {
+            Actor::clear();
+            clearChildren();
+        }
+
         /** Swaps two actors by index. Returns false if the swap did not occur because the indexes were out of bounds. */
-     bool swapActor (int first, int second) {
-            int maxIndex = children.size;
+        inline bool swapActor(int first, int second) {
+            int maxIndex = children.size();
             if (first < 0 || first >= maxIndex) return false;
             if (second < 0 || second >= maxIndex) return false;
             children.swap(first, second);
@@ -57,9 +83,11 @@ namespace h7 {
         }
 
         /** Swaps two actors. Returns false if the swap did not occur because the actors are not children of this group. */
-        bool swapActor (Actor first, Actor second) {
-            int firstIndex = children.indexOf(first, true);
-            int secondIndex = children.indexOf(second, true);
+        inline bool swapActor(Actor *first, Actor *second) {
+            auto sp1 = sk_ref_sp(first);
+            auto sp2 = sk_ref_sp(second);
+            int firstIndex = children.indexOf(sp1);
+            int secondIndex = children.indexOf(sp2);
             if (firstIndex == -1 || secondIndex == -1) return false;
             children.swap(firstIndex, secondIndex);
             return true;

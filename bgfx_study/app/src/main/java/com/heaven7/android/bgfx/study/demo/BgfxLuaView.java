@@ -31,8 +31,6 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
 
     public BgfxLuaView(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        getHolder().addCallback(this);
     }
 
     public int getOnscreenKeyboardType() {
@@ -75,8 +73,16 @@ public class BgfxLuaView extends SurfaceView implements SurfaceHolder.Callback {
             };
         }
     }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        getHolder().addCallback(this);
+    }
+
     @Override
     protected void onDetachedFromWindow() {
+        getHolder().removeCallback(this);
         super.onDetachedFromWindow();
     }
 

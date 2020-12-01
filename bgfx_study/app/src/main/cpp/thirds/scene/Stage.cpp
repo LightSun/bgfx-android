@@ -11,9 +11,21 @@
 #include "InputEvent.h"
 #include "EventListener.h"
 #include "FocusListener.h"
+#include "../nancanvas/Canvas.h"
 
 
 namespace h7{
+
+    Stage::Stage(h7::Viewport *vp, NVGcontext *context) {
+        viewport.reset(vp);
+        _canvas.reset((new NanoCanvas::Canvas(context, vp->width, vp->height));
+    }
+
+    void Stage::draw() {
+        if(root->isVisible()){
+            root->draw(*_canvas, 1.0f);
+        }
+    }
 
     void Stage::act(float delta) {
 // Update over actors. Done in act() because actors may change position, which can fire enter/exit without an input event.

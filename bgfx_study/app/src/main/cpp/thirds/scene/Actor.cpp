@@ -158,7 +158,6 @@ namespace h7 {
             }
             parent->weak_unref();
         }
-
         parentToLocalCoordinates(stageCoords);
         return stageCoords;
     }

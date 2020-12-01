@@ -93,14 +93,14 @@ namespace h7 {
 	 * The default implementation does nothing.
 	 * @param parentAlpha The parent alpha, to be multiplied with this actor's alpha, allowing the parent's alpha to affect all
 	 *           children. */
-        void draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
+        virtual void draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
         }
 
         /** Updates the actor based on time. Typically this is called each frame by {@link Stage#act(float)}.
          * <p>
          * The default implementation calls {@link Action#act(float)} on each action and removes actions that are complete.
          * @param delta Time in seconds since the last frame. */
-        void act(float delta);
+        virtual void act(float delta);
 
         /** Sets this actor as the event {@link Event#setTarget(Actor) target} and propagates the event to this actor and ascendants as
 	 * necessary. If this actor is not in the stage, the stage must be set before calling this method.

@@ -11,6 +11,11 @@
 #include "math/Vector2f.h"
 #include "Viewport.h"
 
+namespace NanoCanvas{
+    class Canvas;
+}
+struct NVGcontext;
+
 namespace h7 {
     class Actor;
 
@@ -32,7 +37,7 @@ namespace h7 {
         int pointerScreenX[STAGE_TOUCH_NUM];
         int pointerScreenY[STAGE_TOUCH_NUM];
         int mouseScreenX, mouseScreenY;
-        Viewport viewport; //TODO set
+        sk_sp<Viewport> viewport; //TODO set
 
         Vector2f tempCoords;
 
@@ -40,13 +45,21 @@ namespace h7 {
         sk_sp<Actor> keyboardFocus, scrollFocus;
         sk_sp<Group> root;
 
+        sk_sp<NanoCanvas::Canvas> _canvas;
+
     public:
         Array<sk_sp<TouchFocus>> touchFocuses = Array<sk_sp<TouchFocus>>(16, nullptr);
 
     public:
 
+        Stage(Viewport* vp, NanoCanvas::Canvas* canvas){
+            _canvas.reset(canvas);
+            viewport.reset(vp);
+        }
+        Stage(Viewport* vp, NVGcontext* context);
+
         inline Viewport &getViewport() {
-            return viewport;
+            return *viewport;
         }
         /** If true, any actions executed during a call to {@link #act()}) will result in a call to
 	 * {@link Graphics#requestRendering()}. Widgets that animate or otherwise require additional rendering may check this setting
@@ -71,9 +84,7 @@ namespace h7 {
          * @param delta Time in seconds since the last frame. */
         void act(float delta);
 
-        void draw(){
-
-        }
+        virtual void draw();
 
         /** Applies a touch down event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the
 	 * event. */
