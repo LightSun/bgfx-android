@@ -55,7 +55,7 @@ namespace h7 {
         inline void stop() {
             stopped = true;
         }
-        virtual void reset(){}
+        virtual void reset();
 
         /** Returns the actor that the event originated from. */
         inline sk_sp<Actor> getTarget () {

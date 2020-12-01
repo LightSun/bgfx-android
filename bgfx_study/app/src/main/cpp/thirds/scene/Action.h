@@ -11,7 +11,7 @@
 namespace h7 {
     class Actor;
 
-    class Action : public Poolable, SkRefCnt {
+    class Action : public Poolable, public SkRefCnt {
 
     protected:
         sk_sp<Actor> actor;
@@ -20,7 +20,9 @@ namespace h7 {
         /** Updates the action based on time. Typically this is called each frame by {@link Actor#act(float)}.
              * @param delta Time in seconds since the last frame.
              * @return true if the action is done. This method may continue to be called after the action is done. */
-        virtual bool act(float delta) = 0;
+        virtual bool act(float delta){
+            return false;
+        };
 
         virtual void restart() {}
 
@@ -55,7 +57,7 @@ namespace h7 {
 	 * The default implementation calls {@link #restart()}.
 	 * <p>
 	 * If a subclass has optional state, it must override this method, call super, and reset the optional state. */
-        void reset();
+        virtual void reset() ;
     };
 }
 

@@ -6,7 +6,7 @@ class NVGcontext;
 
 namespace NanoCanvas
 {
-    using namespace TextAlign;
+    //using namespace TextAlign;
     
     /**
      * @class Canvas
