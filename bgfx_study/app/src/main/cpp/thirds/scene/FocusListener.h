@@ -7,7 +7,6 @@
 
 #include "Event.h"
 #include "EventListener.h"
-#include "SceneHelper.h"
 #include "lua/SkRefCnt.h"
 
 namespace h7 {

@@ -6,10 +6,10 @@
 #define BGFX_STUDY_INPUTPROCESSOR_H
 
 #include "../../core/math/Vector2f.h"
-#include "RefObject.h"
+#include "lua/SkRefCnt.h"
 
 namespace h7 {
-    class InputProcessor : public RefObject {
+    class InputProcessor : public SkRefCnt {
     public:
         /** Called when a key was pressed
 	 *
@@ -59,7 +59,7 @@ namespace h7 {
         virtual bool scrolled(float amountX, float amountY) = 0;
     };
 
-    class GestureListener: public RefObject{
+    class GestureListener: public SkRefCnt{
     public:
         /** @see InputProcessor#touchDown(int, int, int, int) */
         virtual bool touchDown(float x, float y, int pointer, int button) { return false; }

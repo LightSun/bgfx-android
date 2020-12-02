@@ -18,7 +18,7 @@ namespace h7 {
         float stageX, stageY, scrollAmountX, scrollAmountY;
         int pointer, button, keyCode;
         char character;
-        sk_sp <Actor> relatedActor;
+        sk_sp<Actor> relatedActor;
         bool touchFocus = true;
 
         /** Types of low-level input events supported by scene2d. */

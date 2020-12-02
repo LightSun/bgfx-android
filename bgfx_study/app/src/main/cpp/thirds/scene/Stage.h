@@ -38,7 +38,7 @@ namespace h7 {
         int pointerScreenX[STAGE_TOUCH_NUM];
         int pointerScreenY[STAGE_TOUCH_NUM];
         int mouseScreenX, mouseScreenY;
-        sk_sp<Viewport> viewport; //TODO set
+        sk_sp<Viewport> viewport;
 
         Vector2f tempCoords;
 

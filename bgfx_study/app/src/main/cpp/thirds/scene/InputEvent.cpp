@@ -3,7 +3,10 @@
 //
 
 #include "InputEvent.h"
+#include "EventListener.h"
 #include "Actor.h"
+#include "Action.h"
+#include "Stage.h"
 
 namespace h7{
 

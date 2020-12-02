@@ -12,7 +12,7 @@
 
 namespace h7 {
 
-    class KeyEvent : public RefObject {
+    class KeyEvent : public SkRefCnt {
     public:
         static const int KEY_DOWN = 0;
         static const int KEY_UP = 1;
@@ -30,7 +30,7 @@ namespace h7 {
         char keyChar;
     };
 
-    class TouchEvent :public RefObject {
+    class TouchEvent :public SkRefCnt {
     public:
         static const int TOUCH_DOWN = 0;
         static const int TOUCH_UP = 1;

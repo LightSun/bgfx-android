@@ -8,6 +8,7 @@
 #include <mutex>
 #include "InputProcessor.h"
 #include "utils/Array.h"
+#include "lua/SkRefCnt.h"
 
 namespace h7 {
     class InputEventQueue : public InputProcessor {
