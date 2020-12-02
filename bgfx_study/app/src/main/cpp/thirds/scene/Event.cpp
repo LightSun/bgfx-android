@@ -7,6 +7,7 @@
 #include "Actor.h"
 #include "Stage.h"
 #include "Action.h"
+#include "Group.h"
 
 namespace h7 {
 

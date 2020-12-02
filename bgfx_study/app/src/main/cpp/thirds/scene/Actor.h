@@ -6,7 +6,6 @@
 #define BGFX_STUDY_ACTOR_H
 
 #include "limits.h"
-#include <lua/SkRefCnt.h>
 #include <math/Vector2f.h>
 #include <lua/SkWeakRefCnt.h>
 #include <nancanvas/Color.h>
@@ -45,8 +44,8 @@ namespace h7 {
      */
     class Actor : public SkWeakRefCnt {
     private:
-        Stage *stage;
-        Group *parent;
+        sk_sp<Stage> stage;
+        sk_sp<Group> parent;
         bool debug;
     public:
         Array<sk_sp<EventListener>> listeners;
@@ -74,10 +73,10 @@ namespace h7 {
             return debug;
         }
         inline void setParent(Group *_g) {
-            this->parent = _g;
+            this->parent.reset(_g);
         }
         virtual void setStage(Stage *_g) {
-            this->stage = _g;
+            this->stage.reset(_g);
         }
 
         Stage *getStage();

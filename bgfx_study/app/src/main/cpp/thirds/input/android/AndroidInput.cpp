@@ -133,7 +133,6 @@ if(this->x){\
         usedTouchEvents.clear();
         unlockTouch();
         //listeners
-        _inputProcessor->unRefAndDestroy();
         auto func = [&](Array<OnKeyListener*>* arr, int index, OnKeyListener*& ele){
             ele->unRefAndDestroy();
             return false;

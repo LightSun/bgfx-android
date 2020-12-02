@@ -5,8 +5,10 @@
 #ifndef BGFX_STUDY_VIEWPORT_H
 #define BGFX_STUDY_VIEWPORT_H
 
+#include "lua/SkRefCnt.h"
+
 namespace h7 {
-    class Viewport {
+    class Viewport: public SkRefCnt{
     public:
         int x, y, width, height;
 

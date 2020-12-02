@@ -21,7 +21,7 @@ namespace h7 {
         stage->weak_ref();
         Stage *result;
         if (stage->try_ref()) {
-            result = stage;
+            result = stage.get();
             stage->unref();
         }
         else { result = nullptr; }
@@ -33,7 +33,7 @@ namespace h7 {
         parent->weak_ref();
         Group *result;
         if (parent->try_ref()) {
-            result = parent;
+            result = parent.get();
             parent->unref();
         }
         else { result = nullptr; }
@@ -75,10 +75,9 @@ namespace h7 {
         Array<sk_sp<Group>> ascendants;
         parent->weak_ref();
         if(parent->try_ref()){
-            Group* _parent = this->parent;
+            sk_sp<Group>& _parent = this->parent;
             while (_parent != NULL) {
-                sk_sp<Group> sp_parent = sk_ref_sp(_parent);
-                ascendants.add(sp_parent);
+                ascendants.add(_parent);
                 //
                 auto pGroup = _parent->parent;
                 pGroup->weak_ref();

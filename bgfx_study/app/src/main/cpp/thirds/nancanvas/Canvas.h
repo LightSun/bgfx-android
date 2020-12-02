@@ -5,6 +5,8 @@
 #include "Image.h"
 #include "Gradient.h"
 #include "Text.h"
+#include "lua/SkRefCnt.h"
+
 class NVGcontext;
 
 namespace h7{
@@ -21,7 +23,7 @@ namespace NanoCanvas
      * @file Canvas.h
      * @brief The HTML5's Canvas liked render API writing in C++11 based on NanoVG
      */
-    class Canvas
+    class Canvas: public SkRefCnt
     {
     public:
         enum Winding

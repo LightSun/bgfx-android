@@ -8,6 +8,8 @@
 #ifndef SkWeakRefCnt_DEFINED
 #define SkWeakRefCnt_DEFINED
 
+#pragma once
+
 #include <atomic>
 #include <stdint.h>
 //#include "include/core/SkRefCnt.h"

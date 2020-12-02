@@ -713,13 +713,18 @@ namespace sNanoCanvas{
 }
 DEF__INDEX(TextStyle, NanoCanvas::TextStyle)
 //-------------------------------------------------------------------------
+static int Canvas_gc(lua_State *L) {\
+    NanoCanvas::Canvas* c = LuaUtils::get_ref<NanoCanvas::Canvas>(L, -1);
+    c->unref();
+    return 0;
+}
 #define DEF_GC(type)\
 static int type##_gc(lua_State *L) {\
     NanoCanvas::type* c = LuaUtils::get_ref<NanoCanvas::type>(L, -1);\
     delete c;\
     return 0;\
 }
-DEF_GC(Canvas)
+//DEF_GC(Canvas)
 DEF_GC(Color)
 DEF_GC(Gradient)
 DEF_GC(Font)

@@ -8,6 +8,8 @@
 #ifndef SkRefCnt_DEFINED
 #define SkRefCnt_DEFINED
 
+#pragma once
+
 #include <atomic>
 #include <cstddef>
 #include <functional>
@@ -17,6 +19,11 @@
 #include <utility>
 
 #include "../../core/global.h"
+
+template<typename T>
+static inline T *SkSafeRef(T *obj);
+template<typename T>
+static inline void SkSafeUnref(T *obj);
 
 //SK_DEBUG
 /** \class SkRefCntBase

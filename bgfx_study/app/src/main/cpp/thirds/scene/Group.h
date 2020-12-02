@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "lua/SkWeakRefCnt.h"
 #include "utils/Array.h"
 #include "Actor.h"
 

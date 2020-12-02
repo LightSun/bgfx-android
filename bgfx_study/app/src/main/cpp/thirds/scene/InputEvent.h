@@ -13,7 +13,7 @@
 namespace h7 {
     class Actor;
 
-    class InputEvent : public Event {
+    class InputEvent : public Event, public SkRefCnt {
     public:
         float stageX, stageY, scrollAmountX, scrollAmountY;
         int pointer, button, keyCode;
