@@ -140,7 +140,7 @@ namespace h7 {
         }
         event->jRecycle();
         ainput->unlockTouch();
-        requestRender(ainput->luaPtr);
+        requestRender();
         // Gdx.app.getGraphics().requestRendering();
     }
 
@@ -236,7 +236,7 @@ namespace h7 {
         }
         ev->jRecycle();
         input.unlockTouch();
-        requestRender(ainput->luaPtr);
+        requestRender();
         return input.keysToCatch.contains(keyCode);
     }
     static bool mouse_handle(AndroidInput* ainput, MotionEventWrapper* event);
@@ -276,7 +276,7 @@ namespace h7 {
         }
         ainput->unlockTouch();
         event->jRecycle();
-        requestRender(ainput->luaPtr);
+        requestRender();
         return true;
     }
 }

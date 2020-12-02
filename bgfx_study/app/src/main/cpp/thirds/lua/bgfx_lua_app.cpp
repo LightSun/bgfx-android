@@ -17,7 +17,7 @@
 #include "bx/debug.h"
 #include "bgfx/bgfx.h"
 
-#include "../platform/android_pri.h"
+#include "../../platform/plat_context.h"
 
 using namespace h7;
 
@@ -25,13 +25,12 @@ using namespace h7;
 namespace h7 {
 #define KEY_APP_HOLDER "$_LuaAppHolder_"
 
-
-    void requestRender(long long luaPtr){
-        auto L = reinterpret_cast<lua_State *>(luaPtr);
+    void requestRender(){
+        auto L = reinterpret_cast<lua_State *>(Platforms::getLuaPtr());
         getAppHolder(L)->requestRender();
     }
-    void getDisplayInfo(long long luaPtr, int* out){
-        auto L = reinterpret_cast<lua_State *>(luaPtr);
+    void getDisplayInfo(int* out){
+        auto L = reinterpret_cast<lua_State *>(Platforms::getLuaPtr());
         auto pInit = requireInit(L);
         out[0] = pInit->resolution.width;
         out[1] = pInit->resolution.height;

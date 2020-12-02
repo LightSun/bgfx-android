@@ -371,7 +371,7 @@ if(this->x){\
         if(nativeOrientation == Orientation::Count){
             int rotation = getRotation();
             int info[2];
-            getDisplayInfo(luaPtr, info);
+            getDisplayInfo(info);
             auto width = info[0];
             auto height = info[1];
             if (((rotation == 0 || rotation == 180) && (width >= height))

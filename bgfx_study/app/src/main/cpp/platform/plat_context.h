@@ -2,8 +2,8 @@
 // Created by Administrator on 2020/8/2 0002.
 //
 
-#ifndef BGFX_STUDY_ANDROID_PRI_H
-#define BGFX_STUDY_ANDROID_PRI_H
+#ifndef BGFX_STUDY_PLAT_CONTEXT_H
+#define BGFX_STUDY_PLAT_CONTEXT_H
 
 #ifdef ANDROID
 #include "android/asset_manager_jni.h"
@@ -14,8 +14,12 @@
 
 namespace Platforms{
     void releaseWindow(void* window);
+
+    long long getLuaPtr();
+
+    void initLuaBgfx();
 };
 
 
 
-#endif //BGFX_STUDY_ANDROID_PRI_H
+#endif //BGFX_STUDY_PLAT_CONTEXT_H

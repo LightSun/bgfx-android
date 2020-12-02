@@ -22,6 +22,7 @@ using namespace heaven7_Bgfx_demo;
 #endif
 
 #include "luaext_java/java_env.h"
+#include "Longjmp.h"
 
 //========================== impl ============================
 #define MAIN_RUNNER    "com/heaven7/android/bgfx/study/demo/NativeApi"
@@ -109,21 +110,4 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API2(destroySurface, jobject src, jl
 extern "C" JNIEXPORT void JNICALL Java_com_heaven7_android_bgfx_study_demo_NativeApi_onLifeCycle(
         JNIEnv* env, jclass clazz, long luaPtr, jint mark){
     h7::onLifecycle(luaPtr, mark);
-}
-
-static const luaL_Reg bgfx_libs[] = {
-        {"bgfx_lua", luaopen_bgfx_lua},
-        {"bx_lua", luaopen_bx_lua},
-        {"hmem_lua", luaopen_hmem_lua},
-        {"canvas_lua", luaopen_canvas_lua},
-        {"int64", luaopen_int64},
-        {"uint64", luaopen_uint64},
-        {nullptr, nullptr}
-};
-extern "C" JNIEXPORT void JNICALL Java_com_heaven7_android_bgfx_study_demo_NativeApi_initLuaBgfx(
-        JNIEnv* env, jclass clazz, jlong luaPtr){
-//EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API1(initLuaBgfx, jlong luaPtr){
-    LOGD("_initLuaBgfx");
-    lua_State *L = reinterpret_cast<lua_State *>(luaPtr);
-    luaL_openlibs2(L, bgfx_libs);
 }

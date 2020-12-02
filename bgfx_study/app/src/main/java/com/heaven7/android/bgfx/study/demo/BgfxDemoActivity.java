@@ -5,20 +5,22 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.heaven7.android.hbmdx.Heaven7;
+
 public class BgfxDemoActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        NativeApi.initAssets(getApplicationContext(), getAssets());
+        Heaven7.init(getApplicationContext(), getAssets());
         setContentView(getLayoutId());
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        NativeApi.destroyAll();
+        Heaven7.destroy();
     }
 
     protected int getLayoutId(){

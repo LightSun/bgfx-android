@@ -12,11 +12,9 @@ namespace h7{
 
     Input* getInput();
 
-    void requestRender(long long luaPtr);
-
     void requestRender();
 
-    void getDisplayInfo(long long luaPtr, int* out);
+    void getDisplayInfo(int* out);
 }
 
 #endif //BGFX_STUDY_GESTURECONTEXT_H

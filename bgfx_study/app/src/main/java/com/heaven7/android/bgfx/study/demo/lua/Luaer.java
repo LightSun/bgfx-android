@@ -48,8 +48,6 @@ public final class Luaer {
             sInstance = new Luaer(context.getApplicationContext());
             sInstance.initLuaState();
             sInstance.initEnv(true);
-
-            NativeApi.initLuaBgfx(sInstance.mLuaState.getNativePointer());
         }
     }
 

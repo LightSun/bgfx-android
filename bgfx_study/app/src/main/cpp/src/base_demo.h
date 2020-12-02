@@ -8,7 +8,7 @@
 #include "bgfx/bgfx.h"
 #include <bx/bx.h>
 #include <bx/thread.h>
-#include "../platform/android_pri.h"
+#include "../platform/plat_context.h"
 #include "../core/common.h"
 //extern "C" {
 using namespace entry;

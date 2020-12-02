@@ -56,8 +56,11 @@ aux_source_directory(src/main/cpp/thirds/nancanvas SRC_nancanvas)
 aux_source_directory(src/main/cpp/thirds/stb SRC_stb)
 
 aux_source_directory(src/main/cpp/platform SRC_platform)
+aux_source_directory(src/main/cpp/platform/android SRC_plat_android)
+
 aux_source_directory(src/main/cpp/core SRC_core)
 aux_source_directory(src/main/cpp/core/math SRC_math)
+
 aux_source_directory(src/main/cpp/thirds/input SRC_input)
 aux_source_directory(src/main/cpp/thirds/input/android SRC_input_and)
 aux_source_directory(src/main/cpp/thirds/utils SRC_h7_utils)
@@ -66,7 +69,6 @@ aux_source_directory(src/main/cpp/thirds/scene SRC_scene)
 add_library(
         bgfx_core
         SHARED
-        ${SRC_platform}
         ${SRC_core}
         ${SRC_meshoptimizer}
         ${SRC_h7_utils}
@@ -76,6 +78,8 @@ add_library(
         bgfx_study
         SHARED
         ${SRC_stb}
+        ${SRC_platform}
+        ${SRC_plat_android}
         ${SRC_study}
         ${SRC_samples}
         ${SRC_font}

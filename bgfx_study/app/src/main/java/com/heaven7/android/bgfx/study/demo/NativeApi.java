@@ -7,22 +7,11 @@ import com.heaven7.java.lua.LuaState;
 
 public final class NativeApi {
 
-    static {
-        System.loadLibrary("c++_shared");
-        System.loadLibrary("bgfx_core");
-        System.loadLibrary("bgfx_study");
-    }
-
     //set use lua or not.
     public static native void setUseLua(boolean useLua);
-    public static native void destroyAll();
-
-    public static native void initAssets(Object ctx, Object assetM);
     public static native void initializeSurface(Object src, Object surface, long luaPtr);
 
     public static native void destroySurface(Object src, long luaPtr);
-
-    public native static void initLuaBgfx(long luaPtr);
 
     //bind life cycle with android.
     public static native void onLifeCycle(long luaPtr, int mark);
