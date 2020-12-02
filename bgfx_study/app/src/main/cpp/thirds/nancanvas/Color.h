@@ -15,6 +15,7 @@ namespace h7 {
 #define h7_COLOR_CAST(a) static_cast<Byte>(clamp(static_cast<int>(a)))
 
     class Color {
+    public:
         union {
             struct {
                 Byte _r;
@@ -24,7 +25,6 @@ namespace h7 {
             };
             Byte mem[4];
         };
-    public:
         Color() : Color(0xffffffff) {
         }
 
@@ -513,7 +513,7 @@ namespace h7 {
         inline bool operator==(const Color& color){  return toIntBits() == const_cast<Color&>(color).toIntBits(); }
         //inline bool operator<(const Color& color){ return toIntBits() < color.toIntBits(); }
 
-        inline Color& operator = (const unsigned int color){ return set(color); }
+        Color& operator = (const unsigned int color){ return set(color); }
 
         Color& operator += (const Color& c)
         {

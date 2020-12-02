@@ -6,6 +6,7 @@
 #include "Stage.h"
 #include "Event.h"
 #include "Actor.h"
+#include "Action.h"
 #include "Group.h"
 #include "InputEvent.h"
 #include "EventListener.h"
@@ -13,6 +14,11 @@
 #include "../nancanvas/Canvas.h"
 
 namespace h7{
+
+    Stage::Stage(h7::Viewport *vp, NanoCanvas::Canvas *canvas) {
+        _canvas.reset(canvas);
+        viewport.reset(vp);
+    }
 
     Stage::Stage(h7::Viewport *vp, NVGcontext *context) {
         viewport.reset(vp);

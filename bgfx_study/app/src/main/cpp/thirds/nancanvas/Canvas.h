@@ -2,11 +2,18 @@
 #define CANVAS_H
 
 #include <functional>
+#include "Image.h"
+#include "Gradient.h"
+#include "Text.h"
 class NVGcontext;
 
+namespace h7{
+    class Color;
+}
 namespace NanoCanvas
 {
     //using namespace TextAlign;
+    using namespace h7;
     
     /**
      * @class Canvas
@@ -398,7 +405,7 @@ namespace NanoCanvas
          * @return The created gradient style object.
          */
         static Gradient* createLinearGradient(float x0, float y0, float x1, float y1,
-                                             const Color& scolor , const Color& ecolor);
+                                              Color& scolor ,  Color& ecolor);
         
         /**
          * @brief Creates a radial/circular gradient (to use on canvas content)
@@ -411,7 +418,7 @@ namespace NanoCanvas
          * @return The created gradient style object.
          */
         static Gradient* createRadialGradient(float cx, float cy, float r1, float r2,
-                                             const Color& icolor , const Color& ocolor);
+                                              Color& icolor ,  Color& ocolor);
                                       
         /**
          * @brief Creates and returns a box gradient.
@@ -427,7 +434,7 @@ namespace NanoCanvas
          * @return The created gradient style object.
          */
         static Gradient* createBoxGradient(float x, float y, float w, float h,
-                                          float r, float f, Color icol, Color ocol);
+                                          float r, float f, Color& icol, Color& ocol);
         
         /**
          * @brief Creates and returns an image pattern paint.

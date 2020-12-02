@@ -1,10 +1,16 @@
-#include "NanoCanvas.h"
+#include "Canvas.h"
+#include "Color.h"
+#include "Gradient.h"
 #include "nanovg/nanovg.h"
+#include "Image.h"
+#include "Text.h"
+
+using namespace h7;
 
 namespace NanoCanvas {
 
     NVGcolor nvgColor(const Color &color) {
-        return nvgRGBA(color.r, color.g, color.b, color.a);
+        return nvgRGBA(color._r, color._g, color._b, color._a);
     }
 
     NVGpaint nvgPaint(Canvas &canvas, const Gradient &paint) {
@@ -109,7 +115,7 @@ namespace NanoCanvas {
 
 
     Canvas &Canvas::fillColor(const Color &color) {
-        nvgFillColor(m_nvgCtx, nvgRGBA(color.r, color.g, color.b, color.a));
+        nvgFillColor(m_nvgCtx, nvgRGBA(color._r, color._g, color._b, color._a));
         return *this;
     }
 
@@ -130,12 +136,12 @@ namespace NanoCanvas {
     }
 
     Canvas &Canvas::strokeColor(const Color &color) {
-        nvgStrokeColor(m_nvgCtx, nvgRGBA(color.r, color.g, color.b, color.a));
+        nvgStrokeColor(m_nvgCtx, nvgRGBA(color._r, color._g, color._b, color._a));
         return *this;
     }
 
     Gradient* Canvas::createLinearGradient(float x0, float y0, float x1, float y1,
-                                          const Color &scolor, const Color &ecolor) {
+                                           Color &scolor,  Color &ecolor) {
         Gradient* gdt = new Gradient();
         gdt->type = Gradient::Type::Linear;
         gdt->xx = x0;
@@ -148,7 +154,7 @@ namespace NanoCanvas {
     }
 
     Gradient* Canvas::createRadialGradient(float cx, float cy, float r1, float r2,
-                                          const Color &icolor, const Color &ocolor) {
+                                           Color &icolor,  Color &ocolor) {
         Gradient* gdt = new Gradient();
         gdt->type = Gradient::Type::Radial;
         gdt->xx = cx;
@@ -161,7 +167,7 @@ namespace NanoCanvas {
     }
 
     Gradient* Canvas::createBoxGradient(float x, float y, float w, float h,
-                                       float r, float f, Color icol, Color ocol) {
+                                       float r, float f, Color& icol, Color& ocol) {
         Gradient* gdt = new Gradient();
         gdt->type = Gradient::Type::Box;
         gdt->xx = x;
@@ -365,7 +371,7 @@ namespace NanoCanvas {
 
     Canvas &Canvas::clearColor(const Color &color) {
         nvgCancelFrame(m_nvgCtx);
-        nvgFillColor(m_nvgCtx, nvgRGBA(color.r, color.g, color.b, color.a));
+        nvgFillColor(m_nvgCtx, nvgRGBA(color._r, color._g, color._b, color._a));
         nvgBeginPath(m_nvgCtx);
         nvgRect(m_nvgCtx, m_xPos, m_yPos, m_width, m_height);
         nvgFill(m_nvgCtx);

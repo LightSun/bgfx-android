@@ -1,7 +1,8 @@
 #ifndef TEXT_H
 #define TEXT_H
 
-#include "NanoCanvas.h"
+#include "Color.h"
+
 class SkMemory;
 
 class NVGcontext;
@@ -95,7 +96,7 @@ namespace NanoCanvas
         /// The letter spacing of current text style in pixel
         float letterSpace = -1;
         /// The color of current text style
-        Color color       = 0u;
+        h7::Color color = {0};
         /// The horizontal alignment of current text style
         /// @see TextAlign::HorizontalAlign
         int hAlign = TextAlign::Left;

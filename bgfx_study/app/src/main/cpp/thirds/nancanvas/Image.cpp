@@ -1,4 +1,4 @@
-#include "NanoCanvas.h"
+#include "Image.h"
 #include "nanovg/nanovg.h"
 #include "lua/SkMemory.h"
 

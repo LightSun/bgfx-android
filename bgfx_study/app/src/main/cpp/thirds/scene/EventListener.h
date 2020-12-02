@@ -14,7 +14,9 @@ namespace h7 {
     public:
 /** Try to handle the given event, if it is applicable.
 	 * @return true if the event should be considered {@link Event#handle() handled} by scene2d. */
-        virtual bool handle(Event& event) = 0;
+        virtual bool handle(Event& event){
+            return false;
+        };
     };
 }
 

@@ -2,10 +2,9 @@
 // Created by Administrator on 2020/11/3 0003.
 //
 
-#include "NanoCanvas.h"
 #include "Text.h"
-#include "Color.hpp"
-#include "Gradient.hpp"
+#include "Color.h"
+#include "Gradient.h"
 #include "Image.h"
 #include "Canvas.h"
 #include "../lua/lua.hpp"
@@ -177,7 +176,7 @@ static int Canvas_clearColor(lua_State *L) {
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
     //auto c = lua_tostring(L, 1);
-    NanoCanvas::Color* color = LuaUtils::get_ref<NanoCanvas::Color>(L, -1);
+    h7::Color* color = LuaUtils::get_ref<h7::Color>(L, -1);
     canvas->clearColor(*color);
     lua_pushvalue(L, canvasIndex);
     return 1;
@@ -189,7 +188,7 @@ static int Canvas_fillColor(lua_State *L) {
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
     //auto c = lua_tostring(L, 1);
-    NanoCanvas::Color* color = LuaUtils::get_ref<NanoCanvas::Color>(L, -1);
+    h7::Color* color = LuaUtils::get_ref<h7::Color>(L, -1);
     canvas->fillColor(*color);
     lua_pushvalue(L, canvasIndex);
     return 1;
@@ -201,7 +200,7 @@ static int Canvas_strokeColor(lua_State *L) {
     auto canvasIndex = lua_upvalueindex(1);
     NanoCanvas::Canvas* canvas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, canvasIndex);
     //auto c = lua_tostring(L, 1);
-    NanoCanvas::Color* color = LuaUtils::get_ref<NanoCanvas::Color>(L, -1);
+    h7::Color* color = LuaUtils::get_ref<h7::Color>(L, -1);
     canvas->strokeColor(*color);
     lua_pushvalue(L, canvasIndex);
     return 1;
@@ -665,7 +664,7 @@ static int TextStyle_font(lua_State* L){
 static int TextStyle_color(lua_State* L){
     auto upIndex = lua_upvalueindex(1);
     auto pStyle = LuaUtils::get_ref<NanoCanvas::TextStyle>(L, upIndex);
-    auto c = LuaUtils::get_ref<NanoCanvas::Color>(L, 1);
+    auto c = LuaUtils::get_ref<h7::Color>(L, 1);
     pStyle->color = *c;
     lua_pushvalue(L, upIndex);
     return 1;
@@ -738,16 +737,19 @@ DEF_TOSTRING(Gradient)
 DEF_TOSTRING(Font)
 DEF_TOSTRING(TextStyle)
 DEF_TOSTRING(Image)
+
+namespace gh7{
+    const static luaL_Reg Color_Methods[] = {
+            {"__gc",              Color_gc},
+            {"__tostring",        Color_tostring},
+            {NULL, NULL}
+    };
+}
 namespace gNanoCanvas{
     const static luaL_Reg Canvas_Methods[] = {
             {"__index",           Canvas_index},
             {"__tostring",        Canvas_tostring},
             {"__gc",              Canvas_gc},
-            {NULL, NULL}
-    };
-    const static luaL_Reg Color_Methods[] = {
-            {"__gc",              Color_gc},
-            {"__tostring",        Color_tostring},
             {NULL, NULL}
     };
     const static luaL_Reg Gradient_Methods[] = {
@@ -799,13 +801,13 @@ static int newCanvas(lua_State *L) {
     return 1;
 }
 static int newColor(lua_State *L) {
-    NanoCanvas::Color * c = nullptr;
+    h7::Color * c = nullptr;
     auto t = lua_type(L, -1);
     if(t == LUA_TSTRING){
-        c = new NanoCanvas::Color();
+        c = new h7::Color();
         c->set(lua_tostring(L, -1));
     } else if(t == LUA_TNUMBER){
-        c = new NanoCanvas::Color();
+        c = new h7::Color();
         c->set(TO_UINT(L, -1));
     } else{
         return luaL_error(L, "color only support. string or int");
@@ -814,7 +816,7 @@ static int newColor(lua_State *L) {
     return 1;
 }
 static int newColorRgba(lua_State *L) {
-    NanoCanvas::Color * c = new NanoCanvas::Color();
+    h7::Color * c = new h7::Color();
     c->set(TO_INT(L, 1), TO_INT(L, 2),
            TO_INT(L, 3), TO_INT(L, 4)
             );
@@ -822,7 +824,7 @@ static int newColorRgba(lua_State *L) {
     return 1;
 }
 static int newColorRgbaF(lua_State *L) {
-    NanoCanvas::Color * c = new NanoCanvas::Color();
+    h7::Color * c = new h7::Color();
     c->set(TO_FLOAT(L, 1), TO_FLOAT(L, 2),
            TO_FLOAT(L, 3), TO_FLOAT(L, 4)
     );
@@ -835,8 +837,8 @@ static int newLinearGradient(lua_State *L) {
         return luaL_error(L, "wrong arguments for newLinearGradient. expect params are (float x0, float y0, float x1, float y1,"
                              " const Color& scolor , const Color& ecolor)");
     }
-    auto scolor = LuaUtils::get_ref<NanoCanvas::Color>(L, 5);
-    auto ecolor = LuaUtils::get_ref<NanoCanvas::Color>(L, 6);
+    auto scolor = LuaUtils::get_ref<h7::Color>(L, 5);
+    auto ecolor = LuaUtils::get_ref<h7::Color>(L, 6);
     auto gradient = NanoCanvas::Canvas::createLinearGradient(TO_FLOAT(L, 1), TO_FLOAT(L, 2),
                                                              TO_FLOAT(L, 3), TO_FLOAT(L, 4),
                                                              *scolor, *ecolor);
@@ -849,8 +851,8 @@ static int newRadialGradient(lua_State *L) {
         return luaL_error(L, "wrong arguments for newRadialGradient. expect params are (float cx, float cy, float r1, float r2,"
                              " const Color& scolor , const Color& ecolor)");
     }
-    auto scolor = LuaUtils::get_ref<NanoCanvas::Color>(L, 5);
-    auto ecolor = LuaUtils::get_ref<NanoCanvas::Color>(L, 6);
+    auto scolor = LuaUtils::get_ref<h7::Color>(L, 5);
+    auto ecolor = LuaUtils::get_ref<h7::Color>(L, 6);
     auto gradient = NanoCanvas::Canvas::createRadialGradient(TO_FLOAT(L, 1), TO_FLOAT(L, 2),
                                                              TO_FLOAT(L, 3), TO_FLOAT(L, 4),
                                                              *scolor, *ecolor);
@@ -863,8 +865,8 @@ static int newBoxGradient(lua_State *L) {
         return luaL_error(L, "wrong arguments for newBoxGradient. expect params are (float x0, float y0, float x1, float y1,"
                              " const Color& scolor , const Color& ecolor)");
     }
-    auto icol = LuaUtils::get_ref<NanoCanvas::Color>(L, 7);
-    auto ocol = LuaUtils::get_ref<NanoCanvas::Color>(L, 8);
+    auto icol = LuaUtils::get_ref<h7::Color>(L, 7);
+    auto ocol = LuaUtils::get_ref<h7::Color>(L, 8);
     auto gradient = NanoCanvas::Canvas::createBoxGradient(TO_FLOAT(L, 1), TO_FLOAT(L, 2),
                                                              TO_FLOAT(L, 3), TO_FLOAT(L, 4),
                                                              TO_FLOAT(L, 5), TO_FLOAT(L, 6),
@@ -1010,7 +1012,7 @@ extern "C" int luaopen_canvas_lua(lua_State *L) {
 }
 
 DEF_MTNAME(NanoCanvas::Canvas)
-DEF_MTNAME(NanoCanvas::Color)
+DEF_MTNAME(h7::Color)
 DEF_MTNAME(NanoCanvas::Gradient)
 DEF_MTNAME(NanoCanvas::Font)
 DEF_MTNAME(NanoCanvas::TextStyle)
@@ -1018,7 +1020,7 @@ DEF_MTNAME(NanoCanvas::Image)
 DEF_MTNAME(NVGcontext)
 void CanvasLua::registers(lua_State *L) {
     REG_CLASS(L, NanoCanvas::Canvas);
-    REG_CLASS(L, NanoCanvas::Color);
+    REG_CLASS(L, h7::Color);
     REG_CLASS(L, NanoCanvas::Gradient);
     REG_CLASS(L, NanoCanvas::Font);
     REG_CLASS(L, NanoCanvas::TextStyle);

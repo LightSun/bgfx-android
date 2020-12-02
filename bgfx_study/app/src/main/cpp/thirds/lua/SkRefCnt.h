@@ -8,6 +8,7 @@
 #ifndef SkRefCnt_DEFINED
 #define SkRefCnt_DEFINED
 
+#pragma once
 #include <atomic>
 #include <cstddef>
 #include <functional>

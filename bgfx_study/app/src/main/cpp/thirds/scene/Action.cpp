@@ -2,8 +2,11 @@
 // Created by Administrator on 2020/11/27 0027.
 //
 
+#include "Event.h"
+#include "EventListener.h"
 #include "Actor.h"
 #include "Action.h"
+#include "Stage.h"
 
 namespace h7{
     void Action::setActor(const Actor* _actor) {

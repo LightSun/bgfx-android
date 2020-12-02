@@ -9,8 +9,8 @@
 #include <lua/SkRefCnt.h>
 #include <math/Vector2f.h>
 #include <lua/SkWeakRefCnt.h>
+#include <nancanvas/Color.h>
 #include "utils/Array.h"
-#include "Color.h"
 #include "Align.h"
 #include "lua/SkFloatBits.h"
 

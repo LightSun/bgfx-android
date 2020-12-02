@@ -53,10 +53,7 @@ namespace h7 {
 
     public:
 
-        Stage(Viewport* vp, NanoCanvas::Canvas* canvas){
-            _canvas.reset(canvas);
-            viewport.reset(vp);
-        }
+        Stage(Viewport* vp, NanoCanvas::Canvas* canvas);
         Stage(Viewport* vp, NVGcontext* context);
 
         inline Viewport &getViewport() {
@@ -188,7 +185,7 @@ namespace h7 {
         Vector2f &stageToScreenCoordinates(Vector2f &f);
 
     private:
-        sk_sp<Actor> fireEnterAndExit(sk_sp<Actor>& overLast, int screenX, int screenY, int pointer);
+        inline sk_sp<Actor> fireEnterAndExit(sk_sp<Actor>& overLast, int screenX, int screenY, int pointer);
     };
 
     class TouchFocus : public SkRefCnt {

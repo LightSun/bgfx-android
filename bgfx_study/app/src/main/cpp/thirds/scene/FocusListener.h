@@ -61,7 +61,7 @@ namespace h7 {
 
         /** @param relatedActor May be null. */
         inline void setRelatedActor(Actor *relatedActor) {
-            this->relatedActor = relatedActor;
+            this->relatedActor.reset(relatedActor);
         }
     };
 

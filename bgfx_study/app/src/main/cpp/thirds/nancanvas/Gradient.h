@@ -1,6 +1,8 @@
 #ifndef PAINT_HPP
 #define PAINT_HPP
 
+#include "Color.h"
+
 namespace NanoCanvas
 {
     /// The Paint can be used as gradiants and image patterns with Canvas::fillStyle
@@ -26,9 +28,9 @@ namespace NanoCanvas
         /// The nanovg image id of the image pattern
         int imageID  = 0;
         /// The start color of the gradiant
-        Color sColor = 0u;
+        h7::Color sColor = {0};
         /// The end color of the gradiant
-        Color eColor = 0u;
+        h7::Color eColor = {0};
     };
 }
 
