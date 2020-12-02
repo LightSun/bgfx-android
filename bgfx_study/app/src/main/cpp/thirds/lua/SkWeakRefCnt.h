@@ -114,8 +114,10 @@ public:
         weak_unref().
     */
     void weak_ref() const {
+#ifdef SK_DEBUG
         SkASSERT(getRefCnt() > 0);
         SkASSERT(getWeakCnt() > 0);
+#endif
         // No barrier required.
         (void)fWeakCnt.fetch_add(+1, std::memory_order_relaxed);
     }

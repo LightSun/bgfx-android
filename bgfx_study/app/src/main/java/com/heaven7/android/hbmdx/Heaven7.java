@@ -7,10 +7,18 @@ import com.heaven7.android.bgfx.study.demo.lua.Luaer;
 
 public final class Heaven7 {
 
+    private static boolean sLibLoaded;
+
     static {
-        System.loadLibrary("c++_shared");
-        System.loadLibrary("bgfx_core");
-        System.loadLibrary("bgfx_study");
+        loadNative();
+    }
+    public static void loadNative(){
+        if(!sLibLoaded){
+            sLibLoaded = true;
+            System.loadLibrary("c++_shared");
+            System.loadLibrary("bgfx_core");
+            System.loadLibrary("bgfx_study");
+        }
     }
 
     public static void init(Context context, AssetManager am){

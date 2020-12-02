@@ -17,6 +17,7 @@ namespace h7 {
         sk_sp<Actor> actor;
         sk_sp<Actor> target;
     public:
+        ITERATOR_CNT_CLASS_EXT(Action,  ele->setActor(nullptr))
         /** Updates the action based on time. Typically this is called each frame by {@link Actor#act(float)}.
              * @param delta Time in seconds since the last frame.
              * @return true if the action is done. This method may continue to be called after the action is done. */

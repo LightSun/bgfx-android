@@ -75,7 +75,7 @@ namespace h7 {
         Array<sk_sp<Group>> ascendants;
         parent->weak_ref();
         if(parent->try_ref()){
-            sk_sp<Group>& _parent = this->parent;
+            sk_sp<Group> _parent = this->parent;
             while (_parent != NULL) {
                 ascendants.add(_parent);
                 //
@@ -221,20 +221,13 @@ namespace h7 {
     }
 
     void Actor::clearActions() {
-        auto func = [&](Array<sk_sp<Action>>* arr, int index, sk_sp<Action>& ele){
-            ele->setActor(nullptr);
-            ele.reset();
-            return false;
-        };
-        actions.clear(func);
+        auto it = Action::Iterator();
+        actions.clear(&it);
     }
     void Actor::clearListeners() {
-        auto func = [&](Array<sk_sp<EventListener>>* arr, int index, sk_sp<EventListener>& ele){
-            ele.reset();
-            return false;
-        };
-        listeners.clear(func);
-        captureListeners.clear(func);
+        auto it = EventListener::Iterator();
+        listeners.clear(&it);
+        captureListeners.clear(&it);
     }
     bool Actor::isDescendantOf(Actor* actor) {
         if(actor != nullptr){

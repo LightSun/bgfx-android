@@ -49,7 +49,7 @@ namespace h7 {
         sk_sp<NanoCanvas::Canvas> _canvas;
 
     public:
-        Array<sk_sp<TouchFocus>> touchFocuses = Array<sk_sp<TouchFocus>>(16, nullptr);
+        Array<sk_sp<TouchFocus>> touchFocuses = Array<sk_sp<TouchFocus>>(16);
 
     public:
 

@@ -2,16 +2,21 @@ package com.heaven7.android.bgfx.study.demo;
 
 import androidx.annotation.Keep;
 
+import com.heaven7.android.hbmdx.Heaven7;
 import com.heaven7.core.util.MainWorker;
 import com.heaven7.java.lua.LuaState;
 
 public final class NativeApi {
-
+    static {
+        Heaven7.loadNative();
+    }
     //set use lua or not.
     public static native void setUseLua(boolean useLua);
     public static native void initializeSurface(Object src, Object surface, long luaPtr);
 
     public static native void destroySurface(Object src, long luaPtr);
+
+    public static native void nTestArray();
 
     //bind life cycle with android.
     public static native void onLifeCycle(long luaPtr, int mark);

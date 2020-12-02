@@ -111,3 +111,11 @@ extern "C" JNIEXPORT void JNICALL Java_com_heaven7_android_bgfx_study_demo_Nativ
         JNIEnv* env, jclass clazz, long luaPtr, jint mark){
     h7::onLifecycle(luaPtr, mark);
 }
+
+#include "Test.h"
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_heaven7_android_bgfx_study_demo_NativeApi_nTestArray(JNIEnv *env, jclass clazz) {
+    h7::_testArray();
+}

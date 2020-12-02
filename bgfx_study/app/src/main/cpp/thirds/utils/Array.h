@@ -3,248 +3,109 @@
 //
 #pragma once
 #include <malloc.h>
-#include <functional>
-#include <lua/MathUtils.h>
+#include "list.h"
+
+#define ADD_BASE(arr, val) {\
+auto v = val;\
+(arr)->add(v);}
 
 namespace h7{
     template<typename T>
-    class Comparator{
+    class Array;
+    //--------------------------
+
+    template<typename T>
+    class ArrayIterator{
     public:
-        Comparator(){}
-        inline virtual int compare(T& t1, T& t2){
-            return t1 == t2;
-        }
+        virtual bool iterate(Array<T>* arr, int index, T& ele) = 0;
     };
-    class DoubleComparator: public Comparator<double>{
-        inline int compare(double& t1, double& t2){
-            return MathUtils::doubleEqual(t1, t2);
-        }
-    };
-    static const Comparator<double> COM_double = DoubleComparator();
 
     template<typename T>
     class Array{
     private:
-        void * data;
-
-        size_t malCount; // memory alloc count
-        size_t _size;     // element count
-
-        Comparator<T>* _com;
+        List<T> list;
 
     public:
-        Array(size_t capacity, const Comparator<T>* com):malCount(capacity), _com(
-                const_cast<Comparator <T> *>(com)){
-            data = malloc(sizeof(T) * capacity);
-            _size = 0;
+        Array(size_t capacity){
+            list.getVector().reserve(capacity);
         }
-        Array(const Comparator<T>* com): Array(16, com){}
-        Array():Array(16, NULL){}
+        Array():Array(16){}
         ~Array(){
-            if(data){
-                free(data);
-                data = NULL;
-            }
         }
         inline Array<T>& set(Array<T>& in){
-            //malloc new data if need.
-            if(malCount != in.malCount){
-                if(data != nullptr){
-                    free(data);
-                    this->data = malloc(sizeof(T) * in.malCount);
-                }
-            }
-            this->malCount = in.malCount;
-            this->_com = in._com;
-            this->_size = in._size;
-
-            //copy data.
-            memcpy(data, in.data, sizeof(T) * in.malCount);
+            list.clear();
+            list.addAll(in.list);
             return *this;
         }
         inline int size(){
-            return _size;
+            return list.size();
         }
         inline bool add(T& val){
-            return add(_size, val);
+            return add(list.size(), val);
         }
-        bool add(int index, T& val){
+        inline bool add(int index, T& val){
             if(index < 0){
                 return false;
             }
-            if(_size == malCount){
-                if(!resize(MathUtils::max(8, (int)(malCount * 1.75f)))){
-                    return false;
-                }
-            }
-            int unit = sizeof(T);
-            unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += index * unit;
-            memcpy(addr, &val, unit);
-            _size ++;
+            list.add(index, val);
             return true;
         }
 
-        bool add(T& val1, T& val2){
-            if(_size >= malCount - 1){
-                if(!resize(MathUtils::max(8, (int)(malCount * 1.75f)))){
-                    return false;
-                }
-            }
-            int unit = sizeof(T);
-            unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += _size * unit;
-            memcpy(addr, &val1, unit);
-            addr += unit;
-            memcpy(addr, &val2, unit);
-            _size += 2;
+        inline bool add(T& val1, T& val2){
+            add(val1);
+            add(val2);
             return true;
         }
-        bool add(T& val1, T& val2, T& val3){
-            if(_size >= malCount - 2){
-                if(!resize(MathUtils::max(8, (int)(malCount * 1.75f)))){
-                    return false;
-                }
-            }
-            int unit = sizeof(T);
-            unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += _size * unit;
-            memcpy(addr, val1, unit);
-            addr += unit;
-            memcpy(addr, val2, unit);
-            addr += unit;
-            memcpy(addr, val3, unit);
-            _size += 3;
+        inline bool add(T& val1, T& val2, T& val3){
+            add(val1);
+            add(val2);
+            add(val3);
             return true;
         }
-        bool addAll(Array<T>* array){
-            return addAll(_size, array);
-        }
-        bool addAll(int index, Array<T>* array){
-            if(index > _size){
-                return false;
-            }
-            if(_size >= malCount - array->_size){
-                if(!resize(MathUtils::max(8, (int)((malCount + array->_size) * 1.75f)))){
-                    return false;
-                }
-            }
-            //copy old elements, then cpy array's
-            int unit = sizeof(T);
-            unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += index * unit;
-            //old need offset
-            int offsetSize = _size - index;
-            if(offsetSize > 0){
-                int actLen = offsetSize * unit;
-                unsigned char* offsetAddr = static_cast<unsigned char *>(malloc(actLen));
-                //move to tmp array
-                memcpy(offsetAddr, addr, actLen);
-                //copy array
-                memcpy(addr, array->data, unit * array->_size);
-                addr += unit * array->_size;
-                //copy old
-                memcpy(addr, offsetAddr, actLen);
-                free(offsetAddr);
-            } else{
-                memcpy(addr, array->data, unit * array->_size);
-            }
-            _size += array->_size;
+        inline bool addAll(Array<T>* array){
+            list.addAll(array->list);
             return true;
         }
-        T& get(size_t index){
-            int unit = sizeof(T);
-            unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += _size * unit;
-            return *((T*)addr);
+        inline bool addAll(int index, Array<T>* array){
+            list.addAll(index, array->list);
+            return true;
         }
-        void set(size_t index, T& val){
-            int unit = sizeof(T);
-            unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += _size * unit;
-            *((T*)addr) = val;
+        inline T& get(int index){
+            return list.getAt(index);
         }
-        void swap(size_t first, size_t second){
-            int unit = sizeof(T);
-            unsigned char* addr1 = reinterpret_cast<unsigned char*>(data);
-            unsigned char* addr2 = reinterpret_cast<unsigned char*>(data);
-            addr1 += unit * first;
-            addr2 += unit * second;
-            T t1 = *((T*)addr1);
-            *((T*)addr1) = *((T*)addr2)
-            *((T*)addr2) = t1;
+        inline void set(int index, T& val){
+            list.set(index, val);
+        }
+        inline void swap(int first, int second){
+            list.swap(first, second);
         }
         inline bool contains(T& val){
             return indexOf(val) >= 0;
         }
-        int indexOf(T& val){
-            int unit = sizeof(T);
-            unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            for (int i = 0; i < _size; ++i) {
-                if(_com == NULL){
-                    if( (*((T*)addr) == val)){
-                        return i;
-                    }
-                } else if(_com->compare(*((T*)addr), val) == 0){
-                    return i;
-                }
-                addr += unit;
-            }
-            return -1;
+        inline int indexOf(T& val){
+            return list.indexOf(val);
         }
-        int lastIndexOf(T& val){
-            int unit = sizeof(T);
-            unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += unit * (_size - 1);
-            for (int i = _size - 1; i >= 0; i--) {
-                if(_com == NULL){
-                    if( (*((T*)addr) == val)){
-                        return i;
-                    }
-                } else if(_com->compare(*((T*)addr), val) == 0){
-                    return i;
-                }
-                addr -= unit;
-            }
-            return -1;
+        inline int lastIndexOf(T& val){
+            return list.lastIndexOf(val);
         }
-        bool remove(T& val){
-            auto i = indexOf(val);
-            removeAt(i);
-            return i >= 0;
+        inline bool remove(T& val){
+            return list.remove(val);
         }
-
-        const T& removeAt(int index){
-            if(index >= _size || index < 0){
-                return NULL;
-            }
-            int unit = sizeof(T);
-            unsigned char* addr = reinterpret_cast<unsigned char*>(data);
-            addr += index * unit;
-            T val = *((T*)addr);
-
-            for (int i = 0, c = _size - index - 1; i < c; ++i) {
-                unsigned char* addr_src = reinterpret_cast<unsigned char*>(data);
-                unsigned char* addr_dst = reinterpret_cast<unsigned char*>(data);
-                addr_src += (index + i + 1) * unit;
-                addr_dst += (index + i)* unit;
-                *((T*)addr_dst) = *((T*)addr_src);
-            }
-            _size -- ;
-            return val;
+        inline T& removeAt(int index){
+            return list.removeAt(index);
         }
-        bool removeAll(Array<T>* array){
+        inline  bool removeAll(Array<T>* array){
             bool changed = false;
-            for (int i = 0; i < array->_size; ++i) {
+            for (int i = 0; i < array->size(); ++i) {
                 changed |= remove(array->get((size_t)i));
             }
             return changed;
         }
         inline bool isEmpty(){
-            return _size == 0;
+            return list.isEmpty();
         }
         inline const T& pop(){
-            return _size > 0 ? removeAt(_size - 1) : NULL;
+            return list.removeLast();
         }
         inline bool push(const T& val){
             return add(val);
@@ -253,73 +114,49 @@ namespace h7{
             return add(0, val);
         }
         inline bool addLast(const T& val){
-            return add(_size, val);
+            return add(size(), val);
         }
         inline T& removeFirst(){
             return removeAt(0);
         }
         inline T& removeLast(){
-            return removeAt(_size - 1);
+            return removeAt(size() - 1);
         }
         inline T& pollFirst(){
             return removeAt(0);
         }
         inline T& pollLast(){
-            return removeAt(_size - 1);
+            return removeAt(size() - 1);
         }
         inline T& peek(){
-            return _size > 0 ? get(_size - 1) : NULL;
+            return size() > 0 ? get(size() - 1) : *(T*)NULL;
         }
         inline const T& peekFirst(){
-            return _size > 0 ? get(0) : NULL;
+            return size() > 0 ? get(0) : *(T*)NULL;
         }
         inline const T& peekLast(){
-            return _size > 0 ? get(_size - 1) : NULL;
+            return size() > 0 ? get(size() - 1) : *(T*)NULL;
         }
         //return true to break travel.
-        inline void travel(std::function<bool(Array<T>* arr, int index, T& ele)>& func){
-            auto c = size();
-            for (int i = 0; i < c; ++i) {
-                if(func(this, i, const_cast<T&>(get(i)))){
-                    return;
-                }
-            }
-        }
-        inline void travel(bool(*Func)(Array<T>* arr, int index, T& ele, void* ud), void* ud){
-            auto c = size();
-            for (int i = 0; i < c; ++i) {
-                if(Func(this, i, const_cast<T&>(get(i)), ud)){
-                    return;
+        inline void travel(ArrayIterator<T>* iterator){
+            if(iterator != nullptr){
+                auto c = size();
+                for (int i = 0; i < c; ++i) {
+                    if(iterator->iterate(this, i, get(i))){
+                        return;
+                    }
                 }
             }
         }
         /**
          * clear elements
          */
-        inline void clear(std::function<bool(Array<T>* arr, int index, T& ele)> func = nullptr){
-            if(func != nullptr){
-                travel(func);
-            }
-            _size = 0;
-        }
-        /** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items
- * have been removed, or if it is known that more items will not be added.
-         * */
-        inline bool shrink(){
-            if(_size > 0 && malCount != _size){
-                return resize(_size);
-            }
-            return true;
-        }
-        inline bool ensureCapacity(int additionalCapacity){
-            int sizeNeeded = _size + additionalCapacity;
-            if(sizeNeeded > malCount){
-                return resize(sizeNeeded);
-            }
-            return true;
+        inline void clear(ArrayIterator<T>* iterator = nullptr){
+            travel(iterator);
+            list.clear();
         }
         inline void setSize(int newSize){
-            _size = newSize;
+            list.getVector().resize(newSize);
         }
         inline Array<T>& copy(){
             Array<T> arr;
@@ -328,36 +165,52 @@ namespace h7{
         inline T&operator[](int index){
             return get(index);
         }
-    protected:
-        inline bool resize(size_t newSize) {
-            void * d = malloc(newSize * sizeof(T));
-            if(d == NULL){
-                return false;
-            }
-            memcpy(d, data, sizeof(T) * _size);
-            free(data);
-            this->data = d;
-            this->malCount = newSize;
-            return true;
-        }
     };
 
-#define BTYPE_ARRAY(cn, type, com)\
+#define BTYPE_ARRAY(cn, type)\
     class cn: public Array<type>{\
     public:\
-        cn(size_t capacity): Array(capacity, com) {}\
-        cn() : Array(reinterpret_cast<const Comparator<type>*>(com)) {}\
+        cn(size_t capacity): Array(capacity) {}\
+        cn() : Array() {}\
     };
-    BTYPE_ARRAY(IntArray, int, NULL)
-    BTYPE_ARRAY(UnSignedIntArray, unsigned int, NULL)
-    BTYPE_ARRAY(ShortArray, short, NULL)
-    BTYPE_ARRAY(UnSignedShortArray, unsigned short, NULL)
-    BTYPE_ARRAY(UnSignedCharArray, unsigned char, NULL)
-    BTYPE_ARRAY(CharArray, char, NULL)
+    BTYPE_ARRAY(IntArray, int)
+    BTYPE_ARRAY(UnSignedIntArray, unsigned int)
+    BTYPE_ARRAY(ShortArray, short)
+    BTYPE_ARRAY(UnSignedShortArray, unsigned short)
+    BTYPE_ARRAY(UnSignedCharArray, unsigned char)
+    BTYPE_ARRAY(CharArray, char)
 
-    BTYPE_ARRAY(UnSignedLongArray, unsigned long long, NULL)
-    BTYPE_ARRAY(LongArray, long long, NULL)
-    BTYPE_ARRAY(FloatArray, float, NULL)
-    BTYPE_ARRAY(DoubleArray, double, &COM_double)
-    BTYPE_ARRAY(BoolArray, bool, NULL)
+    BTYPE_ARRAY(UnSignedLongArray, unsigned long long)
+    BTYPE_ARRAY(LongArray, long long)
+    BTYPE_ARRAY(FloatArray, float)
+    BTYPE_ARRAY(DoubleArray, double)
+    BTYPE_ARRAY(BoolArray, bool)
+
+#define ITERATOR_CLASS(name)\
+    class Iterator: public ArrayIterator<name*>{\
+    public:\
+        bool iterate(Array<name*>* arr, int index, name*& ele){\
+            ele->unRefAndDestroy();\
+            return false;\
+        }\
+    };
+
+#define ITERATOR_CNT_CLASS(name)\
+    class Iterator: public ArrayIterator<sk_sp<name>>{\
+    public:\
+        bool iterate(Array<sk_sp<name>>* arr, int index, sk_sp<name>& ele){\
+            ele.reset();\
+            return false;\
+        }\
+    };
+
+#define ITERATOR_CNT_CLASS_EXT(name, x)\
+    class Iterator: public ArrayIterator<sk_sp<name>>{\
+    public:\
+        bool iterate(Array<sk_sp<name>>* arr, int index, sk_sp<name>& ele){\
+            x ;\
+            ele.reset();\
+            return false;\
+        }\
+    };
 }

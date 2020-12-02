@@ -91,12 +91,9 @@ namespace h7{
             sk_sp<Actor> child = array[i];
             child->setStage(NULL);
             child->setParent(NULL);
+            child.reset();
         }
-        auto func = [&](Array<sk_sp<Actor>>* arr, int index, sk_sp<Actor>& ele){
-            ele.reset();
-            return false;
-        };
-        children.clear(func);
+        children.clear();
         childrenChanged();
     }
 

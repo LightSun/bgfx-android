@@ -44,7 +44,7 @@ namespace h7 {
          *           {@link #fill(int)} after instantiation if needed.
          * @param max The maximum number of free objects to store in this pool. */
         Pool(int initialCapacity, int max) {
-            freeObjects = new Array<T*>(initialCapacity, nullptr);
+            freeObjects = new Array<T*>(initialCapacity);
             this->_max = max;
         }
 

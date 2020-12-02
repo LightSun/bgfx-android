@@ -68,7 +68,9 @@ public:
     /** Increment the reference count. Must be balanced by a call to unref().
     */
     void ref() const {
+#ifdef SK_DEBUG
         SkASSERT(this->getRefCnt() > 0);
+#endif
         // No barrier required.
         (void) fRefCnt.fetch_add(+1, std::memory_order_relaxed);
     }
@@ -78,7 +80,9 @@ public:
         the object needs to have been allocated via new, and not on the stack.
     */
     void unref() const {
+#ifdef SK_DEBUG
         SkASSERT(this->getRefCnt() > 0);
+#endif
         // A release here acts in place of all releases we "should" have been doing in ref().
         if (1 == fRefCnt.fetch_add(-1, std::memory_order_acq_rel)) {
             // Like unique(), the acquire is only needed on success, to make sure
@@ -89,16 +93,12 @@ public:
 
 private:
 
-    int32_t getRefCnt() const {
 #ifdef SK_DEBUG
         /** Return the reference count. Use only for debugging. */
         int32_t getRefCnt() const {
             return fRefCnt.load(std::memory_order_relaxed);
         }
-#else
-        return fRefCnt;
 #endif
-    }
 
     /**
      *  Called when the ref count goes to 0.

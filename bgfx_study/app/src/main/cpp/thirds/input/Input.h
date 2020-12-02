@@ -9,6 +9,7 @@
 #include "../../include/map2.h"
 #include "InputProcessor.h"
 #include "RefObject.h"
+#include "utils/Array.h"
 
 namespace h7 {
 
@@ -28,6 +29,14 @@ namespace h7 {
         int type;
         int keyCode;
         char keyChar;
+
+        class Iterator: public ArrayIterator<KeyEvent*>{
+        public:
+            bool iterate(Array<KeyEvent*>* arr, int index, KeyEvent*& ele){
+                ele->unRefAndDestroy();
+                return false;
+            }
+        };
     };
 
     class TouchEvent :public RefObject {
@@ -46,6 +55,14 @@ namespace h7 {
         int scrollAmountY;
         int button;
         int pointer;
+
+        class Iterator: public ArrayIterator<TouchEvent*>{
+        public:
+            bool iterate(Array<TouchEvent*>* arr, int index, TouchEvent*& ele){
+                ele->unRefAndDestroy();
+                return false;
+            }
+        };
     };
 
     enum Buttons {

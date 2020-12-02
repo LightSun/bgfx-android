@@ -16,65 +16,69 @@ namespace h7 {
         std::vector <T> array;
 
     public:
-        typedef int (*TravelFunc)(int, const T &);
-
-        typedef int (*TravelTwoFunc)(int, const T &, const T &);
-
-        typedef void *(*MapFunc)(int, const T &);
-
         inline size_t size() {
             return array.size();
         }
 
-        inline const std::vector& <T> getVector() {
+        inline std::vector<T>& getVector() {
             return array;
         }
 
-        inline const T removeEnd() {
+        inline T& removeLast() {
             return removeAt(size() - 1);
         }
 
-        inline const T getAt(int index) {
+        inline T& getAt(int index) {
             return array[index];
         }
 
-        const T getEnd() {
+        inline T& getLast() {
             return getAt((int) size() - 1);
         }
 
-        const T getStart() {
+        inline T& getFirst() {
             return getAt(0);
         }
-
-        void add(const T &t) {
+        inline void add(const T &t) {
             array.push_back(t);
             // array.insert(array.end(), t);
         }
-
-        void add(int index, const T &t) {
+        inline void add(int index, T &t) {
             array.insert(array.begin() + index, t);
         }
-
-        void addAll(const List<T> &l) {
+        inline void addAll(List<T> &l) {
             array.insert(array.end(), l.array.begin(), l.array.end());
         }
-
-        bool isEmpty() {
+        inline void addAll(int index, List<T> &l) {
+            array.insert(array.begin() + index, l.array.begin(), l.array.end());
+        }
+        inline bool isEmpty() {
             return size() == 0;
         }
-
-        bool contains(const T &t) {
+        inline bool contains(T &t) {
+            return indexOf(t) >= 0;
+        }
+        inline int indexOf(T &t){
             size_t size = array.size();
             for (int i = 0; i < size; i++) {
                 //need overload ==
                 if (array[i] == t) {
-                    return true;
+                    return i;
                 }
             }
-            return false;
+            return -1;
         }
-
-        bool remove(const T &t) {
+        inline int lastIndexOf(T &t){
+            size_t size = array.size();
+            for (int i = size - 1; i >= 0; i--) {
+                //need overload ==
+                if (array[i] == t) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        inline bool remove(T &t) {
             size_t size = array.size();
             for (int i = 0; i < size; i++) {
                 //need overload ==
@@ -85,83 +89,48 @@ namespace h7 {
             }
             return false;
         }
-
-        const T& set(int index, const T &newT) {
-            if (index >= size()) {
-                return nullptr;
+        inline T& set(int index, T &newT) {
+            if (index < size()) {
+                T &old = array[index];
+                array[index] = newT;
+                return old;
+            } else{
+                return *(T*)NULL;
             }
-            T& old = array[index];
-            array[index] = newT;
-            return old;
         }
-
-        void clear() {
+        inline void swap(int idx1, int idx2){
+            T& t1 = array[idx1];
+            array[idx1] = array[idx2];
+            array[idx2] = t1;
+        }
+        inline void clear() {
             array.clear();
         }
-
-        const T& removeAt(int index) {
+        inline T& removeAt(int index) {
             if (index >= size()) {
-                std::string str = "";
-                str += "index out of range. index = ";
-                str += index;
-                str += " ,size = ";
-                str += size();
-                __throw_invalid_argument(str.c_str());
+                return *(T*)NULL;
             }
             T &t = array[index];
             remove(index, 1);
             return t;
         }
-
-//  57130, 58197, 59690, 63530, 63570
-        inline void remove(int startIndex, int count) {
+        inline bool remove(int startIndex, int count) {
             long size = array.size();
-            if (count <= 0 || startIndex < 0) {
-                __throw_invalid_argument("start or end index is wrong");
+            if (count <= 0 || startIndex < 0 || startIndex >= size) {
+               // __throw_invalid_argument("start or end index is wrong");
+                return false;
             }
             array.erase(array.begin() + startIndex,
                         array.begin() + startIndex + count);
+            return true;
         }
-
-        void travel(TravelFunc tl) {
-            const size_t s = size();
-            for (int i = 0; i < s; ++i) {
-                if (tl(i, getAt(i))) {
-                    break;
-                }
-            }
-        }
-
-        void travelTwo(TravelTwoFunc func) {
-            const size_t s = size();
-            for (int i = 0; i < s - 1; ++i) {
-                T &t1 = getAt(i);
-                T &t2 = getAt(i + 1);
-                if (func(i, t1, t2)) {
-                    break;
-                }
-            }
-        }
-
-        void map(MapFunc tl, List<void *>& out) {
-            const size_t s = size();
-            for (int i = 0; i < s; ++i) {
-                void *const result = tl(i, getAt(i));
-                if (result != nullptr) {
-                    out.add(result);
-                }
-            }
-        }
-        //========================================
-
-        List<T> &operator=(const List<T> &array1) {
+        inline List<T> &operator=(List<T> &array1) {
             if (&array1 != this) {
                 this->array = array1.array;
             }
             return *this;
         }
-
-        T &operator[](const int key) {
+        inline T &operator[](const int key) {
             return array[key];
         }
 

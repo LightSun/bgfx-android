@@ -133,19 +133,11 @@ if(this->x){\
         usedTouchEvents.clear();
         unlockTouch();
         //listeners
-        auto func = [&](Array<OnKeyListener*>* arr, int index, OnKeyListener*& ele){
-            ele->unRefAndDestroy();
-            return false;
-        };
-        keyListeners.travel(reinterpret_cast<std::function<bool(Array<OnKeyListener*>*, int, OnKeyListener*&)> &>(func));
-        keyListeners.clear();
+        auto it_key = OnKeyListener::Iterator();
+        keyListeners.clear(&it_key);
         //
-        auto func_mo = [&](Array<OnGenericMotionListener*>* arr, int index, OnGenericMotionListener*& ele){
-            ele->unRefAndDestroy();
-            return false;
-        };
-        genericMotionListeners.travel(reinterpret_cast<std::function<bool(Array<OnGenericMotionListener*>*, int, OnGenericMotionListener*&)> &>(func_mo));
-        genericMotionListeners.clear();
+        auto it_motion = OnGenericMotionListener::Iterator();
+        genericMotionListeners.clear(&it_motion);
     }
     int AndroidInput::getFreePointerIndex() {
         int len = len_realId;
@@ -316,18 +308,10 @@ if(this->x){\
             }
         }
         //recycle event
-        auto func_key = [&](Array<KeyEvent*>* arr, int index, KeyEvent*& ele){
-            usedKeyEvents.free(ele);
-            return false;
-        };
-        auto func_touch = [&](Array<TouchEvent*>* arr, int index, TouchEvent*& ele){
-            usedTouchEvents.free(ele);
-            return false;
-        };
-        keyEvents.travel(reinterpret_cast<std::function<bool(Array<KeyEvent*>* arr, int index, KeyEvent*& ele)> &>(func_key));
-        touchEvents.travel(reinterpret_cast<std::function<bool(Array<TouchEvent*>* arr, int index, TouchEvent*& ele)> &>(func_touch));
-        keyEvents.clear();
-        touchEvents.clear();
+        auto it_key = KeyEvent::Iterator();
+        keyEvents.clear(&it_key);
+        auto it_touch = TouchEvent::Iterator();
+        touchEvents.clear(&it_touch);
         unlockTouch();
     }
     bool AndroidInput::isButtonPressed(int _button) {

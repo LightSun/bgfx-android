@@ -32,6 +32,8 @@ public class LuaUnitTestsAc extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ac_rv);
 
+        NativeApi.nTestArray();
+
         mRv = findViewById(R.id.rv);
         mRv.setLayoutManager(new LinearLayoutManager(this));
 

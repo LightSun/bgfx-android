@@ -49,8 +49,8 @@ namespace h7 {
         bool debug;
     public:
         Array<sk_sp<EventListener>> listeners;
-        Array<sk_sp<EventListener>> captureListeners = Array<sk_sp<EventListener>>(0, NULL);
-        Array<sk_sp<Action>> actions = Array<sk_sp<Action>>(0, NULL);
+        Array<sk_sp<EventListener>> captureListeners = Array<sk_sp<EventListener>>(0);
+        Array<sk_sp<Action>> actions = Array<sk_sp<Action>>(0);
 
         const char *name = "h7_Actor";
         Touchable touchable = Touchable::enabled;
@@ -62,6 +62,8 @@ namespace h7 {
         float transX = 0, transY = 0;
         Color color;
         void *userObject;
+
+        ITERATOR_CNT_CLASS(Actor)
 
         virtual bool isGroup(){
             return false;
