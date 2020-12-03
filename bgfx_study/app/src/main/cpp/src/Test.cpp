@@ -29,5 +29,6 @@ namespace h7{
         LOGD("drr >>> Viewport ptr = %p, unique = %d", sp.get(), sp->unique());
         delete drr;
         LOGD("delete drr >>> Viewport ptr = %p, unique = %d", sp.get(), sp->unique());
+        vp->unref();
     }
 }

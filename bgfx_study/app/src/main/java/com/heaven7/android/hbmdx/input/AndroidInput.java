@@ -251,7 +251,7 @@ public final class AndroidInput {
     }
 
     public AndroidInput() {
-        nativePtr = nAlloc(Luaer.get().getLuaPtr(),this);
+        nativePtr = nAlloc(this);
     }
 
     public long getNativePtr() {
@@ -293,7 +293,7 @@ public final class AndroidInput {
             }
         }
     }
-    private static native long nAlloc(long luaPtr,AndroidInput input);
+    private static native long nAlloc(AndroidInput input);
     private static native void nDealloc(long ptr);
     private static native void nOnTouch(long inputPtr, long mePtr, MotionEventWrapper wrapper);
     private static native boolean nOnGenericMotion(long inputPtr, long mePtr, MotionEventWrapper wrapper);

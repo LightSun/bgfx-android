@@ -127,6 +127,9 @@ public final class Luaer {
                 if(module.contains(".")){
                     module = module.replaceAll("\\.", "/");
                 }
+                if(module.startsWith("lua/")){
+                    module = module.substring(4);
+                }
                 Logger.d(TAG, "getLuaFilepath", "module = " + module);
                 return LUA_DIR + "/" + module + ".lua";
             }

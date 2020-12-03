@@ -80,8 +80,6 @@ namespace h7 {
         float rotationVectorValues[3];
         float R[9];
 
-        long long luaPtr;
-
         AndroidInput();
 
         ~AndroidInput();

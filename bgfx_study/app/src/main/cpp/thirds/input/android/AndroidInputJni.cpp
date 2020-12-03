@@ -136,9 +136,8 @@ namespace h7{
     }
     extern "C"
     JNIEXPORT jlong JNICALL
-    Java_com_heaven7_android_hbmdx_input_AndroidInput_nAlloc(JNIEnv *env, jclass clazz, jlong luaPtr,jobject obj) {
+    Java_com_heaven7_android_hbmdx_input_AndroidInput_nAlloc(JNIEnv *env, jclass clazz,jobject obj) {
         AndroidInput* mev = new AndroidInput();
-        mev->luaPtr = luaPtr;
         mev->setRefObject(obj);
         h7::_input = mev;
         return reinterpret_cast<jlong>(mev);

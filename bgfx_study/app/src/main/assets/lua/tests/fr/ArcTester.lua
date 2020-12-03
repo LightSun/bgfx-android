@@ -10,18 +10,8 @@ local bx = require("bx")
 local bgfx = require("bgfx")
 local math2 = require("core.utils.Math")
 
-local function sinf(val)
-    return math.sin(val);
-end
-local function cosf(val)
-    return math.cos(val);
-end
-local function nvgRGBA(r, g, b, a)
-    return uiCore.newColorRgba(r, g, b, a);
-end
-local function nvgRadialGradient(cx, cy, inr, outr, icol, ocol)
-    return uiCore.newRadialGradient(cx, cy, inr, outr, icol, ocol)
-end
+require("tests.fr.BaseTest")
+
 
 local function newRectViewTester()
     local self = view.new("LineViewTester")

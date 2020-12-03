@@ -45,7 +45,7 @@ namespace h7 {
         sk_sp<Actor> mouseOverActor;
         sk_sp<Actor> keyboardFocus, scrollFocus;
         sk_sp<Group> root;
-
+        //canvas to draw
         sk_sp<NanoCanvas::Canvas> _canvas;
 
     public:
@@ -53,6 +53,11 @@ namespace h7 {
 
     public:
 
+        /**
+         * create stage with viewport and canvas.
+         * @param vp viewport. this will auto manage ptr
+         * @param canvas canvas. this will auto manage ptr
+         */
         Stage(Viewport* vp, NanoCanvas::Canvas* canvas);
         Stage(Viewport* vp, NVGcontext* context);
 
