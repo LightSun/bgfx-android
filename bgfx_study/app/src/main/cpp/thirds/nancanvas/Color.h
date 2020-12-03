@@ -13,8 +13,7 @@
 namespace h7 {
     using Byte = unsigned char;
 
-    Byte h7_COLOR_CAST(float a);
-//#define h7_COLOR_CAST(a) static_cast<Byte>(clamp(static_cast<int>(a)))
+#define h7_COLOR_CAST(a) static_cast<Byte>(clamp(static_cast<int>(a)))
 
     class Color {
     public:
@@ -504,6 +503,15 @@ namespace h7 {
                 hsv[1] = 0;
             }
             hsv[2] = max;
+        }
+        static inline int clamp(int com) {
+            if (com < 0) {
+                com = 0;
+            }
+            if (com > 255) {
+                com = 255;
+            }
+            return com;
         }
 
         //===================== operators ============
