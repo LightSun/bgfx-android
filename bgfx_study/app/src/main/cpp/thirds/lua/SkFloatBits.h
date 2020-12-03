@@ -15,6 +15,7 @@
 #include <float.h>
 #include <stdint.h>
 
+#define SkLeftShift(a, b) a << b
 /** Convert a sign-bit int (i.e. float interpreted as int) into a 2s compliement
     int. This also converts -0 (0x80000000) to 0. Doing this to a float allows
     it to be compared using normal C operators (<, <=, etc.)
@@ -30,14 +31,14 @@ static inline int32_t SkSignBitTo2sCompliment(int32_t x) {
 /** Convert a 2s compliment int to a sign-bit (i.e. int interpreted as float).
     This undoes the result of SkSignBitTo2sCompliment().
  */
-/*static inline int32_t Sk2sComplimentToSignBit(int32_t x) {
+static inline int32_t Sk2sComplimentToSignBit(int32_t x) {
     int sign = x >> 31;
     // make x positive
     x = (x ^ sign) - sign;
     // set the sign bit as needed
     x |= SkLeftShift(sign, 31);
     return x;
-}*/
+}
 
 union SkFloatIntUnion {
     float   fFloat;
@@ -82,13 +83,13 @@ static inline int32_t SkFloatAs2sCompliment(float x) {
 /** Return the 2s compliment int as a float. This undos the result of
     SkFloatAs2sCompliment
  */
-/*static inline float Sk2sComplimentAsFloat(int32_t x) {
+static inline float Sk2sComplimentAsFloat(int32_t x) {
     return SkBits2Float(Sk2sComplimentToSignBit(x));
-}*/
+}
 
 //  Scalar wrappers for float-bit routines
 
-//#define SkScalarAs2sCompliment(x)    SkFloatAs2sCompliment(x)
+#define SkScalarAs2sCompliment(x)    SkFloatAs2sCompliment(x)
 
 //heaven7
 static inline float skf_mod(float a, float b){
