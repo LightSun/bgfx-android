@@ -16,6 +16,11 @@ namespace h7 {
     protected:
         sk_sp<Actor> actor;
         sk_sp<Actor> target;
+
+        friend class AfterAction;
+        friend class AlphaAction;
+        friend class ColorAction;
+
     public:
         ITERATOR_CNT_CLASS_EXT(Action,  ele->setActor(nullptr))
         /** Updates the action based on time. Typically this is called each frame by {@link Actor#act(float)}.
@@ -38,11 +43,11 @@ namespace h7 {
 	 * This method is not typically a good place for an action subclass to query the actor's state because the action may not be
 	 * executed for some time, eg it may be {@link DelayAction delayed}. The actor's state is best queried in the first call to
 	 * {@link #act(float)}. For a {@link TemporalAction}, use TemporalAction#begin(). */
-        void setActor(const Actor* actor);
+        virtual void setActor(const Actor* actor);
 
         /** Sets the actor this action will manipulate. If no target actor is set, {@link #setActor(Actor)} will set the target actor
      * when the action is added to an actor. */
-        void setTarget(const Actor* target);
+        virtual void setTarget(const Actor* target);
 
         /** @return null if the action has no target. */
         inline sk_sp<Actor> getTarget() {

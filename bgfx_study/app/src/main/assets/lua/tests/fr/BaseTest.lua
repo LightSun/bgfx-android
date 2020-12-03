@@ -4,6 +4,7 @@
 --- DateTime: 2020/12/3 0003 上午 10:55
 ---
 local uiCore = require("fr.UiCore")
+local mt = require("lua.core.utils.Math")
 
 function sinf(val)
     return math.sin(val);
@@ -16,4 +17,8 @@ function nvgRGBA(r, g, b, a)
 end
 function nvgRadialGradient(cx, cy, inr, outr, icol, ocol)
     return uiCore.newRadialGradient(cx, cy, inr, outr, icol, ocol)
+end
+
+function toRadian(degree)
+    return mt.toRadian(degree)
 end

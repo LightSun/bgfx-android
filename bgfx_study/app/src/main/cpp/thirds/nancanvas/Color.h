@@ -12,7 +12,9 @@
 
 namespace h7 {
     using Byte = unsigned char;
-#define h7_COLOR_CAST(a) static_cast<Byte>(clamp(static_cast<int>(a)))
+
+    Byte h7_COLOR_CAST(float a);
+//#define h7_COLOR_CAST(a) static_cast<Byte>(clamp(static_cast<int>(a)))
 
     class Color {
     public:
@@ -25,6 +27,7 @@ namespace h7 {
             };
             Byte mem[4];
         };
+
         Color() : Color(0xffffffff) {
         }
 
@@ -202,28 +205,6 @@ namespace h7 {
             }
         }
 
-        /** Clamps this Color's components to a valid range [0 - 255]
-    * @return this Color for chaining */
-        static inline int clamp(int com) {
-            if (com < 0) {
-                com = 0;
-            }
-            if (com > 255) {
-                com = 255;
-            }
-            return com;
-        }
-
-        static inline float clamp(float com) {
-            if (com < 0) {
-                com = 0;
-            }
-            if (com > 1.0f) {
-                com = 1.0f;
-            }
-            return com;
-        }
-
         inline float r() {
             return _r / 255.0f;
         }
@@ -238,6 +219,22 @@ namespace h7 {
 
         inline float a() {
             return _a / 255.0f;
+        }
+
+        inline void a(float val) {
+            _a = h7_COLOR_CAST(255 * val);
+        }
+
+        inline void r(float val) {
+            _r = h7_COLOR_CAST(255 * val);
+        }
+
+        inline void g(float val) {
+            _g = h7_COLOR_CAST(255 * val);
+        }
+
+        inline void b(float val) {
+            _b = h7_COLOR_CAST(255 * val);
         }
 
 /** Sets this Color's component values.
@@ -269,25 +266,6 @@ namespace h7 {
             return *this;
         }
 
-#define COLOR_OP_f_rgba(op) \
-        _r = h7_COLOR_CAST(_r op r * 255);\
-        _g = h7_COLOR_CAST(_g op g * 255);\
-        _b = h7_COLOR_CAST(_b op b * 255);\
-        _a = h7_COLOR_CAST(_a op a * 255);
-
-#define COLOR_OP_COLOR(op) \
-        _r = h7_COLOR_CAST(_r op c._r);\
-        _g = h7_COLOR_CAST(_g op c._g);\
-        _b = h7_COLOR_CAST(_b op c._b);\
-        _a = h7_COLOR_CAST(_a op c._a);
-
-#define COLOR_OP_VAL(op, val)\
-        _r = h7_COLOR_CAST(_r op val);\
-        _g = h7_COLOR_CAST(_g op val);\
-        _b = h7_COLOR_CAST(_b op val);\
-        _a = h7_COLOR_CAST(_a op val);
-
-
         /** Adds the given color component values to this Color's values.
          *
          * @param r Red component
@@ -298,7 +276,10 @@ namespace h7 {
          * @return this Color for chaining */
 
         inline Color &add(float r, float g, float b, float a) {
-            COLOR_OP_f_rgba(+)
+            _r = h7_COLOR_CAST(_r + r * 255);
+            _g = h7_COLOR_CAST(_g + g * 255);
+            _b = h7_COLOR_CAST(_b + b * 255);
+            _a = h7_COLOR_CAST(_a + a * 255);
             return *this;
         }
 
@@ -311,7 +292,10 @@ namespace h7 {
 	 *
 	 * @return this Color for chaining */
         inline Color &sub(float r, float g, float b, float a) {
-            COLOR_OP_f_rgba(-)
+            _r = h7_COLOR_CAST(_r - r * 255);
+            _g = h7_COLOR_CAST(_g - g * 255);
+            _b = h7_COLOR_CAST(_b - b * 255);
+            _a = h7_COLOR_CAST(_a - a * 255);
             return *this;
         }
 
@@ -324,7 +308,10 @@ namespace h7 {
          *
          * @return this Color for chaining */
         inline Color &mul(float r, float g, float b, float a) {
-            COLOR_OP_f_rgba(*)
+            _r = h7_COLOR_CAST(_r * r * 255);
+            _g = h7_COLOR_CAST(_g * g * 255);
+            _b = h7_COLOR_CAST(_b * b * 255);
+            _a = h7_COLOR_CAST(_a * a * 255);
             return *this;
         }
 
@@ -370,7 +357,10 @@ namespace h7 {
 	 * @param c the color
 	 * @return this color. */
         inline Color &mul(Color &c) {
-            COLOR_OP_COLOR(*)
+            _r = h7_COLOR_CAST(_r * c._r);
+            _g = h7_COLOR_CAST(_g * c._g);
+            _b = h7_COLOR_CAST(_b * c._b);
+            _a = h7_COLOR_CAST(_a * c._a);
             return *this;
         }
 
@@ -379,7 +369,10 @@ namespace h7 {
       * @param value the value
       * @return this color */
         inline Color &mul(float value) {
-            COLOR_OP_VAL(*, value);
+            _r = h7_COLOR_CAST(_r * value);
+            _g = h7_COLOR_CAST(_g * value);
+            _b = h7_COLOR_CAST(_b * value);
+            _a = h7_COLOR_CAST(_a * value);
             return *this;
         }
 
@@ -388,7 +381,10 @@ namespace h7 {
 	 * @param c the color
 	 * @return this color */
         inline Color &add(Color &c) {
-            COLOR_OP_COLOR(+)
+            _r = h7_COLOR_CAST(_r + c._r);
+            _g = h7_COLOR_CAST(_g + c._g);
+            _b = h7_COLOR_CAST(_b + c._b);
+            _a = h7_COLOR_CAST(_a + c._a);
             return *this;
         }
 
@@ -397,7 +393,10 @@ namespace h7 {
          * @param color the color
          * @return this color */
         inline Color &sub(Color &c) {
-            COLOR_OP_COLOR(-)
+            _r = h7_COLOR_CAST(_r - c._r);
+            _g = h7_COLOR_CAST(_g - c._g);
+            _b = h7_COLOR_CAST(_b - c._b);
+            _a = h7_COLOR_CAST(_a - c._a);
             return *this;
         }
 
@@ -508,40 +507,42 @@ namespace h7 {
         }
 
         //===================== operators ============
-        inline Byte& operator[](int index){ return mem[index]; }
-        inline const Byte operator[](int index) const {return mem[index]; }
-        inline bool operator==(const Color& color){  return toIntBits() == const_cast<Color&>(color).toIntBits(); }
+        inline Byte &operator[](int index) { return mem[index]; }
+
+        inline const Byte operator[](int index) const { return mem[index]; }
+
+        inline bool operator==(const Color &color) {
+            return toIntBits() == const_cast<Color &>(color).toIntBits();
+        }
         //inline bool operator<(const Color& color){ return toIntBits() < color.toIntBits(); }
 
-        Color& operator = (const unsigned int color){ return set(color); }
+        Color &operator=(const unsigned int color) { return set(color); }
 
-        Color& operator += (const Color& c)
-        {
+        Color &operator+=(const Color &c) {
             return add(const_cast<Color &>(c));
         }
-        Color& operator -= (const Color& color)
-        {
+
+        Color &operator-=(const Color &color) {
             return sub(const_cast<Color &>(color));
         }
 
-        Color& operator *= (const Color& color)
-        {
+        Color &operator*=(const Color &color) {
             return mul(const_cast<Color &>(color));
         }
-        Color operator + (const Color& color)
-        {
+
+        Color operator+(const Color &color) {
             Color ret(*this);
             ret += color;
             return ret;
         }
-        Color operator - (const Color& color)
-        {
+
+        Color operator-(const Color &color) {
             Color ret(*this);
             ret -= color;
             return ret;
         }
-        Color operator * (const Color& color)
-        {
+
+        Color operator*(const Color &color) {
             Color ret(*this);
             ret *= color;
             return ret;

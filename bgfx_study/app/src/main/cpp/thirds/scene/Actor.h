@@ -59,11 +59,19 @@ namespace h7 {
         float width, height;
         float scaleX = 1, scaleY = 1;
         float rotation = 0;
-        float transX = 0, transY = 0;
+        float originX, originY; //rotate center.
+
         Color color;
         void *userObject;
 
-        ITERATOR_CNT_CLASS(Actor)
+        //ITERATOR_CNT_CLASS(Actor);
+        class Iterator : public ArrayIterator<sk_sp<Actor>> {
+        public:
+            bool iterate(Array <sk_sp<Actor>> *arr, int index, sk_sp<Actor> &ele) {
+                ele.reset();
+                return false;
+            }
+        };
 
         virtual bool isGroup(){
             return false;
@@ -151,42 +159,51 @@ namespace h7 {
         Vector2f &parentToLocalCoordinates(Vector2f &parentCoords);
 
         inline void addAction(Action* action) {
+            if(action == NULL)
+                return ;
             auto sp = sk_ref_sp(action);
             actions.add(sp);
         }
         inline void removeAction(Action* action) {
+            if(action == NULL)
+                return ;
             auto sp = sk_ref_sp(action);
             actions.remove(sp);
         }
-        inline Array<sk_sp<Action>> &getActions() {
+        inline Array<sk_sp<Action>>& getActions() {
             return actions;
         }
-
         inline bool hasActions() {
             return actions.size() > 0;
         }
-
         bool removeFromParent();
-
         /** Add a listener to receive events that {@link #hit(float, float, boolean) hit} this actor. See {@link #fire(Event)}.
 	 * @see InputListener
 	 * @see ClickListener */
         bool addListener(EventListener* listener){
+            if(listener == NULL)
+                return false;
             auto sp = sk_ref_sp(listener);
             return listeners.add(sp);
         }
 
         bool removeListener(EventListener* listener) {
+            if(listener == NULL)
+                return false;
             auto sp = sk_ref_sp(listener);
             return listeners.remove(sp);
         }
 /** Adds a listener that is only notified during the capture phase.
 	 * @see #fire(Event) */
         bool addCaptureListener(EventListener* listener) {
+            if(listener == NULL)
+                return false;
             auto sp = sk_ref_sp(listener);
             return captureListeners.add(sp);
         }
         bool removeCaptureListener(EventListener* listener) {
+            if(listener == NULL)
+                return false;
             auto sp = sk_ref_sp(listener);
             return captureListeners.remove(sp);
         }
@@ -250,6 +267,41 @@ namespace h7 {
         inline void setVisible(bool _visible) {
             this->visible = _visible;
         }
+        inline float getOriginX () {
+            return originX;
+        }
+        inline void setOriginX (float originX) {
+            this->originX = originX;
+        }
+
+        inline float getOriginY () {
+            return originY;
+        }
+
+        inline void setOriginY (float originY) {
+            this->originY = originY;
+        }
+        /** Sets the origin position which is relative to the actor's bottom left corner. */
+        inline void setOrigin (float originX, float originY) {
+            this->originX = originX;
+            this->originY = originY;
+        }
+        /** Sets the origin position to the specified {@link Align alignment}. */
+        inline void setOrigin(int alignment) {
+            if ((alignment & Align::left) != 0)
+                originX = 0;
+            else if ((alignment & Align::right) != 0)
+                originX = width;
+            else
+                originX = width / 2;
+
+            if ((alignment & Align::bottom) != 0)
+                originY = 0;
+            else if ((alignment & Align::top) != 0)
+                originY = height;
+            else
+                originY = height / 2;
+        }
         /** Returns the X position of the actor's left edge. */
         inline float getX() {
             return x;
@@ -287,12 +339,6 @@ namespace h7 {
             else if ((alignment & Align::bottom) == 0)
                 y -= height / 2;
 
-            //below: (0,0) is in left-top
-           /* if ((alignment & Align::bottom) != 0)
-                y += height;
-            else if ((alignment & Align::top) == 0)
-                y += height / 2;*/
-
             if (this->y != y) {
                 this->y = y;
                 positionChanged();
@@ -306,11 +352,6 @@ namespace h7 {
                 y += height;
             else if ((alignment & Align::bottom) == 0)
                 y += height / 2;
-            //below: (0,0) is in left-top
-           /* if ((alignment & Align::bottom) != 0)
-                y += height;
-            else if ((alignment & Align::top) == 0)
-                y += height / 2;*/
             return y;
         }
         /** Sets the position of the actor's bottom left corner. */
@@ -334,11 +375,6 @@ namespace h7 {
                 y -= height;
             else if ((alignment & Align::bottom) == 0)
                 y -= height / 2;
-            //below: (0,0) is in left-top
-          /*  if ((alignment & Align::bottom) != 0)
-                y += height;
-            else if ((alignment & Align::top) == 0)
-                y += height / 2;*/
             if (this->x != x || this->y != y) {
                 this->x = x;
                 this->y = y;
@@ -486,7 +522,7 @@ namespace h7 {
         }
         /** Changes the z-order for this actor so it is in front of all siblings. */
         inline void toFront () {
-            setZIndex(INT_MAX);
+            setZIndex(0x7fffffff);
         }
         /** Changes the z-order for this actor so it is in back of all siblings. */
         inline void toBack () {

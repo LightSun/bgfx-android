@@ -163,23 +163,17 @@ namespace h7 {
 
     Vector2f &Actor::localToParentCoordinates(h7::Vector2f &localCoords) {
         float rotation = -this->rotation;
-        float x = this->x + transX;
-        float y = this->y + transY;
         if (rotation == 0) {
             if (scaleX == 1 && scaleY == 1) {
                 localCoords.x += x;
                 localCoords.y += y;
             } else {
-                float originX = this->x;
-                float originY = this->y;
                 localCoords.x = (localCoords.x - originX) * scaleX + originX + x;
                 localCoords.y = (localCoords.y - originY) * scaleY + originY + y;
             }
         } else {
             float cos = (float) ::cos(bx::toRad(rotation));
             float sin = (float) ::sin(bx::toRad(rotation));
-            float originX = this->x;
-            float originY = this->y;
             float tox = (localCoords.x - originX) * scaleX;
             float toy = (localCoords.y - originY) * scaleY;
             localCoords.x = (tox * cos + toy * sin) + originX + x;
@@ -188,23 +182,19 @@ namespace h7 {
         return localCoords;
     }
     Vector2f & Actor::parentToLocalCoordinates(Vector2f &parentCoords) {
-        float childX = this->x + transX;
-        float childY = this->y + transY;
+        float childX = this->x;
+        float childY = this->y;
         if (rotation == 0) {
             if (scaleX == 1 && scaleY == 1) {
                 parentCoords.x -= childX;
                 parentCoords.y -= childY;
             } else {
-                float originX = this->x;
-                float originY = this->y;
                 parentCoords.x = (parentCoords.x - childX - originX) / scaleX + originX;
                 parentCoords.y = (parentCoords.y - childY - originY) / scaleY + originY;
             }
         } else {
             float cos = (float)::cos(bx::toRad(rotation));
             float sin = (float)::sin(bx::toRad(rotation));
-            float originX = this->x;
-            float originY = this->y;
             float tox = parentCoords.x - childX - originX;
             float toy = parentCoords.y - childY - originY;
             parentCoords.x = (tox * cos + toy * sin) / scaleX + originX;

@@ -10,6 +10,7 @@
 
 #define EVENT_RAW static_cast<unsigned char>(0)
 #define EVENT_FOCUS static_cast<unsigned char>(1)
+#define EVENT_CHANGE static_cast<unsigned char>(2)
 
 namespace h7 {
 

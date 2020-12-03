@@ -51,20 +51,21 @@ aux_source_directory(src/main/cpp/thirds/meshoptimizer/src SRC_meshoptimizer)
 aux_source_directory(src/main/cpp/thirds/font SRC_font)
 aux_source_directory(src/main/cpp/thirds SRC_thirds)
 aux_source_directory(src/main/cpp/thirds/lua SRC_lua)
-aux_source_directory(src/main/cpp/thirds/nanovg SRC_nanovg)
-aux_source_directory(src/main/cpp/thirds/nancanvas SRC_nancanvas)
+aux_source_directory(src/main/cpp/thirds/nanovg SRC_canvas)
+aux_source_directory(src/main/cpp/thirds/nancanvas SRC_canvas)
 aux_source_directory(src/main/cpp/thirds/stb SRC_stb)
 
 aux_source_directory(src/main/cpp/platform SRC_platform)
 aux_source_directory(src/main/cpp/platform/android SRC_plat_android)
 
 aux_source_directory(src/main/cpp/core SRC_core)
-aux_source_directory(src/main/cpp/core/math SRC_math)
+aux_source_directory(src/main/cpp/core/math SRC_core)
 
-aux_source_directory(src/main/cpp/thirds/input SRC_input)
-aux_source_directory(src/main/cpp/thirds/input/android SRC_input_and)
 aux_source_directory(src/main/cpp/thirds/utils SRC_h7_utils)
+aux_source_directory(src/main/cpp/thirds/input SRC_input)
+aux_source_directory(src/main/cpp/thirds/input/android SRC_input)
 aux_source_directory(src/main/cpp/thirds/scene SRC_scene)
+aux_source_directory(src/main/cpp/thirds/scene/actions SRC_scene)
 
 add_library(
         bgfx_core
@@ -72,7 +73,6 @@ add_library(
         ${SRC_core}
         ${SRC_meshoptimizer}
         ${SRC_h7_utils}
-        ${SRC_math}
 )
 add_library(
         bgfx_study
@@ -85,10 +85,8 @@ add_library(
         ${SRC_font}
         ${SRC_thirds}
         ${SRC_lua}
-        ${SRC_nanovg}
-        ${SRC_nancanvas}
+        ${SRC_canvas}
         ${SRC_input}
-        ${SRC_input_and}
         ${SRC_scene}
 )
 find_library( # Sets the name of the path variable.

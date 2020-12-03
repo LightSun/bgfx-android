@@ -26,10 +26,10 @@ namespace h7{
         List<T> list;
 
     public:
-        Array(size_t capacity){
+        Array(int capacity){
             list.getVector().reserve(capacity);
         }
-        Array():Array(16){}
+        Array():Array(4){}
         ~Array(){
         }
         inline Array<T>& set(Array<T>& in){
