@@ -23,11 +23,11 @@ namespace h7 {
             if (target != nullptr) {
                 waitForActions.addAll(reinterpret_cast<Array<sk_sp<Action>>*>(&target->getActions()));
             }
-            Action::setTarget(target);
+            DelegateAction::setTarget(target);
         }
 
         void restart() {
-            Action::restart();
+            DelegateAction::restart();
             waitForActions.clear();
         }
 
