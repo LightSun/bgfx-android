@@ -9,9 +9,9 @@
 //#include <string>
 #include <map>
 
-namespace SB{
+namespace SB {
 #ifndef SB_MAX_FRAG_LENGTH
-#define SB_MAX_FRAG_LENGTH	2048
+#define SB_MAX_FRAG_LENGTH    2048
 #endif
 
 #define T_BOOL 1
@@ -28,83 +28,137 @@ namespace SB{
 #define T_SHORT 12
 #define T_U_SHORT 13
 
-struct StringFragment;
+    struct StringFragment;
 
 /**
  * the string builder.
  * why i develop this. for 'std::ostringstream << uint8_t' have bug.
  */
-class StringBuilder{
-public:
-    /**
-     * create string builder. which can control format of output,
-     * @param formatMap  the format define map
-     */
-    StringBuilder(std::map<unsigned char,const char*>& formatMap);
-    /**
-   * create string builder with default formats
-   */
-    StringBuilder();
-    ~StringBuilder();
+    class StringBuilder {
+    public:
+        /**
+         * create string builder. which can control format of output,
+         * @param formatMap  the format define map
+         */
+        StringBuilder(std::map<unsigned char, const char *> &formatMap);
 
-    bool isEmpty();
-    StringBuilder& appendf(const char *format, ...);
-    StringBuilder& append(const char *str);
-    StringBuilder& append(void* _val);
+        /**
+       * create string builder with default formats
+       */
+        StringBuilder();
 
-    StringBuilder& append(bool _val);
-    StringBuilder& append(int _val);
-    StringBuilder& append(char _val);
-    StringBuilder& append(signed char _val);
-    StringBuilder& append(unsigned char _val);
-    StringBuilder& append(unsigned int _val);
-    StringBuilder& append(long _val);
-    StringBuilder& append(long long _val);
-    StringBuilder& append(unsigned long long _val);
-    StringBuilder& append(unsigned long _val);
-    StringBuilder& append(float _val);
-    StringBuilder& append(double _val);
-    StringBuilder& append(short _val);
-    StringBuilder& append(unsigned short _val);
+        ~StringBuilder();
 
-    StringBuilder& append(StringBuilder& other);
+        bool isEmpty();
 
-    /**
-     * get the string fragments. note: you need to call free() after call this.
-     * you need to release the char*
-     * @return the string
-     */
-    char* toString();
-    void reset();
-    int length();
+        StringBuilder &appendf(const char *format, ...);
 
-    StringBuilder& operator << (void* _val);
-    StringBuilder& operator << (const char* _val);
+        StringBuilder &append(const char *str);
 
-    StringBuilder& operator << (bool _val);
-    StringBuilder& operator << (int _val);
-    StringBuilder& operator << (char _val);
-    StringBuilder& operator << (signed char _val);
-    StringBuilder& operator << (unsigned char _val);
-    StringBuilder& operator << (unsigned int _val);
-    StringBuilder& operator << (long _val);
-    StringBuilder& operator << (long long _val);
-    StringBuilder& operator << (unsigned long long _val);
-    StringBuilder& operator << (unsigned long _val);
-    StringBuilder& operator << (float _val);
-    StringBuilder& operator << (double _val);
+        StringBuilder &append(void *_val);
 
-    StringBuilder& operator <<(short _val);
-    StringBuilder& operator <<(unsigned short _val);
-    StringBuilder& operator <<(StringBuilder& other);
+        StringBuilder &append(bool _val);
 
-private:
-    StringFragment* root;
-    StringFragment* trunk;
-    int m_length;
+        StringBuilder &append(int _val);
 
-    std::map<unsigned char,const char*> m_format;
-};
+        StringBuilder &append(char _val);
+
+        StringBuilder &append(signed char _val);
+
+        StringBuilder &append(unsigned char _val);
+
+        StringBuilder &append(unsigned int _val);
+
+        StringBuilder &append(long _val);
+
+        StringBuilder &append(long long _val);
+
+        StringBuilder &append(unsigned long long _val);
+
+        StringBuilder &append(unsigned long _val);
+
+        StringBuilder &append(float _val);
+
+        StringBuilder &append(double _val);
+
+        StringBuilder &append(short _val);
+
+        StringBuilder &append(unsigned short _val);
+
+        StringBuilder &append(StringBuilder &other);
+
+        /**
+         * get the string fragments. note: you need to call free() after call this.
+         * you need to release the char*
+         * @return the string
+         */
+        char *toString();
+
+        /**
+         * to string to out buffer.
+         * @param out the out buffer.
+         * @return true if size enough or else false.
+         */
+        bool toString(char *out);
+
+        void reset();
+
+        int length();
+
+        StringBuilder &operator<<(void *_val);
+
+        StringBuilder &operator<<(const char *_val);
+
+        StringBuilder &operator<<(bool _val);
+
+        StringBuilder &operator<<(int _val);
+
+        StringBuilder &operator<<(char _val);
+
+        StringBuilder &operator<<(signed char _val);
+
+        StringBuilder &operator<<(unsigned char _val);
+
+        StringBuilder &operator<<(unsigned int _val);
+
+        StringBuilder &operator<<(long _val);
+
+        StringBuilder &operator<<(long long _val);
+
+        StringBuilder &operator<<(unsigned long long _val);
+
+        StringBuilder &operator<<(unsigned long _val);
+
+        StringBuilder &operator<<(float _val);
+
+        StringBuilder &operator<<(double _val);
+
+        StringBuilder &operator<<(short _val);
+
+        StringBuilder &operator<<(unsigned short _val);
+
+        StringBuilder &operator<<(StringBuilder &other);
+
+    private:
+        StringFragment *root;
+        StringFragment *trunk;
+        int m_length;
+
+        std::map<unsigned char, const char *> m_format;
+    };
+
+    template<typename T>
+    static inline StringBuilder &appendArray(StringBuilder &sb, const T *array, int count) {
+        sb.append("[");
+        for (int i = 0; i < count; ++i) {
+            sb.append(array[i]);
+            if (i != count - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append("]");
+        return sb;
+    }
 }
 
 #endif

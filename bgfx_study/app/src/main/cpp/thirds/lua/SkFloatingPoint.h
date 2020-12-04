@@ -71,6 +71,10 @@ static inline float sk_float_pow(float base, float exp) {
 #define sk_float_exp(x)         expf(x)
 #define sk_float_log(x)         logf(x)
 
+
+#define SK_MaxS32FitsInFloat    2147483520
+#define SK_MinS32FitsInFloat    -SK_MaxS32FitsInFloat
+
 constexpr float sk_float_degrees_to_radians(float degrees) {
     return degrees * (SK_FloatPI / 180);
 }
@@ -114,6 +118,14 @@ static inline bool sk_float_isinf(float x) {
 
 static inline bool sk_float_isnan(float x) {
     return !(x == x);
+}
+/**
+ *  Return the closest int for the given float. Returns SK_MaxS32FitsInFloat for NaN.
+ */
+static inline int sk_float_saturate2int(float x) {
+    x = x <= SK_MaxS32FitsInFloat ? x : SK_MaxS32FitsInFloat;
+    x = x >= SK_MinS32FitsInFloat ? x : SK_MinS32FitsInFloat;
+    return (int)x;
 }
 
 #define sk_double_isnan(a)          sk_float_isnan(a)

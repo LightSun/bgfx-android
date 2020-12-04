@@ -37,7 +37,7 @@ namespace h7{
             sk_sp<Actor> overLast = pointerOverActors[pointer];
             // Check if pointer is gone.
             if (!pointerTouched[pointer]) {
-                if (overLast.get() != nullptr) {
+                if (overLast != nullptr) {
                     pointerOverActors[pointer] = nullptr;
                     screenToStageCoordinates(tempCoords.set(pointerScreenX[pointer], pointerScreenY[pointer]));
                     // Exit over last.
@@ -65,10 +65,10 @@ namespace h7{
     }
 
     Vector2f &Stage::screenToStageCoordinates(Vector2f &f) {
-        return f.add(viewport->x, viewport->y);
+        return f.sub(viewport->x, viewport->y);
     }
     Vector2f& Stage::stageToScreenCoordinates(h7::Vector2f &f) {
-        return f.sub(viewport->x, viewport->y);
+        return f.add(viewport->x, viewport->y);
     }
     sk_sp<Actor> Stage::fireEnterAndExit(sk_sp<Actor>& overLast, int screenX, int screenY,
                                          int pointer) {

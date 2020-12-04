@@ -106,8 +106,8 @@ struct SkNx {
         Half::Store2(ptr + 2*N/2*sizeof(T), a.fHi, b.fHi);
     }
 
-    AI T min() const { return SkTMin(fLo.min(), fHi.min()); }
-    AI T max() const { return SkTMax(fLo.max(), fHi.max()); }
+    //AI T min() const { return SkTMin(fLo.min(), fHi.min()); }
+    //AI T max() const { return SkTMax(fLo.max(), fHi.max()); }
     AI bool anyTrue() const { return fLo.anyTrue() || fHi.anyTrue(); }
     AI bool allTrue() const { return fLo.allTrue() && fHi.allTrue(); }
 
@@ -417,5 +417,3 @@ AI static void Sk4f_ToBytes(uint8_t p[16],
 }
 
 #undef AI
-
-#endif//SkNx_DEFINED

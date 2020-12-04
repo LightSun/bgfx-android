@@ -134,22 +134,27 @@ if(formatMap[type] == nullptr){\
 
     char *StringBuilder::toString() {
         char *buf = NULL;
-        char *c = NULL;
-        StringFragment *frag = NULL;
-
         buf = (char *) malloc((m_length + 1) * sizeof(char));
         if (NULL == buf)
             return NULL;
+        toString(buf);
+        return buf;
+    }
+    bool StringBuilder::toString(char *buf) {
+        if(strlen(buf) < (length() + 1) * sizeof(char)){
+            return false;
+        }
+        char *c = NULL;
+        StringFragment *frag = NULL;
 
         c = buf;
         for (frag = root; frag; frag = frag->next) {
-           // strncpy(c, frag->str, frag->length);
+            // strncpy(c, frag->str, frag->length);
             memcpy(c, frag->str, sizeof(char) * frag->length);
             c += frag->length;
         }
-
         *c = '\0';
-        return buf;
+        return true;
     }
 
     StringBuilder &StringBuilder::append(void *_val) {

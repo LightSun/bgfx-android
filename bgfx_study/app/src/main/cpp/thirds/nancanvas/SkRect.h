@@ -628,7 +628,7 @@ struct SkRect{
             @param b  SkScalar stored in fBottom
             @return   bounds (l, t, r, b)
         */
-        static constexpr SkRect  MakeLTRB(SkScalar l, SkScalar t, SkScalar r,
+        static constexpr SkRect MakeLTRB(SkScalar l, SkScalar t, SkScalar r,
         SkScalar b) {
             return SkRect{l, t, r, b};
         }
@@ -642,7 +642,7 @@ struct SkRect{
             @param h  added to y and stored in fBottom
             @return   bounds at (x, y) with width w and height h
         */
-        static constexpr SkRect  MakeXYWH(SkScalar x, SkScalar y, SkScalar w,
+        static constexpr SkRect MakeXYWH(SkScalar x, SkScalar y, SkScalar w,
         SkScalar h) {
             return SkRect{x, y, x + w, y + h};
         }
@@ -654,7 +654,7 @@ struct SkRect{
             @param irect  integer unsorted bounds
             @return       irect members converted to SkScalar
         */
-        static SkRect  Make(const SkIRect& irect) {
+        static SkRect Make(const SkIRect& irect) {
             return {
                     SkIntToScalar(irect.fLeft), SkIntToScalar(irect.fTop),
                     SkIntToScalar(irect.fRight), SkIntToScalar(irect.fBottom)

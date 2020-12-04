@@ -35,7 +35,7 @@ local function newRectViewTester()
         print("---newTestView: onDraw ----")
         --canvas_lua.h_testDraw(canvas.getContext());
         --self.testImage(canvas);
-        self.testImage2(canvas);
+        self.testImage(canvas);
     end
 
     function self.testImage(canvas)

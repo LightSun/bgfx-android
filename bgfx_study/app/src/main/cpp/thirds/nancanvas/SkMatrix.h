@@ -25,6 +25,10 @@
 #include "SkRect.h"
 
 /** \class SkMatrix
+ * <p>
+            | scaleX  skewX transX |
+            |  skewY scaleY transY |
+            |  pers0  pers1  pers2 | </p>
     SkMatrix holds a 3x3 matrix for transforming coordinates. This allows mapping
     SkPoint and vectors with translation, scaling, skewing, rotation, and
     perspective.

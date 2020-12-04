@@ -6,6 +6,10 @@
 local obj = require("core.Object")
 local gui = require("fr.UiCore")
 local bgfx = require("bgfx");
+
+local bx = require("bx");
+local mem = require("memory");
+
 local m = {}
 
 --- create decor view with canvas config
@@ -97,9 +101,12 @@ function m.new(canvasConfig)
 
         bgfx.touch(self.viewId);
         canvas.beginFrame(reso.width, reso.height);
+
         for _, v in ipairs(self.views) do
             v.onDraw(canvas);
         end
+        --nanovg doesn't support setTransform.
+
         canvas.endFrame();
         bgfx.frame();
     end

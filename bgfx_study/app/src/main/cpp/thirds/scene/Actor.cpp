@@ -84,6 +84,8 @@ namespace h7 {
                 if(pGroup->try_ref()){
                     _parent = pGroup;
                     pGroup->unref();
+                } else{
+                    _parent = nullptr;
                 }
                 pGroup->weak_unref();
             }
@@ -144,10 +146,18 @@ namespace h7 {
     }
 
     Vector2f &Actor::screenToLocalCoordinates(Vector2f &screenCoords) {
-        if (stage == nullptr) return screenCoords;
-        return stageToLocalCoordinates(stage->screenToStageCoordinates(screenCoords));
+        auto pStage = getStage();
+        if (pStage == nullptr) return screenCoords;
+        return stageToLocalCoordinates(pStage->screenToStageCoordinates(screenCoords));
     }
-
+    Vector2f& Actor::localToScreenCoordinates(h7::Vector2f &vec) {
+        localCoordinatesToStage(vec);
+        auto pStage = getStage();
+        if(pStage != nullptr){
+            pStage->stageToScreenCoordinates(vec);
+        }
+        return vec;
+    }
     Vector2f &Actor::stageToLocalCoordinates(Vector2f &stageCoords) {
         if (parent != nullptr){
             parent->weak_ref();
@@ -160,46 +170,30 @@ namespace h7 {
         parentToLocalCoordinates(stageCoords);
         return stageCoords;
     }
+    Vector2f& Actor::localCoordinatesToStage(h7::Vector2f &vec) {
+        localToParentCoordinates(vec);
+        if (parent != nullptr){
+            parent->weak_ref();
+            if(parent->try_ref()){
+                parent->localToParentCoordinates(vec);
+                parent->unref();
+            }
+            parent->weak_unref();
+        }
+        return vec;
+    }
 
     Vector2f &Actor::localToParentCoordinates(h7::Vector2f &localCoords) {
-        float rotation = -this->rotation;
-        if (rotation == 0) {
-            if (scaleX == 1 && scaleY == 1) {
-                localCoords.x += x;
-                localCoords.y += y;
-            } else {
-                localCoords.x = (localCoords.x - originX) * scaleX + originX + x;
-                localCoords.y = (localCoords.y - originY) * scaleY + originY + y;
-            }
-        } else {
-            float cos = (float) ::cos(bx::toRad(rotation));
-            float sin = (float) ::sin(bx::toRad(rotation));
-            float tox = (localCoords.x - originX) * scaleX;
-            float toy = (localCoords.y - originY) * scaleY;
-            localCoords.x = (tox * cos + toy * sin) + originX + x;
-            localCoords.y = (tox * -sin + toy * cos) + originY + y;
-        }
+        auto point = getMatrix().mapXY(localCoords.x + x, localCoords.y + y);
+
+        localCoords.x = point.x();
+        localCoords.y = point.y();
         return localCoords;
     }
     Vector2f & Actor::parentToLocalCoordinates(Vector2f &parentCoords) {
-        float childX = this->x;
-        float childY = this->y;
-        if (rotation == 0) {
-            if (scaleX == 1 && scaleY == 1) {
-                parentCoords.x -= childX;
-                parentCoords.y -= childY;
-            } else {
-                parentCoords.x = (parentCoords.x - childX - originX) / scaleX + originX;
-                parentCoords.y = (parentCoords.y - childY - originY) / scaleY + originY;
-            }
-        } else {
-            float cos = (float)::cos(bx::toRad(rotation));
-            float sin = (float)::sin(bx::toRad(rotation));
-            float tox = parentCoords.x - childX - originX;
-            float toy = parentCoords.y - childY - originY;
-            parentCoords.x = (tox * cos + toy * sin) / scaleX + originX;
-            parentCoords.y = (tox * -sin + toy * cos) / scaleY + originY;
-        }
+        auto point = getMatrix().mapXY(parentCoords.x - x, parentCoords.y - y);
+        parentCoords.x = point.x();
+        parentCoords.y = point.y();
         return parentCoords;
     }
     bool Actor::removeFromParent() {

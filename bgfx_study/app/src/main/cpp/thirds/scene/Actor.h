@@ -13,6 +13,8 @@
 #include "Align.h"
 #include "lua/SkFloatBits.h"
 
+#include "../nancanvas/SkMatrix.h"
+
 namespace NanoCanvas {
     class Canvas;
 }
@@ -40,29 +42,33 @@ namespace h7 {
     };
 
     /**
-     * the actor : (0, 0) is at the left-bottom.
+     * the actor : (0, 0) is at the left-top.
      */
     class Actor : public SkWeakRefCnt {
     private:
         sk_sp<Stage> stage;
         sk_sp<Group> parent;
         bool debug;
-    public:
         Array<sk_sp<EventListener>> listeners;
         Array<sk_sp<EventListener>> captureListeners = Array<sk_sp<EventListener>>(0);
         Array<sk_sp<Action>> actions = Array<sk_sp<Action>>(0);
 
-        const char *name = "h7_Actor";
-        Touchable touchable = Touchable::enabled;
-        bool visible = true;
-        float x, y;
-        float width, height;
-        float scaleX = 1, scaleY = 1;
-        float rotation = 0;
-        float originX, originY; //rotate center.
+        SkMatrix _mat;
 
+        const char *name = "h7_Actor";
+        bool visible = true;
         Color color;
         void *userObject;
+
+        float x, y;  // relative to parent.
+        float width, height;
+
+        float scaleX = 1, scaleY = 1;
+        float rotation = 0;
+        float originX = 0, originY = 0;   // rotate center. like android PivotX/PivotY. often is transX/trnasY
+        float skewX = 0, skewY = 0;       // horizontal/vertical skew factor
+    public:
+        Touchable touchable = Touchable::enabled;
 
         //ITERATOR_CNT_CLASS(Actor);
         class Iterator : public ArrayIterator<sk_sp<Actor>> {
@@ -103,6 +109,7 @@ namespace h7 {
 	 * @param parentAlpha The parent alpha, to be multiplied with this actor's alpha, allowing the parent's alpha to affect all
 	 *           children. */
         virtual void draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
+
         }
 
         /** Updates the actor based on time. Typically this is called each frame by {@link Stage#act(float)}.
@@ -145,18 +152,25 @@ namespace h7 {
        * @see Touchable */
         const Actor* hit(float x, float y, bool touchable);
 
+        inline SkMatrix& getMatrix(){
+            return _mat;
+        }
         /** Transforms the specified point in screen coordinates to the actor's local coordinate system.
  * @see Stage#screenToStageCoordinates(Vector2) */
-        Vector2f &screenToLocalCoordinates(Vector2f &screenCoords);
+        Vector2f &screenToLocalCoordinates(Vector2f &vec);
+
+        Vector2f &localToScreenCoordinates(Vector2f &vec);
 
         /** Transforms the specified point in the stage's coordinates to the actor's local coordinate system. */
-        Vector2f &stageToLocalCoordinates(Vector2f &stageCoords);
+        Vector2f &stageToLocalCoordinates(Vector2f &vec);
+
+        Vector2f &localCoordinatesToStage(Vector2f &vec);
 
         /** Transforms the specified point in the actor's coordinates to be in the parent's coordinates. */
-        Vector2f &localToParentCoordinates(Vector2f &localCoords);
+        Vector2f &localToParentCoordinates(Vector2f &vec);
 
         /** Converts the coordinates given in the parent's coordinate system to this actor's coordinate system. */
-        Vector2f &parentToLocalCoordinates(Vector2f &parentCoords);
+        Vector2f &parentToLocalCoordinates(Vector2f &vec);
 
         inline void addAction(Action* action) {
             if(action == NULL)
@@ -267,40 +281,20 @@ namespace h7 {
         inline void setVisible(bool _visible) {
             this->visible = _visible;
         }
-        inline float getOriginX () {
-            return originX;
+        /** Sets the width and height. */
+        inline void setSize (float width, float height) {
+            if (this->width != width || this->height != height) {
+                this->width = width;
+                this->height = height;
+                sizeChanged();
+            }
         }
-        inline void setOriginX (float originX) {
-            this->originX = originX;
-        }
-
-        inline float getOriginY () {
-            return originY;
-        }
-
-        inline void setOriginY (float originY) {
-            this->originY = originY;
-        }
-        /** Sets the origin position which is relative to the actor's bottom left corner. */
-        inline void setOrigin (float originX, float originY) {
-            this->originX = originX;
-            this->originY = originY;
-        }
-        /** Sets the origin position to the specified {@link Align alignment}. */
-        inline void setOrigin(int alignment) {
-            if ((alignment & Align::left) != 0)
-                originX = 0;
-            else if ((alignment & Align::right) != 0)
-                originX = width;
-            else
-                originX = width / 2;
-
-            if ((alignment & Align::bottom) != 0)
-                originY = 0;
-            else if ((alignment & Align::top) != 0)
-                originY = height;
-            else
-                originY = height / 2;
+        void setSkew(float x, float y){
+            if(skewX != x || skewY != y){
+                skewX = x;
+                skewY = y;
+                skewChanged();
+            }
         }
         /** Returns the X position of the actor's left edge. */
         inline float getX() {
@@ -334,10 +328,10 @@ namespace h7 {
         /** Sets the y position using the specified {@link Align alignment}. Note this may set the position to non-integer
          * coordinates. */
         inline void setY(float y, int alignment) {
-            if ((alignment & Align::top) != 0)
-                y -= height;
-            else if ((alignment & Align::bottom) == 0)
-                y -= height / 2;
+            if ((alignment & Align::bottom) != 0)
+                y += height;
+            else if ((alignment & Align::center) != 0)
+                y += height / 2;
 
             if (this->y != y) {
                 this->y = y;
@@ -371,10 +365,10 @@ namespace h7 {
             else if ((alignment & Align::left) == 0)
                 x -= width / 2;
 
-            if ((alignment & Align::top) != 0)
-                y -= height;
-            else if ((alignment & Align::bottom) == 0)
-                y -= height / 2;
+            if ((alignment & Align::bottom) != 0)
+                y += height;
+            else if ((alignment & Align::center) == 0)
+                y += height / 2;
             if (this->x != x || this->y != y) {
                 this->x = x;
                 this->y = y;
@@ -412,10 +406,10 @@ namespace h7 {
             return x + width;
         }
         inline float getBottom(){
-            return y + height;
+            return y;
         }
         inline float getTop(){
-            return y;
+            return y + height;
         }
         inline float getLeft(){
             return x;
@@ -426,39 +420,51 @@ namespace h7 {
             out[2] = getRight();
             out[3] = getBottom();
         }
-        inline float getScaleX () {
+        /** default is center */
+        inline float getOriginX () {
+            return originX;
+        }
+        /** default is center */
+        inline float getOriginY () {
+            return originY;
+        }
+        /** Sets the origin position which is relative to the actor's bottom left corner. */
+        inline void setOrigin(float originX, float originY) {
+            this->originX = originX;
+            this->originY = originY;
+            scaleCenterChanged();
+        }
+        /** Sets the origin position to the specified {@link Align alignment}. */
+        inline void setOrigin(int alignment) {
+            if ((alignment & Align::left) != 0)
+                originX = 0;
+            else if ((alignment & Align::right) != 0)
+                originX = width;
+            else
+                originX = width / 2;
+
+            if ((alignment & Align::bottom) != 0)
+                originY = 0;
+            else if ((alignment & Align::top) != 0)
+                originY = height;
+            else
+                originY = height / 2;
+            scaleCenterChanged();
+        }
+        inline float getScaleX() {
             return scaleX;
         }
-        inline void setScaleX (float scaleX) {
-            if (this->scaleX != scaleX) {
-                this->scaleX = scaleX;
-                scaleChanged();
-            }
-        }
-
-        inline float getScaleY () {
+        inline float getScaleY() {
             return scaleY;
         }
-
-        inline void setScaleY (float scaleY) {
-            if (this->scaleY != scaleY) {
-                this->scaleY = scaleY;
-                scaleChanged();
-            }
-        }
-
         /** Sets the scale for both X and Y */
-        inline void setScale (float scaleXY) {
-            if (this->scaleX != scaleXY || this->scaleY != scaleXY) {
-                this->scaleX = scaleXY;
-                this->scaleY = scaleXY;
-                scaleChanged();
-            }
+        inline void setScale(float scaleXY) {
+            setScale(scaleXY, scaleXY);
         }
 
         /** Sets the scale X and scale Y. */
         inline void setScale (float scaleX, float scaleY) {
-            if (this->scaleX != scaleX || this->scaleY != scaleY) {
+            if(this->scaleX != scaleX || this->scaleY != scaleY){
                 this->scaleX = scaleX;
                 this->scaleY = scaleY;
                 scaleChanged();
@@ -467,11 +473,7 @@ namespace h7 {
 
         /** Adds the specified scale to the current scale. */
         inline void scaleBy (float scale) {
-            if (scale != 0) {
-                scaleX += scale;
-                scaleY += scale;
-                scaleChanged();
-            }
+            scaleBy(scale, scale);
         }
 
         /** Adds the specified scale to the current scale. */
@@ -522,7 +524,7 @@ namespace h7 {
         }
         /** Changes the z-order for this actor so it is in front of all siblings. */
         inline void toFront () {
-            setZIndex(0x7fffffff);
+            setZIndex(INT_MAX);
         }
         /** Changes the z-order for this actor so it is in back of all siblings. */
         inline void toBack () {
@@ -543,10 +545,24 @@ namespace h7 {
         }
         /** Called when the actor's size has been changed. */
         virtual void sizeChanged() {
+
+        }
+        virtual void skewChanged(){
+            applyMatrix();
         }
         virtual void scaleChanged() {
+            applyMatrix();
         }
         virtual void rotationChanged() {
+            applyMatrix();
+        }
+        virtual void scaleCenterChanged(){
+            applyMatrix();
+        }
+        inline void applyMatrix(){
+            _mat.setTranslate(originX, originY)
+                .preRotate(rotation)
+                .preScale(scaleX, scaleY);
         }
     };
 }
