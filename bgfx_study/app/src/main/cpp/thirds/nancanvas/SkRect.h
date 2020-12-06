@@ -660,7 +660,13 @@ struct SkRect{
                     SkIntToScalar(irect.fRight), SkIntToScalar(irect.fBottom)
             };
         }
-
+        SkRect& set(SkRect& in){
+            fLeft = in.fLeft;
+            fTop = in.fTop;
+            fRight = in.fRight;
+            fBottom = in.fBottom;
+            return *this;
+        }
         /** Returns true if fLeft is equal to or greater than fRight, or if fTop is equal
             to or greater than fBottom. Call sort() to reverse rectangles with negative
             width() or height().

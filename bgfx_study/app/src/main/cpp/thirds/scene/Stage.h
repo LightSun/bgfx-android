@@ -38,7 +38,6 @@ namespace h7 {
         int pointerScreenX[STAGE_TOUCH_NUM];
         int pointerScreenY[STAGE_TOUCH_NUM];
         int mouseScreenX, mouseScreenY;
-        sk_sp<Viewport> viewport;
 
         Vector2f tempCoords;
 
@@ -47,6 +46,7 @@ namespace h7 {
         sk_sp<Group> root;
         //canvas to draw
         sk_sp<NanoCanvas::Canvas> _canvas;
+        sk_sp<Viewport> viewport;
 
     public:
         Array<sk_sp<TouchFocus>> touchFocuses = Array<sk_sp<TouchFocus>>(16);
