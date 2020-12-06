@@ -31,6 +31,8 @@ namespace h7 {
 
     class Event;
 
+    class Drawable;
+
     enum Touchable {
         /** All touch input events will be received by the actor and any children. */
         enabled = 0,
@@ -57,7 +59,8 @@ namespace h7 {
 
         const char *name = "h7_Actor";
         bool visible = true;
-        Color color;
+        Color color;  //used for tint.
+        sk_sp<Drawable> background;
         void *userObject;
 
         float x, y;  // relative to parent.
@@ -94,6 +97,8 @@ namespace h7 {
         virtual void setStage(Stage *_g) {
             this->stage.reset(_g);
         }
+        virtual void setBackground(Drawable* d);
+        Drawable* getBackground();
 
         Stage *getStage();
 
@@ -108,10 +113,13 @@ namespace h7 {
 	 * The default implementation does nothing.
 	 * @param parentAlpha The parent alpha, to be multiplied with this actor's alpha, allowing the parent's alpha to affect all
 	 *           children. */
-        virtual void draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
+        virtual void draw(NanoCanvas::Canvas &canvas, float parentAlpha);
+
+    protected:
+        virtual void onDraw(NanoCanvas::Canvas &canvas, float parentAlpha){
 
         }
-
+    public:
         /** Updates the actor based on time. Typically this is called each frame by {@link Stage#act(float)}.
          * <p>
          * The default implementation calls {@link Action#act(float)} on each action and removes actions that are complete.
@@ -303,10 +311,20 @@ namespace h7 {
         /** Returns the X position of the specified {@link Align alignment}. */
         inline float getX(int alignment) {
             float x = this->x;
-            if ((alignment & Align::right) != 0)
-                x += width;
-            else if ((alignment & Align::left) == 0) //
-                x += width / 2;
+            switch (alignment){
+                case Align::right:
+                    x += width;
+                    break;
+                case Align::left:
+                    break;
+                case Align::top:
+                    break;
+                case Align::bottom:
+                    break;
+                case Align::center:
+                    x += width / 2;
+                    break;
+            }
             return x;
         }
         inline void setX(float x) {
@@ -325,27 +343,23 @@ namespace h7 {
                 positionChanged();
             }
         }
-        /** Sets the y position using the specified {@link Align alignment}. Note this may set the position to non-integer
-         * coordinates. */
-        inline void setY(float y, int alignment) {
-            if ((alignment & Align::bottom) != 0)
-                y += height;
-            else if ((alignment & Align::center) != 0)
-                y += height / 2;
-
-            if (this->y != y) {
-                this->y = y;
-                positionChanged();
-            }
-        }
-
         /** Returns the Y position of the specified {@link Align alignment}. */
         inline float getY(int alignment) {
             float y = this->y;
-            if ((alignment & Align::top) != 0)
-                y += height;
-            else if ((alignment & Align::bottom) == 0)
-                y += height / 2;
+            switch (alignment){
+                case Align::right:
+                    break;
+                case Align::left:
+                    break;
+                case Align::top:
+                    break;
+                case Align::bottom:
+                    y += height;
+                    break;
+                case Align::center:
+                    y += height / 2;
+                    break;
+            }
             return y;
         }
         /** Sets the position of the actor's bottom left corner. */
@@ -357,24 +371,6 @@ namespace h7 {
             }
         }
 
-        /** Sets the position using the specified {@link Align alignment}. Note this may set the position to non-integer
-         * coordinates. */
-        inline void setPosition(float x, float y, int alignment) {
-            if ((alignment & Align::right) != 0)
-                x -= width;
-            else if ((alignment & Align::left) == 0)
-                x -= width / 2;
-
-            if ((alignment & Align::bottom) != 0)
-                y += height;
-            else if ((alignment & Align::center) == 0)
-                y += height / 2;
-            if (this->x != x || this->y != y) {
-                this->x = x;
-                this->y = y;
-                positionChanged();
-            }
-        }
         /** Add x and y to current position */
         inline void moveBy(float x, float y) {
             if (x != 0 || y != 0) {
@@ -406,10 +402,10 @@ namespace h7 {
             return x + width;
         }
         inline float getBottom(){
-            return y;
+            return y + height;
         }
         inline float getTop(){
-            return y + height;
+            return y;
         }
         inline float getLeft(){
             return x;
@@ -432,7 +428,6 @@ namespace h7 {
         inline void setOrigin(float originX, float originY) {
             this->originX = originX;
             this->originY = originY;
-            scaleCenterChanged();
         }
         /** Sets the origin position to the specified {@link Align alignment}. */
         inline void setOrigin(int alignment) {
@@ -444,12 +439,11 @@ namespace h7 {
                 originX = width / 2;
 
             if ((alignment & Align::bottom) != 0)
-                originY = 0;
-            else if ((alignment & Align::top) != 0)
                 originY = height;
+            else if ((alignment & Align::top) != 0)
+                originY = 0;
             else
                 originY = height / 2;
-            scaleCenterChanged();
         }
         inline float getScaleX() {
             return scaleX;
@@ -554,9 +548,6 @@ namespace h7 {
             applyMatrix();
         }
         virtual void rotationChanged() {
-            applyMatrix();
-        }
-        virtual void scaleCenterChanged(){
             applyMatrix();
         }
         inline void applyMatrix(){

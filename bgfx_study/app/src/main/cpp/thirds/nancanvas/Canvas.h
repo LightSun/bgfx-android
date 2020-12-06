@@ -6,6 +6,7 @@
 #include "Gradient.h"
 #include "Text.h"
 #include "lua/SkRefCnt.h"
+#include "SkMatrix.h"
 
 class NVGcontext;
 
@@ -555,7 +556,17 @@ namespace NanoCanvas
          * @return The canvas to set transform with
          */
         Canvas& resetTransform();
-        
+
+        /**
+         * apply matrix to canvas
+         * @param mat the matrix
+         * @return this.
+         */
+        Canvas& applyMatrix(SkMatrix& mat);
+
+        Canvas& getMatrix(SkMatrix& out);
+
+        Canvas& concatMatrix(SkMatrix& in, bool pre = true);
     /*--------------------- Canvas Control -----------------*/
         /**
          * @brief Begin drawing a new frame

@@ -140,9 +140,9 @@ namespace NanoCanvas {
         return *this;
     }
 
-    Gradient* Canvas::createLinearGradient(float x0, float y0, float x1, float y1,
-                                           Color &scolor,  Color &ecolor) {
-        Gradient* gdt = new Gradient();
+    Gradient *Canvas::createLinearGradient(float x0, float y0, float x1, float y1,
+                                           Color &scolor, Color &ecolor) {
+        Gradient *gdt = new Gradient();
         gdt->type = Gradient::Type::Linear;
         gdt->xx = x0;
         gdt->yy = y0;
@@ -153,9 +153,9 @@ namespace NanoCanvas {
         return gdt;
     }
 
-    Gradient* Canvas::createRadialGradient(float cx, float cy, float r1, float r2,
-                                           Color &icolor,  Color &ocolor) {
-        Gradient* gdt = new Gradient();
+    Gradient *Canvas::createRadialGradient(float cx, float cy, float r1, float r2,
+                                           Color &icolor, Color &ocolor) {
+        Gradient *gdt = new Gradient();
         gdt->type = Gradient::Type::Radial;
         gdt->xx = cx;
         gdt->yy = cy;
@@ -166,9 +166,9 @@ namespace NanoCanvas {
         return gdt;
     }
 
-    Gradient* Canvas::createBoxGradient(float x, float y, float w, float h,
-                                       float r, float f, Color& icol, Color& ocol) {
-        Gradient* gdt = new Gradient();
+    Gradient *Canvas::createBoxGradient(float x, float y, float w, float h,
+                                        float r, float f, Color &icol, Color &ocol) {
+        Gradient *gdt = new Gradient();
         gdt->type = Gradient::Type::Box;
         gdt->xx = x;
         gdt->yy = y;
@@ -181,9 +181,9 @@ namespace NanoCanvas {
         return gdt;
     }
 
-    Gradient* Canvas::createImageGradient(const Image &image, float ox, float oy,
-                                         float w, float h, float angle, float alpha) {
-        Gradient* gdt = new Gradient();
+    Gradient *Canvas::createImageGradient(const Image &image, float ox, float oy,
+                                          float w, float h, float angle, float alpha) {
+        Gradient *gdt = new Gradient();
         gdt->type = Gradient::Type::ImagePattern;
         gdt->imageID = image.imageID;
         gdt->xx = ox;
@@ -206,7 +206,7 @@ namespace NanoCanvas {
         return *this;
     }
 
-    Canvas &Canvas::textAlign(unsigned int hAlign,unsigned int vAlign) {
+    Canvas &Canvas::textAlign(unsigned int hAlign, unsigned int vAlign) {
         nvgTextAlign(m_nvgCtx, hAlign | vAlign);
         return *this;
     }
@@ -230,7 +230,7 @@ namespace NanoCanvas {
         return *this;
     }
 
-    float Canvas::measureText(const char* text, float rowWidth) {
+    float Canvas::measureText(const char *text, float rowWidth) {
         float width = 0;
         if (rowWidth <= 0)
             width = nvgTextBounds(m_nvgCtx, 0, 0, text, nullptr, nullptr);
@@ -242,7 +242,7 @@ namespace NanoCanvas {
         return width;
     }
 
-    float Canvas::measureText(const char* text, float x, float y,
+    float Canvas::measureText(const char *text, float x, float y,
                               float *bounds, float rowWidth) {
         local2Global(x, y);
         if (rowWidth <= 0)
@@ -254,7 +254,9 @@ namespace NanoCanvas {
             width = bounds[2] - bounds[0];
         return width;
     }
-    void Canvas::measureText(const char *text, float x, float y, float *outW, float *outH, float rowWidth) {
+
+    void Canvas::measureText(const char *text, float x, float y, float *outW, float *outH,
+                             float rowWidth) {
         float bounds[4];
         measureText(text, x, y, bounds, rowWidth);
         *outW = bounds[2] - bounds[0];
@@ -290,8 +292,8 @@ namespace NanoCanvas {
     }
 
     Canvas &Canvas::bezierTo(float cp1x, float cp1y,
-                                  float cp2x, float cp2y,
-                                  float x, float y) {
+                             float cp2x, float cp2y,
+                             float x, float y) {
         local2Global(cp1x, cp1y);
         local2Global(cp2x, cp2y);
         local2Global(x, y);
@@ -421,11 +423,11 @@ namespace NanoCanvas {
             rx = x - sx * sw;
             ry = y - sy * sh;
 
-            Gradient* pattern = createImageGradient(image, rx, ry, rw, rh, 0, 1.0f);
+            Gradient *pattern = createImageGradient(image, rx, ry, rw, rh, 0, 1.0f);
             beginPath()
-                .fillGradient(*pattern)
-                .rect(rx, ry, rw, rh)
-                .fill();
+                    .fillGradient(*pattern)
+                    .rect(rx, ry, rw, rh)
+                    .fill();
             delete pattern;
             restore();
         }
@@ -484,6 +486,38 @@ namespace NanoCanvas {
         return *this;
     }
 
+    Canvas &Canvas::applyMatrix(SkMatrix &mat) {
+        /* [a c e]
+         [b d f]
+         [0 0 1]
+         | scaleX  skewX transX |
+          |  skewY scaleY transY |
+           |  pers0  pers1  pers2 |*/
+        if (mat.isIdentity()) {
+            return *this;
+        }
+        return setTransform(mat.getScaleX(), mat.getSkewY(), mat.getSkewX(),
+                            mat.getScaleY(), mat.getTranslateX(), mat.getTranslateY());
+    }
+
+    Canvas &Canvas::getMatrix(SkMatrix &out) {
+        float a[6];
+        nvgCurrentTransform(m_nvgCtx, a);
+        out.setAll(a[0], a[2], a[4], a[1], a[3], a[5], 0, 0, 1);
+        return *this;
+    }
+
+    Canvas &Canvas::concatMatrix(SkMatrix &in, bool pre) {
+        SkMatrix tmp;
+        getMatrix(tmp);
+        if (pre) {
+            tmp.preConcat(in);
+        } else {
+            tmp.postConcat(in);
+        }
+        return *this;
+    }
+
 /*---------------- Canvas Control -----------------*/
     Canvas &Canvas::beginFrame(int windowWidth, int windowHeight) {
         nvgBeginFrame(m_nvgCtx, windowWidth, windowHeight, m_scaleRatio);
@@ -492,7 +526,8 @@ namespace NanoCanvas {
 
         return *this;
     }
-    Canvas & Canvas::clipOut(float x, float y, float w, float h) {
+
+    Canvas &Canvas::clipOut(float x, float y, float w, float h) {
         local2Global(x, y);
         nvgScissor(m_nvgCtx, x, y, w, h);
         return *this;
@@ -525,6 +560,7 @@ namespace NanoCanvas {
         nvgIntersectScissor(m_nvgCtx, x, y, w, h);
         return *this;
     }
+
     Canvas &Canvas::resetClip() {
         nvgResetScissor(m_nvgCtx);
         return *this;

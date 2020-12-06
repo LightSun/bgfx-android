@@ -14,8 +14,17 @@
 #include "../input/GestureContext.h"
 
 #include "SceneHelper.h"
+#include "nancanvas/Canvas.h"
+#include "Drawable.h"
+#include "nancanvas/SkRect.h"
 
 namespace h7 {
+    void Actor::setBackground(Drawable *d) {
+        background.reset(d);
+    }
+    Drawable* Actor::getBackground() {
+        return background.get();
+    }
     Stage *Actor::getStage() {
         if (stage == nullptr)return nullptr;
         stage->weak_ref();
@@ -23,11 +32,11 @@ namespace h7 {
         if (stage->try_ref()) {
             result = stage.get();
             stage->unref();
-        }
-        else { result = nullptr; }
+        } else { result = nullptr; }
         stage->weak_unref();
         return result;
     }
+
     Group *Actor::getParent() {
         if (parent == nullptr)return nullptr;
         parent->weak_ref();
@@ -35,18 +44,31 @@ namespace h7 {
         if (parent->try_ref()) {
             result = parent.get();
             parent->unref();
-        }
-        else { result = nullptr; }
+        } else { result = nullptr; }
         parent->weak_unref();
         return result;
     }
-   // DEFINE_GET_WEAK_REF_METHOD2(Actor::, Group, Parent, parent)
+    // DEFINE_GET_WEAK_REF_METHOD2(Actor::, Group, Parent, parent)
+
+    void Actor::draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
+        background->getBounds().setXYWH(0, 0, width, height);
+        if (_mat.isIdentity()) {
+            background->draw(canvas, x, y);
+            onDraw(canvas, parentAlpha);
+        } else {
+            canvas.save();
+            canvas.applyMatrix(_mat);
+            background->draw(canvas, x, y);
+            onDraw(canvas, parentAlpha);
+            canvas.restore();
+        }
+    }
 
     void Actor::act(float delta) {
         if (actions.size() == 0) return;
 
         auto pStage = getStage();
-        if (pStage != NULL){
+        if (pStage != NULL) {
             if (pStage->getActionsRequestRendering()) {
                 requestRender();
             }
@@ -66,7 +88,7 @@ namespace h7 {
     }
 
     bool Actor::fire(Event &event) {
-        if (event.getStage() == NULL){
+        if (event.getStage() == NULL) {
             event.setStage(stage);
         }
         event.setTarget(this);
@@ -74,17 +96,17 @@ namespace h7 {
         // Collect ascendants so event propagation is unaffected by hierarchy changes.
         Array<sk_sp<Group>> ascendants;
         parent->weak_ref();
-        if(parent->try_ref()){
+        if (parent->try_ref()) {
             sk_sp<Group> _parent = this->parent;
             while (_parent != NULL) {
                 ascendants.add(_parent);
                 //
                 auto pGroup = _parent->parent;
                 pGroup->weak_ref();
-                if(pGroup->try_ref()){
+                if (pGroup->try_ref()) {
                     _parent = pGroup;
                     pGroup->unref();
-                } else{
+                } else {
                     _parent = nullptr;
                 }
                 pGroup->weak_unref();
@@ -139,7 +161,7 @@ namespace h7 {
         return event.isCancelled();
     }
 
-    const Actor* Actor::hit(float x, float y, bool touchable) {
+    const Actor *Actor::hit(float x, float y, bool touchable) {
         if (touchable && this->touchable != Touchable::enabled) return NULL;
         if (!isVisible()) return NULL;
         return (x >= 0 && x < width && y >= 0 && y < height ? this : NULL);
@@ -150,18 +172,20 @@ namespace h7 {
         if (pStage == nullptr) return screenCoords;
         return stageToLocalCoordinates(pStage->screenToStageCoordinates(screenCoords));
     }
-    Vector2f& Actor::localToScreenCoordinates(h7::Vector2f &vec) {
+
+    Vector2f &Actor::localToScreenCoordinates(h7::Vector2f &vec) {
         localCoordinatesToStage(vec);
         auto pStage = getStage();
-        if(pStage != nullptr){
+        if (pStage != nullptr) {
             pStage->stageToScreenCoordinates(vec);
         }
         return vec;
     }
+
     Vector2f &Actor::stageToLocalCoordinates(Vector2f &stageCoords) {
-        if (parent != nullptr){
+        if (parent != nullptr) {
             parent->weak_ref();
-            if(parent->try_ref()){
+            if (parent->try_ref()) {
                 parent->stageToLocalCoordinates(stageCoords);
                 parent->unref();
             }
@@ -170,11 +194,12 @@ namespace h7 {
         parentToLocalCoordinates(stageCoords);
         return stageCoords;
     }
-    Vector2f& Actor::localCoordinatesToStage(h7::Vector2f &vec) {
+
+    Vector2f &Actor::localCoordinatesToStage(h7::Vector2f &vec) {
         localToParentCoordinates(vec);
-        if (parent != nullptr){
+        if (parent != nullptr) {
             parent->weak_ref();
-            if(parent->try_ref()){
+            if (parent->try_ref()) {
                 parent->localToParentCoordinates(vec);
                 parent->unref();
             }
@@ -190,15 +215,17 @@ namespace h7 {
         localCoords.y = point.y();
         return localCoords;
     }
-    Vector2f & Actor::parentToLocalCoordinates(Vector2f &parentCoords) {
+
+    Vector2f &Actor::parentToLocalCoordinates(Vector2f &parentCoords) {
         auto point = getMatrix().mapXY(parentCoords.x - x, parentCoords.y - y);
         parentCoords.x = point.x();
         parentCoords.y = point.y();
         return parentCoords;
     }
+
     bool Actor::removeFromParent() {
         auto pGroup = getParent();
-        if(pGroup != nullptr){
+        if (pGroup != nullptr) {
             return pGroup->removeActor(this, true);
         }
         return false;
@@ -208,14 +235,16 @@ namespace h7 {
         auto it = Action::Iterator();
         actions.clear(&it);
     }
+
     void Actor::clearListeners() {
         auto it = EventListener::Iterator();
         listeners.clear(&it);
         captureListeners.clear(&it);
     }
-    bool Actor::isDescendantOf(Actor* actor) {
-        if(actor != nullptr){
-            Actor* _parent = this;
+
+    bool Actor::isDescendantOf(Actor *actor) {
+        if (actor != nullptr) {
+            Actor *_parent = this;
             do {
                 if (_parent == actor) return true;
                 _parent = _parent->getParent();
@@ -223,9 +252,10 @@ namespace h7 {
         }
         return false;
     }
-    bool Actor::isAscendantOf(Actor* actor) {
-        if(actor != nullptr){
-            Actor* act = actor;
+
+    bool Actor::isAscendantOf(Actor *actor) {
+        if (actor != nullptr) {
+            Actor *act = actor;
             do {
                 if (act == this) return true;
                 act = act->getParent();
@@ -233,31 +263,36 @@ namespace h7 {
         }
         return false;
     }
+
     bool Actor::hasKeyboardFocus() {
-        Stage* stage = getStage();
+        Stage *stage = getStage();
         return stage != nullptr && stage->getKeyboardFocus() == this;
     }
+
     bool Actor::hasScrollFocus() {
-        Stage* stage = getStage();
+        Stage *stage = getStage();
         return stage != nullptr && stage->getScrollFocus() == this;
     }
+
     bool Actor::isTouchFocusTarget() {
-        Stage* stage = getStage();
+        Stage *stage = getStage();
         if (stage == nullptr) return false;
         for (int i = 0, n = stage->touchFocuses.size(); i < n; i++)
             if (stage->touchFocuses.get(i)->target.get() == this) return true;
         return false;
     }
-     bool Actor::isTouchFocusListener () {
-         Stage* stage = getStage();
-         if (stage == nullptr) return false;
-         for (int i = 0, n = stage->touchFocuses.size(); i < n; i++)
-             if (stage->touchFocuses.get(i)->listenerActor.get() == this) return true;
-         return false;
+
+    bool Actor::isTouchFocusListener() {
+        Stage *stage = getStage();
+        if (stage == nullptr) return false;
+        for (int i = 0, n = stage->touchFocuses.size(); i < n; i++)
+            if (stage->touchFocuses.get(i)->listenerActor.get() == this) return true;
+        return false;
     }
+
     bool Actor::setZIndex(int index) {
         if (index < 0) return false;
-        Group* parent = getParent();
+        Group *parent = getParent();
         if (parent == nullptr) return false;
         Array<sk_sp<Actor>> children = parent->children;
         if (children.size() == 1) return false;
@@ -271,7 +306,7 @@ namespace h7 {
     }
 
     int Actor::getZIndex() {
-        Group* parent = getParent();
+        Group *parent = getParent();
         if (parent == nullptr) return -1;
         auto sp = sk_ref_sp<Actor>(this);
         return parent->children.indexOf(sp);
