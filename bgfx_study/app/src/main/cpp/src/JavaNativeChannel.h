@@ -47,7 +47,12 @@ namespace h7{
         JNCMeta* in;
         JNCMeta* out;
     };
-
+    /*
+    c++ call java :  buffer, class-name, obj, method-name, int argCount, args...
+    java call c++ :  name, ptr, method, args...
+               new
+               free
+     */
     struct JavaNativeChannel{
         void callJava(JavaNativeChannel* ctx, const JNCMeta* in, JNCResult* result);
         void callNative(JavaNativeChannel* ctx, const JNCMeta* in, JNCResult* result);
