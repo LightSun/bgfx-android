@@ -6,6 +6,7 @@
 #define BGFX_STUDY_ALIGN_H
 
 #include "../../core/stringbuilder.h"
+#include "nancanvas/SkRect.h"
 
 namespace h7 {
     namespace Align {
@@ -37,6 +38,31 @@ namespace h7 {
         }
         constexpr bool isCenterHorizontal(int align) {
             return (align & left) == 0 && (align & right) == 0;
+        }
+        inline void applyAlign(SkRect& range, SkRect& in, int aligns, SkRect& out){
+            auto w = in.width();
+            auto h = in.height();
+
+            if((aligns & left) != 0){
+                out.fLeft = range.fLeft;
+                out.fRight = out.fLeft + w;
+            } else if((aligns & right) != 0){
+                out.fRight = range.fRight;
+                out.fLeft = out.fRight - w;
+            } else if((aligns & center) != 0){
+                out.fLeft = range.fLeft + (range.width() - w) / 2;
+                out.fRight = out.fLeft + w;
+            }
+            if((aligns & top) != 0){
+                out.fTop = range.fTop;
+                out.fBottom = out.fTop + h;
+            }else if((aligns & bottom) != 0){
+                out.fBottom = range.fBottom;
+                out.fTop = out.fBottom - h;
+            }else if((aligns & center) != 0){
+                out.fTop = range.fTop + (range.height() - h) / 2;
+                out.fBottom = out.fTop + h;
+            }
         }
         inline void toString(int align, SB::StringBuilder& sb){
             if ((align & top) != 0)

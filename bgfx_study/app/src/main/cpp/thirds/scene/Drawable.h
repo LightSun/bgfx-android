@@ -6,6 +6,7 @@
 #define BGFX_STUDY_DRAWABLE_H
 
 #include "../nancanvas/SkRect.h"
+#include "Align.h"
 
 namespace NanoCanvas {
     class Canvas;
@@ -17,7 +18,8 @@ namespace h7{
 
     protected:
         SkRect _bounds;
-
+        SkRect _tmp;
+        int align = Align::center;
     public:
         /**
          * called to draw drawable
@@ -25,13 +27,19 @@ namespace h7{
          * @param x the x of cors
          * @param y the y of cors
          */
-        virtual void draw(NanoCanvas::Canvas& canvas, float x, float y){
+        virtual void draw(NanoCanvas::Canvas& canvas, float x, float y, int width, int height){
 
         };
 
         SkRect& getBounds();
-        void setBounds(SkRect& in);
+        virtual void setBounds(SkRect& in);
 
+        virtual void setAlign(int align){
+            this->align = align;
+        }
+        int getAlign(){
+            return align;
+        }
         float getLeft();
         float getRight();
         float getTop();

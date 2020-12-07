@@ -4,6 +4,7 @@
 
 #include "ColorDrawable.h"
 #include "../../nancanvas/Canvas.h"
+#include "../Align.h"
 
 namespace h7{
 
@@ -16,11 +17,13 @@ namespace h7{
     void ColorDrawable::setColor(h7::Color &in) {
         _color.set(in);
     }
-    void ColorDrawable::draw(NanoCanvas::Canvas &canvas, float x, float y) {
-        auto rect = getBounds();
-        float r = _circle ? rect.width() / 2 : _round;
+    void ColorDrawable::draw(NanoCanvas::Canvas &canvas, float x, float y, int width, int height) {
+        _tmp.setXYWH(0, 0, width, height);
+        Align::applyAlign(_tmp, getBounds(), align, _tmp);
+
+        float r = _circle ? _tmp.width() / 2 : _round;
         canvas.beginPath()
-                .roundedRect(x + rect.fLeft, y + rect.fTop, rect.width(), rect.height(), r)
+                .roundedRect(x + _tmp.fLeft, y + _tmp.fTop, _tmp.width(), _tmp.height(), r)
                 .fillColor(_color)
                 .fill();
     }

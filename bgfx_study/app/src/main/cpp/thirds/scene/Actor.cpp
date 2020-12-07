@@ -19,6 +19,9 @@
 #include "nancanvas/SkRect.h"
 
 namespace h7 {
+    Actor::Actor() {
+        _actorListenerM.setActor(this);
+    }
     void Actor::setBackground(Drawable *d) {
         background.reset(d);
     }

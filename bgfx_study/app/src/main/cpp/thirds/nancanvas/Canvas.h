@@ -10,53 +10,48 @@
 
 class NVGcontext;
 
-namespace h7{
+namespace h7 {
     class Color;
 }
-namespace NanoCanvas
-{
+namespace NanoCanvas {
     //using namespace TextAlign;
     using namespace h7;
-    
+
     /**
      * @class Canvas
      * @author Geequlim
      * @file Canvas.h
      * @brief The HTML5's Canvas liked render API writing in C++11 based on NanoVG
      */
-    class Canvas: public SkRefCnt
-    {
+    class Canvas : public SkRefCnt {
     public:
-        enum Winding
-        {
+        enum Winding {
             /// Counter clock wise
-            CCW = 1,
+                    CCW = 1,
             /// Clock wise
-            CW = 2,
+                    CW = 2,
         };
-        
+
         /// Line cap style
-        enum class LineCap
-        {
+        enum class LineCap {
             ///  A flat edge is added to each end of the line
-            BUTT,
+                    BUTT,
             /// A rounded end cap is added to each end of the line
-            ROUND,
+                    ROUND,
             /// A square end cap is added to each end of the line
-            SQUARE,
+                    SQUARE,
         };
-        
+
         /// Line join style
-        enum class LineJoin
-        {
+        enum class LineJoin {
             /// Creates a beveled corner
-            BEVEL,
+                    BEVEL,
             /// Creates a rounded corner
-            ROUND,
+                    ROUND,
             /// Creates a sharp corner
-            MITER
+                    MITER
         };
-        
+
         /**
          * @brief Construct a canvas with NanoVG Context
          * @param ctx The NanoVG Context used for this canvas
@@ -64,10 +59,10 @@ namespace NanoCanvas
          * @param height The height of the canvas, in pixels
          * @param scaleRatio The device pixel ration 
          */
-        Canvas(NVGcontext* ctx,float width , float height , float scaleRatio =1.0f);
-        
-    /* ------------------- Basic Path ----------------------*/
-    
+        Canvas(NVGcontext *ctx, float width, float height, float scaleRatio = 1.0f);
+
+        /* ------------------- Basic Path ----------------------*/
+
         /**
          * @brief Moves the path to the specified point in the canvas, without creating a line
          * 
@@ -77,8 +72,8 @@ namespace NanoCanvas
          * @param y The y-coordinate of where to move the path to
          * @return The Canvas to operate with
          */
-        Canvas& moveTo(float x,float y);
-        
+        Canvas &moveTo(float x, float y);
+
         /**
          * @brief Adds a new point and creates a line from that point to the last specified point in the canvas
          * 
@@ -88,8 +83,8 @@ namespace NanoCanvas
          * @param y The y-coordinate of where to create the line to
          * @return The Canvas to operate with
          */
-        Canvas& lineTo(float x,float y);
-        
+        Canvas &lineTo(float x, float y);
+
         /**
          * @brief Creates an arc/curve between two tangents on the canvas.
          * @param x1 The x-coordinate of the first tangent
@@ -99,8 +94,8 @@ namespace NanoCanvas
          * @param r  The radius of the arc
          * @return The Canvas to operate with
          */
-        Canvas& arcTo(float x1,float y1,float x2,float y2,float r);
-        
+        Canvas &arcTo(float x1, float y1, float x2, float y2, float r);
+
         /**
          * @brief Creates a quadratic Bézier curve
          * 
@@ -115,8 +110,8 @@ namespace NanoCanvas
          * @param y The y-coordinate of the ending point
          * @return The Canvas to operate with
          */
-        Canvas& quadTo(float cpx,float cpy,float x, float y);
-        
+        Canvas &quadTo(float cpx, float cpy, float x, float y);
+
         /**
          * @brief Creates a cubic Bézier curve
          * 
@@ -134,10 +129,10 @@ namespace NanoCanvas
          * @param y The y-coordinate of the ending point
          * @return The Canvas to operate with
          */
-        Canvas& bezierTo(float cp1x,float cp1y,
-                              float cp2x,float cp2y,
-                              float x, float y);
-        
+        Canvas &bezierTo(float cp1x, float cp1y,
+                         float cp2x, float cp2y,
+                         float x, float y);
+
         /**
          * @brief Creates an arc/curve (used to create circles, or parts of circles)
          * The arc() method creates an arc/curve (used to create circles, or parts of circles).
@@ -150,17 +145,18 @@ namespace NanoCanvas
          * @param counterclockwise Optional. Specifies whether the drawing should be counterclockwise or clockwise. False is default, and indicates clockwise, while true indicates counter-clockwise.
          * @return 
          */
-        Canvas& arc(float x,float y,float r, float sAngle,float eAngle,bool counterclockwise = false);
-        
+        Canvas &
+        arc(float x, float y, float r, float sAngle, float eAngle, bool counterclockwise = false);
+
         /**
          * @brief Close current path with a line segment
          * @return The canvas to operate with 
          */
-        Canvas& closePath();
-    
-    
-    /* ------------------- Advance Path --------------------*/
-    
+        Canvas &closePath();
+
+
+        /* ------------------- Advance Path --------------------*/
+
         /**
          * @brief Creates a rectangle
          * 
@@ -172,8 +168,8 @@ namespace NanoCanvas
          * @param h The height of the rectangle, in pixels
          * @return The canvas which the path be added to
          */
-        Canvas& rect(float x,float y,float w,float h);
-        
+        Canvas &rect(float x, float y, float w, float h);
+
         /**
          * @brief Creates a  rounded rectangle
          * @param x The x-coordinate of the upper-left corner of the rectangle
@@ -183,8 +179,8 @@ namespace NanoCanvas
          * @param r The radius of the circle formed by 4 corners of the rounded rectangle
          * @return The canvas to create path
          */
-        Canvas& roundedRect(float x,float y,float w,float h,float r);
-        
+        Canvas &roundedRect(float x, float y, float w, float h, float r);
+
         /**
          * @brief Creates a circle
          * @param cx The x-coordinate of center point for the circle
@@ -192,8 +188,8 @@ namespace NanoCanvas
          * @param r The radius of the circle
          * @return The canvas to create path
          */
-        Canvas& circle(float cx ,float cy , float r);
-        
+        Canvas &circle(float cx, float cy, float r);
+
         /**
          * @brief Creates an ellipse
          * @param cx The x-coordinate of center point for the ellipse
@@ -202,10 +198,10 @@ namespace NanoCanvas
          * @param ry The radius of the ellipse in vertical
          * @return The canvas to create path
          */
-        Canvas& ellipse(float cx, float cy, float rx, float ry);
-        
-    /* ------------------- Draw Action ---------------------*/
-        
+        Canvas &ellipse(float cx, float cy, float rx, float ry);
+
+        /* ------------------- Draw Action ---------------------*/
+
         /**
          * @brief Fills the current drawing (path)
          * 
@@ -214,8 +210,8 @@ namespace NanoCanvas
          * @note If the path is not closed, the fill() method will add a line from the last point to the startpoint of the path to close the path (like closePath()), and then fill the path.
          * @return The canvas to fill
          */
-        Canvas& fill();
-        
+        Canvas &fill();
+
         /**
          * @brief Actually draws the path you have defined
          * 
@@ -223,8 +219,8 @@ namespace NanoCanvas
          * 
          * @return The canvas to stroke
          */
-        Canvas& stroke();
-        
+        Canvas &stroke();
+
         /**
          * @brief Draws a "filled" rectangle
          * 
@@ -236,8 +232,8 @@ namespace NanoCanvas
          * @param h The height of the rectangle, in pixels
          * @return The canvas to draw
          */
-        Canvas& fillRect(float x,float y,float w,float h);
-        
+        Canvas &fillRect(float x, float y, float w, float h);
+
         /**
          * @brief Draws a rectangle (no fill)
          * 
@@ -249,16 +245,16 @@ namespace NanoCanvas
          * @param h The height of the rectangle, in pixels
          * @return The canvas to draw
          */
-        Canvas& strokeRect(float x,float y,float w,float h);
-        
+        Canvas &strokeRect(float x, float y, float w, float h);
+
         /**
          * @brief Clear the canvas with color
          * @param color The color to fill the hole canvas
          * @return The canvas to operate with
          */
-        Canvas& clearColor(const Color& color);
-        
-        
+        Canvas &clearColor(const Color &color);
+
+
         /**
          * @brief Draws "filled" text on the canvas
          * @param text Specifies the text that will be written on the canvas
@@ -267,8 +263,8 @@ namespace NanoCanvas
          * @param rowWidth The max row width of the text box,NAN is not limited
          * @return The canvas to operate with
          */
-        Canvas& fillText(const char* text,float x,float y,float rowWidth = -1);
-        
+        Canvas &fillText(const char *text, float x, float y, float rowWidth = -1);
+
         /**
          * @brief Draws an image onto the canvas
          * 
@@ -285,35 +281,35 @@ namespace NanoCanvas
          * @param sheight The height of the clipped image,-1 as default to clip to bottom side of the image
          * @return The canvas to draw this image
          */
-        Canvas& drawImage(Image& image,float x,float y, 
-                          float width = -1,float height = -1,
-                          float sx = 0,float sy = 0,
-                          float swidth = -1,float sheight = -1);
-        
-    /*-------------------- Style Control -------------------*/
-    
+        Canvas &drawImage(Image &image, float x, float y,
+                          float width = -1, float height = -1,
+                          float sx = 0, float sy = 0,
+                          float swidth = -1, float sheight = -1);
+
+        /*-------------------- Style Control -------------------*/
+
         /**
          * @brief Set the style of the end caps for a line
          * 
          * @param cap The line cap style
          * @return The canvas to operate with
          */
-        Canvas& lineCap(LineCap cap);
-        
+        Canvas &lineCap(LineCap cap);
+
         /**
          * @brief Set the type of corner created, when two lines meet
          * @param join The line join style
          * @return The canvas to operate with
          */
-        Canvas& lineJoin(LineJoin join);
-        
+        Canvas &lineJoin(LineJoin join);
+
         /**
          * @brief Set the current line width
          * @param width The current line width, in pixels
          * @return The canvas to operate with
          */
-        Canvas& strokeWidth(float width);
-        
+        Canvas &strokeWidth(float width);
+
         /**
          * @brief Sets the maximum miter length
          * 
@@ -325,44 +321,44 @@ namespace NanoCanvas
          * @param limit A positive number that specifies the maximum miter length. If the current miter length exceeds the miterLimit, the corner will display as lineJoin "bevel"
          * @return The canvas to operate with
          */
-        Canvas& miterLimit(float limit);
-        
+        Canvas &miterLimit(float limit);
+
         /**
          * @brief Sets the current alpha or transparency value of the drawing.
          * @param alpha new alpha vlaue of canvas
          * @return The canvas to operate with
          */
-        Canvas& globalAlpha(float alpha);
-        
-        
+        Canvas &globalAlpha(float alpha);
+
+
         /**
          * @brief Sets the color to fill the drawing
          * @param color The color to fill with
          * @return The canvas to operate with
          */
-        Canvas& fillColor(const Color& color);
-        
+        Canvas &fillColor(const Color &color);
+
         /**
          * @brief Set the gradient or pattern paint used to fill the drawing
          * @param paint The paint used to fill the drawing
          * @return The canvas to operate with
          */
-        Canvas& fillGradient(const Gradient& paint);
-        
+        Canvas &fillGradient(const Gradient &paint);
+
         /**
          * @brief  Set the color used for strokes.
          * @param color Stroke color
          * @return The canvas to operate with
          */
-        Canvas& strokeColor(const Color& color);
-        
+        Canvas &strokeColor(const Color &color);
+
         /**
          * @brief Set the gradient or pattern paint used for strokes
          * @param paint The paint used to fill the drawing
          * @return The canvas to operate with
          */
-        Canvas& strokeGradient(const Gradient& paint);
-        
+        Canvas &strokeGradient(const Gradient &paint);
+
         /**
          * @brief Set current font for text rendering 
          * @note If the face of the font is invalid ,it doesn't work
@@ -370,15 +366,15 @@ namespace NanoCanvas
          * @param font The font to use
          * @return The canvas to operate with
          */
-        Canvas& font(const Font& font);
-        
+        Canvas &font(const Font &font);
+
         /**
          * @brief Set font size for current text style.
          * @param size The font size
          * @return The canvas to operate with
          */
-        Canvas& fontSize(float size);
-        
+        Canvas &fontSize(float size);
+
         /**
          * @brief Sets the text alignment of current text style
          * @param hAlign The horizontal alignment
@@ -387,16 +383,16 @@ namespace NanoCanvas
          * @see TextAlign::VerticalAlign
          * @return The canvas to operate with
          */
-        Canvas& textAlign(unsigned int hAlign,unsigned int vAlign);
-        
+        Canvas &textAlign(unsigned int hAlign, unsigned int vAlign);
+
         /**
          * @brief Set styles for text rendering
          * @param textStyle The text style to use
          * @see NanoCanvas::TextStyle
          * @return The canvas to operate with
          */
-        Canvas& textStyle(const TextStyle& textStyle);
-        
+        Canvas &textStyle(const TextStyle &textStyle);
+
         /**
          * @brief Creates a linear gradient (to use on canvas content)
          * @param x0 The x-coordinate of the start point of the gradient
@@ -407,9 +403,9 @@ namespace NanoCanvas
          * @param outter The end color
          * @return The created gradient style object.
          */
-        static Gradient* createLinearGradient(float x0, float y0, float x1, float y1,
-                                              Color& scolor ,  Color& ecolor);
-        
+        static Gradient *createLinearGradient(float x0, float y0, float x1, float y1,
+                                              Color &scolor, Color &ecolor);
+
         /**
          * @brief Creates a radial/circular gradient (to use on canvas content)
          * @param cx The x-coordinate of the circle of the gradient
@@ -420,9 +416,9 @@ namespace NanoCanvas
          * @param ocolor The color on outer circle
          * @return The created gradient style object.
          */
-        static Gradient* createRadialGradient(float cx, float cy, float r1, float r2,
-                                              Color& icolor ,  Color& ocolor);
-                                      
+        static Gradient *createRadialGradient(float cx, float cy, float r1, float r2,
+                                              Color &icolor, Color &ocolor);
+
         /**
          * @brief Creates and returns a box gradient.
          * @par Box gradient is a feathered rounded rectangle, it is useful for rendering drop shadows or highlights for boxes.
@@ -436,9 +432,9 @@ namespace NanoCanvas
          * @param ocol The outer color of the gradient
          * @return The created gradient style object.
          */
-        static Gradient* createBoxGradient(float x, float y, float w, float h,
-                                          float r, float f, Color& icol, Color& ocol);
-        
+        static Gradient *createBoxGradient(float x, float y, float w, float h,
+                                           float r, float f, Color &icol, Color &ocol);
+
         /**
          * @brief Creates and returns an image pattern paint.
          * @param image Specifies the image of the pattern to use
@@ -450,17 +446,18 @@ namespace NanoCanvas
          * @param alpha The transparent of the image pattern
          * @return The patter paint created
          */
-        static Gradient* createImageGradient(const Image& image, float ox, float oy,
-                                            float w, float h, float angle = 0.0f, float alpha = 1.0f);
-        
+        static Gradient *createImageGradient(const Image &image, float ox, float oy,
+                                             float w, float h, float angle = 0.0f,
+                                             float alpha = 1.0f);
+
         /**
          * @brief Check the width of the text, before writing it on the canvas
          * @param text The text to be measured
          * @param rowWidth The max row width of the text box,NAN is not limited
          * @return The width of the specified text
          */
-        float measureText(const char* text,float rowWidth = -1);
-        
+        float measureText(const char *text, float rowWidth = -1);
+
         /**
          * @brief Check the boundary of the text, before writing it on the canvas
          * @param text The text to be measured
@@ -470,7 +467,8 @@ namespace NanoCanvas
          * @param rowWidth The max row width of the text box,NAN is not limited
          * @return The width of the specified text
          */
-        float measureText(const char* text,float x,float y,float* bounds,float rowWidth = -1);
+        float measureText(const char *text, float x, float y, float *bounds, float rowWidth = -1);
+
         /**
          * measure text with width and height
          * @param text the text
@@ -480,10 +478,11 @@ namespace NanoCanvas
          * @param outH the out height by measure
          * @param rowWidth the max row width
          */
-        void measureText(const char* text,float x,float y,float *outW, float *outH,float rowWidth = -1);
+        void measureText(const char *text, float x, float y, float *outW, float *outH,
+                         float rowWidth = -1);
 
-    /*--------------------- Transformations ----------------*/
-        
+        /*--------------------- Transformations ----------------*/
+
         /**
          * @brief Scales the current drawing, bigger or smaller.
          * @note If you scale a drawing, all future drawings will also be scaled. The positioning will also be scaled. 
@@ -492,8 +491,8 @@ namespace NanoCanvas
          * @param sy Scales the height of the current drawing (1=100%, 0.5=50%, 2=200%, etc.)
          * @return The canvas to scale with
          */
-        Canvas& scale(float sx , float sy);
-        
+        Canvas &scale(float sx, float sy);
+
         /**
          * @brief Rotates the current drawing
          * @note: The rotation will only affect drawings made AFTER the rotation is done.
@@ -502,8 +501,8 @@ namespace NanoCanvas
          * @param angle The rotation angle, in radians.
          * @return The canvas to rotate with
          */
-        Canvas& rotate(float angle);
-        
+        Canvas &rotate(float angle);
+
         /**
          * @brief Remaps the (0,0) position on the canvas
          * @note When you call a method such as fillRect() after translate(), the value is added to the x- and y-coordinate values.
@@ -511,8 +510,8 @@ namespace NanoCanvas
          * @param y The value to add to vertical (y) coordinates
          * @return The canvas to translate with
          */
-        Canvas& translate(float x,float y);
-        
+        Canvas &translate(float x, float y);
+
         /**
          * @brief Replaces the current transformation matrix for the drawing
          * @par Each object on the canvas has a current transformation matrix. @n
@@ -535,8 +534,8 @@ namespace NanoCanvas
          * @param f Moves the the drawing vertically
          * @return The canvas to transform with
          */
-        Canvas& transform(float a, float b, float c, float d, float e, float f);
-        
+        Canvas &transform(float a, float b, float c, float d, float e, float f);
+
         /**
          * @brief Resets the current transform to the identity matrix. Then runs transform()
          * @param a Scales the drawing horizontally
@@ -549,25 +548,20 @@ namespace NanoCanvas
          * @see Canvas::restTransform()
          * @return The canvas to set transform with
          */
-        Canvas& setTransform(float a, float b, float c, float d, float e, float f);
-        
+        Canvas &setTransform(float a, float b, float c, float d, float e, float f);
+
         /**
          * @brief Resets the current transform to the identity matrix.
          * @return The canvas to set transform with
          */
-        Canvas& resetTransform();
+        Canvas &resetTransform();
 
-        /**
-         * apply matrix to canvas
-         * @param mat the matrix
-         * @return this.
-         */
-        Canvas& applyMatrix(SkMatrix& mat);
+        Canvas &applyMatrix(SkMatrix &mat);
 
-        Canvas& getMatrix(SkMatrix& out);
+        Canvas &getMatrix(SkMatrix &out);
 
-        Canvas& concatMatrix(SkMatrix& in, bool pre = true);
-    /*--------------------- Canvas Control -----------------*/
+        Canvas &concatMatrix(SkMatrix &in, bool pre = true);
+        /*--------------------- Canvas Control -----------------*/
         /**
          * @brief Begin drawing a new frame
          * 
@@ -579,32 +573,32 @@ namespace NanoCanvas
          * @param windowHeight Height of your window
          * @return The canvas to begin frame with
          */
-        Canvas& beginFrame(int windowWidth, int windowHeight);
-        
+        Canvas &beginFrame(int windowWidth, int windowHeight);
+
         /**
          * @brief Cancels drawing the current frame.
          * @return The canvas to cancle draw
          */
-        Canvas& cancelFrame();
+        Canvas &cancelFrame();
 
-        Canvas& clipOut(float x, float y, float w, float h);
-        
+        Canvas &clipOut(float x, float y, float w, float h);
+
         /** @brief Ends drawing flushing remaining render state. */
         void endFrame();
-        
+
         /**
          * @brief Begins a path, or resets the current path
          * @return The canvas to create path
          */
-        Canvas& beginPath();
-        
+        Canvas &beginPath();
+
         /**
          * @brief Sets the current path winding
          * @param dir CVS_CW or CVS_CW
          * @return The canvas to operate with
          */
-        Canvas& pathWinding(Winding dir);
-        
+        Canvas &pathWinding(Winding dir);
+
 
         /**
          * @brief Clip of a rectangular region
@@ -614,85 +608,82 @@ namespace NanoCanvas
          * @param h The width of the clip region, in pixels
          * @return The canvas to clip with
          */
-        Canvas& clip(float x,float y,float w,float h);
-        
+        Canvas &clip(float x, float y, float w, float h);
+
         /**
          * @brief Reset clip state ,remove all clip region
          * @return The canvas to reset
          */
-        Canvas& resetClip();
-        
-        
-        
-    /* --------------------- State NanoVG Handling -------------------
-     * 
-     * 
-     * NanoVG contains state which represents how paths will be rendered.
-     * The state contains transform, fill and stroke styles, text and font styles,and scissor clipping.
-     * 
-     *-----------------------------------------------------------------*/
-        
+        Canvas &resetClip();
+
+
+
+        /* --------------------- State NanoVG Handling -------------------
+         *
+         *
+         * NanoVG contains state which represents how paths will be rendered.
+         * The state contains transform, fill and stroke styles, text and font styles,and scissor clipping.
+         *
+         *-----------------------------------------------------------------*/
+
         /**
          * @brief Pushe and save the current render state into a state stack.
          * @note  A matching restore() must be used to restore the state.
          * @return The canvas to save state
          */
-        Canvas& save();
-        
+        Canvas &save();
+
         /**
          * @brief Pop and restore current render state.
          * @return The canvas to restore state
          */
-        Canvas& restore();
-        
+        Canvas &restore();
+
         /**
          * @brief Resets current render state to default values. Does not affect the render state stack.
          * @return The canvas to reset state
          */
-        Canvas& reset();
-        
-        
-    /*------------------ Canvas propoties ---------------------*/
-    
+        Canvas &reset();
+
+
+        /*------------------ Canvas propoties ---------------------*/
+
         /**
          * @brief Check is the context valid
          * @return Is the context valid
          */
-        inline bool valid()const { return m_nvgCtx; }
-        
+        inline bool valid() const { return m_nvgCtx; }
+
         /**
          * @brief Set canvas size
          * @param width  The width of the canvas, in pixels
          * @param height The height of the canvas, in pixels
          * @return The canvas to resize
          */
-        inline Canvas& setSize(float width,float height)
-        {
-            m_width  = width;
+        inline Canvas &setSize(float width, float height) {
+            m_width = width;
             m_height = height;
             return *this;
         }
-        
+
         /**
          * @brief Set position of the canvas 
          * @param x The x-coordinate of the upper-left corner of the rectangle
          * @param y The y-coordinate of the upper-left corner of the rectangle
          * @return The canvas to change position
          */
-        inline Canvas& setPosition(float x , float y)
-        {
+        inline Canvas &setPosition(float x, float y) {
             m_xPos = x;
             m_yPos = y;
             return *this;
         }
 
-        inline Canvas& offsetPosition(float dx , float dy)
-        {
+        inline Canvas &offsetPosition(float dx, float dy) {
             m_xPos += dx;
             m_yPos += dy;
             return *this;
         }
-        
+
         /**
          * @brief Set scale ration of the canvas
          * 
@@ -704,44 +695,41 @@ namespace NanoCanvas
          * @param ratio The device pixel ration
          * @return The canvas to set scale ration with
          */
-        inline Canvas& setScaleRatio(float ratio)
-        {
+        inline Canvas &setScaleRatio(float ratio) {
             m_scaleRatio = ratio;
             return *this;
         }
-        
+
         /**
          * @brief Convert coordinates in canvas to coordinates in windows 
          * @param x [inout] The x-coordinate to convert
          * @param y [inout] The x-coordinate to convert
          */
-        inline void local2Global(float& x,float& y)
-        {
+        inline void local2Global(float &x, float &y) {
             x = m_xPos + x;
             y = m_yPos + y;
         }
-        
+
         /** 
          * @brief Convert coordinates in windows to coordinates in canvas 
          * @param x [inout] The x-coordinate to convert
          * @param y [inout] The x-coordinate to convert
          */
-        inline void global2Local(float& x,float& y)
-        {
+        inline void global2Local(float &x, float &y) {
             x = x - m_xPos;
             y = y - m_yPos;
         }
-        
-        
+
+
         /**
          * @brief Get the NanoVG context for advanced control
          * @return The NanoVG context of this canvas
          */
-        NVGcontext* nvgContext(){ return m_nvgCtx; }
-        
+        NVGcontext *nvgContext() { return m_nvgCtx; }
+
     protected:
         /// The NanoVG context
-        NVGcontext * m_nvgCtx;
+        NVGcontext *m_nvgCtx;
         /// The width of the canvas
         float m_width;
         /// The height of the canvas

@@ -165,6 +165,10 @@ namespace h7{
         inline T&operator[](int index){
             return get(index);
         }
+        inline Array<T>& operator=(const Array<T> that){
+            list = that.list;
+            return *this;
+        }
     };
 
 #define BTYPE_ARRAY(cn, type)\
