@@ -16,9 +16,9 @@ namespace h7{
         JNCMeta(int length);
 
         int getLength();
-        void setLength();
+        void setLength(int len);
         int getPosition();
-        void setPosition();
+        void setPosition(int pos);
 
         void writeInt(int a);
         void writeShort(short a);
@@ -46,6 +46,8 @@ namespace h7{
         JavaNativeChannel* channel;
         JNCMeta* in;
         JNCMeta* out;
+        char* errorMsg;
+        int errorCode;
     };
     /*
     c++ call java :  buffer, class-name, obj, method-name, int argCount, args...
