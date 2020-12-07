@@ -1,6 +1,7 @@
 //
 // Created by Administrator on 2020/11/24 0024.
 //
+#include <application/Application.h>
 #include "jni.h"
 #include "AndroidInputJni.h"
 #include "AndroidInput.h"
@@ -8,6 +9,7 @@
 #include "../GestureContext.h"
 #include "../../luaext_java/java_env.h"
 #include "../../lua/bgfx_app.h"
+#include "../application/Application.h"
 
 #define MEW_CLASS  "com/heaven7/android/hbmdx/input/MotionEventWrapper"
 #define MEW_CLASS_SIG "L" MEW_CLASS ";"
@@ -139,7 +141,7 @@ namespace h7{
     Java_com_heaven7_android_hbmdx_input_AndroidInput_nAlloc(JNIEnv *env, jclass clazz,jobject obj) {
         AndroidInput* mev = new AndroidInput();
         mev->setRefObject(obj);
-        h7::_input = mev;
+        Application::get()->input = mev;
         return reinterpret_cast<jlong>(mev);
     }
     extern "C"

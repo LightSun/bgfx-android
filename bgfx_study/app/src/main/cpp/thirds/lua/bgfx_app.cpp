@@ -11,11 +11,13 @@
 #include <log.h>
 #include "../core/common.h"
 #include "../input/GestureContext.h"
+#include "../application/Application.h"
 
-namespace h7{
-    Input* getInput(){
-        return _input;
+namespace h7 {
+    Input *getInput() {
+        return Application::get()->input;
     }
+
     void BgfxApp::doInit(bgfx::Init *pInit, entry::InitConfig *pConfig) {
         onPreInit();
         //LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);
@@ -32,11 +34,12 @@ namespace h7{
         //LOGD("BgfxApp init is called. holder = %p,func_init= %s ", holder, func_init);
         onInit();
     }
+
     void BgfxApp::actDestroy(bool lightly) {
-        if(lightly){
+        if (lightly) {
             onDestroy(lightly);
             bgfx::shutdown();
-        } else{
+        } else {
             if (getState() != APP_STATE_DESTROYED) {
                 setState(APP_STATE_DESTROYED);
                 ext_println("destroy");
@@ -49,17 +52,21 @@ namespace h7{
     }
 
     unsigned char BgfxApp::getState() {
-            return state.load(std::memory_order_relaxed);
+        return state.load(std::memory_order_relaxed);
     }
+
     void BgfxApp::setState(unsigned char s) {
-            state.store(s, std::memory_order_release);//对读线程可见
+        state.store(s, std::memory_order_release);//对读线程可见
     }
+
     void BgfxApp::onPause() {
         LOGW("onPause");
     }
+
     void BgfxApp::onResume() {
         LOGW("onResume");
     }
+
 //------------- controller =======================
     void AppController::destroyApp() {
         if (app) {
@@ -68,6 +75,7 @@ namespace h7{
             app = nullptr;
         }
     }
+
     void AppController::quitApp() {
         if (app) {
             app->quit();
@@ -97,32 +105,35 @@ namespace h7{
     void AppController::quitAll(EndTask task) {
         LOGD("LuaAppHolder >>> start quit all.");
         m_thread.push(new CmdData(TYPE_QUIT_ALL, task));
-        if(app != nullptr){
+        if (app != nullptr) {
             //if previous is paused .just resume to destroy
-            if(app->isPaused()){
+            if (app->isPaused()) {
                 app->quit();
                 resume();
-            } else{
+            } else {
                 app->quit();
             }
         }
     }
 
     void AppController::start(BgfxApp *app) {
-        if(this->app != nullptr){
+        if (this->app != nullptr) {
             LOGW("start LuaApp failed: last app exists,ptr = %p. you should quit first", this->app);
             return;
         }
         m_thread.push(new CmdData(TYPE_APP_INIT, app));
         LOGD("_appInit init ok. try TYPE_LUA_APP_START");
     }
-    void AppController::pause(bool manul){
-        LOGD("LuaAppHolder >>> start pause... %d = ",manul);
-        if(app!= nullptr && app->isRunning()){
-            m_thread.push(new CmdData(manul ? TYPE_APP_PAUSE_MANULLY : TYPE_APP_PAUSE, (void*)NULL));
+
+    void AppController::pause(bool manul) {
+        LOGD("LuaAppHolder >>> start pause... %d = ", manul);
+        if (app != nullptr && app->isRunning()) {
+            m_thread.push(
+                    new CmdData(manul ? TYPE_APP_PAUSE_MANULLY : TYPE_APP_PAUSE, (void *) NULL));
             app->pause();
         }
     }
+
     void AppController::resume() {
         LOGD("LuaAppHolder >>> start resume...");
         _condition.notify_one();
@@ -131,6 +142,7 @@ namespace h7{
     bool AppController::isRunning() {
         return app != nullptr && m_thread.isRunning();
     }
+
     void AppController::requestRender() {
         m_thread.push(new CmdData(TYPE_APP_RENDER, app));
         LOGD("AppController >>> requestRender");
@@ -139,18 +151,19 @@ namespace h7{
     CmdData::CmdData(uint8_t type, void *data) : type(type), data(data) {
 
     }
+
     CmdData::CmdData(uint8_t type, EndTask task) : type(type), task(task) {
 
     }
 
     //---------------------------------------------------------------------
 
-    static inline void renderSelf(AppController *holder){
+    static inline void renderSelf(AppController *holder) {
         BgfxApp *demo = holder->app;
         bgfx::frame();
         LOGD("loop render >>> start. app = %p", demo);
-        for(;; ){
-            switch (demo->getState()){
+        for (;;) {
+            switch (demo->getState()) {
                 case APP_STATE_PAUSED:
                     LOGD("renderSelf >>> APP_STATE_PAUSED");
                     goto ndes;
@@ -186,10 +199,10 @@ namespace h7{
         LOGD("performApp >>> end");
     }
 
-    static inline void render(AppController *holder){
+    static inline void render(AppController *holder) {
         BgfxApp *demo = holder->app;
         LOGD("loop render >>> start. app = %p", demo);
-        switch (demo->getState()){
+        switch (demo->getState()) {
             case APP_STATE_PAUSED:
                 LOGD("render >>> APP_STATE_PAUSED");
                 return;
@@ -238,64 +251,66 @@ namespace h7{
                     case TYPE_APP_INIT: {
                         BgfxApp *demo = holder->app = static_cast<BgfxApp *>(data->data);
                         LOGD("TYPE_LUA_APP_INIT , start LuaApp : %p", demo);
-                        if(demo != nullptr && !demo->isDestroyed()){
+                        if (demo != nullptr && !demo->isDestroyed()) {
                             demo->markRunning();
                             demo->doInit(holder->bgfx_init, holder->config);
                             demo->onResume();
-                            if(demo->renderSelf){
+                            if (demo->renderSelf) {
                                 renderSelf(holder);
-                            } else{
+                            } else {
                                 render(holder);
                             }
                         }
                         break;
                     }
 
-                    case TYPE_APP_PAUSE:{
+                    case TYPE_APP_PAUSE: {
                         LOGD("TYPE_LUA_APP_PAUSE...");
                         std::unique_lock<std::mutex> lock(holder->_mutex);
                         holder->_condition.wait(lock);
                         auto pApp = holder->app;
-                        if(pApp != nullptr && !pApp->isDestroyed()){
+                        if (pApp != nullptr && !pApp->isDestroyed()) {
                             //as bgfx should destroy onPause, we should reinit here
                             pApp->markRunning();
                             pApp->doInit(holder->bgfx_init, holder->config);
                             pApp->onResume();
                             //restart loop for draw
                             LOGD("resume: restart for draw.");
-                            if(pApp->renderSelf){
+                            if (pApp->renderSelf) {
                                 renderSelf(holder);
-                            } else{
+                            } else {
                                 render(holder);
                             }
                         }
                     }
                         break;
 
-                    case TYPE_APP_PAUSE_MANULLY:{
+                    case TYPE_APP_PAUSE_MANULLY: {
                         LOGD("TYPE_LUA_APP_PAUSE_MANULLY...");
                         std::unique_lock<std::mutex> lock(holder->_mutex);
                         holder->_condition.wait(lock);
                         auto pApp = holder->app;
-                        if(pApp != nullptr && !pApp->isDestroyed()){
+                        if (pApp != nullptr && !pApp->isDestroyed()) {
                             pApp->markRunning();
                             pApp->onResume();
                             //restart loop for draw
                             LOGD("resume: restart for draw.");
-                            if(pApp->renderSelf){
+                            if (pApp->renderSelf) {
                                 renderSelf(holder);
-                            } else{
+                            } else {
                                 render(holder);
                             }
                         }
-                    }break;
+                    }
+                        break;
 
-                    case TYPE_APP_RENDER:{
+                    case TYPE_APP_RENDER: {
                         auto pApp = holder->app;
-                        if(pApp != nullptr && !pApp->isDestroyed()){
+                        if (pApp != nullptr && !pApp->isDestroyed()) {
                             render(holder);
                         }
-                    }break;
+                    }
+                        break;
 
                     case TYPE_QUIT_ALL:
                         LOGD("TYPE_QUIT_ALL.");
@@ -312,7 +327,7 @@ namespace h7{
                 }
             }
         }
-        if(holder->config->OnExitRenderThread){
+        if (holder->config->OnExitRenderThread) {
             holder->config->OnExitRenderThread();
         }
         LOGD("threadFunc: exit.");

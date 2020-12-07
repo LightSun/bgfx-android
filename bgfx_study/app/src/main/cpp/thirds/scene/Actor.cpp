@@ -56,12 +56,12 @@ namespace h7 {
     void Actor::draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
         background->getBounds().setXYWH(0, 0, width, height);
         if (_mat.isIdentity()) {
-            background->draw(canvas, x, y);
+            background->draw(canvas, x, y, width, height);
             onDraw(canvas, parentAlpha);
         } else {
             canvas.save();
             canvas.applyMatrix(_mat);
-            background->draw(canvas, x, y);
+            background->draw(canvas, x, y, width, height);
             onDraw(canvas, parentAlpha);
             canvas.restore();
         }

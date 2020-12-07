@@ -74,60 +74,21 @@ namespace h7{
         }
         inline void clearActorListeners(unsigned char type){
             auto iterator = ActorListener::Iterator();
-            switch (type){
-                case TYPE_POSITION:
-                    positions.clear(&iterator);
-                    break;
-                case TYPE_SIZE:
-                    sizes.clear(&iterator);
-                    break;
-                case TYPE_SCALE:
-                    scales.clear(&iterator);
-                    break;
-                case TYPE_ROTATION:
-                    rotations.clear(&iterator);
-                    break;
-                case TYPE_TRANSLATE:
-                    translates.clear(&iterator);
-                    break;
+            auto array = getListeners(type);
+            if(&array != nullptr){
+                array.clear(&iterator);
             }
         }
         inline void addActorListener(unsigned char type,sk_sp<ActorListener> listener){
-            switch (type){
-                case TYPE_POSITION:
-                    positions.add(listener);
-                    break;
-                case TYPE_SIZE:
-                    sizes.add(listener);
-                    break;
-                case TYPE_SCALE:
-                    scales.add(listener);
-                    break;
-                case TYPE_ROTATION:
-                    rotations.add(listener);
-                    break;
-                case TYPE_TRANSLATE:
-                    translates.add(listener);
-                    break;
+            auto array = getListeners(type);
+            if(&array != nullptr){
+                array.add(listener);
             }
         }
         inline void removeActorListener(unsigned char type,sk_sp<ActorListener> listener){
-            switch (type){
-                case TYPE_POSITION:
-                    positions.remove(listener);
-                    break;
-                case TYPE_SIZE:
-                    sizes.remove(listener);
-                    break;
-                case TYPE_SCALE:
-                    scales.remove(listener);
-                    break;
-                case TYPE_ROTATION:
-                    rotations.remove(listener);
-                    break;
-                case TYPE_TRANSLATE:
-                    translates.remove(listener);
-                    break;
+            auto array = getListeners(type);
+            if(&array != nullptr){
+                array.remove(listener);
             }
         }
     };

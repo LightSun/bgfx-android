@@ -26,4 +26,11 @@ namespace h7{
         return _bounds.fBottom;
     }
 
+    unsigned char Drawable::getLevel() const {
+        return _level;
+    }
+    void Drawable::setLevel(unsigned char level) {
+        _level = level;
+    }
+
 }
