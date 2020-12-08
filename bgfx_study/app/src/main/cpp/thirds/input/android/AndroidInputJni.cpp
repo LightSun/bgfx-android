@@ -9,7 +9,7 @@
 #include "../GestureContext.h"
 #include "../../luaext_java/java_env.h"
 #include "../../lua/bgfx_app.h"
-#include "../application/Application.h"
+#include "../../application/Application.h"
 
 #define MEW_CLASS  "com/heaven7/android/hbmdx/input/MotionEventWrapper"
 #define MEW_CLASS_SIG "L" MEW_CLASS ";"

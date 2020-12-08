@@ -2,9 +2,6 @@
 // Created by Administrator on 2020/8/2 0002.
 //
 
-#ifndef BGFX_STUDY_PLAT_CONTEXT_H
-#define BGFX_STUDY_PLAT_CONTEXT_H
-
 #include "plat_context.h"
 #include "lua/SkLua.h"
 #include "lua/lua.hpp"
@@ -22,8 +19,6 @@ namespace Platforms{
             {"uint64", luaopen_uint64},
             {nullptr, nullptr}
     };
-    extern long long getLuaPtr();
-
     void initLuaBgfx(){
        // LOGD("_initLuaBgfx");
         lua_State *L = reinterpret_cast<lua_State *>(getLuaPtr());
@@ -32,5 +27,3 @@ namespace Platforms{
 };
 
 
-
-#endif //BGFX_STUDY_PLAT_CONTEXT_H

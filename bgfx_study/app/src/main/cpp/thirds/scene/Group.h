@@ -27,7 +27,7 @@ namespace h7 {
                 array.get(i)->act(delta);
             }
         }
-        virtual void draw(NanoCanvas::Canvas &canvas, float parentAlpha) override {
+        virtual void onDraw(NanoCanvas::Canvas &canvas, float parentAlpha) override {
             Actor::draw(canvas, parentAlpha);
             auto array = children.copy();
             for (int i = 0, n = array.size(); i < n; i++){

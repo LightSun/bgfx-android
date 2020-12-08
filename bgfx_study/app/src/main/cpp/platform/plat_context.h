@@ -18,7 +18,7 @@ namespace Platforms{
     long long getLuaPtr();
 
     void initLuaBgfx();
-};
+}
 
 
 

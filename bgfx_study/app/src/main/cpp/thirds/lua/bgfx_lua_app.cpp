@@ -130,15 +130,15 @@ LuaApp::~LuaApp() {
 //preinit, init, draw, destroy
 LuaApp::LuaApp(lua_State *L) {
     this->L = L;
-    ref_destroy = luaL_ref(L,LUA_REGISTRYINDEX);
-    ref_draw = luaL_ref(L,LUA_REGISTRYINDEX);
-    ref_init = luaL_ref(L,LUA_REGISTRYINDEX);
-    ref_preInit = luaL_ref(L,LUA_REGISTRYINDEX);
+    ref_destroy = LuaUtils::ref(L);
+    ref_draw = LuaUtils::ref(L);
+    ref_init = LuaUtils::ref(L);
+    ref_preInit = LuaUtils::ref(L);
 }
 
 void LuaApp::onInit(){
     if (ref_init != LUA_NOREF) {
-        lua_rawgeti(L,LUA_REGISTRYINDEX, ref_init);
+        LuaUtils::ref_get(L, ref_init);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
             LOGE("%s", msg);
@@ -149,7 +149,7 @@ void LuaApp::onInit(){
 
 void LuaApp::onDraw() {
     if (ref_draw != LUA_NOREF) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, ref_draw);
+        LuaUtils::ref_get(L, ref_draw);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
             LOGE("%s", msg);
@@ -160,7 +160,7 @@ void LuaApp::onDraw() {
 
 void LuaApp::onPreInit() {
     if (ref_preInit != LUA_NOREF) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, ref_preInit);
+        LuaUtils::ref_get(L, ref_preInit);
         //luaB_dumpStack(L);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
@@ -189,7 +189,7 @@ void LuaApp::onResume() {
 }
 void LuaApp::_callLuaDestroy() {
     if (ref_destroy != LUA_NOREF) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, ref_destroy);
+        LuaUtils::ref_get(L, ref_destroy);
         if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
             const char *msg = lua_tostring(L, -1);
             LOGE("%s", msg);
@@ -199,19 +199,19 @@ void LuaApp::_callLuaDestroy() {
 }
 void LuaApp::_release() {
     if (ref_preInit != LUA_NOREF) {
-        luaL_unref(L, LUA_REGISTRYINDEX, ref_preInit);
+        LuaUtils::unref(L, ref_preInit);
         ref_preInit = LUA_NOREF;
     }
     if (ref_init != LUA_NOREF) {
-        luaL_unref(L, LUA_REGISTRYINDEX, ref_init);
+        LuaUtils::unref(L, ref_init);
         ref_init = LUA_NOREF;
     }
     if (ref_draw != LUA_NOREF) {
-        luaL_unref(L, LUA_REGISTRYINDEX, ref_draw);
+        LuaUtils::unref(L, ref_draw);
         ref_draw = LUA_NOREF;
     }
     if (ref_destroy != LUA_NOREF) {
-        luaL_unref(L, LUA_REGISTRYINDEX, ref_destroy);
+        LuaUtils::unref(L, ref_destroy);
         ref_destroy = LUA_NOREF;
     }
 }

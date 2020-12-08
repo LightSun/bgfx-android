@@ -241,8 +241,7 @@ public:
         }
         return 0;
     }
-
-    static int ref(lua_State *L){
+    static inline int ref(lua_State *L){
         if(lua_gettop(L) == 0){
             return LUA_NOREF;
         } else if(lua_type(L, -1) == LUA_TNIL){
@@ -251,8 +250,13 @@ public:
             return luaL_ref(L,LUA_REGISTRYINDEX);
         }
     }
-    static int ref_get(lua_State *L, int ref){
+    static inline int ref_get(lua_State *L, int ref){
         return lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+    }
+    static inline void unref(lua_State *L, int ref){
+        if(ref != LUA_NOREF){
+            luaL_unref(L, LUA_REGISTRYINDEX, ref);
+        }
     }
 };
 

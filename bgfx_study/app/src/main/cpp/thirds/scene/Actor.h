@@ -117,9 +117,7 @@ namespace h7 {
 	 * The default implementation does nothing.
 	 * @param parentAlpha The parent alpha, to be multiplied with this actor's alpha, allowing the parent's alpha to affect all
 	 *           children. */
-        virtual void draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
-
-        }
+        virtual void draw(NanoCanvas::Canvas &canvas, float parentAlpha);
 
     protected:
         virtual void onDraw(NanoCanvas::Canvas &canvas, float parentAlpha) {

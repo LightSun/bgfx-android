@@ -67,6 +67,7 @@ aux_source_directory(src/main/cpp/thirds/input/android SRC_input)
 aux_source_directory(src/main/cpp/thirds/scene SRC_scene)
 aux_source_directory(src/main/cpp/thirds/scene/actions SRC_scene)
 aux_source_directory(src/main/cpp/thirds/scene/drawables SRC_scene)
+aux_source_directory(src/main/cpp/thirds/application SRC_scene)
 
 add_library(
         bgfx_core

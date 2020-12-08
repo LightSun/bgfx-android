@@ -17,12 +17,6 @@ namespace h7{
 
         static Application* get();
     };
-
-    static Application _app;
-
-    Application* Application::get() {
-        return &_app;
-    }
 }
 
 #endif //BGFX_STUDY_APPLICATION_H
