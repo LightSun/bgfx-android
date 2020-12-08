@@ -34,6 +34,7 @@ namespace heaven7_Bgfx_demo{
                     "font/ruritania.ttf",
                     "font/signika-regular.ttf",
                     "font/five_minutes.otf",
+                   // "font/chinese.ttf", //this demo doesn't support chinese
             };
 
 

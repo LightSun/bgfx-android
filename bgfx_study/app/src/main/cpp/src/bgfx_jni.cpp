@@ -92,7 +92,7 @@ EC_JNIEXPORT void JNICALL SURFACE_VIEW_JAVA_API3(initializeSurface, jobject src,
         config.window = mWindow;
         config.win_width = ANativeWindow_getWidth(mWindow);
         config.win_height = ANativeWindow_getHeight(mWindow);
-        demo = createDemo<NanovgDemo>(&config);
+        demo = createDemo<FontDemo>(&config);
         demo->startLoop();
     }
 }

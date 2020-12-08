@@ -33,7 +33,7 @@ local function newTestView()
 
     function self.onDraw(canvas)
         print("---newTestView: onDraw ----")
-        --canvas_lua.h_testDraw(canvas.getContext());
+        canvas_lua.h_testDraw(canvas.getContext());
 
 --[[        int m_width = config.win_width;
         int m_height = config.win_height;
