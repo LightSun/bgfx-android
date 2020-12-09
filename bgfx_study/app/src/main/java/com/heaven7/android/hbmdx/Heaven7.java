@@ -16,6 +16,8 @@ public final class Heaven7 {
         if(!sLibLoaded){
             sLibLoaded = true;
             System.loadLibrary("c++_shared");
+            System.loadLibrary("freetype");
+            System.loadLibrary("nanovg");
             System.loadLibrary("bgfx_core");
             System.loadLibrary("bgfx_study");
         }

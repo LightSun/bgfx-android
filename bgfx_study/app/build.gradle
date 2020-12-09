@@ -21,7 +21,8 @@ android {
                 //copy from bgfx
                 cppFlags "-std=c++14 -fno-exceptions -O0 -Wall -Wextra -ffast-math -fomit-frame-pointer -g -fno-rtti -fPIC -no-canonical-prefixes" +
                         " -Wa,--noexecstack -fstack-protector-strong -ffunction-sections -Wunused-value -Wundef -Wl,-z,relro -Wl,-z,now"+
-                        " -DSIMPLE_DEMO -DSTB_TRUETYPE_IMPLEMENTATION -D__USE_PTHREAD -DH_INTERNAL_TEST -DFONTSTASH_IMPLEMENTATION -DCCORE_ANDROID"
+                        " -DSIMPLE_DEMO -DSTB_TRUETYPE_IMPLEMENTATION -D__USE_PTHREAD -DH_INTERNAL_TEST -DFONTSTASH_IMPLEMENTATION " +
+                        "-DCCORE_ANDROID"
             }
         }
         ndk {
