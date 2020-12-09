@@ -251,6 +251,13 @@ namespace h7 {
             _a = h7_COLOR_CAST(a * 255);
             return *this;
         }
+        inline Color &set(int r, int g, int b, int a) {
+            _r = h7_COLOR_CAST(r);
+            _g = h7_COLOR_CAST(g);
+            _b = h7_COLOR_CAST(b);
+            _a = h7_COLOR_CAST(a);
+            return *this;
+        }
 
 /** Sets this color's component values through an integer representation.
 	 *

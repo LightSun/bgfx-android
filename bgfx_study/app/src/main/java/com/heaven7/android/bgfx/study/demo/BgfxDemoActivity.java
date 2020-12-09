@@ -13,14 +13,8 @@ public class BgfxDemoActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Heaven7.init(getApplicationContext(), getAssets());
-        setContentView(getLayoutId());
-    }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Heaven7.destroy();
+        setContentView(getLayoutId());
     }
 
     protected int getLayoutId(){

@@ -131,13 +131,15 @@ public final class Luaer {
                     module = module.substring(4);
                 }
                 Logger.d(TAG, "getLuaFilepath", "module = " + module);
-                return LUA_DIR + "/" + module + ".lua";
+                String s = LUA_DIR + "/" + module + ".lua";
+                return new File(s).exists() ? s : null;
             }
             @Override
             public String getClibFilepath(String module) {
                 Logger.d(TAG, "getClibFilepath", "module = " + module);
                 //return LUA_DIR + "/lib" + module + ".so";
-                return new File(getFilesDir(), "lib"+ module + ".so").getPath();
+                File file = new File(getFilesDir(), "lib" + module + ".so");
+                return file.exists() ? file.getPath() : null;
             }
         });
         Schedulers.io().newWorker().schedule(new Runnable() {

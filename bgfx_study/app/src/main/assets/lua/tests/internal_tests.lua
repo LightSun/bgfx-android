@@ -4,6 +4,9 @@
 --- DateTime: 2020/10/26 0026 下午 6:14
 ---
 local mem = require("hmem_lua")
+
+local ch = require("lua.tests.utf8_ch")
+
 print("start test mem.computeTypes", mem);
 local function assertB(c1, c2, ex)
     print(c1, c2, ' -> ', ex);
