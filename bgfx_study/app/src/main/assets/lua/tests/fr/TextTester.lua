@@ -18,7 +18,8 @@ local function newRectViewTester()
 
     function self.onInitialize(ctx)
         ts1 = uiCore.newTextStyle();
-        ts1.font(uiCore.newFontFromAssets(ctx, "sans-bold", "runtime/font/roboto-bold.ttf"))
+        --ts1.font(uiCore.newFontFromAssets(ctx, "sans-bold", "runtime/font/roboto-bold.ttf"))
+        ts1.font(uiCore.newFontFromAssets(ctx, "chz", "runtime/font/chinese.ttf"))
         .size(18)
         --.lineHeight()
         --.blur(2)
@@ -61,7 +62,7 @@ local function newRectViewTester()
 
         canvas.beginPath()
               .textStyle(ts1)
-              .fillText("Hello world!", 50, 200);
+              .fillText("Hello world!方法", 50, 200);
         local w, h = canvas.measureText("Hello world!", 0, 0);
         print("wh: ",w, h)
     end

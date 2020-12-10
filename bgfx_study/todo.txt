@@ -74,6 +74,4 @@ NVGcontext: add ref count.
 
 =============== todo =====================
 -- do on config change, like surface-changed, redraw
--- 坐标转化： like 'Vector2f &screenToLocalCoordinates(Vector2f &screenCoords)'  当前是左下角为圆点.
---libgdx是以左下角为原点.
---
+-- full application.

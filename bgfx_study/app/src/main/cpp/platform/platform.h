@@ -45,9 +45,9 @@ extern "C" {
 #endif
 
 #ifdef __cplusplus
-#define EXTERN_C_ENTER extern "C" {
+    #define EXTERN_C_ENTER extern "C" {
     #define EXTERN_C_EXIT }
 #else
-#define EXTERN_C_ENTER
-#define EXTERN_C_EXIT
+    #define EXTERN_C_ENTER
+    #define EXTERN_C_EXIT
 #endif
