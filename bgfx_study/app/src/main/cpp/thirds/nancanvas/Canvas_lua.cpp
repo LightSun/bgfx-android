@@ -15,6 +15,7 @@
 #include "nanovg/nanovg_bgfx.h"
 #include "utils/Array.h"
 #include <log.h>
+#include <stringbuilder.h>
 
 #define CANVAS_M0(name)\
 static int Canvas_##name(lua_State *L) {\
@@ -744,6 +745,152 @@ DEF_TOSTRING(Font)
 DEF_TOSTRING(TextStyle)
 DEF_TOSTRING(Image)
 
+static int SkMatrix_gc(lua_State* L){
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, -1);
+    delete mat;
+    return 0;
+}
+static int SkMatrix_tostring(lua_State* L){
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, -1);
+    SB::StringBuilder sb;
+    mat->dump(sb);
+    auto str = sb.toString();
+    lua_pushstring(L, str);
+    free(str);
+    return 1;
+}
+//--------------------- SkMatrix ------------------------
+#define MAT_OP_PRE 1
+#define MAT_OP_POST 2
+#define MAT_OP_SET 3
+static int SkMatrix_get(lua_State* L){
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, lua_upvalueindex(1));
+    //k
+    lua_pushnumber(L, mat->get(sCast(int, luaL_checkinteger(L, 1))));
+    return 1;
+}
+static int SkMatrix_set(lua_State* L){
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, lua_upvalueindex(1));
+    //k, v
+    mat->set(sCast(int, luaL_checkinteger(L, 1)), TO_FLOAT(L, 2));
+    return 0;
+}
+static int SkMatrix_translate(lua_State* L){
+    auto upIndex = lua_upvalueindex(1);
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);
+    if(lua_gettop(L) < 3){
+        return luaL_error(L, "SkMatrix_translate: wrong argument, expect(op, transX, transY)");
+    }
+    switch(luaL_checkinteger(L, 1)){
+        case MAT_OP_PRE:
+            mat->preTranslate(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
+            break;
+        case MAT_OP_POST:
+            mat->postTranslate(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
+            break;
+        case MAT_OP_SET:
+            mat->setTranslate(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
+            break;
+        default:
+            return luaL_error(L, "SkMatrix_translate: op type error");
+    }
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+static int SkMatrix_scale(lua_State* L){
+    auto upIndex = lua_upvalueindex(1);
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);
+    if(lua_gettop(L) < 3){
+        return luaL_error(L, "SkMatrix_scale: wrong argument, expect(op, x, y)");
+    }
+    switch(luaL_checkinteger(L, 1)){
+        case MAT_OP_PRE:
+            mat->preScale(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
+            break;
+        case MAT_OP_POST:
+            mat->postScale(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
+            break;
+        case MAT_OP_SET:
+            mat->setScale(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
+            break;
+        default:
+            return luaL_error(L, "SkMatrix_scale: op type error");
+    }
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+static int SkMatrix_rotate(lua_State* L){
+    auto upIndex = lua_upvalueindex(1);
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);
+    auto c = lua_gettop(L);
+    if(c < 2){
+        return luaL_error(L, "SkMatrix_rotate: wrong argument, expect(op, x, y)");
+    }
+    switch(luaL_checkinteger(L, 1)){
+        case MAT_OP_PRE:
+            if(c == 2){
+                mat->preRotate(TO_FLOAT(L, 2));
+            } else{
+                mat->preRotate(TO_FLOAT(L, 2), TO_FLOAT(L,3), TO_FLOAT(L,4));
+            }
+            break;
+        case MAT_OP_POST:
+            if(c == 2){
+                mat->postRotate(TO_FLOAT(L, 2));
+            } else{
+                mat->postRotate(TO_FLOAT(L, 2), TO_FLOAT(L,3), TO_FLOAT(L,4));
+            }
+            break;
+        case MAT_OP_SET:
+            if(c == 2){
+                mat->setRotate(TO_FLOAT(L, 2));
+            } else{
+                mat->setRotate(TO_FLOAT(L, 2), TO_FLOAT(L,3), TO_FLOAT(L,4));
+            }
+            break;
+        default:
+            return luaL_error(L, "SkMatrix_rotate: op type error");
+    }
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+static int SkMatrix_concat(lua_State* L){
+    auto upIndex = lua_upvalueindex(1);
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);
+    if(lua_gettop(L) < 2){
+        return luaL_error(L, "SkMatrix_concat: wrong argument, expect(op, mat)");
+    }
+    switch(luaL_checkinteger(L, 1)){
+        case MAT_OP_PRE:
+            mat->preConcat(*LuaUtils::to_ref<SkMatrix>(L, 2));
+            break;
+        case MAT_OP_POST:
+            mat->postConcat(*LuaUtils::to_ref<SkMatrix>(L, 2));
+            break;
+        case MAT_OP_SET:
+            if(lua_gettop(L) < 3){
+                return luaL_error(L, "SkMatrix_concat: wrong argument, expect(op, mat1, mat2)");
+            }
+            mat->setConcat(*LuaUtils::to_ref<SkMatrix>(L, 2), *LuaUtils::to_ref<SkMatrix>(L, 3));
+            break;
+        default:
+            return luaL_error(L, "SkMatrix_concat: op type error");
+    }
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+const static luaL_Reg sSkMatrix_Methods[] = {
+#define SkMatrix_M_RAW(name)\
+{#name,    SkMatrix_##name},
+        SkMatrix_M_RAW(set)
+        SkMatrix_M_RAW(get)
+        SkMatrix_M_RAW(translate)
+        SkMatrix_M_RAW(rotate)
+        SkMatrix_M_RAW(scale)
+        SkMatrix_M_RAW(concat)
+        {NULL, NULL}
+};
+DEF__INDEX(SkMatrix, SkMatrix);
 namespace gh7{
     const static luaL_Reg Color_Methods[] = {
             {"__gc",              Color_gc},
@@ -779,7 +926,18 @@ namespace gNanoCanvas{
             {"__tostring",        Image_tostring},
             {NULL, NULL}
     };
+    const static luaL_Reg Skmatrix_Methods[] = {
+            {"__gc",              Image_gc},
+            {"__tostring",        Image_tostring},
+            {NULL, NULL}
+    };
 }
+const static luaL_Reg gSkMatrix_Methods[] = {
+        {"__index",           SkMatrix_index},
+        {"__gc",              SkMatrix_gc},
+        {"__tostring",        SkMatrix_tostring},
+        {NULL, NULL}
+};
 //---------------- lib methods --------------------------
 
 static int newCanvas(lua_State *L) {
@@ -958,6 +1116,11 @@ static int newImage(lua_State *L){
     LuaUtils::push_ptr(L, img);
     return 1;
 }
+static int newMat(lua_State *L){
+    auto pMatrix = new SkMatrix();
+    LuaUtils::push_ptr(L, pMatrix);
+    return 1;
+}
 #ifdef H_INTERNAL_TEST
 #include "nanovg/nanovg.h"
 #include "font/utf8.h"
@@ -1019,6 +1182,8 @@ static const luaL_Reg mem_funcs[] = {
         {"newRadialGradient",  newRadialGradient},
         {"newBoxGradient",     newBoxGradient},
         {"newImageGradient",   newImageGradient},
+
+        {"newMat",   newMat},
         //depend on nvgContext
         {"newFont",            newFont},
         {"newImage",           newImage},
@@ -1041,6 +1206,7 @@ DEF_MTNAME(NanoCanvas::Font)
 DEF_MTNAME(NanoCanvas::TextStyle)
 DEF_MTNAME(NanoCanvas::Image)
 DEF_MTNAME(NVGcontext)
+DEF_MTNAME(SkMatrix)
 void CanvasLua::registers(lua_State *L) {
     REG_CLASS(L, NanoCanvas::Canvas);
     REG_CLASS(L, h7::Color);
@@ -1049,4 +1215,5 @@ void CanvasLua::registers(lua_State *L) {
     REG_CLASS(L, NanoCanvas::TextStyle);
     REG_CLASS(L, NanoCanvas::Image);
     REG_EMPTY_CLASS(L, NVGcontext);
+    REG_CLASS(L, SkMatrix);
 }

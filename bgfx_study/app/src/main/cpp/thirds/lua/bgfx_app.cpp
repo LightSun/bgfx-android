@@ -71,6 +71,11 @@ namespace h7 {
     void AppController::destroyApp() {
         if (app) {
             app->actDestroy();
+            for (int i = 0; i < lifeListeners.size(); ++i) {
+                lifeListeners.get(i)->dispose();
+                lifeListeners.get(i).reset();
+            }
+
             delete app;
             app = nullptr;
         }
@@ -131,11 +136,18 @@ namespace h7 {
             m_thread.push(
                     new CmdData(manul ? TYPE_APP_PAUSE_MANULLY : TYPE_APP_PAUSE, (void *) NULL));
             app->pause();
+
+            for (int i = 0; i < lifeListeners.size(); ++i) {
+                lifeListeners.get(i)->onPause();
+            }
         }
     }
 
     void AppController::resume() {
         LOGD("LuaAppHolder >>> start resume...");
+        for (int i = 0; i < lifeListeners.size(); ++i) {
+            lifeListeners.get(i)->onResume();
+        }
         _condition.notify_one();
     }
 

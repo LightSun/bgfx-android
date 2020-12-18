@@ -44,11 +44,6 @@ namespace h7 {
             return processors.size();
         }
         inline void clear() {
-            auto func = [&](Array<InputProcessor *>* arr, int index, InputProcessor *& ele){
-                ele->unRefAndDestroy();
-                return false;
-            };
-            processors.travel(reinterpret_cast<std::function<bool(Array<InputProcessor*>*, int, InputProcessor*&)> &>(func));
             processors.clear();
         }
         inline void setProcessors(Array<InputProcessor*>* processors) {

@@ -10,6 +10,8 @@
 #include <mutex>
 
 #include <bx/thread.h>
+#include "utils/Array.h"
+#include "SkRefCnt.h"
 
 #define TYPE_NONE 0
 #define TYPE_APP_INIT    1         /* init app */
@@ -35,6 +37,7 @@ namespace h7{
     class AppController;
     class BgfxApp;
     class Input;
+    class LifecycleListener;
 
     class BgfxApp{
     public:
@@ -137,6 +140,8 @@ namespace h7{
         //can't use static
         std::mutex _mutex;
         std::condition_variable _condition;
+
+        Array<sk_sp<LifecycleListener>> lifeListeners;
     };
     class CmdData{
     public:
@@ -146,6 +151,13 @@ namespace h7{
 
         CmdData(uint8_t type, void * data);
         CmdData(uint8_t type, EndTask task);
+    };
+
+    class LifecycleListener : public SkRefCnt{
+    public:
+        virtual void onPause(){};
+        virtual void onResume(){};
+        virtual void dispose(){};
     };
 }
 

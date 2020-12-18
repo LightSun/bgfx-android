@@ -24,6 +24,10 @@
 #include "SkTo.h"
 #include "SkRect.h"
 
+namespace SB{
+    class StringBuilder;
+}
+
 /** \class SkMatrix
  * <p>
             | scaleX  skewX transX |
@@ -1541,7 +1545,7 @@ public:
         are written with limited precision; it may not be possible to reconstruct
         original SkMatrix from output.
     */
-    void dump() const;
+    void dump(SB::StringBuilder& sb) const;
 
     /** Returns the minimum scaling factor of SkMatrix by decomposing the scaling and
         skewing elements.
