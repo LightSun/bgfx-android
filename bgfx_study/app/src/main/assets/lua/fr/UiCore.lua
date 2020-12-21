@@ -119,4 +119,10 @@ function m.newTextStyle()
     return canvasL.newTextStyle();
 end
 
+function m.newMat(initValues)
+    -- set, get, mat[i] = a, mat[i],
+    -- with pre/post/set: translate, rotate, scale, concat
+   return canvasL.newMat(initValues);
+end
+
 return m;

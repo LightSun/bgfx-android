@@ -486,7 +486,7 @@ namespace NanoCanvas {
         return *this;
     }
 
-    Canvas &Canvas::applyMatrix(SkMatrix &mat) {
+    Canvas &Canvas::setMatrix(SkMatrix &mat) {
         /* [a c e]
          [b d f]
          [0 0 1]
@@ -496,6 +496,7 @@ namespace NanoCanvas {
         if (mat.isIdentity()) {
             return *this;
         }
+        //abc def
         return setTransform(mat.getScaleX(), mat.getSkewY(), mat.getSkewX(),
                             mat.getScaleY(), mat.getTranslateX(), mat.getTranslateY());
     }

@@ -60,7 +60,7 @@ namespace h7 {
             onDraw(canvas, parentAlpha);
         } else {
             canvas.save();
-            canvas.applyMatrix(_mat);
+            canvas.setMatrix(_mat);
             background->draw(canvas, x, y, width, height);
             onDraw(canvas, parentAlpha);
             canvas.restore();

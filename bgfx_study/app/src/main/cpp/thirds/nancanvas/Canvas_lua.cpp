@@ -17,6 +17,10 @@
 #include <log.h>
 #include <stringbuilder.h>
 
+#define MAT_OP_PRE 1
+#define MAT_OP_POST 2
+#define MAT_OP_SET 3
+
 #define CANVAS_M0(name)\
 static int Canvas_##name(lua_State *L) {\
     auto canvasIndex = lua_upvalueindex(1);\
@@ -576,6 +580,52 @@ static int Canvas_drawImage(lua_State *L) {
     lua_pushvalue(L, canvasIndex);
     return 1;
 }
+static int Canvas_preConcatMatrix(lua_State *L) {
+    auto upIndex = lua_upvalueindex(1);
+    auto cas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, upIndex);
+    if(lua_gettop(L) < 1){
+        return luaL_error(L, "Canvas_matrix: wrong argument, expect(mat)");
+    }
+    cas->concatMatrix(*LuaUtils::to_ref<SkMatrix>(L, 1), true);
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+static int Canvas_postConcatMatrix(lua_State *L) {
+    auto upIndex = lua_upvalueindex(1);
+    auto cas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, upIndex);
+    if(lua_gettop(L) < 1){
+        return luaL_error(L, "Canvas_matrix: wrong argument, expect(mat)");
+    }
+    cas->concatMatrix(*LuaUtils::to_ref<SkMatrix>(L, 1), false);
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+static int Canvas_setMatrix(lua_State *L) {
+    auto upIndex = lua_upvalueindex(1);
+    auto cas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, upIndex);
+    if(lua_gettop(L) < 1){
+        return luaL_error(L, "Canvas_matrix: wrong argument, expect(mat)");
+    }
+    cas->setMatrix(*LuaUtils::to_ref<SkMatrix>(L, 1));
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+static int Canvas_getMatrix(lua_State *L) {
+    auto upIndex = lua_upvalueindex(1);
+    auto cas = LuaUtils::get_ref<NanoCanvas::Canvas>(L, upIndex);
+    SkMatrix* outMat;
+    if(lua_gettop(L) == 1){
+        outMat = LuaUtils::get_ref<SkMatrix>(L, 1);
+        cas->getMatrix(*outMat);
+        lua_pushvalue(L, upIndex);
+    } else{
+        outMat = new SkMatrix();
+        cas->getMatrix(*outMat);
+        LuaUtils::push_ptr(L, outMat);
+    }
+    return 1;
+}
+
 CANVAS_M0(resetTransform)
 CANVAS_M0(cancelFrame)
 CANVAS_M0(beginPath)
@@ -649,6 +699,11 @@ namespace sNanoCanvas{
             CANVAS_M_RAW(local2Global)
             CANVAS_M_RAW(global2Local)
             CANVAS_M_RAW(getContext)
+
+            CANVAS_M_RAW(preConcatMatrix)
+            CANVAS_M_RAW(postConcatMatrix)
+            CANVAS_M_RAW(getMatrix)
+            CANVAS_M_RAW(setMatrix)
 
             {NULL, NULL}
     };
@@ -760,9 +815,6 @@ static int SkMatrix_tostring(lua_State* L){
     return 1;
 }
 //--------------------- SkMatrix ------------------------
-#define MAT_OP_PRE 1
-#define MAT_OP_POST 2
-#define MAT_OP_SET 3
 static int SkMatrix_get(lua_State* L){
     auto mat = LuaUtils::get_ref<SkMatrix>(L, lua_upvalueindex(1));
     //k
@@ -775,122 +827,123 @@ static int SkMatrix_set(lua_State* L){
     mat->set(sCast(int, luaL_checkinteger(L, 1)), TO_FLOAT(L, 2));
     return 0;
 }
-static int SkMatrix_translate(lua_State* L){
-    auto upIndex = lua_upvalueindex(1);
-    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);
-    if(lua_gettop(L) < 3){
-        return luaL_error(L, "SkMatrix_translate: wrong argument, expect(op, transX, transY)");
-    }
-    switch(luaL_checkinteger(L, 1)){
-        case MAT_OP_PRE:
-            mat->preTranslate(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
-            break;
-        case MAT_OP_POST:
-            mat->postTranslate(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
-            break;
-        case MAT_OP_SET:
-            mat->setTranslate(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
-            break;
-        default:
-            return luaL_error(L, "SkMatrix_translate: op type error");
-    }
-    lua_pushvalue(L, upIndex);
-    return 1;
+#define SkMatrix_pre_post_set(mName, type)\
+static int SkMatrix_##mName(lua_State* L){\
+    auto upIndex = lua_upvalueindex(1);\
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);\
+    if(lua_gettop(L) < 2){\
+        return luaL_error(L, "SkMatrix_%s: wrong argument, expect(X, Y)", TO_STR(mName));\
+    }\
+    switch(type){\
+        case MAT_OP_PRE:\
+            mat->mName(TO_FLOAT(L, 1), TO_FLOAT(L, 2));\
+            break;\
+        case MAT_OP_POST:\
+            mat->mName(TO_FLOAT(L, 1), TO_FLOAT(L, 2));\
+            break;\
+        case MAT_OP_SET:\
+            mat->mName(TO_FLOAT(L, 1), TO_FLOAT(L, 2));\
+            break;\
+        default:\
+            return luaL_error(L, "SkMatrix_translate: op type error");\
+    }\
+    lua_pushvalue(L, upIndex);\
+    return 1;\
 }
-static int SkMatrix_scale(lua_State* L){
-    auto upIndex = lua_upvalueindex(1);
-    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);
-    if(lua_gettop(L) < 3){
-        return luaL_error(L, "SkMatrix_scale: wrong argument, expect(op, x, y)");
-    }
-    switch(luaL_checkinteger(L, 1)){
-        case MAT_OP_PRE:
-            mat->preScale(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
-            break;
-        case MAT_OP_POST:
-            mat->postScale(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
-            break;
-        case MAT_OP_SET:
-            mat->setScale(TO_FLOAT(L, 2), TO_FLOAT(L, 3));
-            break;
-        default:
-            return luaL_error(L, "SkMatrix_scale: op type error");
-    }
-    lua_pushvalue(L, upIndex);
-    return 1;
+SkMatrix_pre_post_set(preTranslate, MAT_OP_PRE)
+SkMatrix_pre_post_set(setTranslate, MAT_OP_SET)
+SkMatrix_pre_post_set(postTranslate, MAT_OP_POST)
+
+SkMatrix_pre_post_set(preScale, MAT_OP_PRE)
+SkMatrix_pre_post_set(setScale, MAT_OP_SET)
+SkMatrix_pre_post_set(postScale, MAT_OP_POST)
+
+#define SkMatrix_rotate(name)\
+static int SkMatrix_##name(lua_State* L){\
+auto upIndex = lua_upvalueindex(1);\
+auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);\
+auto c = lua_gettop(L);\
+if(c < 1){\
+return luaL_error(L, "SkMatrix_rotate: wrong argument, expect(degree)");\
+}\
+if(c == 1){\
+mat->name(TO_FLOAT(L, 1));\
+} else{\
+mat->name(TO_FLOAT(L, 1), TO_FLOAT(L,2), TO_FLOAT(L,3));\
+}\
+lua_pushvalue(L, upIndex);\
+return 1;\
 }
-static int SkMatrix_rotate(lua_State* L){
-    auto upIndex = lua_upvalueindex(1);
-    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);
-    auto c = lua_gettop(L);
-    if(c < 2){
-        return luaL_error(L, "SkMatrix_rotate: wrong argument, expect(op, x, y)");
-    }
-    switch(luaL_checkinteger(L, 1)){
-        case MAT_OP_PRE:
-            if(c == 2){
-                mat->preRotate(TO_FLOAT(L, 2));
-            } else{
-                mat->preRotate(TO_FLOAT(L, 2), TO_FLOAT(L,3), TO_FLOAT(L,4));
-            }
-            break;
-        case MAT_OP_POST:
-            if(c == 2){
-                mat->postRotate(TO_FLOAT(L, 2));
-            } else{
-                mat->postRotate(TO_FLOAT(L, 2), TO_FLOAT(L,3), TO_FLOAT(L,4));
-            }
-            break;
-        case MAT_OP_SET:
-            if(c == 2){
-                mat->setRotate(TO_FLOAT(L, 2));
-            } else{
-                mat->setRotate(TO_FLOAT(L, 2), TO_FLOAT(L,3), TO_FLOAT(L,4));
-            }
-            break;
-        default:
-            return luaL_error(L, "SkMatrix_rotate: op type error");
-    }
-    lua_pushvalue(L, upIndex);
-    return 1;
+SkMatrix_rotate(preRotate)
+SkMatrix_rotate(postRotate)
+SkMatrix_rotate(setRotate)
+
+#define SkMatrix_concat(name)\
+static int SkMatrix_##name(lua_State* L){\
+    auto upIndex = lua_upvalueindex(1);\
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);\
+    if(lua_gettop(L) < 1){\
+        return luaL_error(L, "SkMatrix_concat: wrong argument, expect(mat)");\
+    }\
+    mat->name(*LuaUtils::to_ref<SkMatrix>(L, 1));\
+    lua_pushvalue(L, upIndex);\
+    return 1;\
 }
-static int SkMatrix_concat(lua_State* L){
+SkMatrix_concat(preConcat)
+SkMatrix_concat(postConcat)
+
+static int SkMatrix_setConcat(lua_State* L){
     auto upIndex = lua_upvalueindex(1);
     auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);
     if(lua_gettop(L) < 2){
-        return luaL_error(L, "SkMatrix_concat: wrong argument, expect(op, mat)");
+        return luaL_error(L, "SkMatrix_concat: wrong argument, expect(mat1, mat2)");
     }
-    switch(luaL_checkinteger(L, 1)){
-        case MAT_OP_PRE:
-            mat->preConcat(*LuaUtils::to_ref<SkMatrix>(L, 2));
-            break;
-        case MAT_OP_POST:
-            mat->postConcat(*LuaUtils::to_ref<SkMatrix>(L, 2));
-            break;
-        case MAT_OP_SET:
-            if(lua_gettop(L) < 3){
-                return luaL_error(L, "SkMatrix_concat: wrong argument, expect(op, mat1, mat2)");
-            }
-            mat->setConcat(*LuaUtils::to_ref<SkMatrix>(L, 2), *LuaUtils::to_ref<SkMatrix>(L, 3));
-            break;
-        default:
-            return luaL_error(L, "SkMatrix_concat: op type error");
-    }
+    mat->setConcat(*LuaUtils::to_ref<SkMatrix>(L, 1), *LuaUtils::to_ref<SkMatrix>(L, 2));
     lua_pushvalue(L, upIndex);
     return 1;
 }
+
+static int SkMatrix_reset(lua_State* L){
+    auto upIndex = lua_upvalueindex(1);
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);
+    mat->reset();
+    lua_pushvalue(L, upIndex);
+    return 1;
+}
+
 const static luaL_Reg sSkMatrix_Methods[] = {
 #define SkMatrix_M_RAW(name)\
 {#name,    SkMatrix_##name},
         SkMatrix_M_RAW(set)
         SkMatrix_M_RAW(get)
-        SkMatrix_M_RAW(translate)
-        SkMatrix_M_RAW(rotate)
-        SkMatrix_M_RAW(scale)
-        SkMatrix_M_RAW(concat)
+        SkMatrix_M_RAW(preTranslate)
+        SkMatrix_M_RAW(setTranslate)
+        SkMatrix_M_RAW(postTranslate)
+        SkMatrix_M_RAW(preScale)
+        SkMatrix_M_RAW(setScale)
+        SkMatrix_M_RAW(postScale)
+        SkMatrix_M_RAW(preRotate)
+        SkMatrix_M_RAW(setRotate)
+        SkMatrix_M_RAW(postRotate)
+        SkMatrix_M_RAW(preConcat)
+        SkMatrix_M_RAW(postConcat)
+        SkMatrix_M_RAW(setConcat)
+        SkMatrix_M_RAW(reset)
+        {"setIdentity", SkMatrix_reset},
         {NULL, NULL}
 };
-DEF__INDEX(SkMatrix, SkMatrix);
+static int SkMatrix_indexNumber(lua_State* L, SkMatrix* mat){
+    lua_pushnumber(L, mat->get(TO_INT(L, 2)));
+    return 1;
+}
+DEF__INDEX_NUM(SkMatrix, SkMatrix_indexNumber);
+
+static int SkMatrix_newindex(lua_State *L) {
+    auto pMemory = LuaUtils::get_ref<SkMatrix>(L, 1);
+    pMemory->set(TO_INT(L, -2), TO_FLOAT(L, -1));
+    return 0;
+}
+
 namespace gh7{
     const static luaL_Reg Color_Methods[] = {
             {"__gc",              Color_gc},
@@ -934,6 +987,7 @@ namespace gNanoCanvas{
 }
 const static luaL_Reg gSkMatrix_Methods[] = {
         {"__index",           SkMatrix_index},
+        {"__newindex",        SkMatrix_newindex},
         {"__gc",              SkMatrix_gc},
         {"__tostring",        SkMatrix_tostring},
         {NULL, NULL}
@@ -1118,6 +1172,15 @@ static int newImage(lua_State *L){
 }
 static int newMat(lua_State *L){
     auto pMatrix = new SkMatrix();
+    if(lua_gettop(L) > 0 && lua_type(L, 1) == LUA_TTABLE){
+        //get elements
+        auto len = luaL_len(L, 1);
+        for (int i = 0; i < len; ++i) {
+            lua_rawgeti(L, 1, i + 1); //lua from 1
+            pMatrix->set(i, TO_FLOAT(L, -1));
+            lua_pop(L, 1);
+        }
+    }
     LuaUtils::push_ptr(L, pMatrix);
     return 1;
 }

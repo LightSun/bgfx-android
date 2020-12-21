@@ -19,6 +19,7 @@ local function newRectViewTester()
     local img2;
     local img3;
     local img4;
+    local uiMat;
 
     function self.onInitialize(ctx)
         img = uiCore.newImageFromAssets(ctx, "runtime/images/image3.jpg", 0)
@@ -26,6 +27,7 @@ local function newRectViewTester()
         img2 = uiCore.newImageFromAssets(ctx, "runtime/images/image3.jpg", uiCore.IMAGE_FLAG_RepeatX | uiCore.IMAGE_FLAG_RepeatY)
         img3 = uiCore.newImageFromAssets(ctx,  "runtime/images/image3.jpg", uiCore.IMAGE_FLAG_FlipY)
         img4 = uiCore.newImageFromAssets(ctx, "runtime/images/image3.jpg", uiCore.IMAGE_FLAG_PreMultiplied)
+        uiMat = uiCore.newMat();
     end
 
     function self.onDestroy()
@@ -35,7 +37,7 @@ local function newRectViewTester()
         print("---newTestView: onDraw ----")
         --canvas_lua.h_testDraw(canvas.getContext());
         --self.testImage(canvas);
-        self.testImage(canvas);
+        self.testImage3(canvas);
     end
 
     function self.testImage(canvas)
@@ -50,10 +52,25 @@ local function newRectViewTester()
     end
 
     function self.testImage2(canvas)
+        canvas
+                .drawImage(img, 600, 600)
         canvas.save()
+                .translate(500, 500)
                 .rotate(toRadian(90))
                 .drawImage(img, 100, 100)
                 .restore()
+    end
+    -- with mat
+    --todo have bug
+    function self.testImage3(canvas)
+        canvas.drawImage(img, 600, 600)
+        uiMat.reset()
+             .postTranslate(500, 500)
+             .postRotate(90);
+        canvas.save()
+            .setMatrix(uiMat)
+            .drawImage(img, 100, 100)
+            .restore()
     end
 
     return self;

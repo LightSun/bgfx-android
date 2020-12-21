@@ -39,6 +39,9 @@
 #ifndef NULL
 #define NULL 0
 #endif
+
+#define TO_STR(a)  #a
+
 /**
  * @param str the full string
  * @param s the delimiter

@@ -556,7 +556,7 @@ namespace NanoCanvas {
          */
         Canvas &resetTransform();
 
-        Canvas &applyMatrix(SkMatrix &mat);
+        Canvas &setMatrix(SkMatrix &mat);
 
         Canvas &getMatrix(SkMatrix &out);
 

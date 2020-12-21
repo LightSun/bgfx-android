@@ -1,6 +1,7 @@
 package com.heaven7.android.bgfx.study.demo;
 
 import android.content.Context;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.view.View;
 
@@ -13,12 +14,14 @@ import com.heaven7.adapter.QuickRecycleViewAdapter;
 import com.heaven7.adapter.util.ViewHelper2;
 import com.heaven7.android.bgfx.study.demo.bean.LuaItem;
 import com.heaven7.android.bgfx.study.demo.lua.Luaer;
+import com.heaven7.core.util.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BgfxLuaActivity extends BgfxDemoActivity {
 
+    private static final String TAG = "BgfxLuaActivity";
     BgfxLuaView mBgfxLuaView;
     RecyclerView mRv;
 
@@ -34,6 +37,11 @@ public class BgfxLuaActivity extends BgfxDemoActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         NativeApi.setUseLua(true);
         super.onCreate(savedInstanceState);
+        Matrix matrix = new Matrix();
+        matrix.postTranslate(500, 500);
+        matrix.postRotate(90);
+
+        Logger.d(TAG, "matrix: " + matrix);
 
         String path = getIntent().getStringExtra(Constants.KEY_LUA_FILE);
         mRv = findViewById(R.id.rv);
