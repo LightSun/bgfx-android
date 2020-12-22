@@ -769,6 +769,26 @@ namespace sNanoCanvas{
     };
 }
 DEF__INDEX(TextStyle, NanoCanvas::TextStyle)
+
+//----------------------- image ----------------
+static int Image_size(lua_State* L){
+    auto image = LuaUtils::get_ref<NanoCanvas::Image>(L, lua_upvalueindex(1));
+    int w = 0;
+    int h = 0;
+    image->size(w, h);
+    lua_pushnumber(L, w);
+    lua_pushnumber(L, h);
+    return 2;
+}
+namespace sNanoCanvas{
+    const static luaL_Reg Image_Methods[] = {
+#define Image_M_RAW(name)\
+{#name,    Image_##name},
+            Image_M_RAW(size)
+            {NULL, NULL}
+    };
+}
+DEF__INDEX(Image, NanoCanvas::Image)
 //-------------------------------------------------------------------------
 static int Canvas_gc(lua_State *L) {\
     NanoCanvas::Canvas* c = LuaUtils::get_ref<NanoCanvas::Canvas>(L, -1);
@@ -827,36 +847,41 @@ static int SkMatrix_set(lua_State* L){
     mat->set(sCast(int, luaL_checkinteger(L, 1)), TO_FLOAT(L, 2));
     return 0;
 }
-#define SkMatrix_pre_post_set(mName, type)\
+#define SkMatrix_translate(mName)\
 static int SkMatrix_##mName(lua_State* L){\
+    auto c = lua_gettop(L);\
     auto upIndex = lua_upvalueindex(1);\
     auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);\
-    if(lua_gettop(L) < 2){\
+    if(c < 2){\
         return luaL_error(L, "SkMatrix_%s: wrong argument, expect(X, Y)", TO_STR(mName));\
     }\
-    switch(type){\
-        case MAT_OP_PRE:\
-            mat->mName(TO_FLOAT(L, 1), TO_FLOAT(L, 2));\
-            break;\
-        case MAT_OP_POST:\
-            mat->mName(TO_FLOAT(L, 1), TO_FLOAT(L, 2));\
-            break;\
-        case MAT_OP_SET:\
-            mat->mName(TO_FLOAT(L, 1), TO_FLOAT(L, 2));\
-            break;\
-        default:\
-            return luaL_error(L, "SkMatrix_translate: op type error");\
+    mat->mName(TO_FLOAT(L, 1), TO_FLOAT(L, 2));\
+    lua_pushvalue(L, upIndex);\
+    return 1;\
+}
+#define SkMatrix_scale(mName)\
+static int SkMatrix_##mName(lua_State* L){\
+    auto c = lua_gettop(L);\
+    auto upIndex = lua_upvalueindex(1);\
+    auto mat = LuaUtils::get_ref<SkMatrix>(L, upIndex);\
+    if(c < 2){\
+        return luaL_error(L, "SkMatrix_%s: wrong argument, expect(X, Y)", TO_STR(mName));\
+    }\
+    if(c == 2){\
+        mat->mName(TO_FLOAT(L, 1), TO_FLOAT(L, 2));\
+    }else{\
+        mat->mName(TO_FLOAT(L, 1), TO_FLOAT(L, 2), TO_FLOAT(L, 3), TO_FLOAT(L, 4));\
     }\
     lua_pushvalue(L, upIndex);\
     return 1;\
 }
-SkMatrix_pre_post_set(preTranslate, MAT_OP_PRE)
-SkMatrix_pre_post_set(setTranslate, MAT_OP_SET)
-SkMatrix_pre_post_set(postTranslate, MAT_OP_POST)
+SkMatrix_translate(preTranslate)
+SkMatrix_translate(setTranslate)
+SkMatrix_translate(postTranslate)
 
-SkMatrix_pre_post_set(preScale, MAT_OP_PRE)
-SkMatrix_pre_post_set(setScale, MAT_OP_SET)
-SkMatrix_pre_post_set(postScale, MAT_OP_POST)
+SkMatrix_scale(preScale)
+SkMatrix_scale(setScale)
+SkMatrix_scale(postScale)
 
 #define SkMatrix_rotate(name)\
 static int SkMatrix_##name(lua_State* L){\
@@ -975,11 +1000,7 @@ namespace gNanoCanvas{
             {NULL, NULL}
     };
     const static luaL_Reg Image_Methods[] = {
-            {"__gc",              Image_gc},
-            {"__tostring",        Image_tostring},
-            {NULL, NULL}
-    };
-    const static luaL_Reg Skmatrix_Methods[] = {
+            {"__index",           Image_index},
             {"__gc",              Image_gc},
             {"__tostring",        Image_tostring},
             {NULL, NULL}

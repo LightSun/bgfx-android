@@ -37,7 +37,9 @@ local function newRectViewTester()
         print("---newTestView: onDraw ----")
         --canvas_lua.h_testDraw(canvas.getContext());
         --self.testImage(canvas);
-        self.testImage3(canvas);
+        --self.testImage2(canvas);
+       --self.testImage3(canvas);
+        self.testImage4(canvas);
     end
 
     function self.testImage(canvas)
@@ -52,25 +54,52 @@ local function newRectViewTester()
     end
 
     function self.testImage2(canvas)
-        canvas
-                .drawImage(img, 600, 600)
+        local w, h = img.size();
+        canvas.beginPath()
+              .rect(600, 600, w, h)
+              .fillColor(nvgRGBA(255,192,0,255))
+              .fill();
+        canvas.beginPath()
+              .rect(100, 100, w, h)
+              .fillColor(nvgRGBA(255,192,0,255))
+              .fill();
         canvas.save()
                 .translate(500, 500)
                 .rotate(toRadian(90))
                 .drawImage(img, 100, 100)
                 .restore()
+
+        canvas.save()
+              .translate(500, 500)
+              .rotate(toRadian(180))
+              .drawImage(img, 100, 100)
+              .restore()
     end
-    -- with mat
-    --todo have bug
+    -- with mat . test rotate ok.
     function self.testImage3(canvas)
+        local w, h = img.size();
         canvas.drawImage(img, 600, 600)
         uiMat.reset()
              .postTranslate(500, 500)
-             .postRotate(90);
+             .postRotate(90, 600 + w / 2, 600 + h / 2); -- 旋转的中心点是舞台坐标
         canvas.save()
             .setMatrix(uiMat)
             .drawImage(img, 100, 100)
             .restore()
+    end
+
+    function self.testImage4(canvas)
+        local w, h = img.size();
+        canvas.drawImage(img, 600, 600)
+        uiMat.reset()
+             .postTranslate(500, 500)
+             .postRotate(90, 600 + w / 2, 600 + h / 2)
+             .postScale(2, 2, 600 + w / 2, 600 + h / 2)
+        ; -- 旋转的中心点是舞台坐标
+        canvas.save()
+              .setMatrix(uiMat)
+              .drawImage(img, 100, 100)
+              .restore()
     end
 
     return self;

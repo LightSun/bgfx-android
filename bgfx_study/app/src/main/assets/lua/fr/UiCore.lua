@@ -38,11 +38,6 @@ m.IMAGE_FLAG_RepeatY         = 4;
 m.IMAGE_FLAG_FlipY           = 8;
 m.IMAGE_FLAG_PreMultiplied   = 16;
 
--- ui matrix ops ---
-m.OP_PRE  = 1;
-m.OP_POST = 2;
-m.OP_SET  = 3;
-
 --(viewId, width, height, [scaleRatio])
 function m.newCanvas(viewId, width, height, scaleRatio)
     return canvasL.newCanvas(viewId, width, height, scaleRatio);
