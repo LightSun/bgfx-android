@@ -7,7 +7,7 @@
 
 namespace h7{
 
-    unsigned long long getCurrentEventTime(){
+    unsigned long long getCurrentTime(){
         struct timeval xTime;
         gettimeofday(&xTime, NULL);
         //nsec

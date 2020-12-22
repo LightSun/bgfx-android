@@ -163,7 +163,7 @@ namespace h7 {
             char* chars = e.chars;
             for (int i = 0; i < strlen(chars); i++) {
                 event = input.usedKeyEvents.obtain();
-                event->timeStamp = getCurrentEventTime();
+                event->timeStamp = getCurrentTime();
                 event->keyCode = 0;
                 event->keyChar = chars[i];
                 event->type = KeyEvent::KEY_TYPED;
@@ -184,7 +184,7 @@ namespace h7 {
         switch (e.action) {
             case KeyEvent::ACTION_DOWN:
                 event = input.usedKeyEvents.obtain();
-                event->timeStamp = getCurrentEventTime();
+                event->timeStamp = getCurrentTime();
                 event->keyChar = 0;
                 event->keyCode = e.keyCode;
                 event->type = KeyEvent::KEY_DOWN;
@@ -202,7 +202,7 @@ namespace h7 {
                 }
                 break;
             case KeyEvent::ACTION_UP:
-                long long timeStamp = getCurrentEventTime();
+                long long timeStamp = getCurrentTime();
                 event = input.usedKeyEvents.obtain();
                 event->timeStamp = timeStamp;
                 event->keyChar = 0;
@@ -255,7 +255,7 @@ namespace h7 {
         if ((event->source & h7::InputDevice::SOURCE_CLASS_POINTER) == 0) return false;
 
         int x = 0, y = 0;
-        long timeStamp = getCurrentEventTime();
+        long timeStamp = getCurrentTime();
         ainput->lockTouch();
         switch (event->action) {
             case MotionEventWrapper::ACTION_HOVER_MOVE:

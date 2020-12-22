@@ -51,7 +51,7 @@ namespace h7 {
 
         if (pointer == 0) {
             pointer1.set(x, y);
-            touchDownTime = getCurrentEventTime();
+            touchDownTime = getCurrentTime();
             tracker.start(x, y, touchDownTime);
             if (getInput()->isTouched(1)) {
                 // Start pinch.
@@ -106,7 +106,7 @@ namespace h7 {
         }
 
         // update tracker
-        tracker.update(x, y, getCurrentEventTime());
+        tracker.update(x, y, getCurrentTime());
 
         // check if we are still tapping.
         if (inTapRectangle &&
@@ -145,11 +145,11 @@ namespace h7 {
         if (inTapRectangle) {
             // handle taps
             if (lastTapButton != button || lastTapPointer != pointer ||
-                nanoTime() - lastTapTime > tapCountInterval
+                    getCurrentTime() - lastTapTime > tapCountInterval
                 || !isWithinTapRectangle(x, y, lastTapX, lastTapY))
                 tapCount = 0;
             tapCount++;
-            lastTapTime = nanoTime();
+            lastTapTime = getCurrentTime();
             lastTapX = x;
             lastTapY = y;
             lastTapButton = button;
@@ -166,10 +166,10 @@ namespace h7 {
             // we are in pan mode again, reset velocity tracker
             if (pointer == 0) {
                 // first pointer has lifted off, set up panning to use the second pointer...
-                tracker.start(pointer2.x, pointer2.y, getCurrentEventTime());
+                tracker.start(pointer2.x, pointer2.y, getCurrentTime());
             } else {
                 // second pointer has lifted off, set up panning to use the first pointer...
-                tracker.start(pointer1.x, pointer1.y, getCurrentEventTime());
+                tracker.start(pointer1.x, pointer1.y, getCurrentTime());
             }
             return false;
         }
@@ -179,7 +179,7 @@ namespace h7 {
         if (wasPanning && !panning) handled = listener->panStop(x, y, pointer, button);
 
         // handle fling
-        unsigned long long time = getCurrentEventTime();
+        unsigned long long time = getCurrentTime();
         if (time - touchDownTime <= maxFlingDelay) {
             tracker.update(x, y, time);
             handled = listener->fling(tracker.getVelocityX(), tracker.getVelocityY(), button) ||
@@ -200,7 +200,7 @@ namespace h7 {
 
     bool GestureDetector::isLongPressed(float duration) {
         if (touchDownTime == 0) return false;
-        return nanoTime() - touchDownTime > (uint64_t) (duration * 1000000000l);
+        return getCurrentTime() - touchDownTime > (uint64_t) (duration * 1000000000l);
     }
 
     bool GestureDetector::isPanning() {

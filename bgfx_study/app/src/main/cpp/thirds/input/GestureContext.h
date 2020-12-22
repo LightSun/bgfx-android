@@ -8,7 +8,7 @@
 namespace h7{
     class Input;
 
-    unsigned long long getCurrentEventTime();
+    unsigned long long getCurrentTime();
 
     Input* getInput();
 

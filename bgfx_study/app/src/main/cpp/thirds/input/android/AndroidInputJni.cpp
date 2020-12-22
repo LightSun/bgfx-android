@@ -101,7 +101,7 @@ namespace h7{
         mev->pointerCount = pointer_count;
         mev->buttonState = button_state;
         mev->pressure = pressure;
-        mev->timeStamp = getCurrentEventTime();
+        mev->timeStamp = getCurrentTime();
         //often for mouse
         mev->scrollAmountX = mouseDx;
         mev->scrollAmountY = mouseDy;
@@ -174,7 +174,7 @@ namespace h7{
         kew->action = action;
         kew->repeatCount = repeat_count;
         kew->keyCode = key_code;
-        kew->timeStamp = getCurrentEventTime();
+        kew->timeStamp = getCurrentTime();
         kew->unicodeChar = unicode_char;
         kew->altPressed = alt_pressed;
         if(chars != nullptr){

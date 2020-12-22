@@ -77,7 +77,7 @@ namespace h7 {
         /** No further gesture events will be triggered for the current touch, if any. */
         void cancel ();
         bool isLongPressed ();
-        bool isLongPressed (float duration);
+        bool isLongPressed (float duration); //in seconds
         bool isPanning ();
         void reset ();
 
