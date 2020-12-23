@@ -18,14 +18,14 @@ namespace h7{
     class ActorListener: public SkRefCnt{
     public:
         ITERATOR_CNT_CLASS(ActorListener)
-        virtual void onChange(Actor* actor, ActorInfo& old){
+        virtual void onChange(Actor* actor, ActorInfo& old, ActorInfo& newI){
 
         }
     };
     class ActorEventListener: public SkRefCnt{
     public:
         ITERATOR_CNT_CLASS(ActorEventListener)
-        virtual void onChange(Actor* actor, ActorInfo& old, unsigned char event){
+        virtual void onChange(Actor* actor, ActorInfo& old, ActorInfo& newI, unsigned char event){
 
         }
     };
@@ -57,7 +57,7 @@ namespace h7{
         /**
          * called before any property changed
          */
-        void preFire(unsigned char event);
+        void preFire();
 
         //weak ref
         inline void setActor(Actor* act){

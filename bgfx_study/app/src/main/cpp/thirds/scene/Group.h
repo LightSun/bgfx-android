@@ -17,8 +17,8 @@ namespace h7 {
     public:
         Array<sk_sp<Actor>> children;
 
-        bool isGroup() override {
-            return true;
+        virtual int getActorType(){
+            return H7_GROUP_TYPE;
         }
         virtual void act(float delta) override {
             Actor::act(delta);
@@ -43,7 +43,7 @@ namespace h7 {
             if (recursively) {
                 for (int i = 0; i < children.size(); ++i) {
                     auto sp = children.get(i);
-                    if (sp->isGroup()) {
+                    if (sp->hasActorType(H7_GROUP_TYPE)) {
                         Group *g = rCast(Group*, sp.get());
                         g->setDebug(enabled, recursively);
                     } else {

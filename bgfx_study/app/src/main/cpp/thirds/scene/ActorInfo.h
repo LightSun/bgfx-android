@@ -12,8 +12,8 @@ namespace h7{
     // should never use: new
     typedef struct ActorInfo{
         float x, y;
-        float width, height;  // width, height
-        float alpha;          // alpha
+        float width, height;      // width, height
+        float alpha = 1;          // alpha
 
         float scaleX = 1, scaleY = 1;
         float rotation = 0;   //in degree

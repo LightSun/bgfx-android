@@ -16,6 +16,10 @@
 #include "../nancanvas/SkMatrix.h"
 #include "ActorListenerManager.h"
 
+#define H7_ACTOR_TYPE 1
+#define H7_GROUP_TYPE 2
+#define H7_LAYOUT_TYPE 4
+
 namespace NanoCanvas {
     class Canvas;
 }
@@ -93,8 +97,11 @@ namespace h7 {
         void setBackground(Drawable *d);
         Drawable* getBackground();
 
-        virtual bool isGroup(){
-            return false;
+        virtual int getActorType(){
+            return H7_ACTOR_TYPE;
+        }
+        inline bool hasActorType(int expect){
+            return (getActorType() & expect) != 0;
         }
         inline void setDebug(bool debug){
             this->debug = debug;
@@ -302,7 +309,7 @@ namespace h7 {
         /** Sets the width and height. */
         inline void setSize (float width, float height) {
             if (this->width != width || this->height != height) {
-                _actorListenerM.preFire(ActorListenerManager::TYPE_SIZE);
+                _actorListenerM.preFire();
                 this->width = width;
                 this->height = height;
                 sizeChanged();
@@ -323,7 +330,7 @@ namespace h7 {
         }
         inline void setX(float x) {
             if (this->x != x) {
-                _actorListenerM.preFire(ActorListenerManager::TYPE_POSITION);
+                _actorListenerM.preFire();
                 this->x = x;
                 positionChanged();
             }
@@ -334,7 +341,7 @@ namespace h7 {
         }
         inline void setY(float y) {
             if (this->y != y) {
-                _actorListenerM.preFire(ActorListenerManager::TYPE_POSITION);
+                _actorListenerM.preFire();
                 this->y = y;
                 positionChanged();
             }
@@ -379,14 +386,14 @@ namespace h7 {
         }
         inline void setTranslateX(float x){
             if(transX != x){
-                _actorListenerM.preFire(ActorListenerManager::TYPE_TRANSLATE);
+                _actorListenerM.preFire();
                 transX = x;
                 translateChanged();
             }
         }
         inline void setTranslateY(float y){
             if(transY != y){
-                _actorListenerM.preFire(ActorListenerManager::TYPE_TRANSLATE);
+                _actorListenerM.preFire();
                 transY = y;
                 translateChanged();
             }
@@ -394,7 +401,7 @@ namespace h7 {
         /** Sets the position of the actor's bottom left corner. */
         inline void setPosition (float x, float y) {
             if (this->x != x || this->y != y) {
-                _actorListenerM.preFire(ActorListenerManager::TYPE_POSITION);
+                _actorListenerM.preFire();
                 this->x = x;
                 this->y = y;
                 positionChanged();
@@ -426,7 +433,7 @@ namespace h7 {
         }
         inline void setWidth(float width) {
             if (this->width != width) {
-                _actorListenerM.preFire(ActorListenerManager::TYPE_SIZE);
+                _actorListenerM.preFire();
                 this->width = width;
                 sizeChanged();
             }
@@ -436,7 +443,7 @@ namespace h7 {
         }
         inline void setHeight (float height) {
             if (this->height != height) {
-                _actorListenerM.preFire(ActorListenerManager::TYPE_SIZE);
+                _actorListenerM.preFire();
                 this->height = height;
                 sizeChanged();
             }
@@ -605,6 +612,7 @@ namespace h7 {
         }
 
     private:
+        //TODO call this before draw
         inline void applyMatrix(){
             Vector2f vec;
             vec.set(x, y);
