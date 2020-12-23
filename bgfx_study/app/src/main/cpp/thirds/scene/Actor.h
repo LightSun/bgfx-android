@@ -59,19 +59,24 @@ namespace h7 {
         SkMatrix _mat;
 
         const char *name = "h7_Actor";
-        bool visible = true;
+        int _flags = FLAG_VISIBLE;
         Color color;
         sk_sp<Drawable> background;
         void *userObject;
 
         float x, y;  // relative to parent.
         float width, height;
+        float alpha = 1;
 
         float scaleX = 1, scaleY = 1;
-        float rotation = 0;
-        float originX = 0, originY = 0;   // rotate center. like android PivotX/PivotY. often is transX/trnasY
-        //float skewX = 0, skewY = 0;       // horizontal/vertical skew factor
+        float rotation = 0; //in degree
+        float transX = 0, transY = 0;
+
+        float originX = -1, originY = -1;   //rotate/scale center. like android PivotX/PivotY
+
     public:
+        static constexpr int FLAG_VISIBLE = 0x1;
+
         Touchable touchable = Touchable::enabled;
 
         class Iterator : public ArrayIterator<sk_sp<Actor>> {
@@ -123,7 +128,6 @@ namespace h7 {
         virtual void onDraw(NanoCanvas::Canvas &canvas, float parentAlpha) {
 
         }
-
     public:
         /** Updates the actor based on time. Typically this is called each frame by {@link Stage#act(float)}.
          * <p>
@@ -165,9 +169,6 @@ namespace h7 {
        * @see Touchable */
         const Actor* hit(float x, float y, bool touchable);
 
-        inline SkMatrix& getMatrix(){
-            return _mat;
-        }
         /** Transforms the specified point in screen coordinates to the actor's local coordinate system.
  * @see Stage#screenToStageCoordinates(Vector2) */
         Vector2f &screenToLocalCoordinates(Vector2f &vec);
@@ -288,15 +289,20 @@ namespace h7 {
             this->userObject = _userObject;
         }
         inline bool isVisible () {
-            return visible;
+            return (_flags & FLAG_VISIBLE) != 0;
         }
         /** If false, the actor will not be drawn and will not receive touch events. Default is true. */
         inline void setVisible(bool _visible) {
-            this->visible = _visible;
+            if(_visible){
+                _flags |= FLAG_VISIBLE;
+            } else{
+                _flags &= ~FLAG_VISIBLE;
+            }
         }
         /** Sets the width and height. */
         inline void setSize (float width, float height) {
             if (this->width != width || this->height != height) {
+                _actorListenerM.preFire(ActorListenerManager::TYPE_SIZE);
                 this->width = width;
                 this->height = height;
                 sizeChanged();
@@ -317,6 +323,7 @@ namespace h7 {
         }
         inline void setX(float x) {
             if (this->x != x) {
+                _actorListenerM.preFire(ActorListenerManager::TYPE_POSITION);
                 this->x = x;
                 positionChanged();
             }
@@ -327,6 +334,7 @@ namespace h7 {
         }
         inline void setY(float y) {
             if (this->y != y) {
+                _actorListenerM.preFire(ActorListenerManager::TYPE_POSITION);
                 this->y = y;
                 positionChanged();
             }
@@ -338,13 +346,17 @@ namespace h7 {
                 y -= height;
             else if ((alignment & Align::center) != 0)
                 y -= height / 2;
-
-            if (this->y != y) {
-                this->y = y;
-                positionChanged();
-            }
+            setY(y);
         }
-
+        /** Sets the x position using the specified {@link Align alignment}. Note this may set the position to non-integer
+         * coordinates. */
+        inline void setX(float x, int alignment) {
+            if ((alignment & Align::right) != 0)
+                x -= width;
+            else if ((alignment & Align::center) != 0)
+                x -= width / 2;
+            setX(x);
+        }
         /** Returns the Y position of the specified {@link Align alignment}. */
         inline float getY(int alignment) {
             float y = this->y;
@@ -354,9 +366,35 @@ namespace h7 {
                 y += height / 2;
             return y;
         }
+
+        float getAlpha() const;
+
+        void setAlpha(float alpha);
+
+        inline float getTranslateX(){
+            return transX;
+        }
+        inline float getTranslateY(){
+            return transY;
+        }
+        inline void setTranslateX(float x){
+            if(transX != x){
+                _actorListenerM.preFire(ActorListenerManager::TYPE_TRANSLATE);
+                transX = x;
+                translateChanged();
+            }
+        }
+        inline void setTranslateY(float y){
+            if(transY != y){
+                _actorListenerM.preFire(ActorListenerManager::TYPE_TRANSLATE);
+                transY = y;
+                translateChanged();
+            }
+        }
         /** Sets the position of the actor's bottom left corner. */
         inline void setPosition (float x, float y) {
             if (this->x != x || this->y != y) {
+                _actorListenerM.preFire(ActorListenerManager::TYPE_POSITION);
                 this->x = x;
                 this->y = y;
                 positionChanged();
@@ -375,18 +413,12 @@ namespace h7 {
                 y -= height;
             else if ((alignment & Align::center) != 0)
                 y -= height / 2;
-            if (this->x != x || this->y != y) {
-                this->x = x;
-                this->y = y;
-                positionChanged();
-            }
+            setPosition(x, y);
         }
         /** Add x and y to current position */
         inline void moveBy(float x, float y) {
             if (x != 0 || y != 0) {
-                this->x += x;
-                this->y += y;
-                positionChanged();
+                setPosition(this->x + x, this->y + y);
             }
         }
         inline float getWidth() {
@@ -394,6 +426,7 @@ namespace h7 {
         }
         inline void setWidth(float width) {
             if (this->width != width) {
+                _actorListenerM.preFire(ActorListenerManager::TYPE_SIZE);
                 this->width = width;
                 sizeChanged();
             }
@@ -403,6 +436,7 @@ namespace h7 {
         }
         inline void setHeight (float height) {
             if (this->height != height) {
+                _actorListenerM.preFire(ActorListenerManager::TYPE_SIZE);
                 this->height = height;
                 sizeChanged();
             }
@@ -439,7 +473,6 @@ namespace h7 {
             if(this->originX != originX || this->originY != originY){
                 this->originX = originX;
                 this->originY = originY;
-                translateChanged();
             }
         }
         /** Sets the origin position to the specified {@link Align alignment}. */
@@ -457,7 +490,6 @@ namespace h7 {
                 originY = height;
             else
                 originY = height / 2;
-            translateChanged();
         }
         inline float getScaleX() {
             return scaleX;
@@ -512,7 +544,7 @@ namespace h7 {
         inline void setColor (Color& color) {
             this->color.set(color);
         }
-        inline void setColor (float r, float g, float b, float a) {
+        inline void setColor(float r, float g, float b, float a) {
             color.set(r, g, b, a);
         }
         /** Returns the color the actor will be tinted when drawn. The returned instance can be modified to change the color. */
@@ -535,7 +567,7 @@ namespace h7 {
             setZIndex(INT_MAX);
         }
         /** Changes the z-order for this actor so it is in back of all siblings. */
-        inline void toBack () {
+        inline void toBack() {
             setZIndex(0);
         }
         /** Sets the z-index of this actor. The z-index is the index into the parent's {@link Group#getChildren() children}, where a
@@ -560,21 +592,43 @@ namespace h7 {
             _actorListenerM.fire(ActorListenerManager::TYPE_SIZE);
         }
         virtual void scaleChanged() {
-            applyMatrix();
+            //applyMatrix();
             _actorListenerM.fire(ActorListenerManager::TYPE_SCALE);
         }
         virtual void rotationChanged() {
-            applyMatrix();
+           // applyMatrix();
             _actorListenerM.fire(ActorListenerManager::TYPE_ROTATION);
         }
         virtual void translateChanged(){
-            applyMatrix();
+            //applyMatrix();
             _actorListenerM.fire(ActorListenerManager::TYPE_TRANSLATE);
         }
+
+    private:
         inline void applyMatrix(){
-            _mat.setTranslate(originX, originY)
-                .preRotate(rotation)
-                .preScale(scaleX, scaleY);
+            Vector2f vec;
+            vec.set(x, y);
+            localToScreenCoordinates(vec);
+            applyMatrix(vec.x, vec.y);
+        }
+        inline void applyMatrix(int curX, int curY){
+            //if not set center. default is the center if actor
+            if(originX < 0){
+                originX = curX + width / 2;
+            }
+            if(originY < 0){
+                originY = curY + height / 2;
+            }
+            //translate -> rotate -> scale
+            if(transX > 0 || transY > 0){
+                _mat.postTranslate(transX, transY);
+            }
+            if(rotation > 0){
+                _mat.postRotate(rotation, originX, originY);
+            }
+            if(scaleX != 1 || scaleY != 1){
+                _mat.postScale(scaleX, scaleY, originX, originY);
+            }
         }
     };
 }

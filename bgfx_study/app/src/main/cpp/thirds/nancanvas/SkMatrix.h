@@ -419,7 +419,12 @@ public:
         this->setTypeMask(kUnknown_Mask);
         return *this;
     }
-
+    SkMatrix& set(SkMatrix& in) {
+        for (int i = 0; i < 9; ++i) {
+            fMat[i] = in.fMat[i];
+        }
+        return *this;
+    }
     /** Sets horizontal scale factor.
 
         @param v  horizontal scale factor to store

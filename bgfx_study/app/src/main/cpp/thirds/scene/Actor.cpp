@@ -54,16 +54,18 @@ namespace h7 {
     // DEFINE_GET_WEAK_REF_METHOD2(Actor::, Group, Parent, parent)
 
     void Actor::draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
-        background->getBounds().setXYWH(0, 0, width, height);
-        if (_mat.isIdentity()) {
-            background->draw(canvas, x, y, width, height);
-            onDraw(canvas, parentAlpha);
-        } else {
-            canvas.save();
-            canvas.setMatrix(_mat);
-            background->draw(canvas, x, y, width, height);
-            onDraw(canvas, parentAlpha);
-            canvas.restore();
+        if(isVisible()){
+            background->getBounds().setXYWH(0, 0, width, height);
+            if (_mat.isIdentity()) {
+                background->draw(canvas, x, y, width, height);
+                onDraw(canvas, parentAlpha);
+            } else {
+                canvas.save();
+                canvas.setMatrix(_mat);
+                background->draw(canvas, x, y, width, height);
+                onDraw(canvas, parentAlpha);
+                canvas.restore();
+            }
         }
     }
 
@@ -313,5 +315,16 @@ namespace h7 {
         if (parent == nullptr) return -1;
         auto sp = sk_ref_sp<Actor>(this);
         return parent->children.indexOf(sp);
+    }
+
+    float Actor::getAlpha() const {
+        return alpha;
+    }
+    void Actor::setAlpha(float alpha) {
+        if(Actor::alpha != alpha){
+            _actorListenerM.preFire(ActorListenerManager::TYPE_ALPHA);
+            Actor::alpha = alpha;
+            translateChanged();
+        }
     }
 }

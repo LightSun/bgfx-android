@@ -5,7 +5,6 @@
 #include "GestureDetector.h"
 #include <limits.h>
 #include "GestureContext.h"
-#include "utils/TimeUtils.hpp"
 #include "input.h"
 
 namespace h7 {

@@ -9,6 +9,7 @@
 #include "utils/Array.h"
 #include "../utils/Array.h"
 #include "../lua/SkWeakRefCnt.h"
+#include "ActorInfo.h"
 
 namespace h7{
 
@@ -17,14 +18,14 @@ namespace h7{
     class ActorListener: public SkRefCnt{
     public:
         ITERATOR_CNT_CLASS(ActorListener)
-        virtual void onChange(Actor* actor){
+        virtual void onChange(Actor* actor, ActorInfo& old){
 
         }
     };
     class ActorEventListener: public SkRefCnt{
     public:
         ITERATOR_CNT_CLASS(ActorEventListener)
-        virtual void onChange(Actor* actor, unsigned char event){
+        virtual void onChange(Actor* actor, ActorInfo& old, unsigned char event){
 
         }
     };
@@ -36,7 +37,10 @@ namespace h7{
         static constexpr unsigned char TYPE_SCALE = 3;
         static constexpr unsigned char TYPE_ROTATION = 4;
         static constexpr unsigned char TYPE_TRANSLATE = 5;
+        static constexpr unsigned char TYPE_ALPHA     = 6;
     private:
+        ActorInfo preInfo;
+        ActorInfo curInfo;
         sk_sp<Actor> actor;
 
         Array<sk_sp<ActorEventListener>> eventListeners = Array<sk_sp<ActorEventListener>>(0);
@@ -45,10 +49,15 @@ namespace h7{
         Array<sk_sp<ActorListener>> scales = Array<sk_sp<ActorListener>>(0);
         Array<sk_sp<ActorListener>> rotations = Array<sk_sp<ActorListener>>(0);
         Array<sk_sp<ActorListener>> translates = Array<sk_sp<ActorListener>>(0);
+        Array<sk_sp<ActorListener>> alphas = Array<sk_sp<ActorListener>>(0);
 
         Array<sk_sp<ActorListener>>& getListeners(unsigned char event);
     public:
         void fire(unsigned char type);
+        /**
+         * called before any property changed
+         */
+        void preFire(unsigned char event);
 
         //weak ref
         inline void setActor(Actor* act){
@@ -91,6 +100,9 @@ namespace h7{
                 array.remove(listener);
             }
         }
+
+    private:
+        void saveInfo(Actor* act,ActorInfo& info);
     };
 }
 
