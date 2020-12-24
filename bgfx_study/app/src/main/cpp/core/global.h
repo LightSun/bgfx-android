@@ -40,6 +40,8 @@
 #define NULL 0
 #endif
 
+#define ATTR_NEED_NULL __attribute__((sentinel))
+
 #define TO_STR(a)  #a
 
 /**

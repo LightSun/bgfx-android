@@ -4,6 +4,7 @@
 #include <math.h>
 #include <log.h>
 #include "bx/math.h"
+#include "Drawable.h"
 #include "Actor.h"
 #include "Stage.h"
 #include "Action.h"
@@ -15,7 +16,6 @@
 
 #include "SceneHelper.h"
 #include "nancanvas/Canvas.h"
-#include "Drawable.h"
 #include "nancanvas/SkRect.h"
 
 namespace h7 {
@@ -214,17 +214,14 @@ namespace h7 {
     }
 
     Vector2f &Actor::localToParentCoordinates(h7::Vector2f &localCoords) {
-        auto point = getMatrix().mapXY(localCoords.x + x, localCoords.y + y);
-
-        localCoords.x = point.x();
-        localCoords.y = point.y();
+        localCoords.x += x;
+        localCoords.y += y;
         return localCoords;
     }
 
     Vector2f &Actor::parentToLocalCoordinates(Vector2f &parentCoords) {
-        auto point = getMatrix().mapXY(parentCoords.x - x, parentCoords.y - y);
-        parentCoords.x = point.x();
-        parentCoords.y = point.y();
+        parentCoords.x -= x;
+        parentCoords.y -= y;
         return parentCoords;
     }
 
@@ -322,9 +319,9 @@ namespace h7 {
     }
     void Actor::setAlpha(float alpha) {
         if(Actor::alpha != alpha){
-            _actorListenerM.preFire(ActorListenerManager::TYPE_ALPHA);
+            _actorListenerM.preFire();
             Actor::alpha = alpha;
-            translateChanged();
+            dispatchChanged(ActorListenerManager::TYPE_ALPHA);
         }
     }
 }

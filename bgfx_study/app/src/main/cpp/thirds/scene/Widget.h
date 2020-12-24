@@ -18,35 +18,25 @@ namespace h7 {
 
     protected:
         virtual void sizeChanged() {
-            Actor::sizeChanged();
             invalidate();
         }
     public:
-        virtual int getActorType(){
-            return H7_ACTOR_TYPE | H7_LAYOUT_TYPE;
-        }
-        virtual void setLayoutEnabled(bool enabled) {
-            Layout::setLayoutEnabled(enabled);
-            if (enabled) invalidateHierarchy();
-        }
+        virtual int getActorType();
+
+        virtual void setLayoutEnabled(bool enabled);
+
         virtual void validate();
 
-        virtual void invalidate() {
-            _needsLayout = true;
-        }
+        virtual void invalidate();
+
         virtual void invalidateHierarchy();
 
-        virtual void pack() {
-            setSize(getPrefWidth(), getPrefHeight());
-            validate();
-        }
-        /** If this method is overridden, the super method or {@link #validate()} should be called to ensure the widget is laid out. */
-        virtual void draw(NanoCanvas::Canvas& canvas, float parentAlpha) {
-            validate();
-            Actor::draw(canvas, parentAlpha);
-        }
-        virtual void layout() {
+        virtual void pack();
 
+        /** If this method is overridden, the super method or {@link #validate()} should be called to ensure the widget is laid out. */
+        virtual void draw(NanoCanvas::Canvas& canvas, float parentAlpha);
+
+        virtual void layout() {
         }
     };
 }

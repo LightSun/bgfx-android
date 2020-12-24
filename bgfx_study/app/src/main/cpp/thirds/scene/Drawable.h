@@ -5,8 +5,8 @@
 #ifndef BGFX_STUDY_DRAWABLE_H
 #define BGFX_STUDY_DRAWABLE_H
 
-#include "../nancanvas/SkRect.h"
 #include "Align.h"
+#include "../nancanvas/SkRect.h"
 #include "lua/SkRefCnt.h"
 
 namespace NanoCanvas {
@@ -30,13 +30,8 @@ namespace h7{
          * @param x the x of cors
          * @param y the y of cors
          */
-        virtual void draw(NanoCanvas::Canvas& canvas, float x, float y, float width, float height){
-            _tmp.setXYWH(0, 0, width, height);
-            if(!getBounds().isEmpty()){
-                Align::applyAlign(_tmp, getBounds(), align, _tmp);
-            }
-            onDraw(canvas, x, y ,width, height);
-        };
+        virtual void draw(NanoCanvas::Canvas& canvas, float x, float y, float width, float height);
+
         virtual void onDraw(NanoCanvas::Canvas& canvas, float x, float y, float width, float height){
 
         };
@@ -45,14 +40,11 @@ namespace h7{
 
         unsigned char getLevel() const;
 
-        void setLevel(unsigned char level);
+        virtual void setLevel(unsigned char level);
 
-        virtual void setAlign(int align){
-            this->align = align;
-        }
-        int getAlign(){
-            return align;
-        }
+        virtual void setAlign(int align);
+        int getAlign();
+
         float getLeft();
         float getRight();
         float getTop();

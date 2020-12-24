@@ -177,19 +177,26 @@ namespace h7 {
         const Actor* hit(float x, float y, bool touchable);
 
         /** Transforms the specified point in screen coordinates to the actor's local coordinate system.
- * @see Stage#screenToStageCoordinates(Vector2) */
+ * @see Stage#screenToStageCoordinates(Vector2)
+         * exclude matrix
+         * */
         Vector2f &screenToLocalCoordinates(Vector2f &vec);
 
+        // exclude matrix
         Vector2f &localToScreenCoordinates(Vector2f &vec);
 
+        // exclude matrix
         /** Transforms the specified point in the stage's coordinates to the actor's local coordinate system. */
         Vector2f &stageToLocalCoordinates(Vector2f &vec);
 
+        // exclude matrix
         Vector2f &localCoordinatesToStage(Vector2f &vec);
 
+        //exclude matrix
         /** Transforms the specified point in the actor's coordinates to be in the parent's coordinates. */
         Vector2f &localToParentCoordinates(Vector2f &vec);
 
+        //exclude matrix
         /** Converts the coordinates given in the parent's coordinate system to this actor's coordinate system. */
         Vector2f &parentToLocalCoordinates(Vector2f &vec);
 
@@ -312,7 +319,7 @@ namespace h7 {
                 _actorListenerM.preFire();
                 this->width = width;
                 this->height = height;
-                sizeChanged();
+                dispatchChanged(ActorListenerManager::TYPE_SIZE);
             }
         }
         /** Returns the X position of the actor's left edge. */
@@ -332,7 +339,7 @@ namespace h7 {
             if (this->x != x) {
                 _actorListenerM.preFire();
                 this->x = x;
-                positionChanged();
+                dispatchChanged(ActorListenerManager::TYPE_POSITION);
             }
         }
         /** Returns the Y position of the actor's bottom edge. */
@@ -343,7 +350,7 @@ namespace h7 {
             if (this->y != y) {
                 _actorListenerM.preFire();
                 this->y = y;
-                positionChanged();
+                dispatchChanged(ActorListenerManager::TYPE_POSITION);
             }
         }
         /** Sets the y position using the specified {@link Align alignment}. Note this may set the position to non-integer
@@ -388,14 +395,14 @@ namespace h7 {
             if(transX != x){
                 _actorListenerM.preFire();
                 transX = x;
-                translateChanged();
+                dispatchChanged(ActorListenerManager::TYPE_TRANSLATE);
             }
         }
         inline void setTranslateY(float y){
             if(transY != y){
                 _actorListenerM.preFire();
                 transY = y;
-                translateChanged();
+                dispatchChanged(ActorListenerManager::TYPE_TRANSLATE);
             }
         }
         /** Sets the position of the actor's bottom left corner. */
@@ -404,7 +411,7 @@ namespace h7 {
                 _actorListenerM.preFire();
                 this->x = x;
                 this->y = y;
-                positionChanged();
+                dispatchChanged(ActorListenerManager::TYPE_POSITION);
             }
         }
 
@@ -435,7 +442,7 @@ namespace h7 {
             if (this->width != width) {
                 _actorListenerM.preFire();
                 this->width = width;
-                sizeChanged();
+                dispatchChanged(ActorListenerManager::TYPE_SIZE);
             }
         }
         inline float getHeight () {
@@ -445,7 +452,7 @@ namespace h7 {
             if (this->height != height) {
                 _actorListenerM.preFire();
                 this->height = height;
-                sizeChanged();
+                dispatchChanged(ActorListenerManager::TYPE_SIZE);
             }
         }
         /** Returns x plus width. */
@@ -512,9 +519,10 @@ namespace h7 {
         /** Sets the scale X and scale Y. */
         inline void setScale (float scaleX, float scaleY) {
             if(this->scaleX != scaleX || this->scaleY != scaleY){
+                _actorListenerM.preFire();
                 this->scaleX = scaleX;
                 this->scaleY = scaleY;
-                scaleChanged();
+                dispatchChanged(ActorListenerManager::TYPE_SCALE);
             }
         }
 
@@ -526,9 +534,7 @@ namespace h7 {
         /** Adds the specified scale to the current scale. */
         inline void scaleBy (float scaleX, float scaleY) {
             if (scaleX != 0 || scaleY != 0) {
-                this->scaleX += scaleX;
-                this->scaleY += scaleY;
-                scaleChanged();
+                setScale(this->scaleX + scaleX, this->scaleY + scaleY);
             }
         }
         inline float getRotation () {
@@ -590,52 +596,76 @@ namespace h7 {
         ActorListenerManager& getListenerManager(){
             return _actorListenerM;
         }
+        void dispatchChanged(uint8_t type){
+            _actorListenerM.fire(type);
+            switch (type) {
+                case ActorListenerManager::TYPE_POSITION:
+                    positionChanged();
+                    break;
+                case ActorListenerManager::TYPE_ROTATION:
+                    rotationChanged();
+                    break;
+                case ActorListenerManager::TYPE_SCALE:
+                    scaleChanged();
+                    break;
+                case ActorListenerManager::TYPE_SIZE:
+                    sizeChanged();
+                    break;
+                case ActorListenerManager::TYPE_TRANSLATE:
+                    translateChanged();
+                    break;
+                case ActorListenerManager::TYPE_ALPHA:
+                    alphaChanged();
+                    break;
+            }
+        }
         /** Called when the actor's position has been changed. */
         virtual void positionChanged() {
-            _actorListenerM.fire(ActorListenerManager::TYPE_POSITION);
         }
         /** Called when the actor's size has been changed. */
         virtual void sizeChanged() {
-            _actorListenerM.fire(ActorListenerManager::TYPE_SIZE);
         }
         virtual void scaleChanged() {
             //applyMatrix();
-            _actorListenerM.fire(ActorListenerManager::TYPE_SCALE);
         }
         virtual void rotationChanged() {
            // applyMatrix();
-            _actorListenerM.fire(ActorListenerManager::TYPE_ROTATION);
         }
         virtual void translateChanged(){
             //applyMatrix();
-            _actorListenerM.fire(ActorListenerManager::TYPE_TRANSLATE);
         }
-
-    private:
-        //TODO call this before draw
+        virtual void alphaChanged(){
+            //applyMatrix();
+        }
+        //should call this before draw / in layout.
         inline void applyMatrix(){
             Vector2f vec;
-            vec.set(x, y);
             localToScreenCoordinates(vec);
             applyMatrix(vec.x, vec.y);
         }
-        inline void applyMatrix(int curX, int curY){
+    private:
+        inline void applyMatrix(float curX, float curY){
             //if not set center. default is the center if actor
+            float cx, cy;
             if(originX < 0){
-                originX = curX + width / 2;
+                cx = curX + width / 2;
+            } else{
+                cx = originX + curX;
             }
             if(originY < 0){
-                originY = curY + height / 2;
+                cy = curY + height / 2;
+            } else{
+                cy = originY + curY;
             }
             //translate -> rotate -> scale
             if(transX > 0 || transY > 0){
                 _mat.postTranslate(transX, transY);
             }
             if(rotation > 0){
-                _mat.postRotate(rotation, originX, originY);
+                _mat.postRotate(rotation, cx, cy);
             }
             if(scaleX != 1 || scaleY != 1){
-                _mat.postScale(scaleX, scaleY, originX, originY);
+                _mat.postScale(scaleX, scaleY, cx, cy);
             }
         }
     };

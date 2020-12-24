@@ -52,7 +52,7 @@ namespace h7 {
         }
 
         /** Returns true if the widget's layout has been {@link #invalidate() invalidated}. */
-        bool needsLayout() {
+        bool markNeedsLayout() {
             return _needsLayout;
         }
         virtual float getMinWidth() { return getPrefWidth(); }

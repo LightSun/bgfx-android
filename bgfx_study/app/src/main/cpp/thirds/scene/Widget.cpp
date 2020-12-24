@@ -7,6 +7,15 @@
 
 namespace h7{
 
+    int Widget::getActorType(){
+        return H7_ACTOR_TYPE | H7_LAYOUT_TYPE;
+    }
+
+    void Widget::setLayoutEnabled(bool enabled) {
+        Layout::setLayoutEnabled(enabled);
+        if (enabled) invalidateHierarchy();
+    }
+
     void Widget::validate() {
         if (!layoutEnabled) return;
 
@@ -23,9 +32,10 @@ namespace h7{
             }
             setSize(parentWidth, parentHeight);
         }
-        if (!_needsLayout) return;
-        _needsLayout = false;
-        layout();
+        if(_needsLayout){
+            _needsLayout = false;
+            layout();
+        }
     }
     void Widget::invalidateHierarchy() {
         if (!layoutEnabled) return;
@@ -35,5 +45,18 @@ namespace h7{
         if(parent->hasActorType(H7_LAYOUT_TYPE)){
             reinterpret_cast<Layout*>(getParent())->invalidateHierarchy();
         }
+    }
+    void Widget::invalidate() {
+        _needsLayout = true;
+    }
+
+    void Widget::pack() {
+        setSize(getPrefWidth(), getPrefHeight());
+        validate();
+    }
+
+    void Widget::draw(NanoCanvas::Canvas& canvas, float parentAlpha) {
+        validate();
+        Actor::draw(canvas, parentAlpha);
     }
 }

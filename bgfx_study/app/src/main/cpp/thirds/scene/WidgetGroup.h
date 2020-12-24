@@ -12,6 +12,7 @@ namespace h7{
     class WidgetGroup: public Group, public Layout{
 
     public:
+        void addActors(int n, ...) ATTR_NEED_NULL;
         virtual int getActorType();
 
         virtual void setLayoutEnabled (bool enabled);

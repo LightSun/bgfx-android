@@ -2,10 +2,20 @@
 // Created by Administrator on 2020/12/23 0023.
 //
 
+#include <stdio.h>
+#include <stdarg.h>
 #include "WidgetGroup.h"
 #include "SceneHelper.h"
 
 namespace h7{
+    void WidgetGroup::addActors(int n, ...) {
+        va_list args;
+        va_start(args, n);
+        for (int i = 0; i < n; ++i) {
+            addActor(va_arg(args, Actor *));
+        }
+        va_end(args);
+    }
     int WidgetGroup::getActorType(){
         return H7_GROUP_TYPE | H7_LAYOUT_TYPE;
     }
@@ -48,10 +58,10 @@ namespace h7{
             }
         }
 
-        if (!_needsLayout) return;
-        _needsLayout = false;
-        layout();
-
+        if (_needsLayout){
+            _needsLayout = false;
+            layout();
+        }
         // Widgets may call invalidateHierarchy during layout (eg, a wrapped label). The root-most widget group retries layout a
         // reasonable number of times.
         if (_needsLayout) {
@@ -59,7 +69,7 @@ namespace h7{
             for (int i = 0; i < 5; i++) {
                 _needsLayout = false;
                 layout();
-                if (!needsLayout) break;
+                if (!_needsLayout) break;
             }
         }
     }
