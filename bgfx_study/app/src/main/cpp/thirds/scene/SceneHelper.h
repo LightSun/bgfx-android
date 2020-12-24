@@ -6,6 +6,7 @@
 #define BGFX_STUDY_SCENEHELPER_H
 
 #include "lua/SkRefCnt.h"
+#include "Drawable.h"
 #include "Action.h"
 #include "Actor.h"
 #include "Stage.h"

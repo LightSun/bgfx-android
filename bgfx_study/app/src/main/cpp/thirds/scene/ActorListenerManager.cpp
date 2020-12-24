@@ -46,15 +46,18 @@ namespace h7 {
             actor->unref();
         }
         actor->weak_unref();
+        preInfo.reset();
     }
 
     void ActorListenerManager::preFire() {
-        actor->weak_ref();
-        if (actor->try_ref()) {
-            saveInfo(actor.get(), preInfo);
-            actor->unref();
+        if(preFireEnable){
+            actor->weak_ref();
+            if (actor->try_ref()) {
+                saveInfo(actor.get(), preInfo);
+                actor->unref();
+            }
+            actor->weak_unref();
         }
-        actor->weak_unref();
     }
 
     void ActorListenerManager::saveInfo(h7::Actor *actor, h7::ActorInfo &info) {

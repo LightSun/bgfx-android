@@ -42,6 +42,7 @@ namespace h7{
         ActorInfo preInfo;
         ActorInfo curInfo;
         sk_sp<Actor> actor;
+        bool preFireEnable = true;
 
         Array<sk_sp<ActorEventListener>> eventListeners = Array<sk_sp<ActorEventListener>>(0);
         Array<sk_sp<ActorListener>> positions = Array<sk_sp<ActorListener>>(0);
@@ -59,6 +60,13 @@ namespace h7{
          */
         void preFire();
 
+        /**
+         * call this to affect #preFire.
+         * @param enable default is true.
+         */
+        inline void setPreFireEnabled(bool enable){
+            preFireEnable = enable;
+        }
         //weak ref
         inline void setActor(Actor* act){
             actor.reset(act);

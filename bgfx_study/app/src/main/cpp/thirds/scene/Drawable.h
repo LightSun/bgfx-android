@@ -5,9 +5,9 @@
 #ifndef BGFX_STUDY_DRAWABLE_H
 #define BGFX_STUDY_DRAWABLE_H
 
+#include "lua/SkRefCnt.h"
 #include "Align.h"
 #include "../nancanvas/SkRect.h"
-#include "lua/SkRefCnt.h"
 
 namespace NanoCanvas {
     class Canvas;
@@ -23,6 +23,9 @@ namespace h7{
 
     protected:
         SkRect _tmp;
+        virtual void onDraw(NanoCanvas::Canvas& canvas, float x, float y, float width, float height){
+
+        };
     public:
         /**
          * called to draw drawable
@@ -32,9 +35,6 @@ namespace h7{
          */
         virtual void draw(NanoCanvas::Canvas& canvas, float x, float y, float width, float height);
 
-        virtual void onDraw(NanoCanvas::Canvas& canvas, float x, float y, float width, float height){
-
-        };
         SkRect& getBounds();
         virtual void setBounds(SkRect& in);
 

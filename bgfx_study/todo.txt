@@ -77,4 +77,5 @@ NVGcontext: add ref count.
 -- layout
 -- full image transform
 -- draw chinese
+-- tint
 

@@ -321,7 +321,7 @@ namespace h7 {
         if(Actor::alpha != alpha){
             _actorListenerM.preFire();
             Actor::alpha = alpha;
-            dispatchChanged(ActorListenerManager::TYPE_ALPHA);
+            dispatchPropertyChanged(ActorListenerManager::TYPE_ALPHA);
         }
     }
 }

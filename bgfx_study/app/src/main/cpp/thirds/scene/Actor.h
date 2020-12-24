@@ -319,7 +319,7 @@ namespace h7 {
                 _actorListenerM.preFire();
                 this->width = width;
                 this->height = height;
-                dispatchChanged(ActorListenerManager::TYPE_SIZE);
+                dispatchPropertyChanged(ActorListenerManager::TYPE_SIZE);
             }
         }
         /** Returns the X position of the actor's left edge. */
@@ -339,7 +339,7 @@ namespace h7 {
             if (this->x != x) {
                 _actorListenerM.preFire();
                 this->x = x;
-                dispatchChanged(ActorListenerManager::TYPE_POSITION);
+                dispatchPropertyChanged(ActorListenerManager::TYPE_POSITION);
             }
         }
         /** Returns the Y position of the actor's bottom edge. */
@@ -350,7 +350,7 @@ namespace h7 {
             if (this->y != y) {
                 _actorListenerM.preFire();
                 this->y = y;
-                dispatchChanged(ActorListenerManager::TYPE_POSITION);
+                dispatchPropertyChanged(ActorListenerManager::TYPE_POSITION);
             }
         }
         /** Sets the y position using the specified {@link Align alignment}. Note this may set the position to non-integer
@@ -395,14 +395,14 @@ namespace h7 {
             if(transX != x){
                 _actorListenerM.preFire();
                 transX = x;
-                dispatchChanged(ActorListenerManager::TYPE_TRANSLATE);
+                dispatchPropertyChanged(ActorListenerManager::TYPE_TRANSLATE);
             }
         }
         inline void setTranslateY(float y){
             if(transY != y){
                 _actorListenerM.preFire();
                 transY = y;
-                dispatchChanged(ActorListenerManager::TYPE_TRANSLATE);
+                dispatchPropertyChanged(ActorListenerManager::TYPE_TRANSLATE);
             }
         }
         /** Sets the position of the actor's bottom left corner. */
@@ -411,7 +411,7 @@ namespace h7 {
                 _actorListenerM.preFire();
                 this->x = x;
                 this->y = y;
-                dispatchChanged(ActorListenerManager::TYPE_POSITION);
+                dispatchPropertyChanged(ActorListenerManager::TYPE_POSITION);
             }
         }
 
@@ -429,6 +429,10 @@ namespace h7 {
                 y -= height / 2;
             setPosition(x, y);
         }
+        void setBounds (float x, float y, float width, float height) {
+            setPosition(x, y);
+            setSize(width, height);
+        }
         /** Add x and y to current position */
         inline void moveBy(float x, float y) {
             if (x != 0 || y != 0) {
@@ -442,17 +446,17 @@ namespace h7 {
             if (this->width != width) {
                 _actorListenerM.preFire();
                 this->width = width;
-                dispatchChanged(ActorListenerManager::TYPE_SIZE);
+                dispatchPropertyChanged(ActorListenerManager::TYPE_SIZE);
             }
         }
         inline float getHeight () {
             return height;
         }
-        inline void setHeight (float height) {
+        inline void setHeight(float height) {
             if (this->height != height) {
                 _actorListenerM.preFire();
                 this->height = height;
-                dispatchChanged(ActorListenerManager::TYPE_SIZE);
+                dispatchPropertyChanged(ActorListenerManager::TYPE_SIZE);
             }
         }
         /** Returns x plus width. */
@@ -468,17 +472,11 @@ namespace h7 {
         inline float getLeft(){
             return x;
         }
-        inline void getBounds(float out[4]){
-            out[0] = getLeft();
-            out[1] = getTop();
-            out[2] = getRight();
-            out[3] = getBottom();
-        }
-        /** default is center */
+        /** if not set, default is center */
         inline float getOriginX () {
             return originX;
         }
-        /** default is center */
+        /** if not set, default is center */
         inline float getOriginY () {
             return originY;
         }
@@ -522,7 +520,7 @@ namespace h7 {
                 _actorListenerM.preFire();
                 this->scaleX = scaleX;
                 this->scaleY = scaleY;
-                dispatchChanged(ActorListenerManager::TYPE_SCALE);
+                dispatchPropertyChanged(ActorListenerManager::TYPE_SCALE);
             }
         }
 
@@ -543,17 +541,18 @@ namespace h7 {
 
         inline void setRotation (float degrees) {
             if (this->rotation != degrees) {
-                this->rotation = degrees;
-                rotationChanged();
+                _actorListenerM.preFire();
+                this->rotation = skf_mod(degrees, 360);
+                dispatchPropertyChanged(ActorListenerManager::TYPE_ROTATION);
             }
         }
         /** Adds the specified rotation to the current rotation. */
         inline void rotateBy (float amountInDegrees) {
             if (amountInDegrees != 0) {
-                rotation = skf_mod(rotation + amountInDegrees, 360.0f);
-                rotationChanged();
+                setRotation(rotation + amountInDegrees);
             }
         }
+
         inline void setColor (Color& color) {
             this->color.set(color);
         }
@@ -596,8 +595,7 @@ namespace h7 {
         ActorListenerManager& getListenerManager(){
             return _actorListenerM;
         }
-        void dispatchChanged(uint8_t type){
-            _actorListenerM.fire(type);
+        void dispatchPropertyChanged(uint8_t type){
             switch (type) {
                 case ActorListenerManager::TYPE_POSITION:
                     positionChanged();
@@ -618,6 +616,7 @@ namespace h7 {
                     alphaChanged();
                     break;
             }
+            _actorListenerM.fire(type);
         }
         /** Called when the actor's position has been changed. */
         virtual void positionChanged() {
@@ -657,6 +656,7 @@ namespace h7 {
             } else{
                 cy = originY + curY;
             }
+            _mat.setIdentity();
             //translate -> rotate -> scale
             if(transX > 0 || transY > 0){
                 _mat.postTranslate(transX, transY);

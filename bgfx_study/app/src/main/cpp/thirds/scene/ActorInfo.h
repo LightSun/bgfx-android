@@ -13,11 +13,18 @@ namespace h7{
     typedef struct ActorInfo{
         float x, y;
         float width, height;      // width, height
-        float alpha = 1;          // alpha
 
+        float alpha = 1;          // alpha
         float scaleX = 1, scaleY = 1;
+
         float rotation = 0;   //in degree
         float transX = 0, transY = 0;
+
+        void reset(){
+            x = y = width = height = 0;
+            alpha = scaleX = scaleY = 1;
+            rotation = transX = transY = 0;
+        }
     }ActorInfo;
 }
 
