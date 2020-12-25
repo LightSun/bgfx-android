@@ -70,11 +70,14 @@ aux_source_directory(src/main/cpp/core SRC_core)
 aux_source_directory(src/main/cpp/core/math SRC_core)
 
 aux_source_directory(src/main/cpp/thirds/utils SRC_h7_utils)
+
 aux_source_directory(src/main/cpp/thirds/input SRC_input)
 aux_source_directory(src/main/cpp/thirds/input/android SRC_input)
+
 aux_source_directory(src/main/cpp/thirds/scene SRC_scene)
 aux_source_directory(src/main/cpp/thirds/scene/actions SRC_scene)
 aux_source_directory(src/main/cpp/thirds/scene/drawables SRC_scene)
+aux_source_directory(src/main/cpp/thirds/scene/ui SRC_scene)
 aux_source_directory(src/main/cpp/thirds/application SRC_scene)
 
 add_library(

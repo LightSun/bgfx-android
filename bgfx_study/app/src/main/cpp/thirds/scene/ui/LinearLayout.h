@@ -9,29 +9,21 @@
 #include "../../lua/SkRefCnt.h"
 
 namespace h7{
+    typedef struct LinearLayoutParams: public LayoutParams {
+        int weight;
+        LinearLayoutParams();
+    }LinearLayoutParams;
 
     class LinearLayout: public WidgetGroup{
 
-        class WeightProvider;
-
-    private:
-        bool vertical = true;
-        sk_sp<WeightProvider> weightProvider;
-
     public:
-        class WeightProvider{
-        public:
-            virtual int getWeight(LinearLayout& layout, int index){
-                return 1;
-            }
-        };
-
         virtual void onLayoutChildren(float targetX, float targetY, float w, float h);
 
         bool isVertical() const;
         void setVertical(bool vertical) ;
-        WeightProvider* getWeightProvider();
-        void setWeightProvider(WeightProvider* provider);
+
+    private:
+        bool vertical = true;
     };
 }
 

@@ -99,7 +99,7 @@ namespace h7 {
             }
         };
         Actor();
-        ~Actor();
+        virtual ~Actor();
 
         void setBackground(Drawable *d);
         Drawable* getBackground();

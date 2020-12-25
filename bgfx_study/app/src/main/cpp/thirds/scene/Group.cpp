@@ -9,6 +9,8 @@
 
 namespace h7{
 
+    Group::~Group(){
+    }
     void Group::addActorAt(int index, Actor* actor) {
         Group* _tparent = actor->getParent();
         if (_tparent != nullptr) {

@@ -48,6 +48,8 @@ namespace h7 {
     public:
         Array<sk_sp<Actor>> children;
 
+        virtual ~Group();
+
         virtual int getActorType(){
             return H7_GROUP_TYPE;
         }

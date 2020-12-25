@@ -1,0 +1,130 @@
+//
+// Created by Administrator on 2020/12/25 0025.
+//
+#include "Layout.h"
+#include "SceneHelper.h"
+
+namespace h7 {
+    Layout::Layout(): minInfo(nullptr), maxInfo(nullptr) {
+        lp.reset(new LayoutParams());
+    }
+    Layout::~Layout() {
+        DESTROY_POINTER(minInfo)
+        DESTROY_POINTER(maxInfo)
+    }
+    void Layout::layoutSize(float w1, float h1, float ew, float eh) {
+        float w = w1;
+        float h = h1;
+        bool hasWrapContent = false;
+        switch (getLayoutWidthType()) {
+            case LayoutParams::LAYOUT_MATCH_PARENT:
+                w = ew;
+                break;
+            case LayoutParams::LAYOUT_WRAP_CONTENT:
+                hasWrapContent = true;
+                break;
+            case LayoutParams::LAYOUT_REAL:
+                float minW = getMinWidth();
+                if (minW > 0 && w < minW) {
+                    w = minW;
+                }
+                float maxW = getMaxHeight();
+                if(maxW > 0 && w > maxW){
+                    w = maxW;
+                }
+                break;
+        }
+        switch (getLayoutHeightType()) {
+            case LayoutParams::LAYOUT_MATCH_PARENT:
+                h = eh;
+                break;
+            case LayoutParams::LAYOUT_WRAP_CONTENT:
+                hasWrapContent = true;
+                break;
+            case LayoutParams::LAYOUT_REAL:
+                float minH = getMinHeight();
+                if (minH > 0 && h < minH) {
+                    h = minH;
+                }
+                float maxH = getMaxHeight();
+                if(maxH > 0 && h > maxH){
+                    h = maxH;
+                }
+                break;
+        }
+        //need measure
+        if (hasWrapContent) {
+            measure(w, h);
+        }
+        rCast(Actor*, this)->setSize(w, h);
+    }
+
+    signed char Layout::getLayoutWidthType() const {
+        return lp->layoutWidthType;
+    }
+
+    void Layout::setLayoutWidthType(signed char layoutWidthType) {
+        lp->layoutWidthType = layoutWidthType;
+    }
+
+    signed char Layout::getLayoutHeightType() const {
+        return lp->layoutHeightType;
+    }
+
+    void Layout::setLayoutHeightType(signed char layoutHeightType) {
+        lp->layoutHeightType = layoutHeightType;
+    }
+
+    void Layout::setLayoutEnabled(bool enabled) {
+        this->layoutEnabled = enabled;
+    }
+
+    bool Layout::isLayoutEnabled() const {
+        return layoutEnabled;
+    }
+
+    LayoutParams *Layout::getLayoutParams() const {
+        return lp.get();
+    }
+
+    void Layout::setLayoutParams(h7::LayoutParams *in) {
+        if(in != nullptr){
+            lp.reset(in);
+        }
+    }
+
+    float Layout::getMinWidth() const { return minInfo != nullptr ? minInfo->w : 0; }
+
+    float Layout::getMinHeight() const { return minInfo != nullptr ? minInfo->h : 0; }
+
+    float Layout::getMaxWidth() const { return maxInfo != nullptr ? maxInfo->w : 0;}
+
+    float Layout::getMaxHeight() const { return maxInfo != nullptr ? maxInfo->h : 0; }
+
+    void Layout::setMinWidth(float w) {
+        if(minInfo == nullptr){
+            minInfo = new WH();
+        }
+        minInfo->w = w;
+    }
+    void Layout::setMinHeight(float h) {
+        if(minInfo == nullptr){
+            minInfo = new WH();
+        }
+        minInfo->h = h;
+    }
+
+    void Layout::setMaxWidth(float w) {
+        if(maxInfo == nullptr){
+            maxInfo = new WH();
+        }
+        maxInfo->w = w;
+    }
+
+    void Layout::setMaxHeight(float h) {
+        if(maxInfo == nullptr){
+            maxInfo = new WH();
+        }
+        maxInfo->h = h;
+    }
+}

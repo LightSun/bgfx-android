@@ -8,6 +8,11 @@
 #include "SceneHelper.h"
 
 namespace h7{
+    WidgetGroup::WidgetGroup():Group(), Layout() {
+
+    }
+    WidgetGroup::~WidgetGroup()= default;
+
     void WidgetGroup::addActors(int n, ...) {
         va_list args;
         va_start(args, n);
@@ -39,21 +44,7 @@ namespace h7{
 
     void WidgetGroup::doLayout(float ex, float ey, float ew, float eh) {
         if(isLayoutEnabled()){
-            switch (getLayoutType()){
-                case LAYOUT_TYPE_MATCH_PARENT:
-                    setSize(ew, eh);
-                    break;
-                case LAYOUT_TYPE_WRAP_CONTENT:
-                    measure();
-                    break;
-                case LAYOUT_TYPE_REAL:
-                    if(getMinWidth() > 0 && getMinHeight() > 0){
-                        float w = getWidth() < getMinWidth() ? getMinWidth() : getWidth();
-                        float h = getHeight() < getMinHeight() ? getMinHeight() : getHeight();
-                        setSize(w, h);
-                    }
-                    break;
-            }
+            layoutSize(getWidth(), getHeight(), ew, eh);
             Actor::doLayout(ex, ey, ew, eh);
         }
     }

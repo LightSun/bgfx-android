@@ -21,6 +21,8 @@ namespace h7 {
             layoutAndInvalidate();
         }
     public:
+        Widget();
+        virtual ~Widget();
         int getActorType();
 
         virtual void doLayout(float ex, float ey, float ew, float eh);

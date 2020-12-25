@@ -5,42 +5,87 @@
 #ifndef BGFX_STUDY_LAYOUT_H
 #define BGFX_STUDY_LAYOUT_H
 
+#include <lua/SkRefCnt.h>
+
+#define LP_TYPE 0
+#define LP_TYPE_LINEAR 1
+
 namespace h7 {
+    class Actor;
+
+    typedef struct LayoutParams {
+        static constexpr signed char LAYOUT_MATCH_PARENT = -1;
+        static constexpr signed char LAYOUT_WRAP_CONTENT = -2;
+        static constexpr signed char LAYOUT_REAL = -3;
+
+        signed char layoutWidthType = LAYOUT_REAL;
+        signed char layoutHeightType = LAYOUT_REAL;
+        unsigned char lpType = LP_TYPE;
+    } LayoutParams;
 
     class Layout {
+    private:
+        typedef struct WH{
+            float w = 0;
+            float h = 0;
+        }WH;
     public:
-        static constexpr uint8_t LAYOUT_TYPE_MATCH_PARENT = 1;
-        static constexpr uint8_t LAYOUT_TYPE_WRAP_CONTENT = 2;
-        static constexpr uint8_t LAYOUT_TYPE_REAL = 3;
+        Layout();
+        virtual ~Layout();
+        virtual void setLayoutEnabled(bool enabled);
 
-        virtual void setLayoutType(uint8_t type){
-            this->_layoutType = type;
-        }
-        inline uint8_t getLayoutType(){
-            return _layoutType;
-        }
-        virtual void setLayoutEnabled(bool enabled) {
-            this->layoutEnabled = enabled;
-        }
-        inline bool isLayoutEnabled(){
-            return layoutEnabled;
-        }
+        inline bool isLayoutEnabled() const;
 
-        virtual float getMinWidth() { return 0; }
-        virtual float getMinHeight() { return 0; }
+        signed char getLayoutWidthType() const;
 
-        virtual float getMaxWidth() { return 0; }
-        virtual float getMaxHeight() { return 0; }
+        void setLayoutWidthType(signed char layoutWidthType);
+
+        signed char getLayoutHeightType() const;
+
+        void setLayoutHeightType(signed char layoutHeightType);
+
+        LayoutParams* getLayoutParams() const;
+
+        void setLayoutParams(LayoutParams *in);
+
+        float getMinWidth() const;
+
+        float getMinHeight() const;
+
+        float getMaxWidth() const;
+
+        float getMaxHeight() const;
+
+        void setMinWidth(float minWidth);
+
+        void setMinHeight(float minHeight);
+
+        void setMaxWidth(float maxWidth);
+
+        void setMaxHeight(float maxHeight);
 
         /**
          * call this to measure the content width and height.
-         * you should call setSize(...) in it.
+         * @param outW the out width
+         * @param outH the out height
          */
-        virtual void measure(){}
+        virtual void measure(float &outW, float &outH) {
+        }
+    protected:
+        /**
+        * call this to compute layout and set size.
+        * @param w the current width of layout
+        * @param h the current height of layout
+        * @param ew the expect width which is from parent
+        * @param eh the expect height which is from parent
+        */
+        void layoutSize(float w, float h, float ew, float eh);
 
     private:
-        uint8_t _layoutType;
         bool layoutEnabled = true;
+        WH* minInfo;
+        WH* maxInfo;
+        sk_sp<LayoutParams> lp;
     };
 }
 
