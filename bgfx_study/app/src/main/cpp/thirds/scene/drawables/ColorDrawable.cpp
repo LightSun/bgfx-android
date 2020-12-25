@@ -17,10 +17,10 @@ namespace h7{
     void ColorDrawable::setColor(h7::Color &in) {
         _color.set(in);
     }
-    void ColorDrawable::onDraw(NanoCanvas::Canvas &canvas, float x, float y, float width, float height) {
-        float r = _circle ? _tmp.width() / 2 : _round;
+    void ColorDrawable::onDraw(NanoCanvas::Canvas &canvas, float x, float y, SkRect& real) {
+        float r = _circle ? real.width() / 2 : _round;
         canvas.beginPath()
-                .roundedRect(x + _tmp.fLeft, y + _tmp.fTop, _tmp.width(), _tmp.height(), r)
+                .roundedRect(x + real.fLeft, y + real.fTop, real.width(), real.height(), r)
                 .fillColor(_color)
                 .fill();
     }

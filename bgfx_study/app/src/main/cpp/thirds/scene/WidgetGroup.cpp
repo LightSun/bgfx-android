@@ -20,6 +20,7 @@ namespace h7{
         return H7_GROUP_TYPE | H7_LAYOUT_TYPE;
     }
     void WidgetGroup::setLayoutEnabled(bool enabled) {
+        //travel all child. and call setLayoutEnabled(enabled)
         layoutEnabled = enabled;
         setLayoutEnabled(this, enabled);
     }
@@ -38,6 +39,7 @@ namespace h7{
     }
 
     void WidgetGroup::validate() {
+        //set size invalidate. layout
         if (!layoutEnabled) return;
 
         Group* parent = getParent();

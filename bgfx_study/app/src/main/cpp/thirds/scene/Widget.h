@@ -21,7 +21,7 @@ namespace h7 {
             invalidate();
         }
     public:
-        virtual int getActorType();
+        int getActorType();
 
         virtual void setLayoutEnabled(bool enabled);
 

@@ -21,22 +21,37 @@ namespace h7{
         int align = Align::center;
         unsigned char _level = 100; //0-100
 
+        SkRect realRect;
+
     protected:
-        SkRect _tmp;
-        virtual void onDraw(NanoCanvas::Canvas& canvas, float x, float y, float width, float height){
+        SkRect* _pad;//temp padding just used for draw
+
+        /**
+        * called to draw drawable
+        * @param canvas the canvas
+        * @param x the x of screen x
+        * @param y the y of screen y
+        * @param real the real rect
+        */
+        virtual void onDraw(NanoCanvas::Canvas& canvas, float x, float y, SkRect& real){
 
         };
     public:
         /**
          * called to draw drawable
          * @param canvas the canvas
-         * @param x the x of cors
-         * @param y the y of cors
+         * @param x the x of screen x
+         * @param y the y of screen y
+         * @param width limit width
+         * @param height limit height
          */
         virtual void draw(NanoCanvas::Canvas& canvas, float x, float y, float width, float height);
 
         SkRect& getBounds();
         virtual void setBounds(SkRect& in);
+
+        virtual void setPadding(SkRect* pad);
+        SkRect& getPadding(SkRect& rect);
 
         unsigned char getLevel() const;
 

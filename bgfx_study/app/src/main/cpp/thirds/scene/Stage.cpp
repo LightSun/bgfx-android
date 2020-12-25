@@ -30,6 +30,9 @@ namespace h7{
             root->draw(*_canvas, 1.0f);
         }
     }
+    void Stage::layout() {
+        root->layout(viewport->x, viewport->y);
+    }
 
     void Stage::act(float delta) {
 // Update over actors. Done in act() because actors may change position, which can fire enter/exit without an input event.

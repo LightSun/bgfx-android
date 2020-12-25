@@ -39,10 +39,7 @@ namespace h7 {
         constexpr bool isCenterHorizontal(int align) {
             return (align & left) == 0 && (align & right) == 0;
         }
-        inline void applyAlign(SkRect& range, SkRect& in, int aligns, SkRect& out){
-            auto w = in.width();
-            auto h = in.height();
-
+        inline void applyAlign(SkRect& range, float w, float h, int aligns, SkRect& out){
             if((aligns & left) != 0){
                 out.fLeft = range.fLeft;
                 out.fRight = out.fLeft + w;

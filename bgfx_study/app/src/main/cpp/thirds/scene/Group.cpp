@@ -25,17 +25,17 @@ namespace h7{
         actor->setStage(getStage());
         childrenChanged();
     }
-    void Group::addActorBefore(Actor* actorBefore, Actor*  actor) {
+    void Group::addActorBefore(Actor* anchor, Actor* actor) {
         Group* _tparent = actor->getParent();
         if (_tparent != nullptr) {
             if (_tparent == this) return;
             _tparent->removeActor(actor, false);
         }
         int index;
-        if(actorBefore == nullptr){
+        if(anchor == nullptr){
             index = 0;
         } else{
-            auto sp = sk_ref_sp(actorBefore);
+            auto sp = sk_ref_sp(anchor);
             index = children.indexOf(sp);
         }
         if(index >= 0){
@@ -47,13 +47,13 @@ namespace h7{
         }
     }
 
-    void Group::addActorAfter(Actor* actorBefore, Actor* actor) {
+    void Group::addActorAfter(Actor* anchor, Actor* actor) {
         Group* _tparent = actor->getParent();
         if (_tparent != nullptr) {
             if (_tparent == this) return;
             _tparent->removeActor(actor, false);
         }
-        auto sp_before = sk_ref_sp(actorBefore);
+        auto sp_before = sk_ref_sp(anchor);
         auto sp = sk_ref_sp(actor);
         int index = children.indexOf(sp_before);
         if(index >= 0){

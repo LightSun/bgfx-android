@@ -27,6 +27,20 @@ namespace h7 {
                 array.get(i)->act(delta);
             }
         }
+        /**
+        * called on preDraw
+        * @param px the parent's absolute x in screen
+        * @param py the parent's absolute y in screen
+        */
+        virtual void layout(float px, float py){
+            Actor::layout(px, py);
+            auto array = children.copy();
+            float sx = getScreenX();
+            float sy = getScreenY();
+            for (int i = 0, n = array.size(); i < n; i++){
+                array.get(i)->layout(sx + getWidth(), sy + getHeight());
+            }
+        }
         virtual void onDraw(NanoCanvas::Canvas &canvas, float parentAlpha) override {
             Actor::draw(canvas, parentAlpha);
             auto array = children.copy();

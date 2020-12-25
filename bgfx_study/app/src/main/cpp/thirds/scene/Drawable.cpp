@@ -7,11 +7,24 @@
 namespace h7{
 
     void Drawable::draw(NanoCanvas::Canvas& canvas, float x, float y, float width, float height){
-        _tmp.setXYWH(0, 0, width, height);
-        if(!getBounds().isEmpty()){
-            Align::applyAlign(_tmp, getBounds(), align, _tmp);
+        realRect.setXYWH(0, 0, width, height);
+        float dw, dh;
+        if(_pad != nullptr){
+            dw = _pad->left() - _pad->right();
+            dh = _pad->top() - _pad->bottom();
+        } else{
+            dw = 0;
+            dh = 0;
         }
-        onDraw(canvas, x, y ,width, height);
+        if(!getBounds().isEmpty()){
+            Align::applyAlign(realRect, getBounds().width()- dw,
+                        getBounds().height() - dh,
+                        align, realRect);
+        } else{
+            Align::applyAlign(realRect, width - dw,
+                              height - dh, align, realRect);
+        }
+        onDraw(canvas, x, y, realRect);
     };
 
     SkRect & Drawable::getBounds() {
@@ -20,7 +33,17 @@ namespace h7{
     void Drawable::setBounds(SkRect &in) {
         _bounds.set(in);
     }
-
+    void Drawable::setPadding(SkRect* pad){
+        this->_pad = pad;
+    }
+    SkRect & Drawable::getPadding(SkRect &rect) {
+        if(_pad == nullptr){
+            rect.setLTRB(0, 0 , 0 ,0);
+        } else{
+            rect.set(*_pad);
+        }
+        return rect;
+    }
     float Drawable::getRight() {
         return _bounds.fRight;
     }

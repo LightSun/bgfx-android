@@ -17,6 +17,7 @@ namespace h7{
     }
 
     void Widget::validate() {
+        //set size and layout if need
         if (!layoutEnabled) return;
 
         Group* parent = getParent();
@@ -38,6 +39,7 @@ namespace h7{
         }
     }
     void Widget::invalidateHierarchy() {
+        //call invalidate and call parent.invalidateHierarchy().
         if (!layoutEnabled) return;
         invalidate();
         //all parent should impl layout
@@ -47,10 +49,11 @@ namespace h7{
         }
     }
     void Widget::invalidate() {
-        _needsLayout = true;
+        _needsLayout = true; //mark need layout
     }
 
     void Widget::pack() {
+        //size size and layout
         setSize(getPrefWidth(), getPrefHeight());
         validate();
     }

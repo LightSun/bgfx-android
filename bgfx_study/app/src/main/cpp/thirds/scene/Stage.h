@@ -52,7 +52,6 @@ namespace h7 {
         Array<sk_sp<TouchFocus>> touchFocuses = Array<sk_sp<TouchFocus>>(16);
 
     public:
-
         /**
          * create stage with viewport and canvas.
          * @param vp viewport. this will auto manage ptr
@@ -88,6 +87,8 @@ namespace h7 {
         void act(float delta);
 
         virtual void draw();
+
+        void layout();
 
         /** Applies a touch down event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the
 	 * event. */

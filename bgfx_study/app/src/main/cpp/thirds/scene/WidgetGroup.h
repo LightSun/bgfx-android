@@ -13,7 +13,7 @@ namespace h7{
 
     public:
         void addActors(int n, ...);
-        virtual int getActorType();
+        int getActorType();
 
         virtual void setLayoutEnabled (bool enabled);
 

@@ -19,8 +19,11 @@
 #include "nancanvas/SkRect.h"
 
 namespace h7 {
-    Actor::Actor() {
+    Actor::Actor():SkWeakRefCnt() {
         _actorListenerM.setActor(this);
+    }
+    Actor::~Actor(): ~SkWeakRefCnt(){
+        DESTROY_POINTER(_padding);
     }
     void Actor::setBackground(Drawable *d) {
         background.reset(d);
@@ -28,6 +31,22 @@ namespace h7 {
     Drawable* Actor::getBackground() {
         return background.get();
     }
+    void Actor::setPadding(float left, float top, float right, float bottom) {
+        if(_padding == nullptr){
+            _padding = new SkRect{left, top, right, bottom};
+        } else{
+            _padding->setLTRB(left, top, right, bottom);
+        }
+    }
+    SkRect& Actor::getPadding(SkRect& out) {
+        if(_padding == nullptr){
+            out.setLTRB(0, 0, 0, 0);
+        } else{
+            out.set(*_padding);
+        }
+        return out;
+    }
+
     Stage *Actor::getStage() {
         if (stage == nullptr)return nullptr;
         stage->weak_ref();
@@ -56,16 +75,18 @@ namespace h7 {
     void Actor::draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
         if(isVisible()){
             background->getBounds().setXYWH(0, 0, width, height);
+            background->setPadding(_padding);
             if (_mat.isIdentity()) {
-                background->draw(canvas, x, y, width, height);
+                background->draw(canvas, tmpScreenX, tmpScreenY, width, height);
                 onDraw(canvas, parentAlpha);
             } else {
                 canvas.save();
                 canvas.setMatrix(_mat);
-                background->draw(canvas, x, y, width, height);
+                background->draw(canvas, tmpScreenX, tmpScreenY, width, height);
                 onDraw(canvas, parentAlpha);
                 canvas.restore();
             }
+            background->setPadding(nullptr);
         }
     }
 

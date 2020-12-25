@@ -17,7 +17,7 @@ namespace h7{
         bool _circle = false;
 
     protected:
-        virtual void onDraw(NanoCanvas::Canvas& canvas, float x, float y, float width, float height);
+        virtual void onDraw(NanoCanvas::Canvas& canvas, float x, float y, SkRect& real);
     public:
         Color& getColor(){
             return _color;

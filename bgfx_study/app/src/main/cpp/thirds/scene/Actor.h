@@ -66,6 +66,8 @@ namespace h7 {
         int _flags = FLAG_VISIBLE;
         Color color;
         sk_sp<Drawable> background;
+        SkRect* _padding;
+
         void *userObject;
 
         float x, y;  // relative to parent.
@@ -77,6 +79,7 @@ namespace h7 {
         float transX = 0, transY = 0;
 
         float originX = -1, originY = -1;   //rotate/scale center. like android PivotX/PivotY
+        float tmpScreenX, tmpScreenY;
 
     public:
         static constexpr int FLAG_VISIBLE = 0x1;
@@ -93,9 +96,13 @@ namespace h7 {
             }
         };
         Actor();
+        ~Actor();
 
         void setBackground(Drawable *d);
         Drawable* getBackground();
+
+        void setPadding(float left, float top, float right, float bottom);
+        SkRect& getPadding(SkRect& out);
 
         virtual int getActorType(){
             return H7_ACTOR_TYPE;
@@ -119,6 +126,31 @@ namespace h7 {
         Stage *getStage();
 
         Group *getParent();
+
+        /**
+         * get screen x. this must be called in draw.
+         * @return the screen x
+         */
+        inline float getScreenX(){
+            return tmpScreenX;
+        }
+        /**
+        * get screen y. this must be called in draw.
+        * @return the screen y
+        */
+        inline float getScreenY(){
+            return tmpScreenY;
+        }
+        /**
+         * called on preDraw
+         * @param px the parent's absolute x in screen
+         * @param py the parent's absolute y in screen
+         */
+        virtual void layout(float px, float py){
+             tmpScreenX = px + x;
+             tmpScreenY = py + y;
+             applyMatrix(tmpScreenX, tmpScreenY);
+        }
 
         /** Draws the actor. The batch is configured to draw in the parent's coordinate system.
 	 * {@link Batch#draw(com.badlogic.gdx.graphics.g2d.TextureRegion, float, float, float, float, float, float, float, float, float)
@@ -635,12 +667,6 @@ namespace h7 {
         }
         virtual void alphaChanged(){
             //applyMatrix();
-        }
-        //should call this before draw / in layout.
-        inline void applyMatrix(){
-            Vector2f vec;
-            localToScreenCoordinates(vec);
-            applyMatrix(vec.x, vec.y);
         }
     private:
         inline void applyMatrix(float curX, float curY){
