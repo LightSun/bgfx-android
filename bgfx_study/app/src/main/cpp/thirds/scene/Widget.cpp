@@ -10,56 +10,24 @@ namespace h7{
     int Widget::getActorType(){
         return H7_ACTOR_TYPE | H7_LAYOUT_TYPE;
     }
-
-    void Widget::setLayoutEnabled(bool enabled) {
-        Layout::setLayoutEnabled(enabled);
-        if (enabled) invalidateHierarchy();
-    }
-
-    void Widget::validate() {
-        //set size and layout if need
-        if (!layoutEnabled) return;
-
-        Group* parent = getParent();
-        if (fillParent && parent != NULL) {
-            float parentWidth, parentHeight;
-            Stage* stage = getStage();
-            if (stage != nullptr && parent == stage->getRoot()) {
-                parentWidth = stage->getWidth();
-                parentHeight = stage->getHeight();
-            } else {
-                parentWidth = parent->getWidth();
-                parentHeight = parent->getHeight();
+    void Widget::doLayout(float ex, float ey, float ew, float eh) {
+        if(isLayoutEnabled()){
+            switch (getLayoutType()){
+                case LAYOUT_TYPE_MATCH_PARENT:
+                    setSize(ew, eh);
+                    break;
+                case LAYOUT_TYPE_WRAP_CONTENT:
+                    measure();
+                    break;
+                case LAYOUT_TYPE_REAL:
+                    if(getMinWidth() > 0 && getMinHeight() > 0){
+                        float w = getWidth() < getMinWidth() ? getMinWidth() : getWidth();
+                        float h = getHeight() < getMinHeight() ? getMinHeight() : getHeight();
+                        setSize(w, h);
+                    }
+                    break;
             }
-            setSize(parentWidth, parentHeight);
+            Actor::doLayout(ex, ey, ew, eh);
         }
-        if(_needsLayout){
-            _needsLayout = false;
-            layout();
-        }
-    }
-    void Widget::invalidateHierarchy() {
-        //call invalidate and call parent.invalidateHierarchy().
-        if (!layoutEnabled) return;
-        invalidate();
-        //all parent should impl layout
-        auto parent = getParent();
-        if(parent->hasActorType(H7_LAYOUT_TYPE)){
-            reinterpret_cast<Layout*>(getParent())->invalidateHierarchy();
-        }
-    }
-    void Widget::invalidate() {
-        _needsLayout = true; //mark need layout
-    }
-
-    void Widget::pack() {
-        //size size and layout
-        setSize(getPrefWidth(), getPrefHeight());
-        validate();
-    }
-
-    void Widget::draw(NanoCanvas::Canvas& canvas, float parentAlpha) {
-        validate();
-        Actor::draw(canvas, parentAlpha);
     }
 }

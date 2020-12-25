@@ -12,6 +12,7 @@
 #include "EventListener.h"
 #include "FocusListener.h"
 #include "../nancanvas/Canvas.h"
+#include "input/GestureContext.h"
 
 namespace h7{
 
@@ -31,9 +32,18 @@ namespace h7{
         }
     }
     void Stage::layout() {
-        root->layout(viewport->x, viewport->y);
+        if(!_isInLayout){
+            _isInLayout = true;
+            root->doLayout(viewport->x,viewport->y, viewport->width, viewport->height);
+            _isInLayout = false;
+        }
     }
-
+    void Stage::invalidate() {
+        requestRender();
+    }
+    bool Stage::isInLayout() {
+        return _isInLayout;
+    }
     void Stage::act(float delta) {
 // Update over actors. Done in act() because actors may change position, which can fire enter/exit without an input event.
         for (int pointer = 0, n = STAGE_TOUCH_NUM; pointer < n; pointer++) {

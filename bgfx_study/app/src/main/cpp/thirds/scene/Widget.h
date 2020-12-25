@@ -18,26 +18,12 @@ namespace h7 {
 
     protected:
         virtual void sizeChanged() {
-            invalidate();
+            layoutAndInvalidate();
         }
     public:
         int getActorType();
 
-        virtual void setLayoutEnabled(bool enabled);
-
-        virtual void validate();
-
-        virtual void invalidate();
-
-        virtual void invalidateHierarchy();
-
-        virtual void pack();
-
-        /** If this method is overridden, the super method or {@link #validate()} should be called to ensure the widget is laid out. */
-        virtual void draw(NanoCanvas::Canvas& canvas, float parentAlpha);
-
-        virtual void layout() {
-        }
+        virtual void doLayout(float ex, float ey, float ew, float eh);
     };
 }
 

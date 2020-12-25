@@ -67,6 +67,7 @@ namespace h7 {
         Color color;
         sk_sp<Drawable> background;
         SkRect* _padding;
+        SkRect* _margin;
 
         void *userObject;
 
@@ -79,10 +80,12 @@ namespace h7 {
         float transX = 0, transY = 0;
 
         float originX = -1, originY = -1;   //rotate/scale center. like android PivotX/PivotY
+
         float tmpScreenX, tmpScreenY;
 
     public:
         static constexpr int FLAG_VISIBLE = 0x1;
+        static constexpr int FLAG_CLIP_RECT = 0x2;
 
         Touchable touchable = Touchable::enabled;
 
@@ -102,7 +105,12 @@ namespace h7 {
         Drawable* getBackground();
 
         void setPadding(float left, float top, float right, float bottom);
+        SkRect* getPadding();
         SkRect& getPadding(SkRect& out);
+
+        void setMargin(float left, float top, float right, float bottom);
+        SkRect* getMargin();
+        SkRect& getMargin(SkRect& out);
 
         virtual int getActorType(){
             return H7_ACTOR_TYPE;
@@ -128,30 +136,39 @@ namespace h7 {
         Group *getParent();
 
         /**
-         * get screen x. this must be called in draw.
+         * get screen x. often set by layout
          * @return the screen x
          */
         inline float getScreenX(){
             return tmpScreenX;
         }
         /**
-        * get screen y. this must be called in draw.
+        * get screen y.often set by layout
         * @return the screen y
         */
         inline float getScreenY(){
             return tmpScreenY;
         }
         /**
-         * called on preDraw
-         * @param px the parent's absolute x in screen
-         * @param py the parent's absolute y in screen
+         * do layout this actor with margin. will call layout.
+         * @param ex the x
+         * @param ey the y
+         * @param ew the w
+         * @param eh the h
          */
-        virtual void layout(float px, float py){
-             tmpScreenX = px + x;
-             tmpScreenY = py + y;
-             applyMatrix(tmpScreenX, tmpScreenY);
+        virtual void doLayout(float ex, float ey, float ew, float eh){
+            auto margin = getMargin();
+            if(margin != nullptr){
+                layout(ex + margin->left(),
+                       ey + margin->top(),
+                       getWidth() - margin->left() - margin->right(),
+                       getHeight() - margin->top() - margin->bottom()
+                );
+            } else{
+                layout(ex, ey, getWidth(), getHeight());
+            }
         }
-
+        bool isInLayout();
         /** Draws the actor. The batch is configured to draw in the parent's coordinate system.
 	 * {@link Batch#draw(com.badlogic.gdx.graphics.g2d.TextureRegion, float, float, float, float, float, float, float, float, float)
 	 * This draw method} is convenient to draw a rotated and scaled TextureRegion. {@link Batch#begin()} has already been called on
@@ -163,7 +180,24 @@ namespace h7 {
 	 *           children. */
         virtual void draw(NanoCanvas::Canvas &canvas, float parentAlpha);
 
+        /**
+         * request layout and invalidate
+         */
+        void layoutAndInvalidate();
+
     protected:
+        /**
+       * called on layout this actor.
+       * @param ex the expect x in screen which is assigned by parent
+       * @param ey the expect y in screen which is assigned by parent
+        * @param w the parent width
+        * @param h the parent height
+       */
+        virtual void layout(float ex, float ey, float w, float h){
+            tmpScreenX = ex + x;
+            tmpScreenY = ey + y;
+            applyMatrix(tmpScreenX, tmpScreenY);
+        }
         virtual void onDraw(NanoCanvas::Canvas &canvas, float parentAlpha) {
 
         }
@@ -344,6 +378,17 @@ namespace h7 {
             } else{
                 _flags &= ~FLAG_VISIBLE;
             }
+        }
+        inline bool isClipRect() {
+            return (_flags & FLAG_CLIP_RECT) != 0;
+        }
+        inline void setClipRect(bool clipRect) {
+            if(clipRect){
+                _flags |= FLAG_CLIP_RECT;
+            } else{
+                _flags &= ~FLAG_CLIP_RECT;
+            }
+            layoutAndInvalidate();
         }
         /** Sets the width and height. */
         inline void setSize (float width, float height) {
@@ -652,9 +697,11 @@ namespace h7 {
         }
         /** Called when the actor's position has been changed. */
         virtual void positionChanged() {
+            layoutAndInvalidate();
         }
         /** Called when the actor's size has been changed. */
         virtual void sizeChanged() {
+            layoutAndInvalidate();
         }
         virtual void scaleChanged() {
             //applyMatrix();

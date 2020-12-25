@@ -47,6 +47,7 @@ namespace h7 {
         //canvas to draw
         sk_sp<NanoCanvas::Canvas> _canvas;
         sk_sp<Viewport> viewport;
+        bool _isInLayout;
 
     public:
         Array<sk_sp<TouchFocus>> touchFocuses = Array<sk_sp<TouchFocus>>(16);
@@ -87,8 +88,12 @@ namespace h7 {
         void act(float delta);
 
         virtual void draw();
-
+        /**
+         * dispatch draw cmd.
+         */
+        void invalidate();
         void layout();
+        bool isInLayout();
 
         /** Applies a touch down event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the
 	 * event. */

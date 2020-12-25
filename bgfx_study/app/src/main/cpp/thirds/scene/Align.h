@@ -61,6 +61,22 @@ namespace h7 {
                 out.fBottom = out.fTop + h;
             }
         }
+        inline void applyAlign(SkRect& range, float w, float h, int aligns, float& outLeft, float& outTop) {
+            if ((aligns & left) != 0) {
+                outLeft = range.fLeft;
+            } else if ((aligns & right) != 0) {
+                outLeft = range.fRight - w;
+            } else if ((aligns & center) != 0) {
+                outLeft = range.fLeft + (range.width() - w) / 2;
+            }
+            if((aligns & top) != 0){
+                outTop = range.fTop;
+            }else if((aligns & bottom) != 0){
+                outTop = range.fBottom - h;
+            }else if((aligns & center) != 0){
+                outTop = range.fTop + (range.height() - h) / 2;
+            }
+        }
         inline void toString(int align, SB::StringBuilder& sb){
             if ((align & top) != 0)
                 sb.append("top,");

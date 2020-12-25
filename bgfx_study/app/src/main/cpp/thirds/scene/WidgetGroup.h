@@ -15,20 +15,19 @@ namespace h7{
         void addActors(int n, ...);
         int getActorType();
 
-        virtual void setLayoutEnabled (bool enabled);
+        virtual void setLayoutEnabled(bool enabled);
 
-        virtual void validate();
+        virtual void doLayout(float ex, float ey, float ew, float eh);
 
-        virtual void invalidateHierarchy();
+        int getAlign() const;
 
-        virtual void childrenChanged ();
-        virtual void sizeChanged ();
-        virtual void pack ();
+        virtual void setAlign(int align);
 
-        /** If this method is overridden, the super method or {@link #validate()} should be called to ensure the widget is laid out. */
-        virtual void draw(NanoCanvas::Canvas& canvas, float parentAlpha);
     private:
         void setLayoutEnabled (Group* parent, bool enabled);
+
+    protected:
+        int align = Align::left | Align::top; //gravity
     };
 }
 

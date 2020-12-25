@@ -38,13 +38,46 @@ namespace h7 {
             _padding->setLTRB(left, top, right, bottom);
         }
     }
-    SkRect& Actor::getPadding(SkRect& out) {
-        if(_padding == nullptr){
-            out.setLTRB(0, 0, 0, 0);
-        } else{
+    SkRect* Actor::getPadding() {
+        return _padding;
+    }
+    SkRect & Actor::getPadding(SkRect &out) {
+        if(_padding != nullptr){
             out.set(*_padding);
+        } else{
+            out.setLTRB(0, 0, 0, 0);
         }
         return out;
+    }
+    SkRect & Actor::getMargin(SkRect &out) {
+        if(_margin != nullptr){
+            out.set(*_margin);
+        } else{
+            out.setLTRB(0, 0, 0, 0);
+        }
+        return out;
+    }
+    void Actor::setMargin(float left, float top, float right, float bottom) {
+        if(_margin == nullptr){
+            _margin = new SkRect{left, top, right, bottom};
+        } else{
+            _margin->setLTRB(left, top, right, bottom);
+        }
+    }
+    SkRect* Actor::getMargin() {
+        return _margin;
+    }
+    //----------------------------------------------------
+    void Actor::layoutAndInvalidate() {
+        if (stage != nullptr) {
+            stage->weak_ref();
+            if (stage->try_ref()) {
+                stage->layout();
+                stage->invalidate();
+                stage->unref();
+            }
+            stage->weak_unref();
+        }
     }
 
     Stage *Actor::getStage() {
@@ -71,9 +104,12 @@ namespace h7 {
         return result;
     }
     // DEFINE_GET_WEAK_REF_METHOD2(Actor::, Group, Parent, parent)
-
+    bool Actor::isInLayout() {
+        auto pStage = getStage();
+        return pStage != nullptr && pStage->isInLayout();
+    }
     void Actor::draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
-        if(isVisible()){
+        if(isVisible() && width > 0 && height > 0){
             background->getBounds().setXYWH(0, 0, width, height);
             background->setPadding(_padding);
             if (_mat.isIdentity()) {

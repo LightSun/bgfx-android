@@ -14,6 +14,37 @@ namespace h7 {
     class Stage;
 
     class Group : public Actor {
+
+    protected:
+        /**
+       * called on layout
+       * @param ex the expect x in screen which is assigned by parent
+       * @param ey the expect y in screen which is assigned by parent
+       */
+        virtual void layout(float ex, float ey, float ew, float eh){
+            Actor::layout(ex, ey, ew, eh);
+            float sx, sy, w, h;
+            auto pad = getPadding();
+            if(pad != nullptr){
+                sx = getScreenX() + pad->left();
+                sy = getScreenY() + pad->top();
+                w = getWidth() - pad->left() - pad->right();
+                h = getHeight() - pad->top() - pad->bottom();
+            } else{
+                sx = getScreenX();
+                sy = getScreenY();
+                w = getWidth();
+                h = getHeight();
+            }
+            onLayoutChildren(sx, sy, w, h);
+        }
+        virtual void onLayoutChildren(float targetX, float targetY, float w, float h){
+            auto array = children.copy();
+            for (int i = 0, n = array.size(); i < n; i++){
+                auto sp = array.get(i);
+                sp->doLayout(targetX, targetY, w, h);
+            }
+        }
     public:
         Array<sk_sp<Actor>> children;
 
@@ -27,20 +58,7 @@ namespace h7 {
                 array.get(i)->act(delta);
             }
         }
-        /**
-        * called on preDraw
-        * @param px the parent's absolute x in screen
-        * @param py the parent's absolute y in screen
-        */
-        virtual void layout(float px, float py){
-            Actor::layout(px, py);
-            auto array = children.copy();
-            float sx = getScreenX();
-            float sy = getScreenY();
-            for (int i = 0, n = array.size(); i < n; i++){
-                array.get(i)->layout(sx + getWidth(), sy + getHeight());
-            }
-        }
+
         virtual void onDraw(NanoCanvas::Canvas &canvas, float parentAlpha) override {
             Actor::draw(canvas, parentAlpha);
             auto array = children.copy();
