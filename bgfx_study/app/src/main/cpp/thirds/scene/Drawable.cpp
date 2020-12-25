@@ -10,8 +10,8 @@ namespace h7{
         realRect.setXYWH(0, 0, width, height);
         float dw, dh;
         if(_pad != nullptr){
-            dw = _pad->left() - _pad->right();
-            dh = _pad->top() - _pad->bottom();
+            dw = _pad->left() + _pad->right();
+            dh = _pad->top() + _pad->bottom();
         } else{
             dw = 0;
             dh = 0;
