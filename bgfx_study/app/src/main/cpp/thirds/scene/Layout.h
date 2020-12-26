@@ -65,12 +65,21 @@ namespace h7 {
         void setMaxHeight(float maxHeight);
 
         /**
+       * get expect width , which is compute by width, min and max.
+       * @return the expect width
+       */
+        float getExpectWidth();
+        /**
+        * get expect height , which is compute by height, min and max.
+        * @return the expect height
+        */
+        float getExpectHeight();
+        /**
          * call this to measure the content width and height.
          * @param outW the out width
          * @param outH the out height
          */
-        virtual void measure(float &outW, float &outH) {
-        }
+        virtual void measure(float &outW, float &outH);
     protected:
         /**
         * call this to compute layout and set size.

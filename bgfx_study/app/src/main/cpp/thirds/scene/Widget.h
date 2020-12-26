@@ -26,6 +26,7 @@ namespace h7 {
         int getActorType();
 
         virtual void doLayout(float ex, float ey, float ew, float eh);
+
     };
 }
 

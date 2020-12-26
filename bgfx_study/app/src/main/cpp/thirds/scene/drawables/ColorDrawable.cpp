@@ -8,6 +8,10 @@
 
 namespace h7{
 
+    Color& ColorDrawable::getColor()const{
+        return _color;
+    }
+
     void ColorDrawable::setRound(float round) {
         _round = round;
     }

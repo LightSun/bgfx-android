@@ -13,6 +13,10 @@ namespace h7{
 
     public:
 
+        virtual void measure(float &outW, float &outH);
+
+        virtual void onLayoutChildren(float targetX, float targetY, float w, float h);
+
     };
 }
 

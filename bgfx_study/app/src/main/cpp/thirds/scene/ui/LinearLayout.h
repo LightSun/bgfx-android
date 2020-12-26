@@ -19,6 +19,8 @@ namespace h7{
     public:
         virtual void onLayoutChildren(float targetX, float targetY, float w, float h);
 
+        virtual void measure(float& outW, float& outH);
+
         bool isVertical() const;
         void setVertical(bool vertical) ;
 

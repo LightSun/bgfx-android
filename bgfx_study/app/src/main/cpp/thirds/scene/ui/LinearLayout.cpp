@@ -58,6 +58,32 @@ namespace h7{
             }
         }
     }
+    void LinearLayout::measure(float &outW, float &outH) {
+        auto array = children.copy();
+        float measureW, measureH;
+        float w = 0, h = 0;
+        if(vertical){
+            for (int i = 0, n = array.size(); i < n; i++) {
+                const sk_sp<Actor> &sp = array.get(i);
+                if(sp->hasActorType(H7_LAYOUT_TYPE)){
+                    rCast(Layout*, sp.get())->measure(measureW, measureH);
+                    h += measureH;
+                    w = bx::max(w, measureW);
+                }
+            }
+        } else{
+            for (int i = 0, n = array.size(); i < n; i++) {
+                const sk_sp<Actor> &sp = array.get(i);
+                if(sp->hasActorType(H7_LAYOUT_TYPE)){
+                    rCast(Layout*, sp.get())->measure(measureW, measureH);
+                    w += measureW;
+                    h = bx::max(h, measureH);
+                }
+            }
+        }
+        outW = w;
+        outH = h;
+    }
     bool LinearLayout::isVertical() const {
         return vertical;
     }

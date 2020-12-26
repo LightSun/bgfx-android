@@ -127,4 +127,33 @@ namespace h7 {
         }
         maxInfo->h = h;
     }
+    void Layout::measure(float &outW, float &outH) {
+        outW = getExpectWidth();
+        outH = getExpectHeight();
+    }
+
+    float Layout::getExpectWidth() {
+        float w = rCast(Actor*, this)->getWidth();
+        float minW = getMinWidth();
+        if (minW > 0 && w < minW) {
+            w = minW;
+        }
+        float maxW = getMaxHeight();
+        if(maxW > 0 && w > maxW){
+            w = maxW;
+        }
+        return w;
+    }
+    float Layout::getExpectHeight() {
+        float h = rCast(Actor*, this)->getHeight();
+        float minH = getMinHeight();
+        if (minH > 0 && h < minH) {
+            h = minH;
+        }
+        float maxH = getMaxHeight();
+        if(maxH > 0 && h > maxH){
+            h = maxH;
+        }
+        return h;
+    }
 }
