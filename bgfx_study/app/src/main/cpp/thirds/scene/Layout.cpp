@@ -7,10 +7,32 @@
 namespace h7 {
     Layout::Layout(): minInfo(nullptr), maxInfo(nullptr) {
         lp.reset(new LayoutParams());
+        setNeedMeasure(true);
+        setNeedLayout(true);
     }
     Layout::~Layout() {
         DESTROY_POINTER(minInfo)
         DESTROY_POINTER(maxInfo)
+    }
+    void Layout::setNeedLayout(bool need) {
+        if(need){
+            rCast(Actor*, this)->addFlags(Actor::FLAG_NEED_LAYOUT);
+        } else{
+            rCast(Actor*, this)->deleteFlags(Actor::FLAG_NEED_LAYOUT);
+        }
+    }
+    void Layout::setNeedMeasure(bool need) {
+        if(need){
+            rCast(Actor*, this)->addFlags(Actor::FLAG_NEED_MEASURE);
+        } else{
+            rCast(Actor*, this)->deleteFlags(Actor::FLAG_NEED_MEASURE);
+        }
+    }
+    bool Layout::isNeedLayout() const {
+        return rCast(Actor*, this)->hasFlags(Actor::FLAG_NEED_LAYOUT);
+    }
+    bool Layout::isNeedMeasure() const {
+        return rCast(Actor*, this)->hasFlags(Actor::FLAG_NEED_MEASURE);
     }
     void Layout::layoutSize(float w1, float h1, float ew, float eh) {
         float w = w1;
@@ -54,7 +76,7 @@ namespace h7 {
         }
         //need measure
         if (hasWrapContent) {
-            measure(w, h);
+            doMeasure(w, h);
         }
         rCast(Actor*, this)->setSize(w, h);
     }
@@ -73,14 +95,6 @@ namespace h7 {
 
     void Layout::setLayoutHeightType(signed char layoutHeightType) {
         lp->layoutHeightType = layoutHeightType;
-    }
-
-    void Layout::setLayoutEnabled(bool enabled) {
-        this->layoutEnabled = enabled;
-    }
-
-    bool Layout::isLayoutEnabled() const {
-        return layoutEnabled;
     }
 
     LayoutParams *Layout::getLayoutParams() const {
@@ -126,6 +140,12 @@ namespace h7 {
             maxInfo = new WH();
         }
         maxInfo->h = h;
+    }
+    void Layout::doMeasure(float &outW, float &outH) {
+        if(isNeedMeasure()){
+            setNeedMeasure(false);
+            measure(outW, outH);
+        }
     }
     void Layout::measure(float &outW, float &outH) {
         outW = getExpectWidth();

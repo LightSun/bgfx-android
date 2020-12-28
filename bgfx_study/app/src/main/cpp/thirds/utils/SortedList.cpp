@@ -209,6 +209,13 @@ namespace h7{
     }
 
     //-------------------- public ---------
+    SortedList::SortedList(h7::SortedList::Callback *callback, int initialCapacity) {
+        mData.setCapacity(initialCapacity);
+        mCallback.reset(callback);
+        mSize = 0;
+    }
+    SortedList::SortedList(h7::SortedList::Callback *callback):SortedList(callback, MIN_CAPACITY){
+    }
     int SortedList::size() {
         return mSize;
     }

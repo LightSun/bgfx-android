@@ -18,7 +18,8 @@ namespace h7{
         void addActors(int n, ...);
         int getActorType();
 
-        virtual void setLayoutEnabled(bool enabled);
+        virtual void setNeedLayout(bool need);
+        virtual void setNeedMeasure(bool need);
 
         virtual void doLayout(float ex, float ey, float ew, float eh);
 
@@ -27,7 +28,8 @@ namespace h7{
         virtual void setAlign(int align);
 
     private:
-        void setLayoutEnabled (Group* parent, bool enabled);
+        void setNeedLayout(Group* parent, bool enabled);
+        void setNeedMeasure(Group* parent, bool enabled);
 
     protected:
         int align = Align::left | Align::top; //gravity

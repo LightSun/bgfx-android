@@ -63,7 +63,7 @@ namespace h7 {
         SkMatrix _mat;
 
         const char *name = "h7_Actor";
-        int _flags = FLAG_VISIBLE;
+        unsigned int _flags = FLAG_VISIBLE;
         Color color;
         sk_sp<Drawable> background;
         SkRect* _padding;
@@ -84,8 +84,10 @@ namespace h7 {
         float tmpScreenX, tmpScreenY;
 
     public:
-        static constexpr int FLAG_VISIBLE = 0x1;
-        static constexpr int FLAG_CLIP_RECT = 0x2;
+        static constexpr unsigned int FLAG_VISIBLE = 0x1;
+        static constexpr unsigned int FLAG_CLIP_RECT = 0x2;
+        static constexpr unsigned int FLAG_NEED_LAYOUT = 0x4;
+        static constexpr unsigned int FLAG_NEED_MEASURE = 0x8;
 
         Touchable touchable = Touchable::enabled;
 
@@ -129,6 +131,16 @@ namespace h7 {
         }
         virtual void setStage(Stage *_g) {
             this->stage.reset(_g);
+        }
+
+        virtual void addFlags(unsigned int flags){
+            this->_flags |= flags;
+        }
+        virtual void deleteFlags(unsigned int flags){
+            this->_flags &= ~flags;
+        }
+        virtual bool hasFlags(unsigned int flags){
+            return (this->_flags & flags) == flags;
         }
 
         Stage *getStage();

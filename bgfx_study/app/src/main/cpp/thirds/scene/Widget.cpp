@@ -15,7 +15,8 @@ namespace h7{
         return H7_ACTOR_TYPE | H7_LAYOUT_TYPE;
     }
     void Widget::doLayout(float ex, float ey, float ew, float eh) {
-        if(isLayoutEnabled()){
+        if(isNeedLayout()){
+            setNeedLayout(false);
             layoutSize(getWidth(), getHeight(), ew, eh);
             Actor::doLayout(ex, ey, ew, eh);
         }

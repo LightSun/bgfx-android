@@ -32,11 +32,11 @@ namespace h7 {
     public:
         static constexpr int INVALID_POSITION = -1;
 
-        class ItemDelegate: public SkRefCnt {
+        class ItemDelegate : public SkRefCnt {
 
         public:
             //default empty.
-            virtual ItemDelegate* copy(){
+            virtual ItemDelegate *copy() {
                 return this;
             }
         };
@@ -259,22 +259,26 @@ namespace h7 {
         int add(ItemDelegate *item, bool notify);
 
         void removeItemAtIndex(int index, bool notify);
-        bool remove(ItemDelegate * item, bool notify);
 
-        int findIndexOf(ItemDelegate * item, Array<sk_sp<ItemDelegate>> & mData, int left, int right, int reason);
+        bool remove(ItemDelegate *item, bool notify);
 
-        int linearEqualitySearch(ItemDelegate * item, int middle, int left, int right);
+        int findIndexOf(ItemDelegate *item, Array<sk_sp<ItemDelegate>> &mData, int left, int right,
+                        int reason);
 
-        void addToData(int index, ItemDelegate *  item);
+        int linearEqualitySearch(ItemDelegate *item, int middle, int left, int right);
+
+        void addToData(int index, ItemDelegate *item);
 
         void replaceAllInternal(Array<sk_sp<ItemDelegate>> &items);
 
         void replaceAllRemove();
-        void replaceAllInsert( ItemDelegate * newItem);
-    public:
-        SortedList(const Callback *callback, int initialCapacity);
 
-        SortedList(const Callback *callback);
+        void replaceAllInsert(ItemDelegate *newItem);
+
+    public:
+        SortedList(Callback *callback, int initialCapacity);
+
+        SortedList(Callback *callback);
 
         int size();
 
@@ -317,6 +321,31 @@ namespace h7 {
          */
         void endBatchedUpdates();
 
+        /**
+            * Adds the given item to the list. If this is a new item, SortedList calls
+            * {@link Callback#onInserted(int, int)}.
+            * <p>
+            * If the item already exists in the list and its sorting criteria is not changed, it is
+            * replaced with the existing Item. SortedList uses
+            * {@link Callback#areItemsTheSame(Object, Object)} to check if two items are the same item
+            * and uses {@link Callback#areContentsTheSame(Object, Object)} to decide whether it should
+            * call {@link Callback#onChanged(int, int)} or not. In both cases, it always removes the
+            * reference to the old item and puts the new item into the backing array even if
+            * {@link Callback#areContentsTheSame(Object, Object)} returns false.
+            * <p>
+            * If the sorting criteria of the item is changed, SortedList won't be able to find
+            * its duplicate in the list which will result in having a duplicate of the Item in the list.
+            * If you need to update sorting criteria of an item that already exists in the list,
+            * use {@link #updateItemAt(int, Object)}. You can find the index of the item using
+            * {@link #indexOf(Object)} before you update the object.
+            *
+            * @param item The item to be added into the list.
+            *
+            * @return The index of the newly added item.
+            * @see Callback#compare(Object, Object)
+            * @see Callback#areItemsTheSame(Object, Object)
+            * @see Callback#areContentsTheSame(Object, Object)}
+            */
         int add(const ItemDelegate *item);
 
         /**
@@ -383,13 +412,14 @@ namespace h7 {
          * @param items Array of items to replace current items.
          */
         void replaceAll(Array<sk_sp<ItemDelegate>> &items);
-    /**
-     * Removes the provided item from the list and calls {@link Callback#onRemoved(int, int)}.
-     *
-     * @param item The item to be removed from the list.
-     *
-     * @return True if item is removed, false if item cannot be found in the list.
-     */
+
+        /**
+         * Removes the provided item from the list and calls {@link Callback#onRemoved(int, int)}.
+         *
+         * @param item The item to be removed from the list.
+         *
+         * @return True if item is removed, false if item cannot be found in the list.
+         */
         bool remove(const ItemDelegate *item);
 
         /**
@@ -399,7 +429,7 @@ namespace h7 {
         *
         * @return The removed item.
         */
-        const ItemDelegate * removeItemAt(int index);
+        const ItemDelegate *removeItemAt(int index);
 
         /**
    * Returns the item at the given index.
@@ -410,7 +440,7 @@ namespace h7 {
    * @throws java.lang.IndexOutOfBoundsException if provided index is negative or larger than the
    *                                             size of the list.
    */
-       const ItemDelegate * get(int index);
+        const ItemDelegate *get(int index);
 
         /**
      * Updates the item at the given index and calls {@link Callback#onChanged(int, int)} and/or
@@ -432,7 +462,7 @@ namespace h7 {
      * @param item  The item to replace the item at the given Index.
      * @see #add(Object)
      */
-       void updateItemAt(int index, ItemDelegate *item);
+        void updateItemAt(int index, ItemDelegate *item);
 
         /**
       * This method can be used to recalculate the position of the item at the given index, without
@@ -461,7 +491,7 @@ namespace h7 {
       * @see #updateItemAt(int, Object)
       * @see #add(Object)
       */
-      void recalculatePositionOfItemAt(int index);
+        void recalculatePositionOfItemAt(int index);
 
         /**
        * Returns the position of the provided item.
@@ -471,12 +501,12 @@ namespace h7 {
        * @return The position of the provided item or {@link #INVALID_POSITION} if item is not in the
        * list.
        */
-       int indexOf(const ItemDelegate * item);
+        int indexOf(const ItemDelegate *item);
 
         /**
       * Removes all items from the SortedList.
       */
-       void clear();
+        void clear();
     };
 }
 

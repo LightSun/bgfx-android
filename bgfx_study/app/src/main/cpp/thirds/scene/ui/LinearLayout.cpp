@@ -66,7 +66,7 @@ namespace h7{
             for (int i = 0, n = array.size(); i < n; i++) {
                 const sk_sp<Actor> &sp = array.get(i);
                 if(sp->hasActorType(H7_LAYOUT_TYPE)){
-                    rCast(Layout*, sp.get())->measure(measureW, measureH);
+                    rCast(Layout*, sp.get())->doMeasure(measureW, measureH);
                     h += measureH;
                     w = bx::max(w, measureW);
                 }
@@ -75,7 +75,7 @@ namespace h7{
             for (int i = 0, n = array.size(); i < n; i++) {
                 const sk_sp<Actor> &sp = array.get(i);
                 if(sp->hasActorType(H7_LAYOUT_TYPE)){
-                    rCast(Layout*, sp.get())->measure(measureW, measureH);
+                    rCast(Layout*, sp.get())->doMeasure(measureW, measureH);
                     w += measureW;
                     h = bx::max(h, measureH);
                 }

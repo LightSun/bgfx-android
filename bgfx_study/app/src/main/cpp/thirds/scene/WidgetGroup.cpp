@@ -24,26 +24,42 @@ namespace h7{
     int WidgetGroup::getActorType(){
         return H7_GROUP_TYPE | H7_LAYOUT_TYPE;
     }
-    void WidgetGroup::setLayoutEnabled(bool enabled) {
+    void WidgetGroup::setNeedLayout(bool enabled) {
         //travel all child. and call setLayoutEnabled(enabled)
-        Layout::setLayoutEnabled(enabled);
-        setLayoutEnabled(this, enabled);
+        Layout::setNeedLayout(enabled);
+        setNeedLayout(this, enabled);
+    }
+    void WidgetGroup::setNeedMeasure(bool enabled) {
+        Layout::setNeedMeasure(enabled);
+        setNeedMeasure(this, enabled);
     }
 
-    void WidgetGroup::setLayoutEnabled(Group* parent, bool enabled) {
+    void WidgetGroup::setNeedLayout(Group* parent, bool enabled) {
         Array<sk_sp<Actor>> children = parent->getChildren();
         for (int i = 0, n = children.size(); i < n; i++) {
             sk_sp<Actor> actor = children.get(i);
             if(actor->hasActorType(H7_LAYOUT_TYPE)){
-                ((Layout*)actor.get())->setLayoutEnabled(enabled);
+                ((Layout*)actor.get())->setNeedLayout(enabled);
             } else if(actor->hasActorType(H7_GROUP_TYPE)){
-                setLayoutEnabled(((Group*)actor.get()), enabled);
+                setNeedLayout(((Group*)actor.get()), enabled);
+            }
+        }
+    }
+    void WidgetGroup::setNeedMeasure(Group* parent, bool enabled) {
+        Array<sk_sp<Actor>> children = parent->getChildren();
+        for (int i = 0, n = children.size(); i < n; i++) {
+            sk_sp<Actor> actor = children.get(i);
+            if(actor->hasActorType(H7_LAYOUT_TYPE)){
+                ((Layout*)actor.get())->setNeedMeasure(enabled);
+            } else if(actor->hasActorType(H7_GROUP_TYPE)){
+                setNeedMeasure(((Group*)actor.get()), enabled);
             }
         }
     }
 
     void WidgetGroup::doLayout(float ex, float ey, float ew, float eh) {
-        if(isLayoutEnabled()){
+        if(isNeedLayout()){
+            setNeedLayout(false);
             layoutSize(getWidth(), getHeight(), ew, eh);
             Actor::doLayout(ex, ey, ew, eh);
         }

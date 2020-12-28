@@ -32,9 +32,12 @@ namespace h7 {
     public:
         Layout();
         virtual ~Layout();
-        virtual void setLayoutEnabled(bool enabled);
 
-        inline bool isLayoutEnabled() const;
+        inline bool isNeedLayout() const;
+        inline bool isNeedMeasure() const;
+
+        virtual void setNeedMeasure(bool need);
+        virtual void setNeedLayout(bool need);
 
         signed char getLayoutWidthType() const;
 
@@ -74,6 +77,14 @@ namespace h7 {
         * @return the expect height
         */
         float getExpectHeight();
+
+        /**
+         * call this to measure. this will call measure(...) if measure is enabled.
+         * for WidgetGroup should prefer call this than measure.
+         * @param outW the out width
+         * @param outH the out height.
+         */
+        virtual void doMeasure(float &outW, float &outH);
         /**
          * call this to measure the content width and height.
          * @param outW the out width
@@ -91,7 +102,6 @@ namespace h7 {
         void layoutSize(float w, float h, float ew, float eh);
 
     private:
-        bool layoutEnabled = true;
         WH* minInfo;
         WH* maxInfo;
         sk_sp<LayoutParams> lp;
