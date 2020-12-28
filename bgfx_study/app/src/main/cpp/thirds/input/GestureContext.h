@@ -9,6 +9,7 @@ namespace h7{
     class Input;
 
     unsigned long long getCurrentTime();
+    unsigned long long getCurrentTimeInMsec();
 
     Input* getInput();
 

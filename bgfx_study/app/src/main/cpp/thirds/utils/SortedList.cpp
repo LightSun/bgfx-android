@@ -13,12 +13,12 @@ namespace h7{
 
     class SpItemDelegate_Com: public Comparator<sk_sp<SortedList::ItemDelegate>>{
     public:
-        SpItemDelegate_Com(const SortedList::Callback &cb) : cb(cb) {}
+        SpItemDelegate_Com(SortedList::Callback* cb) : cb(cb) {}
         virtual int compare(const sk_sp<SortedList::ItemDelegate>* o1, const sk_sp<SortedList::ItemDelegate>* o2){
-            return cb.compare(o1->get(), o2->get());
+            return cb->compare(o1->get(), o2->get());
         }
     private:
-        SortedList::Callback cb;
+        SortedList::Callback* cb;
     };
     //--------------------- privates -------------------
 
@@ -36,10 +36,10 @@ namespace h7{
             if (mCallback->areItemsTheSame(existing.get(), item)) {
                 if (mCallback->areContentsTheSame(existing.get(), item)) {
                     //no change but still replace the item
-                    mData[index] = item;
+                    mData[index].reset(item);
                     return index;
                 } else {
-                    mData[index] = item;
+                    mData[index].reset(item);
                     mCallback->onChanged(index, 1, mCallback->getChangePayload(existing.get(), item));
                     return index;
                 }
@@ -291,7 +291,7 @@ namespace h7{
         }
 
         // Arrays.sort is stable.
-        SpItemDelegate_Com com = SpItemDelegate_Com(*mCallback);
+        SpItemDelegate_Com com = SpItemDelegate_Com(mCallback.get());
         Arrays::sort(items, rCast(Comparator<sk_sp<SortedList::ItemDelegate>>*, &com));
 
         // Keep track of the range of equal items at the end of the output.
@@ -439,7 +439,7 @@ namespace h7{
             // different items, we can use comparison and may avoid lookup
             const int cmp = mCallback->compare(existing, item);
             if (cmp == 0) {
-                mData[index] = item;
+                mData[index].reset(item);
                 if (contentsChanged) {
                     mCallback->onChanged(index, 1, mCallback->getChangePayload(existing, item));
                 }
