@@ -33,8 +33,9 @@ namespace h7{
         ~Array(){
         }
         inline Array<T>& set(Array<T>& in){
+            List<T> old = in.list;
             list.clear();
-            list.addAll(in.list);
+            list.addAll(old);
             return *this;
         }
         inline int size(){
@@ -155,8 +156,33 @@ namespace h7{
             travel(iterator);
             list.clear();
         }
+        inline bool setRegion(int startPos, int len, T& val){
+            if(startPos + len - 1 >= size()){
+                return false;
+            }
+            for (int i = 0; i < len; ++i) {
+                set(i + startPos, val);
+            }
+            return true;
+        }
+        inline bool setRegion(int startPos, Array<T>& in, int inStartPos, int len){
+            if(startPos + len - 1 >= size() || inStartPos + len - 1 >= in.size()){
+                return false;
+            }
+            Array<T>& src = in;
+            if(&in == this){
+                src = in.copy();
+            }
+            for (int i = 0; i < len; ++i) {
+                set(i + startPos, src[inStartPos + i]);
+            }
+            return true;
+        }
         inline void setSize(int newSize){
             list.getVector().resize(newSize);
+        }
+        inline void setCapacity(int cap){
+            list.getVector().reserve(cap);
         }
         inline Array<T>& copy(){
             Array<T> arr;
@@ -165,7 +191,7 @@ namespace h7{
         inline T&operator[](int index){
             return get(index);
         }
-        inline Array<T>& operator=(const Array<T> that){
+        inline Array<T>& operator=(const Array<T>& that){
             list = that.list;
             return *this;
         }

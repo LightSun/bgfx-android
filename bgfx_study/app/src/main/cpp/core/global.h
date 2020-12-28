@@ -44,14 +44,10 @@
 
 #define TO_STR(a)  #a
 
-/**
- * @param str the full string
- * @param s the delimiter
- * @return the suffix string
- */
-const char* getSuffixStr(const char* str, const char* s);
-
-#define getEnumName(x) getSuffixStr(#x, ":")
+namespace h7{
+    int unsign_shift_right(int val, int bits);
+    int unsign_shift_left(int val, int bits);
+}
 
 
 #endif //FFMPEGOPENGLDEMO_VIDEOCONFIG_H
