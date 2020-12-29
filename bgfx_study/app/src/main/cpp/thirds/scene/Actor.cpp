@@ -13,17 +13,20 @@
 #include "EventListener.h"
 #include "lua/SkWeakRefCnt.h"
 #include "../input/GestureContext.h"
+#include "ScrollListener.h"
 
 #include "SceneHelper.h"
 #include "nancanvas/Canvas.h"
 #include "nancanvas/SkRect.h"
 
 namespace h7 {
-    Actor::Actor():SkWeakRefCnt() {
+    Actor::Actor():SkWeakRefCnt(), _scrollInfo(nullptr), _margin(nullptr), _padding(nullptr) {
         _actorListenerM.setActor(this);
     }
     Actor::~Actor(): ~SkWeakRefCnt(){
         DESTROY_POINTER(_padding);
+        DESTROY_POINTER(_margin);
+        DESTROY_POINTER(_scrollInfo);
     }
     void Actor::setBackground(Drawable *d) {
         background.reset(d);
@@ -380,5 +383,67 @@ namespace h7 {
             Actor::alpha = alpha;
             dispatchPropertyChanged(ActorListenerManager::TYPE_ALPHA);
         }
+    }
+
+    float Actor::getScrollX() const {
+        return _scrollInfo != nullptr ? _scrollInfo->scrollX : 0;
+    }
+    void Actor::setScrollX(float scrollX) {
+        if(_scrollInfo == nullptr){
+            _scrollInfo = new ScrollInfo();
+        }
+        scrollTo(scrollX, _scrollInfo->scrollY);
+    }
+    float Actor::getScrollY() const {
+        return _scrollInfo != nullptr ? _scrollInfo->scrollY : 0;
+    }
+    void Actor::setScrollY(float scrollY) {
+        if(_scrollInfo == nullptr){
+            _scrollInfo = new ScrollInfo();
+        }
+        scrollTo(_scrollInfo->scrollX, scrollY);
+    }
+    void Actor::scrollTo(float x, float y) {
+        if(_scrollInfo == nullptr){
+            _scrollInfo = new ScrollInfo();
+        }
+        if(_scrollInfo->scrollX != x || _scrollInfo->scrollY != y){
+            float dx = x - _scrollInfo->scrollX;
+            float dy = y - _scrollInfo->scrollY;
+            _scrollInfo->scrollX = x;
+            _scrollInfo->scrollY = y;
+            //fire scroll changed
+            onScrollChanged(dx, dy);
+            ScrollEvent event;
+            event.setScrollState(ScrollInfo::SCROLL_STATE_NONE);
+            event.setDx(dx);
+            event.setDy(dy);
+            fire(event);
+        }
+    }
+    void Actor::scrollBy(float dx, float dy) {
+        if(_scrollInfo == nullptr){
+            _scrollInfo = new ScrollInfo();
+        }
+        if(dx != 0 || dy != 0){
+            scrollTo(_scrollInfo->scrollX + dx, _scrollInfo->scrollY + dy);
+        }
+    }
+    void Actor::setScrollState(unsigned char newState) {
+        if(_scrollInfo == nullptr){
+            _scrollInfo = new ScrollInfo();
+        }
+        if(_scrollInfo->scrollState != newState){
+            _scrollInfo->scrollState = newState;
+            //fire state changed
+            ScrollEvent event;
+            event.setScrollState(newState);
+            event.setDx(0);
+            event.setDy(0);
+            fire(event);
+        }
+    }
+    void Actor::stopScroll() {
+        setScrollState(ScrollInfo::SCROLL_STATE_IDLE);
     }
 }

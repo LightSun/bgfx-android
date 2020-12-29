@@ -2,6 +2,7 @@
 // Created by Administrator on 2020/12/29 0029.
 //
 
+#include <cmath>
 #include <log.h>
 #include "OverScroller.h"
 #include "input/GestureContext.h"
@@ -339,5 +340,176 @@ namespace h7{
         mCurrentPosition = mStart + (int) bx::round(distance);
         return true;
     }
+    //---------------------------------------------------
+    OverScroller::OverScroller(h7::Context &context, h7::Interpolation *interpolator, bool flywheel) {
+        if (interpolator == nullptr) {
+            mInterpolator = Interpolations::getViscousFluid();
+        } else {
+            mInterpolator = interpolator;
+        }
+        mFlywheel = flywheel;
+        mScrollerX = new SplineOverScroller(context);
+        mScrollerY = new SplineOverScroller(context);
+    }
+    OverScroller::OverScroller(h7::Context &context, h7::Interpolation *inter):OverScroller(context, inter, true) {
+    }
+    OverScroller::OverScroller(h7::Context &context):OverScroller(context, nullptr, true) {
+    }
+    OverScroller::~OverScroller(){
+        DESTROY_POINTER(mScrollerX);
+        DESTROY_POINTER(mScrollerY);
+    }
+    void OverScroller::setFriction(float friction) {
+        mScrollerX->setFriction(friction);
+        mScrollerY->setFriction(friction);
+    }
+    bool OverScroller::isFinished() {
+        return mScrollerX->mFinished && mScrollerY->mFinished;
+    }
+    void OverScroller::forceFinished(bool finished) {
+        mScrollerX->mFinished = mScrollerY->mFinished = finished;
+    }
+    int OverScroller::getCurrX() {
+        return mScrollerX->mCurrentPosition;
+    }
+    int OverScroller::getCurrY() {
+        return mScrollerY->mCurrentPosition;
+    }
+    float OverScroller::getCurrVelocity() {
+        return std::hypot(mScrollerX->mCurrVelocity, mScrollerY->mCurrVelocity); //math.hypot
+    }
+    int OverScroller::getStartX() {
+        return mScrollerX->mStart;
+    }
+    int OverScroller::getStartY() {
+        return mScrollerY->mStart;
+    }
+    int OverScroller::getFinalX() {
+        return mScrollerX->mFinal;
+    }
+    int OverScroller::getFinalY() {
+        return mScrollerY->mFinal;
+    }
+    int OverScroller::getDuration() {
+        return bx::max(mScrollerX->mDuration, mScrollerY->mDuration);
+    }
+    void OverScroller::extendDuration(int extend) {
+        mScrollerX->extendDuration(extend);
+        mScrollerY->extendDuration(extend);
+    }
+    void OverScroller::setFinalX(int newX) {
+        mScrollerX->setFinalPosition(newX);
+    }
+    void OverScroller::setFinalY(int newY) {
+        mScrollerY->setFinalPosition(newY);
+    }
+    bool OverScroller::computeScrollOffset() {
+        if (isFinished()) {
+            return false;
+        }
 
+        switch (mMode) {
+            case SCROLL_MODE:
+                auto time = getCurrentTimeInMsec();
+                // Any scroller can be used for time, since they were started
+                // together in scroll mode. We use X here.
+                const auto elapsedTime = time - mScrollerX->mStartTime;
+
+                const int duration = mScrollerX->mDuration;
+                if (elapsedTime < duration) {
+                    const float q = mInterpolator->apply(elapsedTime / (float) duration);
+                    mScrollerX->updateScroll(q);
+                    mScrollerY->updateScroll(q);
+                } else {
+                    abortAnimation();
+                }
+                break;
+
+            case FLING_MODE:
+                if (!mScrollerX->mFinished) {
+                    if (!mScrollerX->update()) {
+                        if (!mScrollerX->continueWhenFinished()) {
+                            mScrollerX->finish();
+                        }
+                    }
+                }
+
+                if (!mScrollerY->mFinished) {
+                    if (!mScrollerY->update()) {
+                        if (!mScrollerY->continueWhenFinished()) {
+                            mScrollerY->finish();
+                        }
+                    }
+                }
+                break;
+        }
+
+        return true;
+    }
+    void OverScroller::startScroll(int startX, int startY, int dx, int dy) {
+        startScroll(startX, startY, dx, dy, DEFAULT_DURATION);
+    }
+    void OverScroller::startScroll(int startX, int startY, int dx, int dy, int duration) {
+        mMode = SCROLL_MODE;
+        mScrollerX->startScroll(startX, dx, duration);
+        mScrollerY->startScroll(startY, dy, duration);
+    }
+    bool OverScroller::springBack(int startX, int startY, int minX, int maxX, int minY, int maxY) {
+        mMode = FLING_MODE;
+
+        // Make sure both methods are called.
+        const bool spingbackX = mScrollerX->springback(startX, minX, maxX);
+        const bool spingbackY = mScrollerY->springback(startY, minY, maxY);
+        return spingbackX || spingbackY;
+    }
+    void OverScroller::fling(int startX, int startY, int velocityX, int velocityY, int minX,
+                             int maxX, int minY, int maxY) {
+        fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY, 0, 0);
+    }
+    void OverScroller::fling(int startX, int startY, int velocityX, int velocityY, int minX,
+                             int maxX, int minY, int maxY, int overX, int overY) {
+        // Continue a scroll or fling in progress
+        if (mFlywheel && !isFinished()) {
+            float oldVelocityX = mScrollerX->mCurrVelocity;
+            float oldVelocityY = mScrollerY->mCurrVelocity;
+            //Math.signum
+            if (bx::sign(velocityX) == bx::sign(oldVelocityX) &&
+                    bx::sign(velocityY) == bx::sign(oldVelocityY)) {
+                velocityX += oldVelocityX;
+                velocityY += oldVelocityY;
+            }
+        }
+
+        mMode = FLING_MODE;
+        mScrollerX->fling(startX, velocityX, minX, maxX, overX);
+        mScrollerY->fling(startY, velocityY, minY, maxY, overY);
+    }
+    void OverScroller::notifyHorizontalEdgeReached(int startX, int finalX, int overX) {
+        mScrollerX->notifyEdgeReached(startX, finalX, overX);
+    }
+    void OverScroller::notifyVerticalEdgeReached(int startY, int finalY, int overY) {
+        mScrollerY->notifyEdgeReached(startY, finalY, overY);
+    }
+    bool OverScroller::isOverScrolled() {
+        return ((!mScrollerX->mFinished &&
+                 mScrollerX->mState != SplineOverScroller::SPLINE) ||
+                (!mScrollerY->mFinished &&
+                 mScrollerY->mState != SplineOverScroller::SPLINE));
+    }
+    void OverScroller::abortAnimation() {
+        mScrollerX->finish();
+        mScrollerY->finish();
+    }
+    int OverScroller::timePassed() {
+        const auto time = getCurrentTimeInMsec();
+        const auto startTime = bx::min(mScrollerX->mStartTime, mScrollerY->mStartTime);
+        return (int) (time - startTime);
+    }
+    bool OverScroller::isScrollingInDirection(float xvel, float yvel) {
+        const int dx = mScrollerX->mFinal - mScrollerX->mStart;
+        const int dy = mScrollerY->mFinal - mScrollerY->mStart;
+        //Math.signum
+        return !isFinished() && bx::sign(xvel) == bx::sign(dx) &&
+                bx::sign(yvel) == bx::sign(dy);
+    }
 }

@@ -82,6 +82,7 @@ namespace h7 {
         float originX = -1, originY = -1;   //rotate/scale center. like android PivotX/PivotY
 
         float tmpScreenX, tmpScreenY;
+        ScrollInfo* _scrollInfo;
 
     public:
         static constexpr unsigned int FLAG_VISIBLE = 0x1;
@@ -106,13 +107,27 @@ namespace h7 {
         void setBackground(Drawable *d);
         Drawable* getBackground();
 
+        //------- padding --------
         void setPadding(float left, float top, float right, float bottom);
         SkRect* getPadding();
         SkRect& getPadding(SkRect& out);
 
+        //---------- margin ----------
         void setMargin(float left, float top, float right, float bottom);
         SkRect* getMargin();
         SkRect& getMargin(SkRect& out);
+
+        //---------- scroll ------------
+        float getScrollX() const;
+        void setScrollX(float scrollX);
+
+        float getScrollY() const;
+        void setScrollY(float scrollY);
+
+        void scrollBy(float dx, float dy);
+        void scrollTo(float x, float y);
+        void setScrollState(unsigned char newState);
+        void stopScroll();
 
         virtual int getActorType(){
             return H7_ACTOR_TYPE;
@@ -198,6 +213,17 @@ namespace h7 {
         void layoutAndInvalidate();
 
     protected:
+        /**
+         * This is called in response to an internal scroll in this view (i.e., the
+         * view scrolled its own contents). This is typically as a result of
+         * {@link #scrollBy(int, int)} or {@link #scrollTo(int, int)} having been
+         * called.
+         * @param dx horizontal scroll offset. 'current - old'.
+         * @param dy vertical scroll offset. 'current - old'.
+         */
+        virtual void onScrollChanged(float dx, float dy){
+
+        }
         /**
        * called on layout this actor.
        * @param ex the expect x in screen which is assigned by parent

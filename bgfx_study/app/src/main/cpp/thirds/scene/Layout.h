@@ -85,12 +85,6 @@ namespace h7 {
          * @param outH the out height.
          */
         virtual void doMeasure(float &outW, float &outH);
-        /**
-         * call this to measure the content width and height.
-         * @param outW the out width
-         * @param outH the out height
-         */
-        virtual void measure(float &outW, float &outH);
     protected:
         /**
         * call this to compute layout and set size.
@@ -100,6 +94,13 @@ namespace h7 {
         * @param eh the expect height which is from parent
         */
         void layoutSize(float w, float h, float ew, float eh);
+
+        /**
+         * call this to measure the content width and height.
+         * @param outW the out width
+         * @param outH the out height
+         */
+        virtual void measure(float &outW, float &outH);
 
     private:
         WH* minInfo;

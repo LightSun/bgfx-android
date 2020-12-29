@@ -10,7 +10,7 @@
 
 #define EVENT_RAW static_cast<unsigned char>(0)
 #define EVENT_FOCUS static_cast<unsigned char>(1)
-#define EVENT_CHANGE static_cast<unsigned char>(2)
+#define EVENT_SCROLL static_cast<unsigned char>(2)
 
 namespace h7 {
 
@@ -21,8 +21,8 @@ namespace h7 {
     class Event : public Poolable {
     private:
         sk_sp<Stage> sp_stage;
-        sk_sp<Actor> sp_targetActor;
-        sk_sp<Actor> sp_listenerActor;
+        sk_sp<Actor> sp_targetActor;   //the actor who fire event.
+        sk_sp<Actor> sp_listenerActor; //the actor who notify event
         bool capture; // true means event occurred during the capture phase
         bool bubbles = true; // true means propagate to target's parents
         bool handled; // true means the event was handled (the stage will eat the input)

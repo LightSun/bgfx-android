@@ -26,6 +26,17 @@ namespace h7{
             rotation = transX = transY = 0;
         }
     }ActorInfo;
+
+    typedef struct ScrollInfo{
+        static constexpr unsigned char SCROLL_STATE_NONE = 0; //indicate is not scroll state changed
+        static constexpr unsigned char SCROLL_STATE_IDLE = 1;
+        static constexpr unsigned char SCROLL_STATE_DRAGGING = 2;
+        static constexpr unsigned char SCROLL_STATE_SETTLING = 3;
+
+        int scrollState = SCROLL_STATE_IDLE;
+        float scrollX = 0;
+        float scrollY = 0;
+    }ScrollInfo;
 }
 
 #endif //BGFX_STUDY_ACTORINFO_H
