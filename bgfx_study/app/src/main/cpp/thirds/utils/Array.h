@@ -238,6 +238,7 @@ namespace h7{
     class Iterator: public ArrayIterator<sk_sp<name>>{\
     public:\
         bool iterate(Array<sk_sp<name>>* arr, int index, sk_sp<name>& ele){\
+            BX_UNUSED(arr, index)\
             x ;\
             ele.reset();\
             return false;\

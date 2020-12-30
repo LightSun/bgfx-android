@@ -34,7 +34,7 @@ namespace h7{
         * @param real the real rect
         */
         virtual void onDraw(NanoCanvas::Canvas& canvas, float x, float y, SkRect& real){
-
+            BX_UNUSED(canvas, x, y, real)
         };
     public:
         /**

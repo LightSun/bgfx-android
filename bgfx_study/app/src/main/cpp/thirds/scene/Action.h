@@ -27,6 +27,7 @@ namespace h7 {
              * @param delta Time in seconds since the last frame.
              * @return true if the action is done. This method may continue to be called after the action is done. */
         virtual bool act(float delta){
+            BX_UNUSED(delta);
             return false;
         };
 

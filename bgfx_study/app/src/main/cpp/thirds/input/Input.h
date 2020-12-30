@@ -595,7 +595,7 @@ namespace h7 {
              * @return the int keycode */
             inline static int valueOf(const char *keyname) {
                 initializeKeyNames();
-                return keyNames->get(keyname, -1);
+                return keyNames->get(keyname);
             }
 
             /** lazily intialized in {@link Keys#valueOf(const char *)} */

@@ -83,9 +83,11 @@ namespace h7 {
         }
         /** @param actor The event target, which is the actor that emitted the focus event. */
         virtual void keyboardFocusChanged(FocusEvent &event, const Actor *actor, bool focused) {
+            BX_UNUSED(event, actor, focused)
         }
         /** @param actor The event target, which is the actor that emitted the focus event. */
         virtual void scrollFocusChanged(FocusEvent &event, const Actor *actor, bool focused) {
+            BX_UNUSED(event, actor, focused)
         }
     };
 

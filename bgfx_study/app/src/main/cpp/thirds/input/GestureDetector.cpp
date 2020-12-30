@@ -5,7 +5,7 @@
 #include "GestureDetector.h"
 #include <limits.h>
 #include "GestureContext.h"
-#include "input.h"
+#include "Input.h"
 
 namespace h7 {
     GestureDetector::GestureDetector(h7::GestureListener *listener) : GestureDetector(20, 0.4f,

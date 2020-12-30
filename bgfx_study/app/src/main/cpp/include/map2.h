@@ -23,19 +23,13 @@ namespace h7 {
 
         Map() {}
 
-        const void clear() {
+        void clear() {
             _map.clear();
-        }
-
-        const V& get(const K &key, const V& defVal) {
-            auto it = _map.find(key);
-            return it->second;
         }
         const V& get(const K &key) {
             auto it = _map.find(key);
             return it->second;
         }
-
         const V& remove(const K &key) {
             auto it = _map.find(key);
             if (_map.erase(key)) {
@@ -50,13 +44,13 @@ namespace h7 {
             return old;
         }
 
-        const bool containsKey(const K &key) {
+        bool containsKey(const K &key) {
             return get(key) != nullptr;
         }
 
         const K ofKey(const V &val) {
             K *ptr = nullptr;
-            auto tr = [val](const Map<K, V> *map, const K &key, const V &value) {
+            auto tr = [val](const Map<K, V> *_map, const K &key, const V &value) {
                 if (value == val) {
                     ptr = &key;
                     return true;
@@ -67,16 +61,16 @@ namespace h7 {
             return ptr != nullptr ? *ptr : nullptr;
         }
 
-        const bool containsValue(const V &val) {
+        bool containsValue(const V &val) {
             return ofKey(val) != nullptr;
         }
 
-        const int size() {
+        int size() {
             return this->_map.size();
         }
 
         // true if breaked,  false otherwise.
-        const bool travel(const Traveller &t) {
+        bool travel(const Traveller &t) {
             //assert(t != nullptr);
             for (auto it = _map.begin(); it != _map.end(); ++it) {
                 if (t(this, it->first, it->second)) {
