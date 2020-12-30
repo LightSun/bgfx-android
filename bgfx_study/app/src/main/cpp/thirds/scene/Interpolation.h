@@ -5,6 +5,8 @@
 #ifndef BGFX_STUDY_INTERPOLATION_H
 #define BGFX_STUDY_INTERPOLATION_H
 
+#pragma once
+
 #include <string.h>
 #include <stdlib.h>
 #include <cmath> //cbrt need c++ 11
@@ -48,7 +50,7 @@ namespace h7 {
      * */
     class Interpolation {
     public:
-        //from 0-1 => 0-1
+        //from 0~1 => 0~1
         virtual float apply(float a) {
             return a;
         }
@@ -333,12 +335,7 @@ namespace h7 {
             }
         };
 
-        static Interpolation *_linear_ins = nullptr;
-
-        Interpolation *getlinear() {
-            if (_linear_ins == nullptr) { _linear_ins = new Interpolation(); }
-            return _linear_ins;
-        }
+        Interpolation *getlinear();
 
         // DEF_INTERPOLATION2(linear, a)
         class smooth : public Interpolation {
@@ -349,12 +346,7 @@ namespace h7 {
             }
         };
 
-        static smooth *_smooth_ins = nullptr;
-
-        Interpolation *getsmooth() {
-            if (_smooth_ins == nullptr) { _smooth_ins = new smooth(); }
-            return _smooth_ins;
-        }
+        Interpolation *getsmooth();
 
         //DEF_INTERPOLATION2(smooth, a * a * (3 - 2 * a))
         class smooth2 : public Interpolation {
@@ -365,12 +357,7 @@ namespace h7 {
             }
         };
 
-        static smooth2 *_smooth2_ins = nullptr;
-
-        Interpolation *getsmooth2() {
-            if (_smooth2_ins == nullptr) { _smooth2_ins = new smooth2(); }
-            return _smooth2_ins;
-        }
+        Interpolation *getsmooth2();
 
         //DEF_INTERPOLATION(smooth2, a = a * a * (3 - 2 * a), a * a * (3 - 2 * a))
         class fade : public Interpolation {
@@ -381,12 +368,7 @@ namespace h7 {
             }
         };
 
-        static fade *_fade_ins = nullptr;
-
-        Interpolation *getfade() {
-            if (_fade_ins == nullptr) { _fade_ins = new fade(); }
-            return _fade_ins;
-        }
+        Interpolation *getfade();
 
         // DEF_INTERPOLATION2(fade, a * a * a * (a * (a * 6 - 15) + 10))
         class pow3InInverse : public Interpolation {
@@ -397,12 +379,7 @@ namespace h7 {
             }
         };
 
-        static pow3InInverse *_pow3InInverse_ins = nullptr;
-
-        Interpolation *getpow3InInverse() {
-            if (_pow3InInverse_ins == nullptr) { _pow3InInverse_ins = new pow3InInverse(); }
-            return _pow3InInverse_ins;
-        }
+        Interpolation *getpow3InInverse();
 
         //DEF_INTERPOLATION2(pow3InInverse, std::cbrt(a))
         class pow3OutInverse : public Interpolation {
@@ -413,12 +390,7 @@ namespace h7 {
             }
         };
 
-        static pow3OutInverse *_pow3OutInverse_ins = nullptr;
-
-        Interpolation *getpow3OutInverse() {
-            if (_pow3OutInverse_ins == nullptr) { _pow3OutInverse_ins = new pow3OutInverse(); }
-            return _pow3OutInverse_ins;
-        }
+        Interpolation *getpow3OutInverse();
 
         //DEF_INTERPOLATION2(pow3OutInverse, 1 - std::cbrt(a))
         class sine : public Interpolation {
@@ -429,12 +401,7 @@ namespace h7 {
             }
         };
 
-        static sine *_sine_ins = nullptr;
-
-        Interpolation *getsine() {
-            if (_sine_ins == nullptr) { _sine_ins = new sine(); }
-            return _sine_ins;
-        }
+        Interpolation *getsine();
 
         //DEF_INTERPOLATION2(sine, (1 - bx::cos(a * bx::kPi)) / 2)
         class sineIn : public Interpolation {
@@ -445,12 +412,7 @@ namespace h7 {
             }
         };
 
-        static sineIn *_sineIn_ins = nullptr;
-
-        Interpolation *getsineIn() {
-            if (_sineIn_ins == nullptr) { _sineIn_ins = new sineIn(); }
-            return _sineIn_ins;
-        }
+        Interpolation *getsineIn();
 
         //DEF_INTERPOLATION2(sineIn, 1 - bx::cos(a * bx::kPiHalf))
         class sineOut : public Interpolation {
@@ -461,12 +423,7 @@ namespace h7 {
             }
         };
 
-        static sineOut *_sineOut_ins = nullptr;
-
-        Interpolation *getsineOut() {
-            if (_sineOut_ins == nullptr) { _sineOut_ins = new sineOut(); }
-            return _sineOut_ins;
-        }
+        Interpolation *getsineOut();
 
         //DEF_INTERPOLATION2(sineOut, bx::sin(a * bx::kPiHalf))
         class circle : public Interpolation {
@@ -482,12 +439,7 @@ namespace h7 {
             }
         };
 
-        static circle *_circle_ins = nullptr;
-
-        Interpolation *getcircle() {
-            if (_circle_ins == nullptr) { _circle_ins = new circle(); }
-            return _circle_ins;
-        }
+        Interpolation *getcircle();
 
         /*DEF_INTERPOLATION(circle, if (a <= 0.5f) {
             a *= 2;
@@ -503,12 +455,7 @@ namespace h7 {
             }
         };
 
-        static circleIn *_circleIn_ins = nullptr;
-
-        Interpolation *getcircleIn() {
-            if (_circleIn_ins == nullptr) { _circleIn_ins = new circleIn(); }
-            return _circleIn_ins;
-        }
+        Interpolation *getcircleIn();
 
         // DEF_INTERPOLATION2(circleIn, 1 - bx::sqrt(1 - a * a))
         class circleOut : public Interpolation {
@@ -519,12 +466,7 @@ namespace h7 {
             }
         };
 
-        static circleOut *_circleOut_ins = nullptr;
-
-        Interpolation *getcircleOut() {
-            if (_circleOut_ins == nullptr) { _circleOut_ins = new circleOut(); }
-            return _circleOut_ins;
-        }
+        Interpolation *getcircleOut();
 
         // DEF_INTERPOLATION(circleOut, a--, bx::sqrt(1 - a * a))
         class pow2InInverse : public Interpolation {
@@ -535,12 +477,7 @@ namespace h7 {
             }
         };
 
-        static pow2InInverse *_pow2InInverse_ins = nullptr;
-
-        Interpolation *getpow2InInverse() {
-            if (_pow2InInverse_ins == nullptr) { _pow2InInverse_ins = new pow2InInverse(); }
-            return _pow2InInverse_ins;
-        }
+        Interpolation *getpow2InInverse();
 
         //DEF_INTERPOLATION(pow2InInverse, if (a < FLOAT_ROUNDING_ERROR) return 0, bx::sqrt(a))
         class pow2OutInverse : public Interpolation {
@@ -551,236 +488,116 @@ namespace h7 {
             }
         };
 
-        static pow2OutInverse *_pow2OutInverse_ins = nullptr;
-
-        Interpolation *getpow2OutInverse() {
-            if (_pow2OutInverse_ins == nullptr) { _pow2OutInverse_ins = new pow2OutInverse(); }
-            return _pow2OutInverse_ins;
-        }
+        Interpolation *getpow2OutInverse();
 
         /* DEF_INTERPOLATION(pow2OutInverse, if (a < FLOAT_ROUNDING_ERROR) return 0,
                            1 - bx::sqrt(-(a - 1))
          }*/
-        static Elastic *elastic = nullptr;
-
-        Interpolation *getelastic() {
-            if (elastic == nullptr) {
-                elastic = new Elastic(2.0f, 10.0f, 7, 1.0f);
-            }
-            return elastic;
-        }
+        Interpolation *getelastic();
 
         //DEF_GET_FIELD(Elastic, elastic, new Elastic(2.0f, 10.0f, 7, 1.0f))
-        static ElasticIn *elasticIn = nullptr;
 
-        Interpolation *getelasticIn() {
-            if (elasticIn == nullptr) {
-                elasticIn = new ElasticIn(2.0f, 10.0f, 6, 1.0f);
-            }
-            return elasticIn;
-        }
+        Interpolation *getelasticIn() ;
 
         //DEF_GET_FIELD(ElasticIn, elasticIn, new ElasticIn(2.0f, 10.0f, 6, 1.0f))
-        static ElasticOut *elasticOut = nullptr;
 
-        Interpolation *getelasticOut() {
-            if (elasticOut == nullptr) {
-                elasticOut = new ElasticOut(2.0f, 10.0f, 7, 1.0f);
-            }
-            return elasticOut;
-        }
+        Interpolation *getelasticOut();
 
         //DEF_GET_FIELD(ElasticOut, elasticOut, new ElasticOut(2.0f, 10.0f, 7, 1.0f))
-        static Swing *swing = nullptr;
 
-        Interpolation *getswing() {
-            if (swing == nullptr) { swing = new Swing(1.5f); }
-            return swing;
-        }
+        Interpolation *getswing();
 
         //DEF_GET_FIELD(Swing, swing, new Swing(1.5f))
-        static SwingIn *swingIn = nullptr;
 
-        Interpolation *getswingIn() {
-            if (swingIn == nullptr) { swingIn = new SwingIn(2.0f); }
-            return swingIn;
-        }
+        Interpolation *getswingIn();
 
         //DEF_GET_FIELD(SwingIn, swingIn, new SwingIn(2.0f))
-        static SwingOut *swingOut = nullptr;
 
-        Interpolation *getswingOut() {
-            if (swingOut == nullptr) { swingOut = new SwingOut(2.0f); }
-            return swingOut;
-        }
+        Interpolation *getswingOut();
 
         //DEF_GET_FIELD(SwingOut, swingOut, new SwingOut(2.0f))
-        static Bounce *bounce = nullptr;
 
-        Interpolation *getbounce() {
-            if (bounce == nullptr) { bounce = new Bounce(4); }
-            return bounce;
-        }
+        Interpolation *getbounce();
 
         //DEF_GET_FIELD(Bounce, bounce, new Bounce(4))
-        static BounceIn *bounceIn = nullptr;
 
-        Interpolation *getbounceIn() {
-            if (bounceIn == nullptr) { bounceIn = new BounceIn(4); }
-            return bounceIn;
-        }
+        Interpolation *getbounceIn();
 
         // DEF_GET_FIELD(BounceIn, bounceIn, new BounceIn(4))
-        static BounceOut *bounceOut = nullptr;
 
-        Interpolation *getbounceOut() {
-            if (bounceOut == nullptr) { bounceOut = new BounceOut(4); }
-            return bounceOut;
-        }
+        Interpolation *getbounceOut();
 
         //DEF_GET_FIELD(BounceOut, bounceOut, new BounceOut(4))
-        static Exp *exp10 = nullptr;
 
-        Interpolation *getexp10() {
-            if (exp10 == nullptr) { exp10 = new Exp(2, 10); }
-            return exp10;
-        }
+        Interpolation *getexp10();
 
         //DEF_GET_FIELD(Exp, exp10, new Exp(2, 10))
-        static ExpIn *exp10In = nullptr;
 
-        Interpolation *getexp10In() {
-            if (exp10In == nullptr) { exp10In = new ExpIn(2, 10); }
-            return exp10In;
-        }
+        Interpolation *getexp10In();
 
         //DEF_GET_FIELD(ExpIn, exp10In, new ExpIn(2, 10))
-        static ExpOut *exp10Out = nullptr;
 
-        Interpolation *getexp10Out() {
-            if (exp10Out == nullptr) { exp10Out = new ExpOut(2, 10); }
-            return exp10Out;
-        }
+        Interpolation *getexp10Out();
 
         // DEF_GET_FIELD(ExpOut, exp10Out, new ExpOut(2, 10))
-        static Exp *exp5 = nullptr;
 
-        Interpolation *getexp5() {
-            if (exp5 == nullptr) { exp5 = new Exp(2, 5); }
-            return exp5;
-        }
+        Interpolation *getexp5();
 
         //DEF_GET_FIELD(Exp, exp5, new Exp(2, 5))
-        static ExpIn *exp5In = nullptr;
 
-        Interpolation *getexp5In() {
-            if (exp5In == nullptr) { exp5In = new ExpIn(2, 5); }
-            return exp5In;
-        }
+        Interpolation *getexp5In() ;
 
         //DEF_GET_FIELD(ExpIn, exp5In, new ExpIn(2, 5))
-        static ExpOut *exp5Out = nullptr;
 
-        Interpolation *getexp5Out() {
-            if (exp5Out == nullptr) { exp5Out = new ExpOut(2, 5); }
-            return exp5Out;
-        }
+        Interpolation *getexp5Out();
 
         //DEF_GET_FIELD(ExpOut, exp5Out, new ExpOut(2, 5))
-        static Power *pow2 = nullptr;
 
-        Interpolation *getpow2() {
-            if (pow2 == nullptr) { pow2 = new Power(2); }
-            return pow2;
-        }
+        Interpolation *getpow2();
 
         //DEF_GET_FIELD(Power, pow2, new Power(2))
-        static PowerIn *pow2In = nullptr;
 
-        Interpolation *getpow2In() {
-            if (pow2In == nullptr) { pow2In = new PowerIn(2); }
-            return pow2In;
-        }
+        Interpolation *getpow2In();
 
         //DEF_GET_FIELD(PowerIn, pow2In, new PowerIn(2))
-        static PowerOut *pow2Out = nullptr;
 
-        Interpolation *getpow2Out() {
-            if (pow2Out == nullptr) { pow2Out = new PowerOut(2); }
-            return pow2Out;
-        }
+        Interpolation *getpow2Out() ;
 
         //DEF_GET_FIELD(PowerOut, pow2Out, new PowerOut(2))
-        static Power *pow3 = nullptr;
 
-        Interpolation *getpow3() {
-            if (pow3 == nullptr) { pow3 = new Power(3); }
-            return pow3;
-        }
+        Interpolation *getpow3();
 
         //DEF_GET_FIELD(Power, pow3, new Power(3))
-        static PowerIn *pow3In = nullptr;
 
-        Interpolation *getpow3In() {
-            if (pow3In == nullptr) { pow3In = new PowerIn(3); }
-            return pow3In;
-        }
+        Interpolation *getpow3In();
 
         //DEF_GET_FIELD(PowerIn, pow3In, new PowerIn(3))
-        static PowerOut *pow3Out = nullptr;
 
-        Interpolation *getpow3Out() {
-            if (pow3Out == nullptr) { pow3Out = new PowerOut(3); }
-            return pow3Out;
-        }
+        Interpolation *getpow3Out();
 
         //DEF_GET_FIELD(PowerOut, pow3Out, new PowerOut(3))
-        static Power *pow4 = nullptr;
 
-        Interpolation *getpow4() {
-            if (pow4 == nullptr) { pow4 = new Power(4); }
-            return pow4;
-        }
+        Interpolation *getpow4();
 
         //DEF_GET_FIELD(Power, pow4, new Power(4))
-        static PowerIn *pow4In = nullptr;
 
-        Interpolation *getpow4In() {
-            if (pow4In == nullptr) { pow4In = new PowerIn(4); }
-            return pow4In;
-        }
+        Interpolation *getpow4In();
 
         //DEF_GET_FIELD(PowerIn, pow4In, new PowerIn(4))
-        static PowerOut *pow4Out = nullptr;
 
-        Interpolation *getpow4Out() {
-            if (pow4Out == nullptr) { pow4Out = new PowerOut(4); }
-            return pow4Out;
-        }
+        Interpolation *getpow4Out();
 
         //DEF_GET_FIELD(PowerOut, pow4Out, new PowerOut(4))
-        static Power *pow5 = nullptr;
 
-        Interpolation *getpow5() {
-            if (pow5 == nullptr) { pow5 = new Power(5); }
-            return pow5;
-        }
+        Interpolation *getpow5();
 
         //DEF_GET_FIELD(Power, pow5, new Power(5))
-        static PowerIn *pow5In = nullptr;
 
-        Interpolation *getpow5In() {
-            if (pow5In == nullptr) { pow5In = new PowerIn(5); }
-            return pow5In;
-        }
+        Interpolation *getpow5In();
 
         //DEF_GET_FIELD(PowerIn, pow5In, new PowerIn(5))
-        static PowerOut *pow5Out = nullptr;
 
-        Interpolation *getpow5Out() {
-            if (pow5Out == nullptr) { pow5Out = new PowerOut(5); }
-            return pow5Out;
-        }
+        Interpolation *getpow5Out();
 
         //DEF_GET_FIELD(PowerOut, pow5Out, new PowerOut(5))
         Interpolation *getslowFast() { return getpow2In(); }
@@ -789,48 +606,7 @@ namespace h7 {
         Interpolation *getfastSlow() { return getpow2Out(); }
         //GET_FIELD(PowerOut, pow2Out, fastSlow)
 
-        class ViscousFluidInterpolation: public Interpolation {
-        private:
-            /** Controls the viscous fluid effect (how much of it). */
-            static constexpr float VISCOUS_FLUID_SCALE = 8.0f;
-            static float VISCOUS_FLUID_NORMALIZE;
-            static float VISCOUS_FLUID_OFFSET;
-
-            static inline float viscousFluid(float x) {
-                x *= VISCOUS_FLUID_SCALE;
-                if (x < 1.0f) {
-                    x -= (1.0f - bx::exp(-x));
-                } else {
-                    float start = 0.36787944117f;   // 1/e == exp(-1)
-                    x = 1.0f - bx::exp(1.0f - x);
-                    x = start + x * (1.0f - start);
-                }
-                return x;
-            }
-        public:
-            static inline void init(){
-                // must be set to 1.0 (used in viscousFluid())
-                VISCOUS_FLUID_NORMALIZE = 1.0f / viscousFluid(1.0f);
-                // account for very small floating-point error
-                VISCOUS_FLUID_OFFSET = 1.0f - VISCOUS_FLUID_NORMALIZE * viscousFluid(1.0f);
-            }
-            virtual float apply(float input) {
-                const float interpolated = VISCOUS_FLUID_NORMALIZE * viscousFluid(input);
-                if (interpolated > 0) {
-                    return interpolated + VISCOUS_FLUID_OFFSET;
-                }
-                return interpolated;
-            }
-        };
-
-        static Interpolation* _ViscousFluid = nullptr;
-        Interpolation *getViscousFluid(){
-            if(_ViscousFluid == nullptr){
-                _ViscousFluid = new ViscousFluidInterpolation();
-                ViscousFluidInterpolation::init();
-            }
-            return _ViscousFluid;
-        }
+        Interpolation *getViscousFluid();
     };
 }
 

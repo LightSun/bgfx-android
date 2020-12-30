@@ -191,8 +191,8 @@ namespace h7{
         inline T&operator[](int index){
             return get(index);
         }
-        inline Array<T>& operator=(const Array<T>& that){
-            list = that.list;
+        inline Array<T>& operator=(Array<T>& that){
+            this->list = that.list;
             return *this;
         }
     };

@@ -409,7 +409,7 @@ namespace h7{
         }
 
         switch (mMode) {
-            case SCROLL_MODE:
+            case SCROLL_MODE: {
                 auto time = getCurrentTimeInMsec();
                 // Any scroller can be used for time, since they were started
                 // together in scroll mode. We use X here.
@@ -423,9 +423,10 @@ namespace h7{
                 } else {
                     abortAnimation();
                 }
+            }
                 break;
 
-            case FLING_MODE:
+            case FLING_MODE: {
                 if (!mScrollerX->mFinished) {
                     if (!mScrollerX->update()) {
                         if (!mScrollerX->continueWhenFinished()) {
@@ -441,6 +442,7 @@ namespace h7{
                         }
                     }
                 }
+            }
                 break;
         }
 

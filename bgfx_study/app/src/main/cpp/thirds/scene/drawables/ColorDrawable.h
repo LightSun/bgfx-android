@@ -19,7 +19,9 @@ namespace h7{
     protected:
         virtual void onDraw(NanoCanvas::Canvas& canvas, float x, float y, SkRect& real);
     public:
-        Color& getColor() const ;
+        Color& getColor();
+        float getRound();
+        bool isCircle();
         virtual void setColor(Color& in);
         virtual void setRound(float round);
         virtual void setCircle(bool circle);
