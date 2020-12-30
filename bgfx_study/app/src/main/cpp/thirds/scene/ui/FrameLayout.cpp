@@ -3,6 +3,7 @@
 //
 
 #include "FrameLayout.h"
+#include "../SceneHelper.h"
 
 namespace h7{
     void FrameLayout::onLayoutChildren(float targetX, float targetY, float w, float h) {

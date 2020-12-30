@@ -6,6 +6,7 @@
 #define BGFX_STUDY_BGFX_LUA_APP_H
 
 #include "bgfx_app.h"
+#include "../application/Application.h"
 
 //防止指令重排. linux 内核可用 cpu_relax函数（效果相同）
 //#define barrier() __asm__ __volatile__("": : :"memory")
@@ -35,7 +36,7 @@ namespace h7{
     class LuaApp;
     class AppController;
 
-    class LuaApp: public BgfxApp{
+    class LuaApp: public Application{
 
     public:
         /**

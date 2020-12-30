@@ -5,10 +5,10 @@
 #ifndef BGFX_STUDY_SORTEDLIST_H
 #define BGFX_STUDY_SORTEDLIST_H
 
+#include "../lua/SkRefCnt.h"
 #include "Array.h"
 #include "ListUpdateCallback.h"
 #include "BatchingListUpdateCallback.h"
-#include "../lua/SkRefCnt.h"
 #include "Comparator.h"
 
 namespace h7 {

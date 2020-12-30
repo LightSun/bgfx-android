@@ -59,9 +59,7 @@ namespace NanoCanvas {
                                            paint.dd);
             }
                 break;
-            case Gradient::Type::None:
-            default:
-                break;
+            case Gradient::Type::None:;
         }
         return nvgPaint;
     }

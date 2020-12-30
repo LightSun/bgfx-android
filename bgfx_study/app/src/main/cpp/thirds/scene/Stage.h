@@ -5,7 +5,9 @@
 #ifndef BGFX_STUDY_STAGE_H
 #define BGFX_STUDY_STAGE_H
 
+#include <atomic>
 #include <lua/SkWeakRefCnt.h>
+#include <nancanvas/SkRect.h>
 #include "../input/Input.h"
 #include "utils/Array.h"
 #include "math/Vector2f.h"
@@ -47,7 +49,11 @@ namespace h7 {
         //canvas to draw
         sk_sp<NanoCanvas::Canvas> _canvas;
         sk_sp<Viewport> viewport;
-        bool _isInLayout;
+        //layouts
+        std::atomic_bool _isInLayout = {false};
+        std::atomic_bool _layoutBroken = {false};
+        SkRect _layoutRange;
+        sk_sp<Actor> _layoutAnchor;//layout anchor from inner -> outter
 
     public:
         Array<sk_sp<TouchFocus>> touchFocuses = Array<sk_sp<TouchFocus>>(16);
@@ -59,6 +65,11 @@ namespace h7 {
          * @param canvas canvas. this will auto manage ptr
          */
         Stage(Viewport* vp, NanoCanvas::Canvas* canvas);
+        /**
+        * create stage with viewport and canvas.
+        * @param vp viewport. this will auto manage ptr
+        * @param context nvg context. . this will-not auto manage ptr
+        */
         Stage(Viewport* vp, NVGcontext* context);
 
         inline Viewport &getViewport() {
@@ -92,8 +103,27 @@ namespace h7 {
          * dispatch draw cmd.
          */
         void invalidate();
+        /**
+         * do layout the tree of actors.
+         * if isInLayout() = false. child should no need continue layout, why?
+         * that is because a
+         */
         void layout();
+        void requestLayout();
         bool isInLayout();
+
+        /**
+         * set layout rect. that means we the rect is dirty. only need layout the nearest group which contains this rect.
+         * @param anchor the anchor actor.
+         * @param in the dirty rect
+         */
+        void setLayoutRect(const h7::Actor *anchor, SkRect& in);
+        /**
+        * concat layout rect. that means we the rect is dirty. only need layout the nearest group which contains this rect.
+        * @param anchor the anchor actor.
+        * @param in the dirty rect
+        */
+        void concatLayoutRect(const h7::Actor *anchor,SkRect& in);
 
         /** Applies a touch down event to the stage and returns true if an actor in the scene {@link Event#handle() handled} the
 	 * event. */

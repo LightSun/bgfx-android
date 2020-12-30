@@ -21,6 +21,7 @@ android {
                 //copy from bgfx
                 cppFlags "-std=c++14 -fno-exceptions -O0 -Wall -Wextra -ffast-math -fomit-frame-pointer -g -fno-rtti -fPIC -no-canonical-prefixes" +
                         " -Wa,--noexecstack -fstack-protector-strong -ffunction-sections -Wunused-value -Wundef -Wl,-z,relro -Wl,-z,now"+
+                        "-Wnull-dereference" +
                         " -DSIMPLE_DEMO -DSTB_TRUETYPE_IMPLEMENTATION -D__USE_PTHREAD -DH_INTERNAL_TEST" +
                         "-DCCORE_ANDROID"
             }

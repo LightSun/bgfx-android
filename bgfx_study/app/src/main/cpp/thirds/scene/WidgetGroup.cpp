@@ -71,7 +71,7 @@ namespace h7{
     void WidgetGroup::setAlign(int align) {
         if(this->align != align){
             this->align = align;
-            layoutAndInvalidate();
+            requestLayoutAndInvalidate();
         }
     }
 }

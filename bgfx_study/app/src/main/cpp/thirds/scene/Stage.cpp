@@ -3,6 +3,7 @@
 //
 
 #include <limits.h>
+#include <log.h>
 #include "Stage.h"
 #include "Event.h"
 #include "Actor.h"
@@ -13,6 +14,7 @@
 #include "FocusListener.h"
 #include "../nancanvas/Canvas.h"
 #include "input/GestureContext.h"
+#include "SceneContext.h"
 
 namespace h7{
 
@@ -34,15 +36,95 @@ namespace h7{
     void Stage::layout() {
         if(!_isInLayout){
             _isInLayout = true;
-            root->doLayout(viewport->x,viewport->y, viewport->width, viewport->height);
+            //if layout range not
+            if(_layoutAnchor == nullptr || _layoutRange.isEmpty()){
+                root->doLayout(viewport->x, viewport->y, viewport->width, viewport->height);
+            } else{
+                //1, getAscendants
+                Array<sk_sp<Group>> parents;
+                if(_layoutAnchor->hasActorType(H7_GROUP_TYPE)){
+                    auto pGroup = sk_ref_sp(rCast(Group*, _layoutAnchor.get()));
+                    parents.add(pGroup);
+                }
+                _layoutAnchor->getAscendants(parents);
+                SkRect& rect = Actor::_TEMP_RECT;
+                //2, second find first not contains layout-range. from root
+                //the best match group
+                sk_sp<Group> lastMactchGroup;
+                for (int i = parents.size() - 1; i >=0 ; i--) {
+                    auto sp = parents.get(i);
+                    sp->weak_ref();
+                    if(sp->try_ref()){
+                        rect.setXYWH(sp->getScreenX(), sp->getScreenY(), sp->getWidth(), sp->getHeight());
+                        sp->unref();
+                    }
+                    sp->weak_unref();
+                    if(rect.contains(_layoutRange)){
+                        lastMactchGroup = sp;
+                    } else{
+                        if(lastMactchGroup != nullptr){
+                            //found the best match parent.
+                            break;
+                        }
+                    }
+                }
+                //3, now we do layout by target group
+                if(lastMactchGroup != nullptr){
+                    lastMactchGroup->weak_ref();
+                    if(lastMactchGroup->try_ref()){
+                        lastMactchGroup->doLayout();
+                        lastMactchGroup->unref();
+                    }
+                    lastMactchGroup->weak_unref();
+                } else{
+                    LOGE("_layoutRange is not empty, but can't find actor. Couldn't reach here!");
+                }
+            }
+            _layoutAnchor.reset();
+            _layoutRange.setEmpty();
             _isInLayout = false;
         }
+    }
+    void Stage::requestLayout() {
+        h7::requestLayout();
     }
     void Stage::invalidate() {
         requestRender();
     }
     bool Stage::isInLayout() {
         return _isInLayout;
+    }
+    void Stage::setLayoutRect(const h7::Actor *actor, SkRect &in) {
+        //reset to full-layout
+        if(in.isEmpty()){
+            _layoutRange.setEmpty();
+            _layoutAnchor.reset();
+            return;
+        }
+        in.normalize(0, 0, viewport->width, viewport->height);
+        //if range is smaller
+        if(_layoutRange.contains(in)){
+            //ignore
+            return;
+        }
+        _layoutAnchor.reset(const_cast<Actor *>(actor));
+        _layoutRange.set(in);
+        if(_isInLayout){
+            _isInLayout = false;
+        }
+    }
+    void Stage::concatLayoutRect(const h7::Actor *actor, SkRect &in) {
+        //make valid rect
+        if(!_layoutRange.isEmpty()){
+#define LAYOUT_RECT_MIN(a)\
+    bx::min(_layoutRange.a, in.a)
+#define LAYOUT_RECT_MAX(a)\
+    bx::max(_layoutRange.a, in.a)
+            in.setLTRB(LAYOUT_RECT_MIN(fLeft), LAYOUT_RECT_MIN(fTop),
+                                         LAYOUT_RECT_MAX(fRight), LAYOUT_RECT_MAX(fBottom)
+            );
+        }
+        setLayoutRect(actor, in);
     }
     void Stage::act(float delta) {
 // Update over actors. Done in act() because actors may change position, which can fire enter/exit without an input event.

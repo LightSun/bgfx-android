@@ -68,7 +68,7 @@ namespace h7 {
             */
         static void sort(Array<T> &a, int lo, int hi, Comparator<T> *c,
                          Array<T> *work, int workBase, int workLen) {
-            assert(c != nullptr && lo >= 0 && lo <= hi && hi <= a.size());
+            SkASSERT(c != nullptr && lo >= 0 && lo <= hi && hi <= a.size());
 
             int nRemaining = hi - lo;
             if (nRemaining < 2)
@@ -109,9 +109,9 @@ namespace h7 {
             } while (nRemaining != 0);
 
             // Merge all remaining runs to complete sort
-            assert(lo == hi);
+            SkASSERT(lo == hi);
             ts.mergeForceCollapse();
-            assert(ts.stackSize == 1);
+            SkASSERT(ts.stackSize == 1);
         }
 
     private:
@@ -266,7 +266,7 @@ namespace h7 {
 */
         static inline int countRunAndMakeAscending(Array<T> &a, int lo, int hi,
                                                    Comparator<T> *c) {
-            assert(lo < hi);
+            SkASSERT(lo < hi);
             int runHi = lo + 1;
             if (runHi == hi)
                 return 1;
@@ -320,7 +320,7 @@ namespace h7 {
      */
         static void binarySort(Array<T> &a, int lo, int hi, int start,
                                Comparator<T> *c) {
-            assert(lo <= start && start <= hi);
+            SkASSERT(lo <= start && start <= hi);
             if (start == lo)
                 start++;
             for (; start < hi; start++) {
@@ -329,7 +329,7 @@ namespace h7 {
                 // Set left (and right) to the index where a[start] (pivot) belongs
                 int left = lo;
                 int right = start;
-                assert(left <= right);
+                SkASSERT(left <= right);
                 /*
                  * Invariants:
                  *   pivot >= all in [lo, left).
@@ -342,7 +342,7 @@ namespace h7 {
                     else
                         left = mid + 1;
                 }
-                assert(left == right);
+                SkASSERT(left == right);
 
                 /*
                  * The invariants still hold: pivot >= all in [lo, left) and
@@ -388,7 +388,7 @@ namespace h7 {
     * @return the length of the minimum run to be merged
     */
         static int minRunLength(int n) {
-            assert(n >= 0);
+            SkASSERT(n >= 0);
             int r = 0;      // Becomes 1 if any 1 bits are shifted off
             while (n >= MIN_MERGE) {
                 r |= (n & 1);
@@ -456,16 +456,16 @@ namespace h7 {
     * @param i stack index of the first of the two runs to merge
     */
         void mergeAt(int i) {
-            assert(stackSize >= 2);
-            assert(i >= 0);
-            assert(i == stackSize - 2 || i == stackSize - 3);
+            SkASSERT(stackSize >= 2);
+            SkASSERT(i >= 0);
+            SkASSERT(i == stackSize - 2 || i == stackSize - 3);
 
             int base1 = runBase[i];
             int len1 = runLen[i];
             int base2 = runBase[i + 1];
             int len2 = runLen[i + 1];
-            assert(len1 > 0 && len2 > 0);
-            assert(base1 + len1 == base2);
+            SkASSERT(len1 > 0 && len2 > 0);
+            SkASSERT(base1 + len1 == base2);
 
             /*
              * Record the length of the combined runs; if i is the 3rd-last
@@ -483,8 +483,8 @@ namespace h7 {
              * Find where the first element of run2 goes in run1. Prior elements
              * in run1 can be ignored (because they're already in place).
              */
-            int k = gallopRight(a[base2], a, base1, len1, 0, c);
-            assert(k >= 0);
+            int k = gallopRight(&a[base2], a, base1, len1, 0, c);
+            SkASSERT(k >= 0);
             base1 += k;
             len1 -= k;
             if (len1 == 0)
@@ -494,8 +494,8 @@ namespace h7 {
              * Find where the last element of run1 goes in run2. Subsequent elements
              * in run2 can be ignored (because they're already in place).
              */
-            len2 = gallopLeft(a[base1 + len1 - 1], a, base2, len2, len2 - 1, c);
-            assert(len2 >= 0);
+            len2 = gallopLeft(&a[base1 + len1 - 1], a, base2, len2, len2 - 1, c);
+            SkASSERT(len2 >= 0);
             if (len2 == 0)
                 return;
 
@@ -526,7 +526,7 @@ namespace h7 {
     */
         static int gallopLeft(T *key, Array<T> &a, int base, int len, int hint,
                               Comparator<T> *c) {
-            assert(len > 0 && hint >= 0 && hint < len);
+            SkASSERT(len > 0 && hint >= 0 && hint < len);
             int lastOfs = 0;
             int ofs = 1;
             if (c->compare(key, &a[base + hint]) > 0) {
@@ -561,7 +561,7 @@ namespace h7 {
                 lastOfs = hint - ofs;
                 ofs = hint - tmp;
             }
-            assert(-1 <= lastOfs && lastOfs < ofs && ofs <= len);
+            SkASSERT(-1 <= lastOfs && lastOfs < ofs && ofs <= len);
 
             /*
              * Now a[base+lastOfs] < key <= a[base+ofs], so key belongs somewhere
@@ -577,7 +577,7 @@ namespace h7 {
                 else
                     ofs = m;          // key <= a[base + m]
             }
-            assert(lastOfs == ofs);    // so a[base + ofs - 1] < key <= a[base + ofs]
+            SkASSERT(lastOfs == ofs);    // so a[base + ofs - 1] < key <= a[base + ofs]
             return ofs;
         }
 
@@ -596,7 +596,7 @@ namespace h7 {
     */
         static int gallopRight(T *key, Array<T> &a, int base, int len,
                                int hint, Comparator<T> *c) {
-            assert(len > 0 && hint >= 0 && hint < len);
+            SkASSERT(len > 0 && hint >= 0 && hint < len);
 
             int ofs = 1;
             int lastOfs = 0;
@@ -632,7 +632,7 @@ namespace h7 {
                 lastOfs += hint;
                 ofs += hint;
             }
-            assert - 1 <= lastOfs && lastOfs < ofs && ofs <= len;
+            SkASSERT(- 1 <= lastOfs && lastOfs < ofs && ofs <= len);
 
             /*
              * Now a[b + lastOfs] <= key < a[b + ofs], so key belongs somewhere to
@@ -648,7 +648,7 @@ namespace h7 {
                 else
                     lastOfs = m + 1;  // a[b + m] <= key
             }
-            assert(lastOfs == ofs);    // so a[b + ofs - 1] <= key < a[b + ofs]
+            SkASSERT(lastOfs == ofs);    // so a[b + ofs - 1] <= key < a[b + ofs]
             return ofs;
         }
 
@@ -670,7 +670,7 @@ namespace h7 {
     * @return true if success
     */
         bool mergeLo(int base1, int len1, int base2, int len2) {
-            assert(len1 > 0 && len2 > 0 && base1 + len1 == base2);
+            SkASSERT(len1 > 0 && len2 > 0 && base1 + len1 == base2);
 
             // Copy first run into temp array
             Array<T>& a = this->a;
@@ -707,7 +707,7 @@ namespace h7 {
                  * winning consistently.
                  */
                 do {
-                    assert(len1 > 1 && len2 > 0);
+                    SkASSERT(len1 > 1 && len2 > 0);
                     if (c->compare(&a[cursor2], &tmp[cursor1]) < 0) {
                         a[dest++] = a[cursor2++];
                         count2++;
@@ -729,7 +729,7 @@ namespace h7 {
                  * neither run appears to be winning consistently anymore.
                  */
                 do {
-                    assert(len1 > 1 && len2 > 0);
+                    SkASSERT(len1 > 1 && len2 > 0);
                     count1 = gallopRight(&a[cursor2], tmp, cursor1, len1, 0, c);
                     if (count1 != 0) {
                         a.setRegion(dest, tmp, cursor1, count1);
@@ -767,7 +767,7 @@ namespace h7 {
             this->minGallop = minGallop < 1 ? 1 : minGallop;  // Write back to field
 
             if (len1 == 1) {
-                assert(len2 > 0);
+                SkASSERT(len2 > 0);
                 a.setRegion(dest, a, cursor2, len2);
                 //System.arraycopy(a, cursor2, a, dest, len2);
                 a[dest + len2] = tmp[cursor1]; //  Last elt of run 1 to end of merge
@@ -775,8 +775,8 @@ namespace h7 {
                 LOGE("Comparison method violates its general contract!");
                 return false;
             } else {
-                assert(len2 == 0);
-                assert(len1 > 1);
+                SkASSERT(len2 == 0);
+                SkASSERT(len1 > 1);
                 a.setRegion(dest, tmp, cursor1, len1);
                 //System.arraycopy(tmp, cursor1, a, dest, len1);
             }
@@ -795,11 +795,11 @@ namespace h7 {
     * @param len2  length of second run to be merged (must be > 0)
     */
         bool mergeHi(int base1, int len1, int base2, int len2) {
-            assert(len1 > 0 && len2 > 0 && base1 + len1 == base2);
+            SkASSERT(len1 > 0 && len2 > 0 && base1 + len1 == base2);
 
             // Copy first run into temp array
-            Array<sk_sp<T>> a = this->a;
-            Array<sk_sp<T>> tmp = ensureCapacity(len1);
+            Array<T> a = this->a;
+            Array<T> tmp = ensureCapacity(len1);
             int tmpBase = this->tmpBase;
             tmp.setRegion(tmpBase, a, base2, len2);
             //System.arraycopy(a, base2, tmp, tmpBase, len2);
@@ -836,7 +836,7 @@ namespace h7 {
                  * appears to win consistently.
                  */
                 do {
-                    assert(len1 > 0 && len2 > 1);
+                    SkASSERT(len1 > 0 && len2 > 1);
                     if (c->compare(&tmp[cursor2], &a[cursor1]) < 0) {
                         a[dest--] = a[cursor1--];
                         count1++;
@@ -858,7 +858,7 @@ namespace h7 {
                  * neither run appears to be winning consistently anymore.
                  */
                 do {
-                    assert(len1 > 0 && len2 > 1);
+                    SkASSERT(len1 > 0 && len2 > 1);
                     count1 = len1 - gallopRight(&tmp[cursor2], a, base1, len1, len1 - 1, c);
                     if (count1 != 0) {
                         dest -= count1;
@@ -896,7 +896,7 @@ namespace h7 {
             this->minGallop = minGallop < 1 ? 1 : minGallop;  // Write back to field
 
             if (len2 == 1) {
-                assert(len1 > 0);
+                SkASSERT(len1 > 0);
                 dest -= len1;
                 cursor1 -= len1;
                 a.setRegion(dest + 1, a, cursor1 + 1, len1);
@@ -906,8 +906,8 @@ namespace h7 {
                 LOGE("Comparison method violates its general contract!");
                 return false;
             } else {
-                assert(len1 == 0);
-                assert(len2 > 0);
+                SkASSERT(len1 == 0);
+                SkASSERT(len2 > 0);
                 a.setRegion(dest - (len2 - 1), tmp, tmpBase, len2);
                 // System.arraycopy(tmp, tmpBase, a, dest - (len2 - 1), len2);
             }

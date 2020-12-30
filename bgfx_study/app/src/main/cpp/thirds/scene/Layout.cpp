@@ -16,23 +16,23 @@ namespace h7 {
     }
     void Layout::setNeedLayout(bool need) {
         if(need){
-            rCast(Actor*, this)->addFlags(Actor::FLAG_NEED_LAYOUT);
+            rcCast(Actor*, this)->addFlags(Actor::FLAG_NEED_LAYOUT);
         } else{
-            rCast(Actor*, this)->deleteFlags(Actor::FLAG_NEED_LAYOUT);
+            rcCast(Actor*, this)->deleteFlags(Actor::FLAG_NEED_LAYOUT);
         }
     }
     void Layout::setNeedMeasure(bool need) {
         if(need){
-            rCast(Actor*, this)->addFlags(Actor::FLAG_NEED_MEASURE);
+            rcCast(Actor*, this)->addFlags(Actor::FLAG_NEED_MEASURE);
         } else{
-            rCast(Actor*, this)->deleteFlags(Actor::FLAG_NEED_MEASURE);
+            rcCast(Actor*, this)->deleteFlags(Actor::FLAG_NEED_MEASURE);
         }
     }
     bool Layout::isNeedLayout() const {
-        return rCast(Actor*, this)->hasFlags(Actor::FLAG_NEED_LAYOUT);
+        return rcCast(Actor*, this)->hasFlags(Actor::FLAG_NEED_LAYOUT);
     }
     bool Layout::isNeedMeasure() const {
-        return rCast(Actor*, this)->hasFlags(Actor::FLAG_NEED_MEASURE);
+        return rcCast(Actor*, this)->hasFlags(Actor::FLAG_NEED_MEASURE);
     }
     void Layout::layoutSize(float w1, float h1, float ew, float eh) {
         float w = w1;

@@ -5,8 +5,10 @@
 #ifndef BGFX_STUDY_APPLICATIONLISTENER_H
 #define BGFX_STUDY_APPLICATIONLISTENER_H
 
+#include <lua/SkRefCnt.h>
+
 namespace h7 {
-    class ApplicationListener {
+    class ApplicationListener: public SkRefCnt {
     public:
         /** Called when the {@link Application} is first created. */
         virtual void create() {

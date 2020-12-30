@@ -12,7 +12,7 @@ namespace h7{
     class ColorDrawable: public Drawable{
 
     private:
-        Color _color = {0};
+        Color _color;
         float _round;
         bool _circle = false;
 

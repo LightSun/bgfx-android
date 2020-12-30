@@ -20,7 +20,7 @@
         }while(0);
 
 namespace h7 {
-    //TODO handle lifecycle of c++ objects
+
     class AndroidInput: public Input,public IAndroidInput,public WeakObjectM {
 
     public:

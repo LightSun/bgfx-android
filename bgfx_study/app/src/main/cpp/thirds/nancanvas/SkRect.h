@@ -667,6 +667,21 @@ struct SkRect{
             fBottom = in.fBottom;
             return *this;
         }
+        SkRect& normalize(float minLeft, float minTop, float maxW, float maxH){
+            if(fLeft < minLeft){
+                fLeft = minLeft;
+            }
+            if(fTop < minTop){
+                fTop = minTop;
+            }
+            if(width() > maxW){
+                fRight = fLeft + maxW;
+            }
+            if(height() > maxH){
+                fBottom = fTop + maxH;
+            }
+            return *this;
+        }
         /** Returns true if fLeft is equal to or greater than fRight, or if fTop is equal
             to or greater than fBottom. Call sort() to reverse rectangles with negative
             width() or height().
@@ -1069,6 +1084,20 @@ struct SkRect{
             fTop += dy;
             fRight -= dx;
             fBottom -= dy;
+        }
+
+        void inset(SkScalar left, SkScalar top, SkScalar right, SkScalar bottom)  {
+            fLeft += left;
+            fTop += top;
+            fRight -= right;
+            fBottom -= bottom;
+        }
+
+        void inset(SkRect& rect)  {
+            fLeft += rect.fLeft;
+            fTop += rect.fTop;
+            fRight -= rect.fRight;
+            fBottom -= rect.fBottom;
         }
 
         /** Outsets SkRect by (dx, dy).

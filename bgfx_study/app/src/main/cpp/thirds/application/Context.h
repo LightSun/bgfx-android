@@ -9,11 +9,9 @@
 
 namespace h7{
 
-    class Context{
-
-    public:
+    typedef struct Context{
          DisplayInfo displayInfo;
-    };
+    }Context;
 }
 
 #endif //BGFX_STUDY_CONTEXT_H

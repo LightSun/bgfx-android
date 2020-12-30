@@ -260,4 +260,11 @@ public:
     }
 };
 
+#define LUA_REF(L) LuaUtils::ref(L)
+#define LUA_UN_REF(L, field)  \
+if (field != LUA_NOREF) {\
+LuaUtils::unref(L, field);\
+field = LUA_NOREF;\
+}
+
 #endif //BGFX_STUDY_LUAUTILS_H

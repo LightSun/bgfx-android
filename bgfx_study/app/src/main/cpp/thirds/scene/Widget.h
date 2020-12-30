@@ -18,7 +18,7 @@ namespace h7 {
 
     protected:
         virtual void sizeChanged() {
-            layoutAndInvalidate();
+            requestLayoutAndInvalidate();
         }
     public:
         Widget();

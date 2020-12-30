@@ -13,7 +13,8 @@
 namespace h7 {
     class Actor;
 
-    typedef struct LayoutParams {
+    class LayoutParams :public SkRefCnt{
+    public:
         static constexpr signed char LAYOUT_MATCH_PARENT = -1;
         static constexpr signed char LAYOUT_WRAP_CONTENT = -2;
         static constexpr signed char LAYOUT_REAL = -3;
@@ -21,7 +22,7 @@ namespace h7 {
         signed char layoutWidthType = LAYOUT_REAL;
         signed char layoutHeightType = LAYOUT_REAL;
         unsigned char lpType = LP_TYPE;
-    } LayoutParams;
+    };
 
     class Layout {
     private:

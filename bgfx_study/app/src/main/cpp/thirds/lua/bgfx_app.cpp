@@ -8,73 +8,19 @@
 #include "bgfx_wrapper.h"
 #include "bgfx_app.h"
 
-#include <log.h>
+#include "log.h"
+
 #include "../core/common.h"
-#include "../input/GestureContext.h"
-#include "../application/Application.h"
+#include "input/GestureContext.h"
+#include "application/Application.h"
+#include "application/ApplicationListener.h"
 
 namespace h7 {
-    Input *getInput() {
-        return Application::get()->input;
-    }
-
-    void BgfxApp::doInit(bgfx::Init *pInit, entry::InitConfig *pConfig) {
-        onPreInit();
-        //LOGD("holder = %p, init = %p, resolution = %p", holder, pInit, &pInit->resolution);
-        //LOGD("init config, w = %d, h = %d", pConfig->win_width, pConfig->win_height);
-        pInit->resolution.width = pConfig->win_width;
-        pInit->resolution.height = pConfig->win_height;
-
-        pInit->platformData.nwh = pConfig->window;
-        pInit->platformData.ndt = NULL;
-        pInit->platformData.context = NULL;
-        pInit->platformData.backBuffer = NULL;
-        pInit->platformData.backBufferDS = NULL;
-        bgfx::init(*pInit);
-        //LOGD("BgfxApp init is called. holder = %p,func_init= %s ", holder, func_init);
-        onInit();
-    }
-
-    void BgfxApp::actDestroy(bool lightly) {
-        if (lightly) {
-            onDestroy(lightly);
-            bgfx::shutdown();
-        } else {
-            if (getState() != APP_STATE_DESTROYED) {
-                setState(APP_STATE_DESTROYED);
-                ext_println("destroy");
-                onDestroy(lightly);
-                //destroy thread. window , and bgfx
-                //m_thread.shutdown();
-                bgfx::shutdown();
-            }
-        }
-    }
-
-    unsigned char BgfxApp::getState() {
-        return state.load(std::memory_order_relaxed);
-    }
-
-    void BgfxApp::setState(unsigned char s) {
-        state.store(s, std::memory_order_release);//对读线程可见
-    }
-
-    void BgfxApp::onPause() {
-        LOGW("onPause");
-    }
-
-    void BgfxApp::onResume() {
-        LOGW("onResume");
-    }
-
 //------------- controller =======================
     void AppController::destroyApp() {
         if (app) {
             app->actDestroy();
-            for (int i = 0; i < lifeListeners.size(); ++i) {
-                lifeListeners.get(i)->dispose();
-                lifeListeners.get(i).reset();
-            }
+            app->listener->dispose();
 
             delete app;
             app = nullptr;
@@ -107,7 +53,7 @@ namespace h7 {
         }
     }
 
-    void AppController::quitAll(EndTask task) {
+    void AppController::quitAll(AppTask task) {
         LOGD("LuaAppHolder >>> start quit all.");
         m_thread.push(new CmdData(TYPE_QUIT_ALL, task));
         if (app != nullptr) {
@@ -121,7 +67,7 @@ namespace h7 {
         }
     }
 
-    void AppController::start(BgfxApp *app) {
+    void AppController::start(Application *app) {
         if (this->app != nullptr) {
             LOGW("start LuaApp failed: last app exists,ptr = %p. you should quit first", this->app);
             return;
@@ -137,17 +83,13 @@ namespace h7 {
                     new CmdData(manul ? TYPE_APP_PAUSE_MANULLY : TYPE_APP_PAUSE, (void *) NULL));
             app->pause();
 
-            for (int i = 0; i < lifeListeners.size(); ++i) {
-                lifeListeners.get(i)->onPause();
-            }
+            app->listener->pause();
         }
     }
 
     void AppController::resume() {
         LOGD("LuaAppHolder >>> start resume...");
-        for (int i = 0; i < lifeListeners.size(); ++i) {
-            lifeListeners.get(i)->onResume();
-        }
+        app->listener->resume();
         _condition.notify_one();
     }
 
@@ -159,19 +101,22 @@ namespace h7 {
         m_thread.push(new CmdData(TYPE_APP_RENDER, app));
         LOGD("AppController >>> requestRender");
     }
+    void AppController::requestLayout() {
+        m_thread.push(new CmdData(TYPE_APP_LAYOUT, app));
+        LOGD("AppController >>> requestLayout");
+    }
 
     CmdData::CmdData(uint8_t type, void *data) : type(type), data(data) {
 
     }
 
-    CmdData::CmdData(uint8_t type, EndTask task) : type(type), task(task) {
+    CmdData::CmdData(uint8_t type, AppTask task) : type(type), task(task) {
 
     }
 
     //---------------------------------------------------------------------
-
     static inline void renderSelf(AppController *holder) {
-        BgfxApp *demo = holder->app;
+        Application *demo = holder->app;
         bgfx::frame();
         LOGD("loop render >>> start. app = %p", demo);
         for (;;) {
@@ -210,9 +155,9 @@ namespace h7 {
         holder->destroyApp();
         LOGD("performApp >>> end");
     }
-
+    //one call -> one render.
     static inline void render(AppController *holder) {
-        BgfxApp *demo = holder->app;
+        Application *demo = holder->app;
         LOGD("loop render >>> start. app = %p", demo);
         switch (demo->getState()) {
             case APP_STATE_PAUSED:
@@ -261,7 +206,7 @@ namespace h7 {
                 data = static_cast<CmdData *>(pVoid);
                 switch (data->type) {
                     case TYPE_APP_INIT: {
-                        BgfxApp *demo = holder->app = static_cast<BgfxApp *>(data->data);
+                        Application *demo = holder->app = static_cast<Application *>(data->data);
                         LOGD("TYPE_LUA_APP_INIT , start LuaApp : %p", demo);
                         if (demo != nullptr && !demo->isDestroyed()) {
                             demo->markRunning();
@@ -324,12 +269,23 @@ namespace h7 {
                     }
                         break;
 
+                    case TYPE_APP_LAYOUT:
+                        LOGD("TYPE_APP_LAYOUT.");
+                        holder->app->layout();
+                        break;
+
                     case TYPE_QUIT_ALL:
                         LOGD("TYPE_QUIT_ALL.");
                         if (data->task) {
                             data->task(holder);
                         }
                         shouldBreak = true;
+                        break;
+
+                    case TYPE_NONE:
+                        if (data->task) {
+                            data->task(holder);
+                        }
                         break;
                 }
                 //quit all

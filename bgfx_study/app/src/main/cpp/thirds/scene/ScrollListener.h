@@ -6,7 +6,7 @@
 #define BGFX_STUDY_SCROLLLISTENER_H
 
 #include "Event.h"
-#include "include/common_types.h"
+#include "common_types.h"
 #include "EventListener.h"
 
 namespace h7{
@@ -47,7 +47,7 @@ namespace h7{
         virtual bool handle(Event& event){
             if(event.getEventType() == EVENT_SCROLL){
                 ScrollEvent* scrollEvent = (ScrollEvent*)&event;
-                if(scrollEvent->getDx() == 0 && scrollEvent->getDy() == 0){
+                if(scrollEvent->getScrollState() != ScrollInfo::SCROLL_STATE_NONE){
                     onScrollStateChanged(*scrollEvent, scrollEvent->getScrollState());
                 } else{
                     onScrolled(*scrollEvent, scrollEvent->getDx(), scrollEvent->getDy());

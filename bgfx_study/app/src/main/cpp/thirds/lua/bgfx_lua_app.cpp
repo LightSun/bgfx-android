@@ -25,10 +25,20 @@ using namespace h7;
 namespace h7 {
 #define KEY_APP_HOLDER "$_LuaAppHolder_"
 
+    Application* Application::get() {
+        auto L = reinterpret_cast<lua_State *>(Platforms::getLuaPtr());
+        return getAppHolder(L)->app;
+    }
+
     void requestRender(){
         auto L = reinterpret_cast<lua_State *>(Platforms::getLuaPtr());
         getAppHolder(L)->requestRender();
     }
+    void requestLayout(){
+        auto L = reinterpret_cast<lua_State *>(Platforms::getLuaPtr());
+        getAppHolder(L)->requestLayout();
+    }
+
     void getDisplayInfo(int* out){
         auto L = reinterpret_cast<lua_State *>(Platforms::getLuaPtr());
         auto pInit = requireInit(L);
@@ -130,10 +140,10 @@ LuaApp::~LuaApp() {
 //preinit, init, draw, destroy
 LuaApp::LuaApp(lua_State *L) {
     this->L = L;
-    ref_destroy = LuaUtils::ref(L);
-    ref_draw = LuaUtils::ref(L);
-    ref_init = LuaUtils::ref(L);
-    ref_preInit = LuaUtils::ref(L);
+    ref_destroy = LUA_REF(L);
+    ref_draw = LUA_REF(L);
+    ref_init = LUA_REF(L);
+    ref_preInit = LUA_REF(L);
 }
 
 void LuaApp::onInit(){
@@ -198,21 +208,9 @@ void LuaApp::_callLuaDestroy() {
     }
 }
 void LuaApp::_release() {
-    if (ref_preInit != LUA_NOREF) {
-        LuaUtils::unref(L, ref_preInit);
-        ref_preInit = LUA_NOREF;
-    }
-    if (ref_init != LUA_NOREF) {
-        LuaUtils::unref(L, ref_init);
-        ref_init = LUA_NOREF;
-    }
-    if (ref_draw != LUA_NOREF) {
-        LuaUtils::unref(L, ref_draw);
-        ref_draw = LUA_NOREF;
-    }
-    if (ref_destroy != LUA_NOREF) {
-        LuaUtils::unref(L, ref_destroy);
-        ref_destroy = LUA_NOREF;
-    }
+    LUA_UN_REF(L, ref_preInit);
+    LUA_UN_REF(L, ref_init);
+    LUA_UN_REF(L, ref_draw);
+    LUA_UN_REF(L, ref_destroy);
 }
 

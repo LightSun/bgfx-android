@@ -15,6 +15,7 @@
 
 #include "../nancanvas/SkMatrix.h"
 #include "ActorListenerManager.h"
+#include "log.h"
 
 #define H7_ACTOR_TYPE 1
 #define H7_GROUP_TYPE 2
@@ -83,8 +84,10 @@ namespace h7 {
 
         float tmpScreenX, tmpScreenY;
         ScrollInfo* _scrollInfo;
+        SkRect _lastLayoutRect;
 
     public:
+        static SkRect _TEMP_RECT;
         static constexpr unsigned int FLAG_VISIBLE = 0x1;
         static constexpr unsigned int FLAG_CLIP_RECT = 0x2;
         static constexpr unsigned int FLAG_NEED_LAYOUT = 0x4;
@@ -180,10 +183,11 @@ namespace h7 {
          * do layout this actor with margin. will call layout.
          * @param ex the x
          * @param ey the y
-         * @param ew the w
-         * @param eh the h
+         * @param ew the w expect width from parent
+         * @param eh the h expect height from parent
          */
         virtual void doLayout(float ex, float ey, float ew, float eh){
+            _lastLayoutRect.setXYWH(ex, ey, ew, eh);
             auto margin = getMargin();
             if(margin != nullptr){
                 layout(ex + margin->left(),
@@ -193,6 +197,16 @@ namespace h7 {
                 );
             } else{
                 layout(ex, ey, getWidth(), getHeight());
+            }
+        }
+        /**
+         * layout with cache rect. this should only be called when you ensure the dirty rect.
+         */
+        inline void doLayout(){
+            if(!_lastLayoutRect.isEmpty()){
+                doLayout(_lastLayoutRect.x(), _lastLayoutRect.y(), _lastLayoutRect.width(), _lastLayoutRect.height());
+            } else{
+                LOGE("Actor.doLayout() can only be called in layout cache mode.");
             }
         }
         bool isInLayout();
@@ -210,7 +224,16 @@ namespace h7 {
         /**
          * request layout and invalidate
          */
-        void layoutAndInvalidate();
+        void requestLayoutAndInvalidate();
+
+        void invalidate();
+        /**
+          * Called by a parent to request that a child update its values for mScrollX
+          * and mScrollY if necessary. This will typically be done if the child is
+          * animating a scroll using a Scroller. eg: OverScroller
+          * object.
+          */
+        void computeScroll();
 
     protected:
         /**
@@ -279,6 +302,12 @@ namespace h7 {
        * @param touchable If true, hit detection will respect the {@link #setTouchable(Touchable) touchability}.
        * @see Touchable */
         const Actor* hit(float x, float y, bool touchable);
+
+        /**
+         * Collect ascendants so event propagation is unaffected by hierarchy changes. exclude self.
+         * @param out the out array
+         */
+        void getAscendants(Array<sk_sp<Group>>& out);
 
         /** Transforms the specified point in screen coordinates to the actor's local coordinate system.
  * @see Stage#screenToStageCoordinates(Vector2)
@@ -426,7 +455,7 @@ namespace h7 {
             } else{
                 _flags &= ~FLAG_CLIP_RECT;
             }
-            layoutAndInvalidate();
+            requestLayoutAndInvalidate();
         }
         /** Sets the width and height. */
         inline void setSize (float width, float height) {
@@ -735,11 +764,11 @@ namespace h7 {
         }
         /** Called when the actor's position has been changed. */
         virtual void positionChanged() {
-            layoutAndInvalidate();
+            requestLayoutAndInvalidate();
         }
         /** Called when the actor's size has been changed. */
         virtual void sizeChanged() {
-            layoutAndInvalidate();
+            requestLayoutAndInvalidate();
         }
         virtual void scaleChanged() {
             //applyMatrix();

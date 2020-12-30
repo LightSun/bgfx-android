@@ -90,7 +90,7 @@ namespace h7{
     void LinearLayout::setVertical(bool vertical) {
         if(this->vertical != vertical){
             LinearLayout::vertical = vertical;
-            layoutAndInvalidate();
+            requestLayoutAndInvalidate();
         }
     }
 }

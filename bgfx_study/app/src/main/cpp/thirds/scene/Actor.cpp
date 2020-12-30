@@ -23,7 +23,7 @@ namespace h7 {
     Actor::Actor():SkWeakRefCnt(), _scrollInfo(nullptr), _margin(nullptr), _padding(nullptr) {
         _actorListenerM.setActor(this);
     }
-    Actor::~Actor(): ~SkWeakRefCnt(){
+    Actor::~Actor(){
         DESTROY_POINTER(_padding);
         DESTROY_POINTER(_margin);
         DESTROY_POINTER(_scrollInfo);
@@ -71,16 +71,29 @@ namespace h7 {
         return _margin;
     }
     //----------------------------------------------------
-    void Actor::layoutAndInvalidate() {
+    void Actor::requestLayoutAndInvalidate() {
         if (stage != nullptr) {
             stage->weak_ref();
             if (stage->try_ref()) {
-                stage->layout();
+                stage->requestLayout();
                 stage->invalidate();
                 stage->unref();
             }
             stage->weak_unref();
         }
+    }
+    void Actor::invalidate() {
+        if (stage != nullptr) {
+            stage->weak_ref();
+            if (stage->try_ref()) {
+                stage->invalidate();
+                stage->unref();
+            }
+            stage->weak_unref();
+        }
+    }
+    void Actor::computeScroll() {
+
     }
 
     Stage *Actor::getStage() {
@@ -113,6 +126,7 @@ namespace h7 {
     }
     void Actor::draw(NanoCanvas::Canvas &canvas, float parentAlpha) {
         if(isVisible() && width > 0 && height > 0){
+            computeScroll();
             background->getBounds().setXYWH(0, 0, width, height);
             background->setPadding(_padding);
             if (_mat.isIdentity()) {
@@ -160,25 +174,7 @@ namespace h7 {
 
         // Collect ascendants so event propagation is unaffected by hierarchy changes.
         Array<sk_sp<Group>> ascendants;
-        parent->weak_ref();
-        if (parent->try_ref()) {
-            sk_sp<Group> _parent = this->parent;
-            while (_parent != NULL) {
-                ascendants.add(_parent);
-                //
-                auto pGroup = _parent->parent;
-                pGroup->weak_ref();
-                if (pGroup->try_ref()) {
-                    _parent = pGroup;
-                    pGroup->unref();
-                } else {
-                    _parent = nullptr;
-                }
-                pGroup->weak_unref();
-            }
-            parent->unref();
-        }
-        parent->weak_unref();
+        getAscendants(ascendants);
 
         // Notify ascendants' capture listeners, starting at the root. Ascendants may stop an event before children receive it.
         // Array<sk_sp<Group>>& ascendantsArray = ascendants.copy();
@@ -224,6 +220,28 @@ namespace h7 {
             }
         }
         return event.isCancelled();
+    }
+    void Actor::getAscendants(Array<sk_sp<Group>>& ascendants) {
+        // Collect ascendants so event propagation is unaffected by hierarchy changes.
+        parent->weak_ref();
+        if (parent->try_ref()) {
+            sk_sp<Group> _parent = this->parent;
+            while (_parent != NULL) {
+                ascendants.add(_parent);
+                //
+                auto pGroup = _parent->parent;
+                pGroup->weak_ref();
+                if (pGroup->try_ref()) {
+                    _parent = pGroup;
+                    pGroup->unref();
+                } else {
+                    _parent = nullptr;
+                }
+                pGroup->weak_unref();
+            }
+            parent->unref();
+        }
+        parent->weak_unref();
     }
 
     const Actor *Actor::hit(float x, float y, bool touchable) {

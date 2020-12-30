@@ -3,6 +3,7 @@
 //
 
 #include "ListLayout.h"
+#include "../SceneHelper.h"
 
 namespace h7{
 
@@ -24,11 +25,12 @@ namespace h7{
     void ListLayout::setAdapter(h7::ListAdapter *_adapter) {
         stopScroll();
         adapter.reset(_adapter);
-        layoutAndInvalidate();
+        requestLayoutAndInvalidate();
     }
     void ListLayout::setLayoutManager(h7::LayoutManager *_m) {
         stopScroll();
         layoutManager.reset(_m);
+        requestLayoutAndInvalidate();
     }
 
     void ListLayout::measure(float &outW, float &outH) {
