@@ -2,10 +2,387 @@
 // Created by Administrator on 2020/12/30 0030.
 //
 
+#include <string.h>
+#include <stdlib.h>
+#include <cmath> //cbrt need c++ 11
+#include "../../include/bx/math.h"
 #include "Interpolation.h"
 
 namespace h7{
     namespace Interpolations{
+
+        class Power : public Interpolation {
+        protected:
+            int power;
+        public:
+            Power(int power) : power(power) {}
+
+            float apply(float a) {
+                if (a <= 0.5f) return bx::pow(a * 2, power) / 2;
+                return bx::pow((a - 1) * 2, power) / (power % 2 == 0 ? -2 : 2) + 1;
+            }
+        };
+
+        class PowerIn : public Power {
+        public:
+            PowerIn(int power) : Power(power) {}
+
+            float apply(float a) {
+                return bx::pow(a, power);
+            }
+        };
+
+        class PowerOut : public Power {
+        public:
+            PowerOut(int power) : Power(power) {}
+
+            float apply(float a) {
+                return bx::pow(a - 1, power) * (power % 2 == 0 ? -1 : 1) + 1;
+            }
+        };
+
+        class Exp : public Interpolation {
+        protected:
+            float value, power, min, scale;
+        public:
+            Exp(float value, float power) {
+                this->value = value;
+                this->power = power;
+                min = bx::pow(value, -power);
+                scale = 1 / (1 - min);
+            }
+
+            float apply(float a) {
+                if (a <= 0.5f) return (bx::pow(value, power * (a * 2 - 1)) - min) * scale / 2;
+                return (2 - (bx::pow(value, -power * (a * 2 - 1)) - min) * scale) / 2;
+            }
+        };
+
+        class ExpIn : public Exp {
+        public:
+            ExpIn(float value, float power) : Exp(value, power) {}
+
+            float apply(float a) {
+                return (bx::pow(value, power * (a - 1)) - min) * scale;
+            }
+        };
+
+        class ExpOut : public Exp {
+        public:
+            ExpOut(float value, float power) : Exp(value, power) {}
+
+            float apply(float a) {
+                return 1 - (bx::pow(value, -power * a) - min) * scale;
+            }
+        };
+
+        class Elastic : public Interpolation {
+        protected:
+            float value, power, scale, bounces;
+
+        public:
+            Elastic(float value, float power, int bounces, float scale) {
+                this->value = value;
+                this->power = power;
+                this->scale = scale;
+                this->bounces = bounces * bx::kPi * (bounces % 2 == 0 ? 1 : -1);
+            }
+
+            float apply(float a) {
+                if (a <= 0.5f) {
+                    a *= 2;
+                    return bx::pow(value, power * (a - 1)) * bx::sin(a * bounces) * scale / 2;
+                }
+                a = 1 - a;
+                a *= 2;
+                return 1 - bx::pow(value, power * (a - 1)) * bx::sin((a) * bounces) * scale / 2;
+            }
+        };
+
+        class ElasticIn : public Elastic {
+        public:
+            ElasticIn(float value, float power, int bounces, float scale) : Elastic(value, power,
+                                                                                    bounces,
+                                                                                    scale) {
+            }
+
+            float apply(float a) {
+                if (a >= 0.99) return 1;
+                return bx::pow(value, power * (a - 1)) * bx::sin(a * bounces) * scale;
+            }
+        };
+
+        class ElasticOut : public Elastic {
+        public:
+            ElasticOut(float value, float power, int bounces, float scale) : Elastic(value, power,
+                                                                                     bounces,
+                                                                                     scale) {
+            }
+
+            float apply(float a) {
+                if (a == 0) return 0;
+                a = 1 - a;
+                return (1 - (float) bx::pow(value, power * (a - 1)) * bx::sin(a * bounces) * scale);
+            }
+        };
+
+        class BounceOut : public Interpolation {
+        protected:
+            float *widths;
+            float *heights;
+            int count;
+        public:
+            BounceOut(float *_widths, float *_heights, int _count) : count(_count) {
+                int len = sizeof(float) * _count;
+                widths = (float *) malloc(len);
+                heights = (float *) malloc(len);
+                memcpy(widths, _widths, len);
+                memcpy(heights, _heights, len);
+            }
+
+            ~BounceOut() {
+                if (widths) {
+                    free(widths);
+                    widths = nullptr;
+                }
+                if (heights) {
+                    free(heights);
+                    heights = nullptr;
+                }
+            }
+
+            //bounces should be in [2, 5]
+            BounceOut(int bounces) : count(bounces) {
+                int len = sizeof(float) * bounces;
+                widths = (float *) malloc(len);
+                heights = (float *) malloc(len);
+                heights[0] = 1;
+                switch (bounces) {
+                    case 2:
+                        widths[0] = 0.6f;
+                        widths[1] = 0.4f;
+                        heights[1] = 0.33f;
+                        break;
+                    case 3:
+                        widths[0] = 0.4f;
+                        widths[1] = 0.4f;
+                        widths[2] = 0.2f;
+                        heights[1] = 0.33f;
+                        heights[2] = 0.1f;
+                        break;
+                    case 4:
+                        widths[0] = 0.34f;
+                        widths[1] = 0.34f;
+                        widths[2] = 0.2f;
+                        widths[3] = 0.15f;
+                        heights[1] = 0.26f;
+                        heights[2] = 0.11f;
+                        heights[3] = 0.03f;
+                        break;
+                    case 5:
+                        widths[0] = 0.3f;
+                        widths[1] = 0.3f;
+                        widths[2] = 0.2f;
+                        widths[3] = 0.1f;
+                        widths[4] = 0.1f;
+                        heights[1] = 0.45f;
+                        heights[2] = 0.3f;
+                        heights[3] = 0.15f;
+                        heights[4] = 0.06f;
+                        break;
+                }
+                widths[0] *= 2;
+            }
+
+            float apply(float a) {
+                if (a == 1) return 1;
+                a += widths[0] / 2;
+                float width = 0, height = 0;
+                for (int i = 0, n = count; i < n; i++) {
+                    width = widths[i];
+                    if (a <= width) {
+                        height = heights[i];
+                        break;
+                    }
+                    a -= width;
+                }
+                a /= width;
+                float z = 4 / width * height * a;
+                return 1 - (z - z * a) * width;
+            }
+        };
+
+        class BounceIn : public BounceOut {
+        public:
+            BounceIn(float *widths, float *heights, int count) : BounceOut(widths, heights,
+                                                                           count) {}
+
+            BounceIn(int bounces) : BounceOut(bounces) {}
+
+            float apply(float a) {
+                return 1 - BounceOut::apply(1 - a);
+            }
+        };
+
+        class Bounce : public BounceOut {
+        public:
+            Bounce(float *widths, float *heights, int count) : BounceOut(widths, heights,
+                                                                         count) {}
+
+            Bounce(int bounces) : BounceOut(bounces) {}
+
+        private:
+            inline float out(float a) {
+                float test = a + widths[0] / 2;
+                if (test < widths[0]) return test / (widths[0] / 2) - 1;
+                return BounceOut::apply(a);
+            }
+
+        public:
+            float apply(float a) {
+                if (a <= 0.5f) return (1 - out(1 - a * 2)) / 2;
+                return out(a * 2 - 1) / 2 + 0.5f;
+            }
+        };
+
+        class Swing : public Interpolation {
+        protected:
+            float scale;
+
+        public:
+            Swing(float scale) {
+                this->scale = scale * 2;
+            }
+
+            float apply(float a) {
+                if (a <= 0.5f) {
+                    a *= 2;
+                    return a * a * ((scale + 1) * a - scale) / 2;
+                }
+                a--;
+                a *= 2;
+                return a * a * ((scale + 1) * a + scale) / 2 + 1;
+            }
+        };
+
+        class SwingOut : public Swing {
+        public:
+            SwingOut(float scale) : Swing(scale) {}
+
+            float apply(float a) {
+                a--;
+                return a * a * ((scale + 1) * a + scale) + 1;
+            }
+        };
+
+        class SwingIn : public Swing {
+        public:
+            SwingIn(float scale) : Swing(scale) {}
+
+            float apply(float a) {
+                return a * a * ((scale + 1) * a - scale);
+            }
+        };
+        class smooth : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                ;
+                return a * a * (3 - 2 * a);
+            }
+        };
+        class smooth2 : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                a = a * a * (3 - 2 * a);
+                return a * a * (3 - 2 * a);
+            }
+        };
+        class fade : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                ;
+                return a * a * a * (a * (a * 6 - 15) + 10);
+            }
+        };
+        class pow3InInverse : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                ;
+                return std::cbrt(a);
+            }
+        };
+        class pow3OutInverse : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                ;
+                return 1 - std::cbrt(a);
+            }
+        };
+        class sine : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                ;
+                return (1 - bx::cos(a * bx::kPi)) / 2;
+            }
+        };
+        class sineIn : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                ;
+                return 1 - bx::cos(a * bx::kPiHalf);
+            }
+        };
+        class sineOut : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                ;
+                return bx::sin(a * bx::kPiHalf);
+            }
+        };
+        class circle : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                if (a <= 0.5f) {
+                    a *= 2;
+                    return (1 - bx::sqrt(1 - a * a)) / 2;
+                }
+                a--;
+                a *= 2;
+                return (bx::sqrt(1 - a * a) + 1) / 2;
+            }
+        };
+        class circleIn : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                ;
+                return 1 - bx::sqrt(1 - a * a);
+            }
+        };
+        class circleOut : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                a--;
+                return bx::sqrt(1 - a * a);
+            }
+        };
+        class pow2InInverse : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                if (a < 0.000001f)return 0;
+                return bx::sqrt(a);
+            }
+        };
+        class pow2OutInverse : public Interpolation {
+        public:
+            virtual float apply(float a) {
+                if (a < 0.000001f)return 0;
+                return 1 - bx::sqrt(-(a - 1));
+            }
+        };
+
+        //-------------------------------
+
+
         static Interpolation *_linear_ins = nullptr;
 
         Interpolation *getlinear() {
@@ -310,8 +687,14 @@ namespace h7{
             return pow5Out;
         }
 
+        //DEF_GET_FIELD(PowerOut, pow5Out, new PowerOut(5))
+        Interpolation *getslowFast() { return getpow2In(); }
+        //GET_FIELD(PowerIn, pow2In, slowFast)
+
+        Interpolation *getfastSlow() { return getpow2Out(); }
+
         class ViscousFluidInterpolation: public Interpolation {
-        private:
+        public:
             /** Controls the viscous fluid effect (how much of it). */
             static constexpr float VISCOUS_FLUID_SCALE = 8.0f;
             static float VISCOUS_FLUID_NORMALIZE;
@@ -343,6 +726,8 @@ namespace h7{
                 return interpolated;
             }
         };
+        float ViscousFluidInterpolation::VISCOUS_FLUID_NORMALIZE = 0;
+        float ViscousFluidInterpolation::VISCOUS_FLUID_OFFSET = 0;
 
         static Interpolation* _ViscousFluid = nullptr;
         Interpolation *getViscousFluid(){

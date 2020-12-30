@@ -28,10 +28,10 @@ namespace h7 {
             rcCast(Actor*, this)->deleteFlags(Actor::FLAG_NEED_MEASURE);
         }
     }
-    bool Layout::isNeedLayout() const {
+    bool Layout::isNeedLayout(){
         return rcCast(Actor*, this)->hasFlags(Actor::FLAG_NEED_LAYOUT);
     }
-    bool Layout::isNeedMeasure() const {
+    bool Layout::isNeedMeasure(){
         return rcCast(Actor*, this)->hasFlags(Actor::FLAG_NEED_MEASURE);
     }
     void Layout::layoutSize(float w1, float h1, float ew, float eh) {

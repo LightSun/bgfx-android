@@ -81,16 +81,16 @@ namespace h7 {
             // A context-specific coefficient adjusted to physical values.
             float mPhysicalCoeff;
 
-            static float DECELERATION_RATE;
+           // static float DECELERATION_RATE;
             static constexpr float INFLEXION = 0.35f; // Tension lines cross at (INFLEXION, 1)
             static constexpr float START_TENSION = 0.5f;
             static constexpr float END_TENSION = 1.0f;
             static constexpr float P1 = START_TENSION * INFLEXION;
             static constexpr float P2 = 1.0f - END_TENSION * (1.0f - INFLEXION);
 
-            static constexpr int NB_SAMPLES = 100;
+           /* static constexpr int NB_SAMPLES = 100;
             static float SPLINE_POSITION[NB_SAMPLES + 1];
-            static float SPLINE_TIME[NB_SAMPLES + 1];
+            static float SPLINE_TIME[NB_SAMPLES + 1];*/
 
             /*
          * Get a signed deceleration that will reduce the velocity.

@@ -20,6 +20,8 @@
 #include "nancanvas/SkRect.h"
 
 namespace h7 {
+    SkRect Actor::_TEMP_RECT;
+
     Actor::Actor():SkWeakRefCnt(), _scrollInfo(nullptr), _margin(nullptr), _padding(nullptr) {
         _actorListenerM.setActor(this);
     }

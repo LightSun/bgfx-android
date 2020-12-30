@@ -34,8 +34,8 @@ namespace h7 {
         Layout();
         virtual ~Layout();
 
-        inline bool isNeedLayout() const;
-        inline bool isNeedMeasure() const;
+        bool isNeedLayout();
+        bool isNeedMeasure();
 
         virtual void setNeedMeasure(bool need);
         virtual void setNeedLayout(bool need);

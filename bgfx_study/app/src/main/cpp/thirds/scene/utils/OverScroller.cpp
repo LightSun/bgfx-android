@@ -3,6 +3,9 @@
 //
 
 #include <cmath>
+
+#include "bx/bx.h"
+#include "bx/math.h"
 #include <log.h>
 #include "OverScroller.h"
 #include "input/GestureContext.h"
@@ -15,6 +18,11 @@
 #endif
 
 namespace h7{
+    static constexpr int NB_SAMPLES = 100;
+    static float SPLINE_POSITION[NB_SAMPLES + 1];
+    static float SPLINE_TIME[NB_SAMPLES + 1];
+
+    static float DECELERATION_RATE = 0;
 
     float OverScroller::SplineOverScroller::getDeceleration(int velocity) {
         return velocity > 0 ? -GRAVITY : GRAVITY;
