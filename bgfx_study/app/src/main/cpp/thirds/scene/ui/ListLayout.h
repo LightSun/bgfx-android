@@ -49,7 +49,9 @@ namespace h7{
 
     class LayoutManager: public SkRefCnt {
     public:
-        virtual void layoutChildren(ListLayout* layout, float targetX, float targetY, float w, float h){
+        virtual void layoutChildren(ListLayout* layout, float targetX, float targetY, float w, float h) {
+        }
+        virtual void measure(ListLayout* layout, float& w, float& h){
         }
         /**
        * Scroll horizontally by dx pixels in screen coordinates and return the distance traveled.
@@ -140,19 +142,38 @@ namespace h7{
         void setAdapter(ListAdapter* _adapter);
         void setLayoutManager(LayoutManager* _m);
 
-        virtual void notifyItemInserted(int position);
+        virtual void notifyItemInserted(int position){
 
-        virtual void notifyItemChanged(int position);
+        }
 
-        virtual void notifyItemRemoved(int position);
+        virtual void notifyItemChanged(int position){
 
-        virtual void notifyItemMoved(int fromPosition, int toPosition);
+        }
 
-        virtual void notifyItemRangeChanged(int positionStart, int itemCount);
+        virtual void notifyItemRemoved(int position){
 
-        virtual void notifyItemRangeInserted(int positionStart, int itemCount);
+        }
 
-        virtual void notifyItemRangeRemoved(int positionStart, int itemCount);
+        virtual void notifyItemMoved(int fromPosition, int toPosition){
+
+        }
+
+        virtual void notifyItemRangeChanged(int positionStart, int itemCount){
+
+        }
+
+        virtual void notifyItemRangeInserted(int positionStart, int itemCount){
+
+        }
+
+        virtual void notifyItemRangeRemoved(int positionStart, int itemCount){
+
+        }
+        const ListAdapter* getAdapter(){
+            return adapter.get();
+        }
+
+        ItemViewHolder* findViewHolder(int viewType);
 
     private:
          void setUpByAdapter();

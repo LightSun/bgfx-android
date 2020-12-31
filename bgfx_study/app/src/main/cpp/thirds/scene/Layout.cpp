@@ -144,7 +144,15 @@ namespace h7 {
     void Layout::doMeasure(float &outW, float &outH) {
         if(isNeedMeasure()){
             setNeedMeasure(false);
-            measure(outW, outH);
+            float w, h;
+            measure(w, h);
+            auto padding = rCast(Actor*, this)->getPadding();
+            if(padding != nullptr){
+                w += padding->left() + padding->right();
+                h += padding->top() + padding->bottom();
+            }
+            outW = w;
+            outH = h;
         }
     }
     void Layout::measure(float &outW, float &outH) {

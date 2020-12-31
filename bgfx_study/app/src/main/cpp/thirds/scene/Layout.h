@@ -98,8 +98,8 @@ namespace h7 {
 
         /**
          * call this to measure the content width and height.
-         * @param outW the out width
-         * @param outH the out height
+         * @param outW the out width . exclude padding
+         * @param outH the out height. exclude padding
          */
         virtual void measure(float &outW, float &outH);
 

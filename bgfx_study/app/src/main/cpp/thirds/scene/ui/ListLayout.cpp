@@ -14,9 +14,9 @@ namespace h7{
             for (int i = 0; i < c; ++i) {
                 auto item = adapter->getItem(i);
                 auto viewType = adapter->getViewType(i, item);
-                sk_sp<ItemViewHolder>& holder = holderMap[viewType];
+                sk_sp<ItemViewHolder>* holder = &holderMap[viewType];
                 if(holder == nullptr){
-                    holder.reset(adapter->createViewHolder(this, viewType, item));
+                    holderMap[viewType] = sk_ref_sp(adapter->createViewHolder(this, viewType, item));
                 }
             }
         }
@@ -25,6 +25,7 @@ namespace h7{
     void ListLayout::setAdapter(h7::ListAdapter *_adapter) {
         stopScroll();
         adapter.reset(_adapter);
+        setUpByAdapter();
         requestLayoutAndInvalidate();
     }
     void ListLayout::setLayoutManager(h7::LayoutManager *_m) {
@@ -34,17 +35,14 @@ namespace h7{
     }
 
     void ListLayout::measure(float &outW, float &outH) {
-        //TODO
+        layoutManager->measure(this, outW, outH);
     }
 
     void ListLayout::onLayoutChildren(float targetX, float targetY, float w, float h) {
-        /*
-         * 1, setup
-         * 2, layout self
-         * 3, layout children.
-         */
-        setUpByAdapter();
-        layoutSize(getWidth(), getHeight(), w, h);
         layoutManager->layoutChildren(this, targetX, targetY, w, h);
+    }
+
+    ItemViewHolder* ListLayout::findViewHolder(int viewType) {
+        return holderMap[viewType].get();
     }
 }

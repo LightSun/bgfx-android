@@ -778,6 +778,14 @@ struct SkRect{
         */
         SkScalar    height() const { return fBottom - fTop; }
 
+        //=============== h7 start ============
+        SkScalar vertical() const{
+            return fTop + fBottom;
+        }
+        SkScalar horizontal() const{
+            return fLeft + fRight;
+        }
+        //=============== h7 end ============
         /** Returns average of left edge and right edge. Result does not change if SkRect
             is sorted. Result may overflow to infinity if SkRect is far from the origin.
 
