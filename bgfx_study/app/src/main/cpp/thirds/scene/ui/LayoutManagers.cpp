@@ -12,6 +12,14 @@ namespace h7{
             w = 0;
             h = 0;
         } else{
+            auto pRecycler = cCast_ref(Recycler*, layout->getRecycler());
+            auto offsetCount = pRecycler->getOffsetCount(pAdapter);
+            /**
+             * 1, based on scroll x/y. offsetCount, item heights. compute the first layout position.
+             * 2. measure 3* offsetCount item as layout width and height.
+             * 3,
+             */
+
             auto c = pAdapter->getItemCount();
             float totalW = 0;
             float totalH = 0;
@@ -32,10 +40,10 @@ namespace h7{
                     pHolder->itemView->unref();
                     if(vertical){
                         totalH += tempH + margin.vertical();
-                        totalW = bx::max(tempW, totalW + margin.horizontal());
+                        totalW = bx::max(tempW + margin.horizontal(), totalW );
                     } else{
                         totalW += tempW + margin.horizontal();
-                        totalH = bx::max(tempH, totalH + margin.vertical());
+                        totalH = bx::max(tempH + margin.vertical(), totalH);
                     }
                 }
                 pHolder->itemView->weak_unref();

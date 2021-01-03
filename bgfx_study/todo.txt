@@ -80,3 +80,6 @@ NVGcontext: add ref count.
 -- draw chinese
 -- tint
 
+======= thinking. =========
+== List: measure & layout. just part
+== scroll only effect draw:  use pathWinding?

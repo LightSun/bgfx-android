@@ -16,6 +16,7 @@ namespace h7{
 
     private:
         bool vertical;
+        int offset = -1;
     };
 }
 

@@ -15,6 +15,17 @@ namespace h7{
     class ListItemDelegate;
     class ItemViewHolder;
     class LayoutManager;
+    class ListAdapter;
+
+    class Recycler{
+
+    public:
+        /** get item offset. */
+        virtual int getOffsetCount(ListAdapter* adapter);
+
+    private:
+        std::map<int, int> _cacheHeightMap;
+    };
 
     class ListAdapter: public SkRefCnt{
     public:
@@ -139,6 +150,7 @@ namespace h7{
 
         virtual void measure(float& outW, float& outH);
     public:
+        ListLayout();
         void setAdapter(ListAdapter* _adapter);
         void setLayoutManager(LayoutManager* _m);
 
@@ -169,15 +181,14 @@ namespace h7{
         virtual void notifyItemRangeRemoved(int positionStart, int itemCount){
 
         }
-        const ListAdapter* getAdapter(){
-            return adapter.get();
-        }
-
+        const ListAdapter* getAdapter();
+        const Recycler* getRecycler();
         ItemViewHolder* findViewHolder(int viewType);
 
     private:
          void setUpByAdapter();
 
+         sk_sp<Recycler> recycler;
          sk_sp<ListAdapter> adapter;
          sk_sp<LayoutManager> layoutManager;
          std::map<unsigned char, sk_sp<ItemViewHolder>> holderMap;

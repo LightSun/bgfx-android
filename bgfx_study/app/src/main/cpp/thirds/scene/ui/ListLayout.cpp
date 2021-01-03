@@ -45,4 +45,13 @@ namespace h7{
     ItemViewHolder* ListLayout::findViewHolder(int viewType) {
         return holderMap[viewType].get();
     }
+    const ListAdapter* ListLayout::getAdapter(){
+        return adapter.get();
+    }
+    const Recycler* ListLayout::getRecycler(){
+        return recycler.get();
+    }
+    ListLayout::ListLayout() {
+        //TODO
+    }
 }
