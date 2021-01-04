@@ -12,7 +12,7 @@ namespace h7{
     unsigned long long getCurrentTimeInMsec();
 
     Input* getInput();
-    void* setInput(Input* input);
+    void setInput(Input* input);
 
     void requestRender();
 

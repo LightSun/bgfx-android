@@ -14,7 +14,7 @@ namespace h7{
     Input* getInput(){
         return Application::get()->input;
     }
-    void* setInput(Input* input){
+    void setInput(Input* input){
         Application::get()->input = input;
     }
 
