@@ -84,8 +84,8 @@ namespace h7 {
          * for WidgetGroup should prefer call this than measure.
          * @param restrictW the parent restrict width. often exclude padding
          * @param restrictH the parent restrict height. often exclude padding
-         * @param outW the out width
-         * @param outH the out height.
+         * @param outW the out width. exclude margin
+         * @param outH the out height. exclude margin
          */
         virtual void doMeasure(float restrictW, float restrictH,float &outW, float &outH);
     protected:
