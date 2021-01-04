@@ -70,7 +70,7 @@ namespace h7{
             }
         }
     }
-    void LinearLayout::measure(float &outW, float &outH) {
+    void LinearLayout::measure(float restrictW, float restrictH, float &outW, float &outH) {
         auto array = children.copy();
         float measureW = 0, measureH = 0;
         float w = 0, h = 0;
@@ -81,7 +81,7 @@ namespace h7{
                 const sk_sp<Actor> &sp = array.get(i);
                 sp->getMargin(margin);
                 if(sp->hasActorType(H7_LAYOUT_TYPE)){
-                    rCast(Layout*, sp.get())->doMeasure(measureW, measureH);
+                    rCast(Layout*, sp.get())->doMeasure(restrictW, restrictH, measureW, measureH);
                     h += measureH + margin.top() + margin.bottom();
                     w = bx::max(w, measureW + margin.left() + margin.right());
                 }
@@ -91,7 +91,7 @@ namespace h7{
                 const sk_sp<Actor> &sp = array.get(i);
                 sp->getMargin(margin);
                 if(sp->hasActorType(H7_LAYOUT_TYPE)){
-                    rCast(Layout*, sp.get())->doMeasure(measureW, measureH);
+                    rCast(Layout*, sp.get())->doMeasure(restrictW, restrictH, measureW, measureH);
                     w += measureW + margin.left() + margin.right();
                     h = bx::max(h, measureH + margin.top() + margin.bottom());
                 }

@@ -54,6 +54,18 @@ namespace h7 {
         }
         return out;
     }
+    float Actor::getPaddingHorizontal() {
+        if(_padding != nullptr){
+            return _padding->horizontal();
+        }
+        return 0;
+    }
+    float Actor::getPaddingVertical() {
+        if(_padding != nullptr){
+            return _padding->vertical();
+        }
+        return 0;
+    }
     SkRect & Actor::getMargin(SkRect &out) {
         if(_margin != nullptr){
             out.set(*_margin);
@@ -71,6 +83,18 @@ namespace h7 {
     }
     SkRect* Actor::getMargin() {
         return _margin;
+    }
+    float Actor::getMarginHorizontal() {
+        if(_margin != nullptr){
+            return _margin->horizontal();
+        }
+        return 0;
+    }
+    float Actor::getMarginVertical() {
+        if(_margin != nullptr){
+            return _margin->vertical();
+        }
+        return 0;
     }
     //----------------------------------------------------
     void Actor::requestLayoutAndInvalidate() {

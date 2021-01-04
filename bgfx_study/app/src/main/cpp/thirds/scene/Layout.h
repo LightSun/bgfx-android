@@ -82,10 +82,12 @@ namespace h7 {
         /**
          * call this to measure. this will call measure(...) if measure is enabled.
          * for WidgetGroup should prefer call this than measure.
+         * @param restrictW the parent restrict width. often exclude padding
+         * @param restrictH the parent restrict height. often exclude padding
          * @param outW the out width
          * @param outH the out height.
          */
-        virtual void doMeasure(float &outW, float &outH);
+        virtual void doMeasure(float restrictW, float restrictH,float &outW, float &outH);
     protected:
         /**
         * call this to compute layout and set size.
@@ -98,10 +100,12 @@ namespace h7 {
 
         /**
          * call this to measure the content width and height.
+         * @param restrictW the parent restrict width
+         * @param restrictH the parent restrict height
          * @param outW the out width . exclude padding
          * @param outH the out height. exclude padding
          */
-        virtual void measure(float &outW, float &outH);
+        virtual void measure(float restrictW, float restrictH, float &outW, float &outH);
 
     private:
         WH* minInfo;

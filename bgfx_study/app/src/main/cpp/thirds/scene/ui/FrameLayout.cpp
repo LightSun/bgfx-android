@@ -20,7 +20,7 @@ namespace h7{
         }
     }
 
-    void FrameLayout::measure(float &outW, float &outH) {
+    void FrameLayout::measure(float restrictW, float restrictH, float &outW, float &outH) {
         auto array = children.copy();
         float measureW, measureH;
         float w = 0, h = 0;
@@ -30,7 +30,7 @@ namespace h7{
             const sk_sp<Actor> &sp = array.get(i);
             sp->getMargin(margin);
             if(sp->hasActorType(H7_LAYOUT_TYPE)){
-                rCast(Layout*, sp.get())->doMeasure(measureW, measureH);
+                rCast(Layout*, sp.get())->doMeasure(restrictW, restrictH, measureW, measureH);
                 h = bx::max(h, measureH + margin.top() + margin.bottom());
                 w = bx::max(w, measureW + margin.left() + margin.right());
             }

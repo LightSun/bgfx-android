@@ -21,8 +21,15 @@ namespace h7{
 
     public:
         /** get item offset. */
-        virtual int getOffsetCount(ListAdapter* adapter);
+        virtual int getOffsetCount(ListAdapter* adapter){
 
+        }
+        int getFirstVisibleItem(){
+
+        }
+        int getLastVisibleItem(){
+
+        }
     private:
         std::map<int, int> _cacheHeightMap;
     };
@@ -62,7 +69,7 @@ namespace h7{
     public:
         virtual void layoutChildren(ListLayout* layout, float targetX, float targetY, float w, float h) {
         }
-        virtual void measure(ListLayout* layout, float& w, float& h){
+        virtual void measure(ListLayout *layout, float restrictW, float restrictH, float &d, float &d1) {
         }
         /**
        * Scroll horizontally by dx pixels in screen coordinates and return the distance traveled.
@@ -148,11 +155,13 @@ namespace h7{
     protected:
         virtual void onLayoutChildren(float targetX, float targetY, float w, float h);
 
-        virtual void measure(float& outW, float& outH);
+        virtual void measure(float restrictW, float restrictH,float& outW, float& outH);
     public:
         ListLayout();
         void setAdapter(ListAdapter* _adapter);
         void setLayoutManager(LayoutManager* _m);
+
+        bool isScrolling();
 
         virtual void notifyItemInserted(int position){
 

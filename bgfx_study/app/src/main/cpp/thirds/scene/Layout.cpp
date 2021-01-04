@@ -35,12 +35,13 @@ namespace h7 {
         return rcCast(Actor*, this)->hasFlags(Actor::FLAG_NEED_MEASURE);
     }
     void Layout::layoutSize(float w1, float h1, float ew, float eh) {
+        auto pActor = rCast(Actor*, this);
         float w = w1;
         float h = h1;
         bool hasWrapContent = false;
         switch (getLayoutWidthType()) {
             case LayoutParams::LAYOUT_MATCH_PARENT:
-                w = ew;
+                w = ew - pActor->getMarginHorizontal();
                 break;
             case LayoutParams::LAYOUT_WRAP_CONTENT:
                 hasWrapContent = true;
@@ -58,7 +59,7 @@ namespace h7 {
         }
         switch (getLayoutHeightType()) {
             case LayoutParams::LAYOUT_MATCH_PARENT:
-                h = eh;
+                h = eh - pActor->getMarginVertical();
                 break;
             case LayoutParams::LAYOUT_WRAP_CONTENT:
                 hasWrapContent = true;
@@ -76,9 +77,9 @@ namespace h7 {
         }
         //need measure
         if (hasWrapContent) {
-            doMeasure(w, h);
+            doMeasure(ew - pActor->getMarginHorizontal(), eh - pActor->getMarginVertical(), w, h);
         }
-        rCast(Actor*, this)->setSize(w, h);
+        pActor->setSize(w, h);
     }
 
     signed char Layout::getLayoutWidthType() const {
@@ -141,21 +142,22 @@ namespace h7 {
         }
         maxInfo->h = h;
     }
-    void Layout::doMeasure(float &outW, float &outH) {
+    void Layout::doMeasure(float restrictW, float restrictH, float &outW, float &outH) {
         if(isNeedMeasure()){
             setNeedMeasure(false);
             float w, h;
-            measure(w, h);
+            measure(restrictW, restrictH, w, h);
             auto padding = rCast(Actor*, this)->getPadding();
             if(padding != nullptr){
-                w += padding->left() + padding->right();
-                h += padding->top() + padding->bottom();
+                w += padding->horizontal();
+                h += padding->vertical();
             }
             outW = w;
             outH = h;
         }
     }
-    void Layout::measure(float &outW, float &outH) {
+    void Layout::measure(float restrictW, float restrictH, float &outW, float &outH) {
+        BX_UNUSED(restrictW, restrictH)
         outW = getExpectWidth();
         outH = getExpectHeight();
     }

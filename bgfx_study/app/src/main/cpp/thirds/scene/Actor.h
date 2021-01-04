@@ -114,11 +114,15 @@ namespace h7 {
         void setPadding(float left, float top, float right, float bottom);
         SkRect* getPadding();
         SkRect& getPadding(SkRect& out);
+        float getPaddingHorizontal();
+        float getPaddingVertical();
 
         //---------- margin ----------
         void setMargin(float left, float top, float right, float bottom);
         SkRect* getMargin();
         SkRect& getMargin(SkRect& out);
+        float getMarginHorizontal();
+        float getMarginVertical();
 
         //---------- scroll ------------
         float getScrollX() const;

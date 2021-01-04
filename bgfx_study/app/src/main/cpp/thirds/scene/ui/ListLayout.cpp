@@ -34,8 +34,8 @@ namespace h7{
         requestLayoutAndInvalidate();
     }
 
-    void ListLayout::measure(float &outW, float &outH) {
-        layoutManager->measure(this, outW, outH);
+    void ListLayout::measure(float restrictW, float restrictH,float &outW, float &outH) {
+        layoutManager->measure(this, restrictW, restrictH, outW, outH);
     }
 
     void ListLayout::onLayoutChildren(float targetX, float targetY, float w, float h) {
