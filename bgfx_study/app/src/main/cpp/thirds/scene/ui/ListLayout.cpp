@@ -46,8 +46,18 @@ namespace h7{
 
     }
 
-    ItemViewHolder* ListLayout::findViewHolder(int viewType) {
-        return holderMap[viewType].get();
+    ItemViewHolder * ListLayout::findViewHolder(int viewType, ListItemDelegate *item) {
+        sk_sp<ItemViewHolder>* holder = &holderMap[viewType];
+        if(holder == nullptr){
+            auto sp_holder = sk_ref_sp(adapter->createViewHolder(this, viewType, item));
+            holderMap[viewType] = sp_holder;
+            holder = &sp_holder;
+        }
+        return holder->get();
+    }
+    ItemViewHolder* ListLayout::getUniqueViewHolder(int viewType, h7::ListItemDelegate *item) {
+        //TODO
+        return nullptr;
     }
     const ListAdapter* ListLayout::getAdapter(){
         return adapter.get();
@@ -55,7 +65,18 @@ namespace h7{
     const Recycler* ListLayout::getRecycler(){
         return recycler.get();
     }
-    ListLayout::ListLayout() {
-        //TODO
+    //------------ holder
+    void ItemViewHolder::setLayoutPosition(int pos) {
+        mOldPosition = mPosition;
+        mPosition = pos;
+    }
+    bool ItemViewHolder::isSamePosition() {
+        return mPosition != NO_POSITION && mPosition == mOldPosition;
+    }
+    bool ItemViewHolder::isUsing() {
+        return used;
+    }
+    void ItemViewHolder::setUsing(bool u) {
+        this->used = u;
     }
 }

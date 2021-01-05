@@ -10,10 +10,10 @@
 
 namespace h7 {
     template<typename T>
-    class List {
+    class List2 {
 
     private:
-        std::vector <T> array;
+        std::vector<T> array;
 
     public:
         inline size_t size() {
@@ -46,10 +46,10 @@ namespace h7 {
         inline void add(int index, T &t) {
             array.insert(array.begin() + index, t);
         }
-        inline void addAll(List<T> &l) {
+        inline void addAll(List2<T> &l) {
             array.insert(array.end(), l.array.begin(), l.array.end());
         }
-        inline void addAll(int index, List<T> &l) {
+        inline void addAll(int index, List2<T> &l) {
             array.insert(array.begin() + index, l.array.begin(), l.array.end());
         }
         inline bool isEmpty() {
@@ -124,7 +124,7 @@ namespace h7 {
                         array.begin() + startIndex + count);
             return true;
         }
-        inline List<T> &operator=(List<T> &array1) {
+        inline List2<T> &operator=(List2<T> &array1) {
             if (&array1 != this) {
                 this->array = array1.array;
             }

@@ -10,6 +10,7 @@
 
 #define LP_TYPE 0
 #define LP_TYPE_LINEAR 1
+#define LP_TYPE_LIST_ITEM 2
 
 namespace h7 {
     class Actor;

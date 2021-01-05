@@ -6,6 +6,7 @@
 #define BGFX_STUDY_LISTLAYOUT_H
 
 #include <map>
+#include "LruCache.h"
 #include "../WidgetGroup.h"
 #include "utils/SortedList.h"
 #include "../../utils/SortedList.h"
@@ -17,7 +18,7 @@ namespace h7{
     class LayoutManager;
     class ListAdapter;
 
-    class Recycler{
+    class Recycler : public SkRefCnt{
     public:
         /** get item offset. */
         virtual int getOffsetCount(ListAdapter* adapter){
@@ -35,6 +36,8 @@ namespace h7{
     private:
         int offsetCount;
         std::map<int, WH> _cacheHeightMap;
+    public:
+        Array<sk_sp<ItemViewHolder>> visibleHolders;
     };
 
     class ListAdapter: public SkRefCnt{
@@ -63,9 +66,15 @@ namespace h7{
     public:
         static constexpr int NO_POSITION = -1;
         sk_sp<Actor> itemView;
+
+        void setLayoutPosition(int pos);
+        bool isSamePosition();
+        bool isUsing();
+        void setUsing(bool used);
     private:
         int mPosition = NO_POSITION;
         int mOldPosition = NO_POSITION;
+        bool used;
     };
 
     class LayoutManager: public SkRefCnt {
@@ -171,7 +180,12 @@ namespace h7{
 
         virtual void onScrollChanged(float dx, float dy);
     public:
-        ListLayout();
+        class ItemLayoutParams: public LayoutParams{
+        public:
+            int align = Align::left | Align::top;
+            ItemLayoutParams() : lpType(LP_TYPE_LIST_ITEM){
+            }
+        };
         void setAdapter(ListAdapter* _adapter);
         void setLayoutManager(LayoutManager* _m);
 
@@ -204,7 +218,8 @@ namespace h7{
         }
         const ListAdapter* getAdapter();
         const Recycler* getRecycler();
-        ItemViewHolder* findViewHolder(int viewType);
+        ItemViewHolder *findViewHolder(int viewType, ListItemDelegate *item);
+        ItemViewHolder *getUniqueViewHolder(int viewType, ListItemDelegate *item);
 
     private:
          void setUpByAdapter();
@@ -213,6 +228,7 @@ namespace h7{
          sk_sp<ListAdapter> adapter;
          sk_sp<LayoutManager> layoutManager;
          std::map<unsigned char, sk_sp<ItemViewHolder>> holderMap;
+        // std::map<unsigned char, Array<sk_sp<ItemViewHolder>>> vi;
          //SortedList list;
     };
 }

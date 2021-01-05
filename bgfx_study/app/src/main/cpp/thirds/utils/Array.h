@@ -3,7 +3,7 @@
 //
 #pragma once
 #include <malloc.h>
-#include "list.h"
+#include "list2.h"
 
 #define ADD_BASE(arr, val) {\
 auto v = val;\
@@ -23,7 +23,7 @@ namespace h7{
     template<typename T>
     class Array{
     private:
-        List<T> list;
+        List2<T> list;
 
     public:
         Array(int capacity){
@@ -33,7 +33,7 @@ namespace h7{
         ~Array(){
         }
         inline Array<T>& set(Array<T>& in){
-            List<T> old = in.list;
+            List2<T> old = in.list;
             list.clear();
             list.addAll(old);
             return *this;

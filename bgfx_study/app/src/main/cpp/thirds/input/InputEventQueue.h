@@ -13,15 +13,15 @@
 namespace h7 {
     class InputEventQueue : public InputProcessor {
     public:
-        static const int SKIP = -1;
-        static const int KEY_DOWN = 0;
-        static const int KEY_UP = 1;
-        static const int KEY_TYPED = 2;
-        static const int TOUCH_DOWN = 3;
-        static const int TOUCH_UP = 4;
-        static const int TOUCH_DRAGGED = 5;
-        static const int MOUSE_MOVED = 6;
-        static const int SCROLLED = 7;
+        static constexpr int SKIP = -1;
+        static constexpr int KEY_DOWN = 0;
+        static constexpr int KEY_UP = 1;
+        static constexpr int KEY_TYPED = 2;
+        static constexpr int TOUCH_DOWN = 3;
+        static constexpr int TOUCH_UP = 4;
+        static constexpr int TOUCH_DRAGGED = 5;
+        static constexpr int MOUSE_MOVED = 6;
+        static constexpr int SCROLLED = 7;
 
         InputProcessor *processor;
         IntArray queue;

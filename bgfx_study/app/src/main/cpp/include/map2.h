@@ -10,19 +10,22 @@
 namespace h7 {
 
     template<typename K, typename V>
-    class Map {
+    class Map2 {
     private:
         std::map <K, V> _map;
 
     public:
-        typedef bool (*Traveller)(const Map<K, V> *map, const K &key, const V &value);
+        typedef bool (*Traveller)(const Map2<K, V> *map, const K &key, const V &value);
 
-        Map(const std::map<K, V> &map) {
+        Map2(const std::map<K, V> &map) {
             this->_map = map;
         }
 
-        Map() {}
+        Map2() {}
 
+        std::map<K, V>& getRawMap(){
+            return _map;
+        }
         void clear() {
             _map.clear();
         }
@@ -50,7 +53,7 @@ namespace h7 {
 
         const K ofKey(const V &val) {
             K *ptr = nullptr;
-            auto tr = [val](const Map<K, V> *_map, const K &key, const V &value) {
+            auto tr = [val](const Map2<K, V> *_map, const K &key, const V &value) {
                 if (value == val) {
                     ptr = &key;
                     return true;
@@ -80,7 +83,7 @@ namespace h7 {
             return false;
         }
 
-        Map<K, V> &operator=(const Map<K, V> &array1) {
+        Map2<K, V> &operator=(const Map2<K, V> &array1) {
             if (&array1 != this) {
                 this->_map = array1._map;
             }

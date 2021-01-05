@@ -124,7 +124,8 @@ if(this->x){\
         }
         // this is for backward compatibility: libGDX always caught the circle button, original comment:
         // circle button on Xperia Play shouldn't need catchBack == true
-        keysToCatch.add(cCast_ref(int, Keys::BUTTON_CIRCLE));
+        int v = Keys::BUTTON_CIRCLE;
+        keysToCatch.add(v);
     }
     AndroidInput::~AndroidInput(){
         release();

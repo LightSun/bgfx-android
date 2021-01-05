@@ -10,16 +10,6 @@
 
 namespace h7 {
 
-    const int InputEventQueue::SKIP;
-    const int InputEventQueue::KEY_DOWN;
-    const int InputEventQueue::KEY_UP;
-    const int InputEventQueue::KEY_TYPED;
-    const int InputEventQueue::TOUCH_DOWN;
-    const int InputEventQueue::TOUCH_UP;
-    const int InputEventQueue::TOUCH_DRAGGED;
-    const int InputEventQueue::MOUSE_MOVED;
-    const int InputEventQueue::SCROLLED;
-
     void InputEventQueue::drain() {
         lock();
         if (processor == NULL) {
@@ -123,7 +113,7 @@ namespace h7 {
     }
     bool InputEventQueue::keyDown(int keycode) {
         lock();
-        queue.add(cCast_ref(int,KEY_DOWN));
+        queue.add(const_cast<int &>(KEY_DOWN));
         queueTime();
         queue.add(keycode);
         unlock();
@@ -131,7 +121,7 @@ namespace h7 {
     }
     bool InputEventQueue::keyUp(int keycode) {
         lock();
-        queue.add(cCast_ref(int,KEY_UP));
+        queue.add(crCast_ref(int, KEY_UP));
         queueTime();
         queue.add(keycode);
         unlock();
@@ -139,7 +129,7 @@ namespace h7 {
     }
     bool InputEventQueue::keyTyped(char ch) {
         lock();
-        queue.add(cCast_ref(int,KEY_TYPED));
+        queue.add(crCast_ref(int,KEY_TYPED));
         queueTime();
         queue.add(rCast_ref(int, ch));
         unlock();
@@ -147,7 +137,7 @@ namespace h7 {
     }
     bool InputEventQueue::touchDown (int screenX, int screenY, int pointer, int button) {
         lock();
-        queue.add(cCast_ref(int, TOUCH_DOWN));
+        queue.add(crCast_ref(int, TOUCH_DOWN));
         queueTime();
         queue.add(screenX);
         queue.add(screenY);
@@ -159,7 +149,7 @@ namespace h7 {
 
     bool InputEventQueue::touchUp (int screenX, int screenY, int pointer, int button) {
         lock();
-        queue.add(cCast_ref(int, TOUCH_UP));
+        queue.add(crCast_ref(int, TOUCH_UP));
         queueTime();
         queue.add(screenX);
         queue.add(screenY);
@@ -175,11 +165,11 @@ namespace h7 {
         int val = 3;
         for (int i = next(TOUCH_DRAGGED, 0); i >= 0; i = next(TOUCH_DRAGGED, i + 6)) {
             if (queue.get(i + 5) == pointer) {
-                queue.set(i, cCast_ref(int, SKIP));
+                queue.set(i, crCast_ref(int, SKIP));
                 queue.set(i + 3, val);
             }
         }
-        queue.add(cCast_ref(int, TOUCH_DRAGGED));
+        queue.add(crCast_ref(int, TOUCH_DRAGGED));
         queueTime();
         queue.add(screenX);
         queue.add(screenY);
@@ -193,10 +183,10 @@ namespace h7 {
         lock();
         // Skip any queued mouse moved events.
         for (int i = next(MOUSE_MOVED, 0); i >= 0; i = next(MOUSE_MOVED, i + 5)) {
-            queue.set(i, cCast_ref(int, SKIP));
+            queue.set(i, crCast_ref(int, SKIP));
             queue.set(i + 3, val);
         }
-        queue.add(cCast_ref(int, MOUSE_MOVED));
+        queue.add(crCast_ref(int, MOUSE_MOVED));
         queueTime();
         queue.add(screenX);
         queue.add(screenY);
@@ -204,7 +194,7 @@ namespace h7 {
         return false;
     }
     bool InputEventQueue::scrolled(float amountX, float amountY) {
-        queue.add(cCast_ref(int, SCROLLED));
+        queue.add(crCast_ref(int, SCROLLED));
         queueTime();
         int32_t val = SkFloat2Bits(amountX);
         queue.add(val);

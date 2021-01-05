@@ -98,7 +98,8 @@ namespace h7 {
             setCatchKey(Keys::BACK, catchBack);
         }
         inline bool isCatchBackKey() {
-            return keysToCatch.contains(cCast_ref(int, Keys::BACK));
+            int v = Keys::BACK;
+            return keysToCatch.contains(v);
         }
         inline bool isCatchKey (int keycode){
             return keysToCatch.contains(keycode);
@@ -107,7 +108,8 @@ namespace h7 {
             setCatchKey(Keys::MENU, catchMenu);
         }
         inline bool isCatchMenuKey () {
-            return keysToCatch.contains(cCast_ref(int, Keys::MENU));
+            int v = Keys::MENU;
+            return keysToCatch.contains(v);
         }
         inline bool justTouched () {
             return _justTouched;

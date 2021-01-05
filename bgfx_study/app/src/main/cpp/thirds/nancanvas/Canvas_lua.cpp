@@ -1240,18 +1240,7 @@ static int h_testDraw(lua_State *L){
     nvgPathWinding(vg, NVG_SOLID);//相交的地方以dst为准.
     nvgFillColor(vg, nvgRGBA(255,192,0,255));
     nvgFill(vg);
-
-    //TODO how to render chinese?
-    const char* _string = "中";
-    int32_t codepoint = *(unsigned char *)_string;
-    //UTF8_ACCEPT = 0
-    uint16_t utf16[2];
-    char arr[4];
-    if(SkUTF::ToUTF8(codepoint, arr) > 0){
-       // e4d, 0d
-        LOGD("ToUTF16 ok: %d", codepoint);
-    }
-    LOGD("长度= %d", strlen(_string));
+    
     return 0;
 }
 #endif
