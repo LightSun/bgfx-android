@@ -15,15 +15,15 @@ namespace h7 {
 
     class KeyEvent : public RefObject {
     public:
-        static const int KEY_DOWN = 0;
-        static const int KEY_UP = 1;
-        static const int KEY_TYPED = 2;
+        static constexpr int KEY_DOWN = 0;
+        static constexpr int KEY_UP = 1;
+        static constexpr int KEY_TYPED = 2;
         //relative android
-        static const int KEYCODE_BACK = 4;
-        static const int KEYCODE_UNKNOWN = 0;
-        static const int ACTION_MULTIPLE = 2;
-        static const int ACTION_DOWN = 0;
-        static const int ACTION_UP = 1;
+        static constexpr int KEYCODE_BACK = 4;
+        static constexpr int KEYCODE_UNKNOWN = 0;
+        static constexpr int ACTION_MULTIPLE = 2;
+        static constexpr int ACTION_DOWN = 0;
+        static constexpr int ACTION_UP = 1;
 
         long long timeStamp;
         int type;
@@ -41,11 +41,11 @@ namespace h7 {
 
     class TouchEvent :public RefObject {
     public:
-        static const int TOUCH_DOWN = 0;
-        static const int TOUCH_UP = 1;
-        static const int TOUCH_DRAGGED = 2;
-        static const int TOUCH_SCROLLED = 3;
-        static const int TOUCH_MOVED = 4;
+        static constexpr int TOUCH_DOWN = 0;
+        static constexpr int TOUCH_UP = 1;
+        static constexpr int TOUCH_DRAGGED = 2;
+        static constexpr int TOUCH_SCROLLED = 3;
+        static constexpr int TOUCH_MOVED = 4;
 
         long long timeStamp;
         int type;
