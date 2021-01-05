@@ -16,6 +16,7 @@
 #include "../nancanvas/SkMatrix.h"
 #include "ActorListenerManager.h"
 #include "log.h"
+#include "ScrollManager.h"
 
 #define H7_ACTOR_TYPE 1
 #define H7_GROUP_TYPE 2
@@ -51,7 +52,7 @@ namespace h7 {
     /**
      * the actor : (0, 0) is at the left-top.
      */
-    class Actor : public SkWeakRefCnt {
+    class Actor : public SkWeakRefCnt, public ScrollManager::Callback {
     private:
         sk_sp<Stage> stage;
         sk_sp<Group> parent;
@@ -83,7 +84,7 @@ namespace h7 {
         float originX = -1, originY = -1;   //rotate/scale center. like android PivotX/PivotY
 
         float tmpScreenX, tmpScreenY;
-        ScrollInfo* _scrollInfo;
+        ScrollManager* _scrollM;
         SkRect _lastLayoutRect;
 
     public:
@@ -130,11 +131,18 @@ namespace h7 {
 
         float getScrollY() const;
         void setScrollY(float scrollY);
+        void setScrollMode(unsigned char mode);
 
         void scrollBy(float dx, float dy);
         void scrollTo(float x, float y);
         void setScrollState(unsigned char newState);
+
+        unsigned char getScrollMode() const;
+        unsigned char getScrollDir() const;
+        virtual bool canScrollVertical();
+        virtual bool canScrollHorizontal();
         void stopScroll();
+
 
         virtual int getActorType(){
             return H7_ACTOR_TYPE;
@@ -240,6 +248,7 @@ namespace h7 {
         void computeScroll();
 
     protected:
+        friend class ScrollManager;
         /**
          * This is called in response to an internal scroll in this view (i.e., the
          * view scrolled its own contents). This is typically as a result of

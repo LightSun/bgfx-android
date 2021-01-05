@@ -6,6 +6,7 @@
 #define BGFX_STUDY_LAYOUT_H
 
 #include <lua/SkRefCnt.h>
+#include "ActorInfo.h"
 
 #define LP_TYPE 0
 #define LP_TYPE_LINEAR 1
@@ -25,11 +26,6 @@ namespace h7 {
     };
 
     class Layout {
-    private:
-        typedef struct WH{
-            float w = 0;
-            float h = 0;
-        }WH;
     public:
         Layout();
         virtual ~Layout();
@@ -106,6 +102,20 @@ namespace h7 {
          * @param outH the out height. exclude padding
          */
         virtual void measure(float restrictW, float restrictH, float &outW, float &outH);
+
+        /**
+         * fit the width from min to max.
+         * @param width the expect width
+         * @return the fit width result
+         */
+        float fitWidth(float width);
+
+        /**
+        * fit the height from min to max.
+        * @param height the expect height
+        * @return the fit width result
+        */
+        float fitHeight(float height);
 
     private:
         WH* minInfo;

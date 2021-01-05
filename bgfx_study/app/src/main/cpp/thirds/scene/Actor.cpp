@@ -22,13 +22,13 @@
 namespace h7 {
     SkRect Actor::_TEMP_RECT;
 
-    Actor::Actor():SkWeakRefCnt(), _scrollInfo(nullptr), _margin(nullptr), _padding(nullptr) {
+    Actor::Actor():SkWeakRefCnt(), _scrollM(nullptr), _margin(nullptr), _padding(nullptr) {
         _actorListenerM.setActor(this);
     }
     Actor::~Actor(){
         DESTROY_POINTER(_padding);
         DESTROY_POINTER(_margin);
-        DESTROY_POINTER(_scrollInfo);
+        DESTROY_POINTER(_scrollM);
     }
     void Actor::setBackground(Drawable *d) {
         background.reset(d);
@@ -430,64 +430,63 @@ namespace h7 {
     }
 
     float Actor::getScrollX() const {
-        return _scrollInfo != nullptr ? _scrollInfo->scrollX : 0;
+        return _scrollM != nullptr ? _scrollM->getScrollX() : 0;
     }
     void Actor::setScrollX(float scrollX) {
-        if(_scrollInfo == nullptr){
-            _scrollInfo = new ScrollInfo();
+        if(_scrollM == nullptr){
+            _scrollM = new ScrollManager(this, this);
         }
-        scrollTo(scrollX, _scrollInfo->scrollY);
+        scrollTo(scrollX, _scrollM->getScrollY());
     }
     float Actor::getScrollY() const {
-        return _scrollInfo != nullptr ? _scrollInfo->scrollY : 0;
+        return _scrollM != nullptr ? _scrollM->getScrollY() : 0;
     }
     void Actor::setScrollY(float scrollY) {
-        if(_scrollInfo == nullptr){
-            _scrollInfo = new ScrollInfo();
+        if(_scrollM == nullptr){
+            _scrollM = new ScrollManager(this, this);
         }
-        scrollTo(_scrollInfo->scrollX, scrollY);
+        scrollTo(_scrollM->getScrollX(), scrollY);
+    }
+    void Actor::setScrollMode(unsigned char mode) {
+        if(_scrollM == nullptr){
+            _scrollM = new ScrollManager(this, this);
+        }
+        _scrollM->setScrollMode(mode);
     }
     void Actor::scrollTo(float x, float y) {
-        if(_scrollInfo == nullptr){
-            _scrollInfo = new ScrollInfo();
+        if(_scrollM == nullptr){
+            _scrollM = new ScrollManager(this, this);
         }
-        if(_scrollInfo->scrollX != x || _scrollInfo->scrollY != y){
-            float dx = x - _scrollInfo->scrollX;
-            float dy = y - _scrollInfo->scrollY;
-            _scrollInfo->scrollX = x;
-            _scrollInfo->scrollY = y;
-            //fire scroll changed
-            onScrollChanged(dx, dy);
-            ScrollEvent event;
-            event.setScrollState(ScrollInfo::SCROLL_STATE_NONE);
-            event.setDx(dx);
-            event.setDy(dy);
-            fire(event);
-        }
+        _scrollM->scrollTo(x, y);
     }
     void Actor::scrollBy(float dx, float dy) {
-        if(_scrollInfo == nullptr){
-            _scrollInfo = new ScrollInfo();
+        if(_scrollM == nullptr){
+            _scrollM = new ScrollManager(this, this);
         }
-        if(dx != 0 || dy != 0){
-            scrollTo(_scrollInfo->scrollX + dx, _scrollInfo->scrollY + dy);
-        }
+        _scrollM->scrollBy(dx, dy);
     }
     void Actor::setScrollState(unsigned char newState) {
-        if(_scrollInfo == nullptr){
-            _scrollInfo = new ScrollInfo();
+        if(_scrollM == nullptr){
+            _scrollM = new ScrollManager(this, this);
         }
-        if(_scrollInfo->scrollState != newState){
-            _scrollInfo->scrollState = newState;
-            //fire state changed
-            ScrollEvent event;
-            event.setScrollState(newState);
-            event.setDx(0);
-            event.setDy(0);
-            fire(event);
-        }
+        _scrollM->setScrollState(newState);
+    }
+    bool Actor::canScrollVertical() {
+        return false;
+    }
+    bool Actor::canScrollHorizontal() {
+        return false;
     }
     void Actor::stopScroll() {
-        setScrollState(ScrollInfo::SCROLL_STATE_IDLE);
+        if(_scrollM == nullptr){
+            _scrollM = new ScrollManager(this, this);
+        }
+        _scrollM->stopScroll();
+    }
+    unsigned char Actor::getScrollDir() const{
+        return _scrollM != nullptr ? _scrollM->getScrollDir() : ScrollInfo::SCROLL_DIRECTION_NONE;
+    }
+    unsigned char Actor::getScrollMode() const{
+        return _scrollM != nullptr ? _scrollM->getScrollMode() : ScrollInfo::SCROLL_MODE_NONE;
     }
 }

@@ -12,9 +12,11 @@ namespace h7{
 
     public:
         virtual void layoutChildren(ListLayout* layout, float targetX, float targetY, float w, float h);
-        virtual void measure(ListLayout *layout, float restrictW, float restrictH, float &d, float &d1);
+
+        virtual void measure(ListLayout *layout, float restrictW, float restrictH, float &w, float &h);
 
     private:
+        void measureImpl(ListLayout* layout, int offsetCount,float restrictW, float restrictH, float& w, float& h);
         bool vertical;
         int offset = -1;
     };

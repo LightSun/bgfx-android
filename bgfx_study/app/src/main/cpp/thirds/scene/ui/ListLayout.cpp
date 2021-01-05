@@ -8,6 +8,7 @@
 namespace h7{
 
     void ListLayout::setUpByAdapter() {
+        cCast_ref(Recycler*, getRecycler())->reset();
         holderMap.clear();
         if(adapter != NULL){
             auto c = adapter->getItemCount();
@@ -40,6 +41,9 @@ namespace h7{
 
     void ListLayout::onLayoutChildren(float targetX, float targetY, float w, float h) {
         layoutManager->layoutChildren(this, targetX, targetY, w, h);
+    }
+    void ListLayout::onScrollChanged(float dx, float dy) {
+
     }
 
     ItemViewHolder* ListLayout::findViewHolder(int viewType) {

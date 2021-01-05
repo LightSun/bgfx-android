@@ -145,15 +145,30 @@ namespace h7 {
     void Layout::doMeasure(float restrictW, float restrictH, float &outW, float &outH) {
         if(isNeedMeasure()){
             setNeedMeasure(false);
-            float w, h;
+          /*  float w, h;
             measure(restrictW, restrictH, w, h);
             auto padding = rCast(Actor*, this)->getPadding();
             if(padding != nullptr){
                 w += padding->horizontal();
                 h += padding->vertical();
             }
-            outW = w;
-            outH = h;
+            outW = fitWidth(w);
+            outH = fitHeight(h);*/
+            float w, h;
+            measure(restrictW, restrictH, w, h);
+            //TODO should include padding?
+            auto padding = rCast(Actor*, this)->getPadding();
+            if(padding != nullptr){
+                w += padding->horizontal();
+                h += padding->vertical();
+            }
+            //only if need for wrap content
+            if(getLayoutWidthType() == LayoutParams::LAYOUT_WRAP_CONTENT){
+                outW = fitWidth(w);
+            }
+            if(getLayoutHeightType() == LayoutParams::LAYOUT_WRAP_CONTENT){
+                outH = fitHeight(h);
+            }
         }
     }
     void Layout::measure(float restrictW, float restrictH, float &outW, float &outH) {
@@ -161,9 +176,7 @@ namespace h7 {
         outW = getExpectWidth();
         outH = getExpectHeight();
     }
-
-    float Layout::getExpectWidth() {
-        float w = rCast(Actor*, this)->getWidth();
+    float Layout::fitWidth(float w) {
         float minW = getMinWidth();
         if (minW > 0 && w < minW) {
             w = minW;
@@ -174,8 +187,7 @@ namespace h7 {
         }
         return w;
     }
-    float Layout::getExpectHeight() {
-        float h = rCast(Actor*, this)->getHeight();
+    float Layout::fitHeight(float h) {
         float minH = getMinHeight();
         if (minH > 0 && h < minH) {
             h = minH;
@@ -185,5 +197,12 @@ namespace h7 {
             h = maxH;
         }
         return h;
+    }
+
+    float Layout::getExpectWidth() {
+        return fitWidth(rCast(Actor*, this)->getWidth());
+    }
+    float Layout::getExpectHeight() {
+        return fitHeight(rCast(Actor*, this)->getHeight());
     }
 }

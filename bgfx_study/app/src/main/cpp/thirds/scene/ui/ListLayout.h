@@ -18,20 +18,23 @@ namespace h7{
     class ListAdapter;
 
     class Recycler{
-
     public:
         /** get item offset. */
         virtual int getOffsetCount(ListAdapter* adapter){
-
+            return offsetCount;
         }
-        int getFirstVisibleItem(){
-
+        void setMeasures(int position, float width, float height) {
+            _cacheHeightMap[position] = {width, height};
         }
-        int getLastVisibleItem(){
-
+        WH& getMeasures(int pos) {
+            return _cacheHeightMap[pos];
+        }
+        void reset(){
+            _cacheHeightMap.clear();
         }
     private:
-        std::map<int, int> _cacheHeightMap;
+        int offsetCount;
+        std::map<int, WH> _cacheHeightMap;
     };
 
     class ListAdapter: public SkRefCnt{
@@ -69,7 +72,13 @@ namespace h7{
     public:
         virtual void layoutChildren(ListLayout* layout, float targetX, float targetY, float w, float h) {
         }
-        virtual void measure(ListLayout *layout, float restrictW, float restrictH, float &d, float &d1) {
+        virtual void measure(ListLayout *layout, float restrictW, float restrictH, float &w, float &h) {
+        }
+        int getFirstVisibleItem(){ //min 0
+            return firstVisibleItem;
+        }
+        int getLastVisibleItem(){ // -1 means known.
+            return lastVisibleItem;
         }
         /**
        * Scroll horizontally by dx pixels in screen coordinates and return the distance traveled.
@@ -87,7 +96,6 @@ namespace h7{
         virtual int scrollHorizontallyBy(int dx) {
             return 0;
         }
-
         /**
          * Scroll vertically by dy pixels in screen coordinates and return the distance traveled.
          * The default implementation does nothing and returns 0.
@@ -104,7 +112,6 @@ namespace h7{
         virtual int scrollVerticallyBy(int dy) {
             return 0;
         }
-
         /**
          * Query if horizontal scrolling is currently supported. The default implementation
          * returns false.
@@ -114,7 +121,6 @@ namespace h7{
         virtual bool canScrollHorizontally() {
             return false;
         }
-
         /**
          * Query if vertical scrolling is currently supported. The default implementation
          * returns false.
@@ -124,7 +130,6 @@ namespace h7{
         virtual bool canScrollVertically() {
             return false;
         }
-
         /**
          * Scroll to the specified adapter position.
          *
@@ -134,7 +139,6 @@ namespace h7{
         virtual void scrollToPosition(int position) {
 
         }
-
         /**
          * <p>Smooth scroll to the specified adapter position.</p>
          * <p>To support smooth scrolling, override this method, create your {@link SmoothScroller}
@@ -146,6 +150,14 @@ namespace h7{
          */
         virtual void smoothScrollToPosition(ListLayout* layout,int position) {
         }
+
+    protected:
+        int firstLayoutIndex;
+        int lastLayoutIndex;
+
+    private:
+        int firstVisibleItem = 0;
+        int lastVisibleItem = -1;
     };
     /**
      * 1, cache view item count.
@@ -156,12 +168,12 @@ namespace h7{
         virtual void onLayoutChildren(float targetX, float targetY, float w, float h);
 
         virtual void measure(float restrictW, float restrictH,float& outW, float& outH);
+
+        virtual void onScrollChanged(float dx, float dy);
     public:
         ListLayout();
         void setAdapter(ListAdapter* _adapter);
         void setLayoutManager(LayoutManager* _m);
-
-        bool isScrolling();
 
         virtual void notifyItemInserted(int position){
 
