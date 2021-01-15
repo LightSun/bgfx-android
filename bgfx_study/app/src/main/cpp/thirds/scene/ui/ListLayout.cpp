@@ -56,8 +56,24 @@ namespace h7{
         return holder->get();
     }
     ItemViewHolder* ListLayout::getUniqueViewHolder(int viewType, h7::ListItemDelegate *item) {
-        //TODO
-        return nullptr;
+        Array<sk_sp<ItemViewHolder>>* holders = layoutHolderMap[viewType];
+        if(holders == nullptr){
+            holders = layoutHolderMap[viewType] = new Array<sk_sp<ItemViewHolder>>;
+        }
+        sk_sp<ItemViewHolder>* holder = nullptr;
+        for (int i = 0; i < holders->size(); ++i) {
+            auto sp = holders->get(i);
+            if(!sp->isUsing()){
+                holder = &sp;
+                break;
+            }
+        }
+        if(holder == nullptr){
+            auto sp_holder = sk_ref_sp(adapter->createViewHolder(this, viewType, item));
+            holders->add(sp_holder);
+            holder = &sp_holder;
+        }
+        return holder->get();
     }
     const ListAdapter* ListLayout::getAdapter(){
         return adapter.get();

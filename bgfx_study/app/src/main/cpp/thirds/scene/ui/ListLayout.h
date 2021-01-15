@@ -228,7 +228,7 @@ namespace h7{
          sk_sp<ListAdapter> adapter;
          sk_sp<LayoutManager> layoutManager;
          std::map<unsigned char, sk_sp<ItemViewHolder>> holderMap;
-        // std::map<unsigned char, Array<sk_sp<ItemViewHolder>>> vi;
+         std::map<unsigned char, Array<sk_sp<ItemViewHolder>>*> layoutHolderMap;//for
          //SortedList list;
     };
 }
