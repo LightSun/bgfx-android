@@ -39,9 +39,17 @@ namespace h7 {
         inline T& getFirst() {
             return getAt(0);
         }
+        //high performance for add element.
+        template <class... _Args>
+        inline void addEmplace(_Args&&... __args){
+            array.emplace_back(__args);
+        }
+        template <class... _Args>
+        inline void addEmplace(int index,_Args&&... __args){
+            array.emplace(array.begin() + index, __args);
+        }
         inline void add(const T &t) {
-            array.push_back(t);
-            // array.insert(array.end(), t);
+            array.push_back(t);  //will call new and copy-constructor
         }
         inline void add(int index, T &t) {
             array.insert(array.begin() + index, t);
