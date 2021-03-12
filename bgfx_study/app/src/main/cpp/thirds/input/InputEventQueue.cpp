@@ -9,6 +9,15 @@
 #include "global.h"
 
 namespace h7 {
+     const int InputEventQueue::SKIP = -1;
+     const int InputEventQueue::KEY_DOWN = 0;
+     const int InputEventQueue::KEY_UP = 1;
+     const int InputEventQueue::KEY_TYPED = 2;
+     const int InputEventQueue::TOUCH_DOWN = 3;
+     const int InputEventQueue::TOUCH_UP = 4;
+     const int InputEventQueue::TOUCH_DRAGGED = 5;
+     const int InputEventQueue::MOUSE_MOVED = 6;
+     const int InputEventQueue::SCROLLED = 7;
 
     void InputEventQueue::drain() {
         lock();

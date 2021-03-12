@@ -3,6 +3,7 @@
 //
 
 #include "LayoutManagers.h"
+#include "../SceneHelper.h"
 #include "global.h"
 #include "input/GestureContext.h"
 

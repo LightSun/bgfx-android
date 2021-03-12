@@ -21,7 +21,6 @@ namespace h7 {
     template<typename K, typename V>
     class LruCache {
     public:
-        template<typename K, typename V>
         class Callback : public ILock{
         public:
             virtual V create(K key) {

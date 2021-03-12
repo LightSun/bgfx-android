@@ -183,7 +183,7 @@ namespace h7{
         class ItemLayoutParams: public LayoutParams{
         public:
             int align = Align::left | Align::top;
-            ItemLayoutParams() : lpType(LP_TYPE_LIST_ITEM){
+            ItemLayoutParams() : LayoutParams(LP_TYPE_LIST_ITEM){
             }
         };
         void setAdapter(ListAdapter* _adapter);

@@ -24,6 +24,10 @@ namespace h7 {
         signed char layoutWidthType = LAYOUT_REAL;
         signed char layoutHeightType = LAYOUT_REAL;
         unsigned char lpType = LP_TYPE;
+        LayoutParams(){}
+    protected:
+        LayoutParams(unsigned char lpType):lpType(lpType){
+        }
     };
 
     class Layout {

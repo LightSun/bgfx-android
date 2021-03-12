@@ -42,11 +42,11 @@ namespace h7 {
         //high performance for add element.
         template <class... _Args>
         inline void addEmplace(_Args&&... __args){
-            array.emplace_back(__args);
+            array.emplace_back(std::forward<_Args>(__args)...);
         }
         template <class... _Args>
         inline void addEmplace(int index,_Args&&... __args){
-            array.emplace(array.begin() + index, __args);
+            array.emplace(array.begin() + index, std::forward<_Args>(__args)...);
         }
         inline void add(const T &t) {
             array.push_back(t);  //will call new and copy-constructor

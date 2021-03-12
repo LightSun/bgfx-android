@@ -7,6 +7,7 @@
 
 #include <map>
 
+//std::unordered_map, set etc...
 namespace h7 {
 
     template<typename K, typename V>
