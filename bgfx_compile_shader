@@ -1,0 +1,5 @@
+cd /d %~dp0
+::shaderc.exe comes from compile bgfx
+SET SHADER_EXE=%~dp0/../../tools/bin/windows/shaderc.exe
+%SHADER_EXE% -f vs_cubes.sc -o .\glsl\vs_cubes.bin --depends -i ..\..\src --varyingdef varying.def.sc --platform linux -p 120 --type vertex -O3
+%SHADER_EXE% -f fs_cubes.sc -o .\glsl\fs_cubes.bin --depends -i ..\..\src --varyingdef varying.def.sc --platform linux -p 120 --type fragment -O3
